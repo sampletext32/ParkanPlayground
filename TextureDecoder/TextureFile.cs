@@ -299,7 +299,7 @@ public class TextureFile
 
             var image = Image.LoadPixelData<Rgba32>(reinterpretedPixels, mipWidth, mipHeight);
             
-            image.SaveAsPng(Path.Combine(outputDir, Path.GetFileName(FileName)) + $"_{mipWidth}x{mipHeight}.png");
+            image.SaveAsPng(Path.Combine(outputDir, Path.GetFileName(FileName)) + $"_{Header.Format}_{mipWidth}x{mipHeight}.png");
         }
     }
 
