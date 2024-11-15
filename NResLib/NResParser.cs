@@ -24,7 +24,7 @@ public static class NResParser
         }
 
         var header = new NResArchiveHeader(
-            NRes: Encoding.ASCII.GetString(buffer[0..4]),
+            NRes: Encoding.ASCII.GetString(buffer[0..4]).TrimEnd('\0'),
             Version: BinaryPrimitives.ReadInt32LittleEndian(buffer[4..8]),
             FileCount: BinaryPrimitives.ReadInt32LittleEndian(buffer[8..12]),
             TotalFileLengthBytes: BinaryPrimitives.ReadInt32LittleEndian(buffer[12..16])
@@ -51,11 +51,11 @@ public static class NResParser
 
             elements.Add(
                 new ListMetadataItem(
-                    FileType: Encoding.ASCII.GetString(metaDataBuffer[..8]),
+                    FileType: Encoding.ASCII.GetString(metaDataBuffer[..8]).TrimEnd('\0'),
                     Magic1: BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[8..12]),
                     FileLength: BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[12..16]),
                     Magic2: BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[16..20]),
-                    FileName: Encoding.ASCII.GetString(metaDataBuffer[20..40]),
+                    FileName: Encoding.ASCII.GetString(metaDataBuffer[20..40]).TrimEnd('\0'),
                     Magic3: BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[40..44]),
                     Magic4: BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[44..48]),
                     Magic5: BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[48..52]),

@@ -11,9 +11,11 @@ namespace NResUI.ImGuiUI
     {
         private readonly ExplorerViewModel _explorerViewModel;
 
-        public MainMenuBar(ExplorerViewModel explorerViewModel)
+        private readonly MessageBoxModalPanel _messageBox;
+        public MainMenuBar(ExplorerViewModel explorerViewModel, MessageBoxModalPanel messageBox)
         {
             _explorerViewModel = explorerViewModel;
+            _messageBox = messageBox;
         }
 
         public void OnImGuiRender()
@@ -45,8 +47,10 @@ namespace NResUI.ImGuiUI
                             if (result.IsOk)
                             {
                                 var path = result.Path;
-
-                                Console.WriteLine(path);
+                                
+                                NResExporter.Export(_explorerViewModel.Archive!, path, _explorerViewModel.Path!);
+                                
+                                _messageBox.Show("Успешно экспортировано");
                             }
                         }
                     }

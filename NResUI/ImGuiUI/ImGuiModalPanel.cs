@@ -8,6 +8,8 @@ public abstract class ImGuiModalPanel : IImGuiPanel
 {
     protected abstract string ImGuiId { get; }
 
+    protected Vector2 WindowSize { get; set; } = new Vector2(600, 400);
+
     private bool _shouldOpen = false;
 
     public virtual void Open()
@@ -27,7 +29,7 @@ public abstract class ImGuiModalPanel : IImGuiPanel
             _shouldOpen = false;
         }
 
-        ImGui.SetNextWindowSize(new Vector2(600, 400));
+        ImGui.SetNextWindowSize(WindowSize);
 
         if (ImGui.BeginPopup(ImGuiId, ImGuiWindowFlags.NoResize))
         {
