@@ -371,10 +371,10 @@ public class TextureFile
         {
             var rawPixel = span.Slice(i, 2);
 
-            var a = (byte)((float)((rawPixel[0] >> 4) & 0b1111) / 15 * 255);
-            var r = (byte)((float)((rawPixel[0] >> 0) & 0b1111) / 15 * 255);
-            var g = (byte)((float)((rawPixel[1] >> 4) & 0b1111) / 15 * 255);
-            var b = (byte)((float)((rawPixel[1] >> 0) & 0b1111) / 15 * 255);
+            var a = (byte)((float)((rawPixel[0] >> 4) & 0b1111) / 16 * 255);
+            var r = (byte)((float)((rawPixel[0] >> 0) & 0b1111) / 16 * 255);
+            var g = (byte)((float)((rawPixel[1] >> 4) & 0b1111) / 16 * 255);
+            var b = (byte)((float)((rawPixel[1] >> 0) & 0b1111) / 16 * 255);
 
             result[i / 2 * 4 + 0] = r;
             result[i / 2 * 4 + 1] = g;
