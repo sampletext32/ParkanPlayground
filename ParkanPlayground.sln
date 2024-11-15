@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParkanPlayground", "ParkanP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextureDecoder", "TextureDecoder\TextureDecoder.csproj", "{15D1C9ED-1080-417D-A4D1-CFF80BE6A218}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLUnpacker", "NLUnpacker\NLUnpacker.csproj", "{50C83E6C-23ED-4A8E-B948-89686A742CF0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{15D1C9ED-1080-417D-A4D1-CFF80BE6A218}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15D1C9ED-1080-417D-A4D1-CFF80BE6A218}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{15D1C9ED-1080-417D-A4D1-CFF80BE6A218}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50C83E6C-23ED-4A8E-B948-89686A742CF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50C83E6C-23ED-4A8E-B948-89686A742CF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50C83E6C-23ED-4A8E-B948-89686A742CF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50C83E6C-23ED-4A8E-B948-89686A742CF0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
