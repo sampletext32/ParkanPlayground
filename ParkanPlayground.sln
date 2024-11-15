@@ -6,6 +6,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextureDecoder", "TextureDe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLUnpacker", "NLUnpacker\NLUnpacker.csproj", "{50C83E6C-23ED-4A8E-B948-89686A742CF0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NResUI", "NResUI\NResUI.csproj", "{7456A089-0701-416C-8668-1F740BF4B72C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NResLib", "NResLib\NResLib.csproj", "{9429AEAE-80A6-4EE7-AB66-9161CC4C3A3D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +28,13 @@ Global
 		{50C83E6C-23ED-4A8E-B948-89686A742CF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{50C83E6C-23ED-4A8E-B948-89686A742CF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{50C83E6C-23ED-4A8E-B948-89686A742CF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7456A089-0701-416C-8668-1F740BF4B72C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7456A089-0701-416C-8668-1F740BF4B72C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7456A089-0701-416C-8668-1F740BF4B72C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7456A089-0701-416C-8668-1F740BF4B72C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9429AEAE-80A6-4EE7-AB66-9161CC4C3A3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9429AEAE-80A6-4EE7-AB66-9161CC4C3A3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9429AEAE-80A6-4EE7-AB66-9161CC4C3A3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9429AEAE-80A6-4EE7-AB66-9161CC4C3A3D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
