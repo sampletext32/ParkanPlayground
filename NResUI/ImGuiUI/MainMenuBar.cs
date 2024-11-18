@@ -4,17 +4,20 @@ using NativeFileDialogSharp;
 using NResLib;
 using NResUI.Abstractions;
 using NResUI.Models;
+using TexmLib;
 
 namespace NResUI.ImGuiUI
 {
     public class MainMenuBar : IImGuiPanel
     {
-        private readonly ExplorerViewModel _explorerViewModel;
+        private readonly NResExplorerViewModel _nResExplorerViewModel;
+        private readonly TexmExplorerViewModel _texmExplorerViewModel;
 
         private readonly MessageBoxModalPanel _messageBox;
-        public MainMenuBar(ExplorerViewModel explorerViewModel, MessageBoxModalPanel messageBox)
+        public MainMenuBar(NResExplorerViewModel nResExplorerViewModel, TexmExplorerViewModel texmExplorerViewModel, MessageBoxModalPanel messageBox)
         {
-            _explorerViewModel = explorerViewModel;
+            _nResExplorerViewModel = nResExplorerViewModel;
+            _texmExplorerViewModel = texmExplorerViewModel;
             _messageBox = messageBox;
         }
 
@@ -34,11 +37,29 @@ namespace NResUI.ImGuiUI
 
                             var parseResult = NResParser.ReadFile(path);
 
-                            _explorerViewModel.SetParseResult(parseResult, path);
+                            _nResExplorerViewModel.SetParseResult(parseResult, path);
+                            Console.WriteLine("Read NRES");
                         }
                     }
 
-                    if (_explorerViewModel.HasFile)
+                    if (ImGui.MenuItem("Open TEXM"))
+                    {
+                        var result = Dialog.FileOpen();
+
+                        if (result.IsOk)
+                        {
+                            var path = result.Path;
+
+                            using var fs = new FileStream(path, FileMode.Open);
+                            
+                            var parseResult = TexmParser.ReadFromStream(fs, path);
+
+                            _texmExplorerViewModel.SetParseResult(parseResult, path);
+                            Console.WriteLine("Read TEXM");
+                        }
+                    }
+
+                    if (_nResExplorerViewModel.HasFile)
                     {
                         if (ImGui.MenuItem("Экспортировать"))
                         {
@@ -48,30 +69,11 @@ namespace NResUI.ImGuiUI
                             {
                                 var path = result.Path;
                                 
-                                NResExporter.Export(_explorerViewModel.Archive!, path, _explorerViewModel.Path!);
+                                NResExporter.Export(_nResExplorerViewModel.Archive!, path, _nResExplorerViewModel.Path!);
                                 
                                 _messageBox.Show("Успешно экспортировано");
                             }
                         }
-                    }
-
-                    if (ImGui.BeginMenu("Open Recent"))
-                    {
-                        ImGui.EndMenu();
-                    }
-
-                    if (ImGui.MenuItem("Exit"))
-                    {
-                        App.Instance.Exit();
-                    }
-
-                    ImGui.EndMenu();
-                }
-
-                if (ImGui.BeginMenu("Windows"))
-                {
-                    if (ImGui.MenuItem("Settings"))
-                    {
                     }
 
                     ImGui.EndMenu();

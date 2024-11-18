@@ -1,13 +1,13 @@
 ﻿using System.Buffers.Binary;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using TextureDecoder;
+using TexmLib;
 
 var folder = "C:\\Projects\\CSharp\\ParkanPlayground\\ParkanPlayground\\bin\\Debug\\net8.0\\ui.lib";
 
 var files = Directory.EnumerateFiles(folder);
 
-List<TextureFile> textureFiles = [];
+List<TexmFile> textureFiles = [];
 
 foreach (var file in files)
 {
@@ -15,9 +15,9 @@ foreach (var file in files)
     {
         var fs = new FileStream(file, FileMode.Open);
 
-        var textureFile = TextureFile.ReadFromStream(fs, file);
+        var parseResult = TexmParser.ReadFromStream(fs, file);
 
-        textureFiles.Add(textureFile);
+        textureFiles.Add(parseResult.TexmFile);
 
         Console.WriteLine($"Successfully read: {file}");
     }

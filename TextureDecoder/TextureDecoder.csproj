@@ -11,4 +11,12 @@
       <PackageReference Include="SixLabors.ImageSharp" Version="3.1.5" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\TexmLib\TexmLib.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\TexmLib\TexmLib.csproj" />
+    </ItemGroup>
+
 </Project>

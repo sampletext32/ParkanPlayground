@@ -2,7 +2,7 @@
 
 namespace NResUI.Models;
 
-public class ExplorerViewModel
+public class NResExplorerViewModel
 {
     public bool HasFile { get; set; }
     public string? Error { get; set; }

@@ -1,4 +1,4 @@
-﻿namespace TextureDecoder;
+﻿namespace TexmLib;
 
 public static class Extensions
 {

@@ -10,6 +10,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NResUI", "NResUI\NResUI.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NResLib", "NResLib\NResLib.csproj", "{9429AEAE-80A6-4EE7-AB66-9161CC4C3A3D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeshUnpacker", "MeshUnpacker\MeshUnpacker.csproj", "{F1465FFE-0D66-4A3C-90D7-153A14E226E6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TexmLib", "TexmLib\TexmLib.csproj", "{40097CB1-B4B8-4D3E-A874-7D46F5C81DB3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +40,13 @@ Global
 		{9429AEAE-80A6-4EE7-AB66-9161CC4C3A3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9429AEAE-80A6-4EE7-AB66-9161CC4C3A3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9429AEAE-80A6-4EE7-AB66-9161CC4C3A3D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1465FFE-0D66-4A3C-90D7-153A14E226E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1465FFE-0D66-4A3C-90D7-153A14E226E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1465FFE-0D66-4A3C-90D7-153A14E226E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1465FFE-0D66-4A3C-90D7-153A14E226E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{40097CB1-B4B8-4D3E-A874-7D46F5C81DB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40097CB1-B4B8-4D3E-A874-7D46F5C81DB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40097CB1-B4B8-4D3E-A874-7D46F5C81DB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40097CB1-B4B8-4D3E-A874-7D46F5C81DB3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

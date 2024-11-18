@@ -47,7 +47,8 @@ public class App
                 serviceCollection.AddSingleton(type);
             }
 
-            serviceCollection.AddSingleton(new ExplorerViewModel());
+            serviceCollection.AddSingleton(new NResExplorerViewModel());
+            serviceCollection.AddSingleton(new TexmExplorerViewModel());
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
 

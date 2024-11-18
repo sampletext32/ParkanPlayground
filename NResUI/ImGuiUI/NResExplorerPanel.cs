@@ -4,18 +4,18 @@ using NResUI.Models;
 
 namespace NResUI.ImGuiUI;
 
-public class ExplorerPanel : IImGuiPanel
+public class NResExplorerPanel : IImGuiPanel
 {
-    private readonly ExplorerViewModel _viewModel;
+    private readonly NResExplorerViewModel _viewModel;
 
-    public ExplorerPanel(ExplorerViewModel viewModel)
+    public NResExplorerPanel(NResExplorerViewModel viewModel)
     {
         _viewModel = viewModel;
     }
 
     public void OnImGuiRender()
     {
-        if (ImGui.Begin("Explorer"))
+        if (ImGui.Begin("NRes Explorer"))
         {
             if (!_viewModel.HasFile)
             {
