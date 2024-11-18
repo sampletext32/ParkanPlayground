@@ -70,9 +70,12 @@ public class TexmExplorer : IImGuiPanel
                     ImGui.Text(_viewModel.TexmFile.IsIndexed.ToString());
 
                     ImGui.Checkbox("Включить чёрный фон", ref _viewModel.IsBlackBgEnabled);
+                    ImGui.SameLine();
                     ImGui.Checkbox("Включить белый фон", ref _viewModel.IsWhiteBgEnabled);
+                    ImGui.SameLine();
+                    ImGui.Checkbox("Увеличить в 2 раза", ref _viewModel.DoubleSize);
 
-                    if (_viewModel.IsWhiteBgEnabled && _viewModel.IsBlackBgEnabled)
+                    if (_viewModel is {IsWhiteBgEnabled: true, IsBlackBgEnabled: true})
                     {
                         _viewModel.IsBlackBgEnabled = false;
                         _viewModel.IsWhiteBgEnabled = false;
@@ -85,22 +88,28 @@ public class TexmExplorer : IImGuiPanel
                     {
                         var glTexture = _viewModel.GlTextures[index];
                         var screenPos = ImGui.GetCursorScreenPos();
+                        Vector2 imageSize = new Vector2(glTexture.Width, glTexture.Height);
+                        if (_viewModel.DoubleSize)
+                        {
+                            imageSize *= 2;
+                        }
+
                         if (_viewModel.IsBlackBgEnabled)
                         {
-                            drawList.AddRectFilled(screenPos, screenPos + new Vector2(glTexture.Width, glTexture.Height), 0xFF000000);
+                            drawList.AddRectFilled(screenPos, screenPos + imageSize, 0xFF000000);
                         }
                         else if (_viewModel.IsWhiteBgEnabled)
                         {
-                            drawList.AddRectFilled(screenPos, screenPos + new Vector2(glTexture.Width, glTexture.Height), 0xFFFFFFFF);
+                            drawList.AddRectFilled(screenPos, screenPos + imageSize, 0xFFFFFFFF);
                         }
 
-                        ImGui.Image((IntPtr) glTexture.GlTexture, new Vector2(glTexture.Width, glTexture.Height));
+                        ImGui.Image((IntPtr) glTexture.GlTexture, imageSize);
                         ImGui.SameLine();
 
                         if (ImGui.IsItemHovered())
                         {
                             var mousePos = ImGui.GetMousePos();
-                            var relativePos = mousePos - screenPos;
+                            var relativePos = (mousePos - screenPos) / (_viewModel.DoubleSize ? 2 : 1);
                             
                             ImGui.Text("Hovering over: ");
                             ImGui.SameLine();

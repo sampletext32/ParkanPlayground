@@ -17,6 +17,7 @@ public class TexmExplorerViewModel
     public bool IsWhiteBgEnabled;
 
     public bool IsBlackBgEnabled;
+    public bool DoubleSize;
 
     public void SetParseResult(TexmParseResult result, string path)
     {
