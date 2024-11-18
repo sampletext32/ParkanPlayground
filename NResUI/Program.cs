@@ -15,6 +15,8 @@ ImGuiController controller = null!;
 GL gl = null!;
 IInputContext inputContext = null!;
 
+window.IsEventDriven = true;
+
 var app = new App();
 
 // Our loading function

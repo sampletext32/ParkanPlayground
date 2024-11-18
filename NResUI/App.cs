@@ -110,8 +110,8 @@ public class App
                 imGuiPanel.OnImGuiRender();
             }
 
-            ImGui.ShowMetricsWindow();
-            ImGui.ShowDemoWindow();
+            // ImGui.ShowMetricsWindow();
+            // ImGui.ShowDemoWindow();
 
             ImGui.PopFont();
 
