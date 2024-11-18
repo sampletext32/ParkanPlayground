@@ -114,6 +114,26 @@ public class TexmFile
         }
     }
 
+    public byte[] GetRgba32BytesFromMipmap(int index, out int mipWidth, out int mipHeight)
+    {
+        var mipmapBytes = MipmapBytes[index];
+        
+        mipWidth = Header.Width / (int) Math.Pow(2, index);
+        mipHeight = Header.Height / (int) Math.Pow(2, index);
+
+        if (IsIndexed)
+        {
+            return ReinterpretIndexedMipmap(mipmapBytes, LookupColors);
+        }
+
+        return ReinterpretMipmapBytesAsRgba32(
+            mipmapBytes,
+            mipWidth,
+            mipHeight,
+            Header.Format
+        );
+    }
+
     private byte[] ReinterpretIndexedMipmap(byte[] bytes, byte[] lookupColors)
     {
         var span = bytes.AsSpan();
@@ -123,15 +143,15 @@ public class TexmFile
         {
             var index = span[i];
 
-            var a = lookupColors[index * 4 + 0];
-            var r = lookupColors[index * 4 + 1];
-            var g = lookupColors[index * 4 + 2];
-            var b = lookupColors[index * 4 + 3];
+            var r = lookupColors[index * 4 + 0];
+            var g = lookupColors[index * 4 + 1];
+            var b = lookupColors[index * 4 + 2];
+            var a = lookupColors[index * 4 + 3];
 
             result[i * 4 + 0] = r;
             result[i * 4 + 1] = g;
             result[i * 4 + 2] = b;
-            result[i * 4 + 3] = a;
+            result[i * 4 + 3] = 255;
         }
 
         return result;
@@ -161,8 +181,8 @@ public class TexmFile
             var rawPixel = span.Slice(i, 2);
 
             var r = (byte)(((rawPixel[0] >> 3) & 0b11111) / 32 * 255);
-            var g = (byte)(((rawPixel[0] & 0b111) << 3) | ((rawPixel[1] >> 5) & 0b111) / 64 * 255);
-            var b = (byte)((rawPixel[1] & 0b11111) / 32 * 255);
+            var b = (byte)(((rawPixel[0] & 0b111) << 3) | ((rawPixel[1] >> 5) & 0b111) / 64 * 255);
+            var g = (byte)((rawPixel[1] & 0b11111) / 32 * 255);
 
             result[i / 2 * 4 + 0] = r;
             result[i / 2 * 4 + 1] = g;
@@ -182,10 +202,10 @@ public class TexmFile
         {
             var rawPixel = span.Slice(i, 2);
 
-            var a = (byte)((float)((rawPixel[0] >> 4) & 0b1111) / 16 * 255);
-            var r = (byte)((float)((rawPixel[0] >> 0) & 0b1111) / 16 * 255);
-            var g = (byte)((float)((rawPixel[1] >> 4) & 0b1111) / 16 * 255);
-            var b = (byte)((float)((rawPixel[1] >> 0) & 0b1111) / 16 * 255);
+            var r = (byte)((float)((rawPixel[0] >> 4) & 0b1111) * 17);
+            var g = (byte)((float)((rawPixel[0] >> 0) & 0b1111) * 17);
+            var b = (byte)((float)((rawPixel[1] >> 4) & 0b1111) * 17);
+            var a = (byte)((float)((rawPixel[1] >> 0) & 0b1111) * 17);
 
             result[i / 2 * 4 + 0] = r;
             result[i / 2 * 4 + 1] = g;
@@ -205,14 +225,14 @@ public class TexmFile
         {
             var rawPixel = span.Slice(i, 4);
 
-            var x = rawPixel[0];
-            var y = rawPixel[1];
-            var z = rawPixel[2];
+            var r = rawPixel[0];
+            var g = rawPixel[1];
+            var b = rawPixel[2];
             var w = rawPixel[3];
 
-            result[i + 0] = y;
-            result[i + 1] = z;
-            result[i + 2] = w;
+            result[i + 0] = r;
+            result[i + 1] = g;
+            result[i + 2] = b;
             result[i + 3] = 255;
         }
 
@@ -228,10 +248,10 @@ public class TexmFile
         {
             var rawPixel = span.Slice(i, 4);
 
-            var a = rawPixel[0];
-            var r = rawPixel[1];
-            var g = rawPixel[2];
-            var b = rawPixel[3];
+            var b = rawPixel[0];
+            var g = rawPixel[1];
+            var r = rawPixel[2];
+            var a = rawPixel[3];
 
             result[i + 0] = r;
             result[i + 1] = g;

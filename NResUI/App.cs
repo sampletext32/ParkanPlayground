@@ -47,6 +47,9 @@ public class App
                 serviceCollection.AddSingleton(type);
             }
 
+            serviceCollection.AddSingleton(openGl);
+            serviceCollection.AddSingleton(window);
+
             serviceCollection.AddSingleton(new NResExplorerViewModel());
             serviceCollection.AddSingleton(new TexmExplorerViewModel());
 
