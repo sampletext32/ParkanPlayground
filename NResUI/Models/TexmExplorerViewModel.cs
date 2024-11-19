@@ -1,4 +1,5 @@
-﻿using Silk.NET.OpenGL;
+﻿using System.Numerics;
+using Silk.NET.OpenGL;
 using TexmLib;
 
 namespace NResUI.Models;
@@ -18,6 +19,7 @@ public class TexmExplorerViewModel
 
     public bool IsBlackBgEnabled;
     public bool DoubleSize;
+    public bool ViewPages;
 
     public void SetParseResult(TexmParseResult result, string path)
     {

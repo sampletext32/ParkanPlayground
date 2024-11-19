@@ -69,18 +69,75 @@ public class TexmExplorer : IImGuiPanel
                     ImGui.SameLine();
                     ImGui.Text(_viewModel.TexmFile.IsIndexed.ToString());
 
+                    if (_viewModel.TexmFile.Pages is not null)
+                    {
+                        ImGui.Text("Page Section: ");
+                        ImGui.SameLine();
+                        ImGui.Text(_viewModel.TexmFile.Pages.Page);
+
+                        ImGui.Text("Page Count: ");
+                        ImGui.SameLine();
+                        ImGui.Text(_viewModel.TexmFile.Pages.Count.ToString());
+
+                        if (ImGui.TreeNodeEx("Показать координаты атласа"))
+                        {
+                            if (ImGui.BeginTable("pages-table", 4, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoHostExtendX))
+                            {
+                                ImGui.TableSetupColumn("X");
+                                ImGui.TableSetupColumn("Ширина");
+                                ImGui.TableSetupColumn("Y");
+                                ImGui.TableSetupColumn("Height");
+                                ImGui.TableHeadersRow();
+
+                                for (int i = 0; i < _viewModel.TexmFile.Pages.Count; i++)
+                                {
+                                    ImGui.TableNextRow();
+                                    ImGui.TableNextColumn();
+                                    ImGui.Text(
+                                        _viewModel.TexmFile.Pages.Items[i]
+                                            .X.ToString()
+                                    );
+                                    ImGui.TableNextColumn();
+                                    ImGui.Text(
+                                        _viewModel.TexmFile.Pages.Items[i]
+                                            .Width.ToString()
+                                    );
+                                    ImGui.TableNextColumn();
+                                    ImGui.Text(
+                                        _viewModel.TexmFile.Pages.Items[i]
+                                            .Y.ToString()
+                                    );
+                                    ImGui.TableNextColumn();
+                                    ImGui.Text(
+                                        _viewModel.TexmFile.Pages.Items[i]
+                                            .Height.ToString()
+                                    );
+                                }
+
+                                ImGui.EndTable();
+                            }
+                        }
+                    }
+
                     ImGui.Checkbox("Включить чёрный фон", ref _viewModel.IsBlackBgEnabled);
                     ImGui.SameLine();
                     ImGui.Checkbox("Включить белый фон", ref _viewModel.IsWhiteBgEnabled);
                     ImGui.SameLine();
                     ImGui.Checkbox("Увеличить в 2 раза", ref _viewModel.DoubleSize);
 
+
+                    if (_viewModel.TexmFile.Pages is not null)
+                    {
+                        ImGui.SameLine();
+                        ImGui.Checkbox("Отображать атлас", ref _viewModel.ViewPages);
+                    }
+
                     if (_viewModel is {IsWhiteBgEnabled: true, IsBlackBgEnabled: true})
                     {
                         _viewModel.IsBlackBgEnabled = false;
                         _viewModel.IsWhiteBgEnabled = false;
                     }
-                    
+
                     _viewModel.GenerateGlTextures(_openGl);
 
                     var drawList = ImGui.GetWindowDrawList();
@@ -106,11 +163,26 @@ public class TexmExplorer : IImGuiPanel
                         ImGui.Image((IntPtr) glTexture.GlTexture, imageSize);
                         ImGui.SameLine();
 
+                        if (_viewModel.ViewPages && _viewModel.TexmFile.Pages is not null)
+                        {
+                            for (int i = 0; i < _viewModel.TexmFile.Pages.Items.Count; i++)
+                            {
+                                var page = _viewModel.TexmFile.Pages.Items[i];
+                                drawList.AddRect(
+                                    screenPos + (new Vector2(page.X, page.Y) * (_viewModel.DoubleSize ? 2 : 1) / (int)Math.Pow(2, index)),
+                                    screenPos + (new Vector2(page.X + page.Width, page.Y + page.Height) * (_viewModel.DoubleSize ? 2 : 1) / (int)Math.Pow(2, index)),
+                                    0xFF0000FF
+                                );
+                            }
+                        }
+
                         if (ImGui.IsItemHovered())
                         {
                             var mousePos = ImGui.GetMousePos();
-                            var relativePos = (mousePos - screenPos) / (_viewModel.DoubleSize ? 2 : 1);
-                            
+                            var relativePos = (mousePos - screenPos) / (_viewModel.DoubleSize
+                                ? 2
+                                : 1);
+
                             ImGui.Text("Hovering over: ");
                             ImGui.SameLine();
                             ImGui.Text(relativePos.ToString());
