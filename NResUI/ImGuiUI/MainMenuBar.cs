@@ -59,9 +59,28 @@ namespace NResUI.ImGuiUI
                         }
                     }
 
+                    if (ImGui.MenuItem("Open TFNT TEXM"))
+                    {
+                        var result = Dialog.FileOpen();
+
+                        if (result.IsOk)
+                        {
+                            var path = result.Path;
+
+                            using var fs = new FileStream(path, FileMode.Open);
+
+                            fs.Seek(4116, SeekOrigin.Begin);
+                            
+                            var parseResult = TexmParser.ReadFromStream(fs, path);
+
+                            _texmExplorerViewModel.SetParseResult(parseResult, path);
+                            Console.WriteLine("Read TEXM");
+                        }
+                    }
+
                     if (_nResExplorerViewModel.HasFile)
                     {
-                        if (ImGui.MenuItem("Экспортировать"))
+                        if (ImGui.MenuItem("Экспортировать NRes"))
                         {
                             var result = Dialog.FolderPicker();
 

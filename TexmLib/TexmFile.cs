@@ -180,14 +180,14 @@ public class TexmFile
         {
             var rawPixel = span.Slice(i, 2);
 
-            var r = (byte)(((rawPixel[0] >> 3) & 0b11111) / 32 * 255);
-            var b = (byte)(((rawPixel[0] & 0b111) << 3) | ((rawPixel[1] >> 5) & 0b111) / 64 * 255);
-            var g = (byte)((rawPixel[1] & 0b11111) / 32 * 255);
+            var g = (byte)(((rawPixel[0] >> 3) & 0b11111) * 255 / 31);
+            var b = (byte)((((rawPixel[0] & 0b111) << 3) | ((rawPixel[1] >> 5) & 0b111)) * 255 / 63);
+            var r = (byte)((rawPixel[1] & 0b11111) * 255 / 31);
 
             result[i / 2 * 4 + 0] = r;
             result[i / 2 * 4 + 1] = g;
             result[i / 2 * 4 + 2] = b;
-            result[i / 2 * 4 + 3] = 255;
+            result[i / 2 * 4 + 3] = r;
         }
 
         return result;
@@ -202,10 +202,10 @@ public class TexmFile
         {
             var rawPixel = span.Slice(i, 2);
 
-            var r = (byte)((float)((rawPixel[0] >> 4) & 0b1111) * 17);
-            var g = (byte)((float)((rawPixel[0] >> 0) & 0b1111) * 17);
-            var b = (byte)((float)((rawPixel[1] >> 4) & 0b1111) * 17);
-            var a = (byte)((float)((rawPixel[1] >> 0) & 0b1111) * 17);
+            var a = (byte)(((rawPixel[0] >> 4) & 0b1111) * 17);
+            var b = (byte)(((rawPixel[0] >> 0) & 0b1111) * 17);
+            var g = (byte)(((rawPixel[1] >> 4) & 0b1111) * 17);
+            var r = (byte)(((rawPixel[1] >> 0) & 0b1111) * 17);
 
             result[i / 2 * 4 + 0] = r;
             result[i / 2 * 4 + 1] = g;
