@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeshUnpacker", "MeshUnpacke
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TexmLib", "TexmLib\TexmLib.csproj", "{40097CB1-B4B8-4D3E-A874-7D46F5C81DB3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MissionDataUnpacker", "MissionDataUnpacker\MissionDataUnpacker.csproj", "{7BF5C860-9194-4AF2-B5DA-216F98B03DBE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,5 +50,9 @@ Global
 		{40097CB1-B4B8-4D3E-A874-7D46F5C81DB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{40097CB1-B4B8-4D3E-A874-7D46F5C81DB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{40097CB1-B4B8-4D3E-A874-7D46F5C81DB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BF5C860-9194-4AF2-B5DA-216F98B03DBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BF5C860-9194-4AF2-B5DA-216F98B03DBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BF5C860-9194-4AF2-B5DA-216F98B03DBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BF5C860-9194-4AF2-B5DA-216F98B03DBE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
