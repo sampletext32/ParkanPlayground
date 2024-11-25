@@ -1,5 +1,9 @@
 # Reverse Engineering игры Parkan Железная стратегия 1998
 
+<div align="center">
+  <img width="300" height="300" src="https://github.com/user-attachments/assets/dcd9ac8f-7d30-491c-ae6c-537267beb7dc" alt="x86 Registers" />
+</div>
+
 ## Сборка проекта
 
 Проект написан на C# под `.NET 8`
