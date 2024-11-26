@@ -116,6 +116,8 @@ public class TexmExplorer : IImGuiPanel
 
                                 ImGui.EndTable();
                             }
+                            
+                            ImGui.TreePop();
                         }
                     }
 
