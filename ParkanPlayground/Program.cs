@@ -1,41 +1,61 @@
 ﻿using System.Buffers.Binary;
 using System.Text;
 using NResLib;
+using ParkanPlayground;
 
-var libFile = "C:\\Program Files (x86)\\Nikita\\Iron Strategy\\ui\\ui_back.lib";
+var path = "C:\\Program Files (x86)\\Nikita\\Iron Strategy\\MISSIONS\\SCRIPTS\\11p.scr";
 
-var parseResult = NResParser.ReadFile(libFile);
+using var fs = new FileStream(path, FileMode.Open);
 
-if (parseResult.Error != null)
+// тут всегда число 59 (0x3b) - это число известных игре скриптов
+var magic = fs.ReadInt32LittleEndian();
+
+Console.WriteLine($"Count: {magic}");
+
+var entryCount = fs.ReadInt32LittleEndian();
+
+Console.WriteLine($"EntryCount: {entryCount}");
+
+for (var i = 0; i < entryCount; i++)
 {
-    Console.WriteLine(parseResult.Error);
-    return;
-}
+    Console.WriteLine($"Entry: {i}");
+    var str = fs.ReadLengthPrefixedString();
+    
+    Console.WriteLine($"\tStr: {str}");
+    
+    // тут игра дополнительно вычитывает ещё 1 байт, видимо как \0 для char*
+    fs.ReadByte();
 
-// var libFileName = new FileInfo(libFile).Name;
-//
-// if (Directory.Exists(libFileName))
-// {
-//     Directory.Delete(libFileName, true);
-// }
-//
-// var dir = Directory.CreateDirectory(libFileName);
-//
-// byte[] copyBuffer = new byte[8192];
-//
-// foreach (var element in elements)
-// {
-//     nResFs.Seek(element.OffsetInFile, SeekOrigin.Begin);
-//     using var destFs = new FileStream(Path.Combine(libFileName, element.FileName), FileMode.CreateNew);
-//
-//     var totalCopiedBytes = 0;
-//     while (totalCopiedBytes < element.ItemLength)
-//     {
-//         var needReadBytes = Math.Min(element.ItemLength - totalCopiedBytes, copyBuffer.Length);
-//         var readBytes = nResFs.Read(copyBuffer, 0, needReadBytes);
-//         
-//         destFs.Write(copyBuffer, 0, readBytes);
-//
-//         totalCopiedBytes += readBytes;
-//     }
-// }
+    var index = fs.ReadInt32LittleEndian();
+    Console.WriteLine($"\tIndex: {index}");
+    var innerCount = fs.ReadInt32LittleEndian();
+    Console.WriteLine($"\tInnerCount: {innerCount}");
+    for (var i1 = 0; i1 < innerCount; i1++)
+    {
+        var unkInner1 = fs.ReadInt32LittleEndian();
+        var unkInner2 = fs.ReadInt32LittleEndian();
+        var unkInner3 = fs.ReadInt32LittleEndian();
+        var unkInner4 = fs.ReadInt32LittleEndian();
+        var unkInner5 = fs.ReadInt32LittleEndian();
+        
+        Console.WriteLine($"\t\tUnkInner1: {unkInner1}");
+        Console.WriteLine($"\t\tUnkInner2: {unkInner2}");
+        Console.WriteLine($"\t\tUnkInner3: {unkInner3}");
+        Console.WriteLine($"\t\tUnkInner4: {unkInner4}");
+        Console.WriteLine($"\t\tUnkInner5: {unkInner5}");
+        
+        var innerInnerCount = fs.ReadInt32LittleEndian();
+        Console.WriteLine($"\t\tInnerInnerCount: {innerInnerCount}");
+        
+        for (var i2 = 0; i2 < innerInnerCount; i2++)
+        {
+            var innerInner = fs.ReadInt32LittleEndian();
+            Console.WriteLine($"\t\t\t{innerInner}");
+        }
+
+        var unkInner7 = fs.ReadInt32LittleEndian();
+        
+        Console.WriteLine($"\t\tUnkInner7 {unkInner7}");
+        Console.WriteLine("---");
+    }
+}
