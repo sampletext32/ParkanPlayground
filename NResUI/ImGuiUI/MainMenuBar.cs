@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using ImGuiNET;
+using MissionTmaLib;
 using MissionTmaLib.Parsing;
 using NativeFileDialogSharp;
 using NResLib;
@@ -91,6 +92,15 @@ namespace NResUI.ImGuiUI
                             var parseResult = MissionTmaParser.ReadFile(path);
                             
                             _missionTmaViewModel.SetParseResult(parseResult, path);
+
+                            var orderedBuildings = parseResult.Mission.GameObjectsData.GameObjectInfos.Where(x => x.Type == GameObjectType.Building)
+                                .OrderBy(x => x.Order)
+                                .ToList();
+                            
+                            foreach (var gameObjectInfo in orderedBuildings)
+                            {
+                                Console.WriteLine($"{gameObjectInfo.Order} : {gameObjectInfo.DatString}");
+                            }
                         }
                     }
 

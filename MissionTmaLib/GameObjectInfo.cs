@@ -22,7 +22,7 @@ public class GameObjectInfo
     /// </remarks>
     public int OwningClanIndex { get; set; }
 
-    public int UnknownInt3 { get; set; }
+    public int Order { get; set; }
 
     public Vector3 Position { get; set; }
     public Vector3 Rotation { get; set; }

@@ -254,9 +254,9 @@ public class MissionTmaExplorer : IImGuiPanel
                             ImGui.SameLine();
                             ImGui.Text(gameObjectInfo.OwningClanIndex.ToString());
 
-                            ImGui.Text("Неизвестное число 3: ");
+                            ImGui.Text("Порядковый номер: ");
                             ImGui.SameLine();
-                            ImGui.Text(gameObjectInfo.UnknownInt3.ToString());
+                            ImGui.Text(gameObjectInfo.Order.ToString());
 
                             ImGui.Text("Вектор позиции: ");
                             ImGui.SameLine();

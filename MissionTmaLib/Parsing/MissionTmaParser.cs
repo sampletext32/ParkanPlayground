@@ -185,7 +185,11 @@ public class MissionTmaParser
 
             if (3 < gameObjectsFeatureSet)
             {
-                gameObjectInfo.UnknownInt3 = fileStream.ReadInt32LittleEndian();
+                gameObjectInfo.Order = fileStream.ReadInt32LittleEndian();
+                if (gameObjectInfo.Type == GameObjectType.Building)
+                {
+                    gameObjectInfo.Order += int.MaxValue;
+                }
             }
 
             // читает 12 байт
@@ -379,5 +383,3 @@ public class MissionTmaParser
         );
     }
 }
-
-public record MissionTma(ArealsFileData ArealData, ClansFileData ClansData, GameObjectsFileData GameObjectsData);
