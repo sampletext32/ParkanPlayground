@@ -6,25 +6,19 @@ using NativeFileDialogSharp;
 using NResLib;
 using NResUI.Abstractions;
 using NResUI.Models;
+using ScrLib;
 using TexmLib;
 
 namespace NResUI.ImGuiUI
 {
-    public class MainMenuBar : IImGuiPanel
+    public class MainMenuBar(
+        NResExplorerViewModel nResExplorerViewModel,
+        TexmExplorerViewModel texmExplorerViewModel,
+        ScrViewModel scrViewModel,
+        MissionTmaViewModel missionTmaViewModel,
+        MessageBoxModalPanel messageBox)
+        : IImGuiPanel
     {
-        private readonly NResExplorerViewModel _nResExplorerViewModel;
-        private readonly TexmExplorerViewModel _texmExplorerViewModel;
-        private readonly MissionTmaViewModel _missionTmaViewModel;
-
-        private readonly MessageBoxModalPanel _messageBox;
-        public MainMenuBar(NResExplorerViewModel nResExplorerViewModel, TexmExplorerViewModel texmExplorerViewModel, MessageBoxModalPanel messageBox, MissionTmaViewModel missionTmaViewModel)
-        {
-            _nResExplorerViewModel = nResExplorerViewModel;
-            _texmExplorerViewModel = texmExplorerViewModel;
-            _messageBox = messageBox;
-            _missionTmaViewModel = missionTmaViewModel;
-        }
-
         public void OnImGuiRender()
         {
             if (ImGui.BeginMenuBar())
@@ -41,7 +35,7 @@ namespace NResUI.ImGuiUI
 
                             var parseResult = NResParser.ReadFile(path);
 
-                            _nResExplorerViewModel.SetParseResult(parseResult, path);
+                            nResExplorerViewModel.SetParseResult(parseResult, path);
                             Console.WriteLine("Read NRES");
                         }
                     }
@@ -55,10 +49,10 @@ namespace NResUI.ImGuiUI
                             var path = result.Path;
 
                             using var fs = new FileStream(path, FileMode.Open);
-                            
+
                             var parseResult = TexmParser.ReadFromStream(fs, path);
 
-                            _texmExplorerViewModel.SetParseResult(parseResult, path);
+                            texmExplorerViewModel.SetParseResult(parseResult, path);
                             Console.WriteLine("Read TEXM");
                         }
                     }
@@ -74,11 +68,11 @@ namespace NResUI.ImGuiUI
                             using var fs = new FileStream(path, FileMode.Open);
 
                             fs.Seek(4116, SeekOrigin.Begin);
-                            
+
                             var parseResult = TexmParser.ReadFromStream(fs, path);
 
-                            _texmExplorerViewModel.SetParseResult(parseResult, path);
-                            Console.WriteLine("Read TEXM");
+                            texmExplorerViewModel.SetParseResult(parseResult, path);
+                            Console.WriteLine("Read TFNT TEXM");
                         }
                     }
 
@@ -90,21 +84,27 @@ namespace NResUI.ImGuiUI
                         {
                             var path = result.Path;
                             var parseResult = MissionTmaParser.ReadFile(path);
-                            
-                            _missionTmaViewModel.SetParseResult(parseResult, path);
 
-                            var orderedBuildings = parseResult.Mission.GameObjectsData.GameObjectInfos.Where(x => x.Type == GameObjectType.Building)
-                                .OrderBy(x => x.Order)
-                                .ToList();
-                            
-                            foreach (var gameObjectInfo in orderedBuildings)
-                            {
-                                Console.WriteLine($"{gameObjectInfo.Order} : {gameObjectInfo.DatString}");
-                            }
+                            missionTmaViewModel.SetParseResult(parseResult, path);
+                            Console.WriteLine("Read TMA");
                         }
                     }
 
-                    if (_nResExplorerViewModel.HasFile)
+                    if (ImGui.MenuItem("Open SCR Scripts File"))
+                    {
+                        var result = Dialog.FileOpen("scr");
+
+                        if (result.IsOk)
+                        {
+                            var path = result.Path;
+                            var parseResult = ScrParser.ReadFile(path);
+
+                            scrViewModel.SetParseResult(parseResult, path);
+                            Console.WriteLine("Read SCR");
+                        }
+                    }
+
+                    if (nResExplorerViewModel.HasFile)
                     {
                         if (ImGui.MenuItem("Экспортировать NRes"))
                         {
@@ -113,10 +113,10 @@ namespace NResUI.ImGuiUI
                             if (result.IsOk)
                             {
                                 var path = result.Path;
-                                
-                                NResExporter.Export(_nResExplorerViewModel.Archive!, path, _nResExplorerViewModel.Path!);
-                                
-                                _messageBox.Show("Успешно экспортировано");
+
+                                NResExporter.Export(nResExplorerViewModel.Archive!, path, nResExplorerViewModel.Path!);
+
+                                messageBox.Show("Успешно экспортировано");
                             }
                         }
                     }
@@ -127,6 +127,5 @@ namespace NResUI.ImGuiUI
                 ImGui.EndMenuBar();
             }
         }
-
     }
 }

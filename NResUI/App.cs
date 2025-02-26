@@ -53,6 +53,8 @@ public class App
             serviceCollection.AddSingleton(new NResExplorerViewModel());
             serviceCollection.AddSingleton(new TexmExplorerViewModel());
             serviceCollection.AddSingleton(new MissionTmaViewModel());
+            serviceCollection.AddSingleton(new BinaryExplorerViewModel());
+            serviceCollection.AddSingleton(new ScrViewModel());
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
 

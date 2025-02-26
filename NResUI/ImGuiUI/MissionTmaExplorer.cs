@@ -132,10 +132,10 @@ public class MissionTmaExplorer : IImGuiPanel
                                 ImGui.SameLine();
                                 ImGui.Text(clanInfo.ClanType.ToReadableString());
 
-                                ImGui.Text("Неизвестная строка 1: ");
-                                Utils.ShowHint("Кажется это путь к файлу поведения (Behavior), но пока не понятно. Обычно пути соответствуют 2 файла.");
+                                ImGui.Text("Скрипты поведения: ");
+                                Utils.ShowHint("Пути к файлам .scr и .fml описывающих настройку объектов и поведение AI");
                                 ImGui.SameLine();
-                                ImGui.Text(clanInfo.UnkString2);
+                                ImGui.Text(clanInfo.ScriptsString);
 
                                 if (clanInfo.UnknownParts.Count > 0)
                                 {

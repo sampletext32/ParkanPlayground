@@ -78,7 +78,7 @@ public class MissionTmaParser
                 // MISSIONS\SCRIPTS\default
                 // MISSIONS\SCRIPTS\tut1_pl
                 // MISSIONS\SCRIPTS\tut1_en
-                clanTreeInfo.UnkString2 = fileStream.ReadLengthPrefixedString();
+                clanTreeInfo.ScriptsString = fileStream.ReadLengthPrefixedString();
             }
 
             if (2 < clanFeatureSet)

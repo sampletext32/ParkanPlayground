@@ -12,7 +12,7 @@ public class ClanInfo
     /// </summary>
     public ClanType ClanType { get; set; }
 
-    public string UnkString2 { get; set; }
+    public string ScriptsString { get; set; }
     public int UnknownClanPartCount { get; set; }
     public List<UnknownClanTreeInfoPart> UnknownParts { get; set; }
     
