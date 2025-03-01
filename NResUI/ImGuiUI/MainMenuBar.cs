@@ -8,6 +8,7 @@ using NResUI.Abstractions;
 using NResUI.Models;
 using ScrLib;
 using TexmLib;
+using VarsetLib;
 
 namespace NResUI.ImGuiUI
 {
@@ -16,6 +17,7 @@ namespace NResUI.ImGuiUI
         TexmExplorerViewModel texmExplorerViewModel,
         ScrViewModel scrViewModel,
         MissionTmaViewModel missionTmaViewModel,
+        VarsetViewModel varsetViewModel,
         MessageBoxModalPanel messageBox)
         : IImGuiPanel
     {
@@ -101,6 +103,21 @@ namespace NResUI.ImGuiUI
 
                             scrViewModel.SetParseResult(parseResult, path);
                             Console.WriteLine("Read SCR");
+                        }
+                    }
+
+                    if (ImGui.MenuItem("Open Varset File"))
+                    {
+                        var result = Dialog.FileOpen("var");
+
+                        if (result.IsOk)
+                        {
+                            var path = result.Path;
+                            var parseResult = VarsetParser.Parse(path);
+
+                            varsetViewModel.Items = parseResult;
+
+                            Console.WriteLine("Read VARSET");
                         }
                     }
 

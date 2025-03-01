@@ -55,6 +55,7 @@ public class App
             serviceCollection.AddSingleton(new MissionTmaViewModel());
             serviceCollection.AddSingleton(new BinaryExplorerViewModel());
             serviceCollection.AddSingleton(new ScrViewModel());
+            serviceCollection.AddSingleton(new VarsetViewModel());
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
 

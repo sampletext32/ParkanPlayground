@@ -23,6 +23,7 @@
       <ProjectReference Include="..\NResLib\NResLib.csproj" />
       <ProjectReference Include="..\ScrLib\ScrLib.csproj" />
       <ProjectReference Include="..\TexmLib\TexmLib.csproj" />
+      <ProjectReference Include="..\VarsetLib\VarsetLib.csproj" />
     </ItemGroup>
 
 </Project>
