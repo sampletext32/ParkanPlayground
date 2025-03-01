@@ -46,10 +46,10 @@ public class ScrExplorer : IImGuiPanel
 
                             if (ImGui.BeginTable($"Элементы##{i:0000}", 8, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoHostExtendX))
                             {
-                                ImGui.TableSetupColumn("Индекс скрипта");
+                                ImGui.TableSetupColumn("Индекс встроенного скрипта");
                                 ImGui.TableSetupColumn("UnkInner2");
                                 ImGui.TableSetupColumn("UnkInner3");
-                                ImGui.TableSetupColumn("UnkInner4");
+                                ImGui.TableSetupColumn("Тип скрипта");
                                 ImGui.TableSetupColumn("UnkInner5");
                                 ImGui.TableSetupColumn("Кол-во аргументов");
                                 ImGui.TableSetupColumn("Аргументы");
@@ -67,7 +67,7 @@ public class ScrExplorer : IImGuiPanel
                                     ImGui.TableNextColumn();
                                     ImGui.Text(inner.UnkInner3.ToString());
                                     ImGui.TableNextColumn();
-                                    ImGui.Text(inner.UnkInner4.ToString());
+                                    ImGui.Text(inner.Type.ToString());
                                     ImGui.TableNextColumn();
                                     ImGui.Text(inner.UnkInner5.ToString());
                                     ImGui.TableNextColumn();

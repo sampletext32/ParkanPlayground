@@ -31,7 +31,7 @@ public class ScrParser
                 
                 entryInner.UnkInner2 = fs.ReadInt32LittleEndian();
                 entryInner.UnkInner3 = fs.ReadInt32LittleEndian();
-                entryInner.UnkInner4 = fs.ReadInt32LittleEndian();
+                entryInner.Type = fs.ReadInt32LittleEndian();
                 entryInner.UnkInner5 = fs.ReadInt32LittleEndian();
         
                 entryInner.ArgumentsCount = fs.ReadInt32LittleEndian();
