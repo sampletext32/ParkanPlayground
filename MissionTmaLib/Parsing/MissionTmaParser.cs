@@ -118,7 +118,7 @@ public class MissionTmaParser
 
             if (4 < clanFeatureSet)
             {
-                clanTreeInfo.UnkInt3 = fileStream.ReadInt32LittleEndian();
+                clanTreeInfo.Brains = fileStream.ReadInt32LittleEndian();
             }
 
             if (5 < clanFeatureSet)

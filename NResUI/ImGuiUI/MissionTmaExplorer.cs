@@ -132,7 +132,7 @@ public class MissionTmaExplorer : IImGuiPanel
                                 ImGui.SameLine();
                                 ImGui.Text(clanInfo.ClanType.ToReadableString());
 
-                                ImGui.Text("Скрипты поведения: ");
+                                ImGui.Text("Скрипты поведения (Mission Scripts): ");
                                 Utils.ShowHint("Пути к файлам .scr и .fml описывающих настройку объектов и поведение AI");
                                 ImGui.SameLine();
                                 ImGui.Text(clanInfo.ScriptsString);
@@ -176,14 +176,14 @@ public class MissionTmaExplorer : IImGuiPanel
                                     ImGui.Text("Отсутствует неизвестная часть");
                                 }
 
-                                ImGui.Text("Путь к файлу .trf: ");
-                                Utils.ShowHint("Не до конца понятно, что означает, вероятно это NRes с деревом исследований");
+                                ImGui.Text("Дерево исследований: ");
+                                Utils.ShowHint("NRes с деревом исследований");
                                 ImGui.SameLine();
                                 ImGui.Text(clanInfo.ResearchNResPath);
 
-                                ImGui.Text("Неизвестное число 3: ");
+                                ImGui.Text("Количество мозгов (Brains))): ");
                                 ImGui.SameLine();
-                                ImGui.Text(clanInfo.UnkInt3.ToString());
+                                ImGui.Text(clanInfo.Brains.ToString());
 
                                 ImGui.Text("Матрица союзников");
                                 Utils.ShowHint("Если 1, то кланы - союзники, и не нападают друг на друга");

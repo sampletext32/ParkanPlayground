@@ -20,7 +20,7 @@ public class ClanInfo
     /// Игра называет этот путь TreeName
     /// </summary>
     public string ResearchNResPath { get; set; }
-    public int UnkInt3 { get; set; }
+    public int Brains { get; set; }
     public int AlliesMapCount { get; set; }
 
     /// <summary>

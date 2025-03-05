@@ -1,6 +1,7 @@
 ﻿using ImGuiNET;
 using NResUI.Abstractions;
 using NResUI.Models;
+using ScrLib;
 
 namespace NResUI.ImGuiUI;
 
@@ -49,7 +50,7 @@ public class ScrExplorer : IImGuiPanel
                                 ImGui.TableSetupColumn("Индекс встроенного скрипта");
                                 ImGui.TableSetupColumn("UnkInner2");
                                 ImGui.TableSetupColumn("UnkInner3");
-                                ImGui.TableSetupColumn("Тип скрипта");
+                                ImGui.TableSetupColumn("Тип действия");
                                 ImGui.TableSetupColumn("UnkInner5");
                                 ImGui.TableSetupColumn("Кол-во аргументов");
                                 ImGui.TableSetupColumn("Аргументы");
@@ -62,21 +63,66 @@ public class ScrExplorer : IImGuiPanel
                                     ImGui.TableNextRow();
                                     ImGui.TableNextColumn();
                                     ImGui.Text(inner.ScriptIndex.ToString());
+
+                                    if (inner.ScriptIndex == 2)
+                                    {
+                                        Utils.ShowHint("Первый аргумент - номер проблемы");
+                                    }
+
+                                    if (inner.ScriptIndex == 4)
+                                    {
+                                        Utils.ShowHint("Первый аргумент - номер проблемы");
+                                    }
+
+                                    if (inner.ScriptIndex == 8)
+                                    {
+                                        Utils.ShowHint("Установить dCurrentProblem стейт (VARSET:arg0)");
+                                    }
+
+                                    if (inner.ScriptIndex == 20)
+                                    {
+                                        Utils.ShowHint("Первый аргумент - номер проблемы");
+                                    }
+
                                     ImGui.TableNextColumn();
                                     ImGui.Text(inner.UnkInner2.ToString());
                                     ImGui.TableNextColumn();
                                     ImGui.Text(inner.UnkInner3.ToString());
                                     ImGui.TableNextColumn();
-                                    ImGui.Text(inner.Type.ToString());
+                                    ImGui.Text($"{(int) inner.Type}: {inner.Type:G}");
+                                    if (inner.Type == ScrEntryInnerType._0)
+                                    {
+                                        Utils.ShowHint("0 обязан иметь аргументы");
+                                    }
+
+                                    if (inner.Type == ScrEntryInnerType.CheckInternalState)
+                                    {
+                                        Utils.ShowHint("Для 5 вообще не нужны данные, игра проверяет внутренний стейт");
+                                    }
+
+                                    if (inner.Type == ScrEntryInnerType.SetVarsetValue)
+                                    {
+                                        Utils.ShowHint("В случае 6, игра берёт UnkInner2 (индекс в Varset) и устанавливает ему значение UnkInner3");
+                                    }
+
                                     ImGui.TableNextColumn();
                                     ImGui.Text(inner.UnkInner5.ToString());
                                     ImGui.TableNextColumn();
                                     ImGui.Text(inner.ArgumentsCount.ToString());
                                     ImGui.TableNextColumn();
-                                    ImGui.Text(string.Join(", ", inner.Arguments));
+                                    foreach (var argument in inner.Arguments)
+                                    {
+                                        if (ImGui.Button(argument.ToString()))
+                                        {
+                                        }
+
+                                        ImGui.SameLine();
+                                    }
+
                                     ImGui.TableNextColumn();
                                     ImGui.Text(inner.UnkInner7.ToString());
                                 }
+
                                 ImGui.EndTable();
                             }
 
