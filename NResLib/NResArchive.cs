@@ -19,10 +19,11 @@ public record NResArchiveHeader(string NRes, int Version, int FileCount, int Tot
 /// каждый элемент это 64 байта,
 /// найти начало можно как (Header.TotalFileLengthBytes - Header.FileCount * 64)
 /// </summary>
-/// <param name="FileType">[0..8] ASCII описание типа файла, например TEXM или MAT0</param>
+/// <param name="FileType">[0..4] ASCII описание типа файла, например TEXM или MAT0</param>
+/// <param name="ElementCount">[4..8] Количество элементов в файле (если файл составной, например .trf) </param>
 /// <param name="Magic1">[8..12] Неизвестное число</param>
 /// <param name="FileLength">[12..16] Длина файла в байтах</param>
-/// <param name="Magic2">[16..20] Неизвестное число</param>
+/// <param name="ElementSize">[16..20] Размер элемента в файле (если файл составной, например .trf) </param>
 /// <param name="FileName">[20..40] ASCII имя файла</param>
 /// <param name="Magic3">[40..44] Неизвестное число</param>
 /// <param name="Magic4">[44..48] Неизвестное число</param>
@@ -32,9 +33,10 @@ public record NResArchiveHeader(string NRes, int Version, int FileCount, int Tot
 /// <param name="Index">[60..64] Индекс в файле (от 0, не больше чем кол-во файлов)</param>
 public record ListMetadataItem(
     string FileType,
+    uint ElementCount,
     int Magic1,
     int FileLength,
-    int Magic2,
+    int ElementSize,
     string FileName,
     int Magic3,
     int Magic4,

@@ -30,7 +30,7 @@ public class NResExporter
                 extension = ".bin";
             }
             
-            var targetFilePath = Path.Combine(targetDirectoryPath, $"{archiveFile.Index}_{fileName}{extension}");
+            var targetFilePath = Path.Combine(targetDirectoryPath, $"{archiveFile.Index}_{archiveFile.FileType}_{fileName}{extension}");
             
             File.WriteAllBytes(targetFilePath, buffer);
         }

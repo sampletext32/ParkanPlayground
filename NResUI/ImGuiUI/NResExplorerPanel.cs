@@ -46,12 +46,13 @@ public class NResExplorerPanel : IImGuiPanel
                     ImGui.Text(_viewModel.Archive.Header.TotalFileLengthBytes.ToString());
 
 
-                    if (ImGui.BeginTable("content", 11))
+                    if (ImGui.BeginTable("content", 12, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoHostExtendX))
                     {
                         ImGui.TableSetupColumn("Тип файла");
+                        ImGui.TableSetupColumn("Кол-во элементов");
                         ImGui.TableSetupColumn("Magic1");
                         ImGui.TableSetupColumn("Длина файла в байтах");
-                        ImGui.TableSetupColumn("Magic2");
+                        ImGui.TableSetupColumn("Размер элемента");
                         ImGui.TableSetupColumn("Имя файла");
                         ImGui.TableSetupColumn("Magic3");
                         ImGui.TableSetupColumn("Magic4");
@@ -68,6 +69,8 @@ public class NResExplorerPanel : IImGuiPanel
                             ImGui.TableNextColumn();
                             ImGui.Text(_viewModel.Archive.Files[i].FileType);
                             ImGui.TableNextColumn();
+                            ImGui.Text(_viewModel.Archive.Files[i].ElementCount.ToString());
+                            ImGui.TableNextColumn();
                             ImGui.Text(
                                 _viewModel.Archive.Files[i]
                                     .Magic1.ToString()
@@ -80,7 +83,7 @@ public class NResExplorerPanel : IImGuiPanel
                             ImGui.TableNextColumn();
                             ImGui.Text(
                                 _viewModel.Archive.Files[i]
-                                    .Magic2.ToString()
+                                    .ElementSize.ToString()
                             );
                             ImGui.TableNextColumn();
                             ImGui.Text(_viewModel.Archive.Files[i].FileName);

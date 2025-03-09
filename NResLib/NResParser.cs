@@ -48,13 +48,32 @@ public static class NResParser
         for (int i = 0; i < header.FileCount; i++)
         {
             nResFs.ReadExactly(metaDataBuffer);
+            var type = "";
 
+            for (int j = 0; j < 4; j++)
+            {
+                if (!char.IsLetterOrDigit((char)metaDataBuffer[j]))
+                {
+                    type += metaDataBuffer[j]
+                        .ToString("X2") + " ";
+                }
+                else
+                {
+                    type += (char)metaDataBuffer[j];
+                }
+            }
+
+            var type2 = BinaryPrimitives.ReadUInt32LittleEndian(metaDataBuffer.Slice(4));
+
+            type = type.Trim();
+            
             elements.Add(
                 new ListMetadataItem(
-                    FileType: Encoding.ASCII.GetString(metaDataBuffer[..8]).TrimEnd('\0'),
+                    FileType: type,
+                    ElementCount: type2,
                     Magic1: BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[8..12]),
                     FileLength: BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[12..16]),
-                    Magic2: BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[16..20]),
+                    ElementSize: BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[16..20]),
                     FileName: Encoding.ASCII.GetString(metaDataBuffer[20..40]).TrimEnd('\0'),
                     Magic3: BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[40..44]),
                     Magic4: BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[44..48]),
