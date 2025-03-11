@@ -180,14 +180,20 @@ public class TexmFile
         {
             var rawPixel = span.Slice(i, 2);
 
-            var g = (byte)(((rawPixel[0] >> 3) & 0b11111) * 255 / 31);
-            var b = (byte)((((rawPixel[0] & 0b111) << 3) | ((rawPixel[1] >> 5) & 0b111)) * 255 / 63);
-            var r = (byte)((rawPixel[1] & 0b11111) * 255 / 31);
+            // swap endianess
+            (rawPixel[0], rawPixel[1]) = (rawPixel[1], rawPixel[0]);
 
-            result[i / 2 * 4 + 0] = r;
-            result[i / 2 * 4 + 1] = g;
-            result[i / 2 * 4 + 2] = b;
-            result[i / 2 * 4 + 3] = r;
+            var r = (byte)(((rawPixel[0] >> 3) & 0b11111) * 255 / 31);
+            var g = (byte)((((rawPixel[0] & 0b111) << 3) | ((rawPixel[1] >> 5) & 0b111)) * 255 / 63);
+            var b = (byte)((rawPixel[1] & 0b11111) * 255 / 31);
+
+            result[i / 2 * 4 + 0] = (byte)(0xff - r);
+            result[i / 2 * 4 + 1] = (byte)(0xff - g);
+            result[i / 2 * 4 + 2] = (byte)(0xff - b);
+            result[i / 2 * 4 + 3] = 0xff;
+
+            // swap endianess back
+            (rawPixel[0], rawPixel[1]) = (rawPixel[1], rawPixel[0]);
         }
 
         return result;
@@ -202,6 +208,9 @@ public class TexmFile
         {
             var rawPixel = span.Slice(i, 2);
 
+            // swap endianess
+            (rawPixel[0], rawPixel[1]) = (rawPixel[1], rawPixel[0]);
+
             var a = (byte)(((rawPixel[0] >> 4) & 0b1111) * 17);
             var b = (byte)(((rawPixel[0] >> 0) & 0b1111) * 17);
             var g = (byte)(((rawPixel[1] >> 4) & 0b1111) * 17);
@@ -211,6 +220,9 @@ public class TexmFile
             result[i / 2 * 4 + 1] = g;
             result[i / 2 * 4 + 2] = b;
             result[i / 2 * 4 + 3] = a;
+            
+            // swap endianess back
+            (rawPixel[0], rawPixel[1]) = (rawPixel[1], rawPixel[0]);
         }
 
         return result;
@@ -247,16 +259,21 @@ public class TexmFile
         for (var i = 0; i < span.Length; i += 4)
         {
             var rawPixel = span.Slice(i, 4);
+            // swap endianess back
+            // (rawPixel[0], rawPixel[1], rawPixel[2], rawPixel[3]) = (rawPixel[3], rawPixel[2], rawPixel[1], rawPixel[0]);
 
-            var b = rawPixel[0];
+            var r = rawPixel[0];
             var g = rawPixel[1];
-            var r = rawPixel[2];
+            var b = rawPixel[2];
             var a = rawPixel[3];
 
             result[i + 0] = r;
             result[i + 1] = g;
             result[i + 2] = b;
             result[i + 3] = a;
+            
+            // swap endianess back
+            // (rawPixel[0], rawPixel[1], rawPixel[2], rawPixel[3]) = (rawPixel[3], rawPixel[2], rawPixel[1], rawPixel[0]);
         }
 
         return result;
