@@ -1,0 +1,38 @@
+// 0 - CSun???
+// 2 - CRain???
+4 - IShader
+5 - ITerrain
+6 - IGameObject (0x138)
+8 - ICamera
+9 - Queue
+10 - IControl
+0xb - IAnimation
+0xd - IMatManager
+0x10 - unknown (implemented by Wizard in Wizard.dll)
+0x11 - IBasement
+0x12 - ICamera2 - BufferingCamera
+0x13 - IEffectManager
+0x14 - IPosition
+0x16 - ILifeSystem
+0x17 - IBuilding
+0x18 - IMesh2
+0x19 - unknown (implemented by Wizard in Wizard.dll)
+0x20 - IJointMesh
+0x21 - IShade
+0x24 - IGameObject2
+0x201 - IWizard
+0x202 - IItemManager
+0x203 - ICollManager
+0x301 - IArealMap
+0x302 - ISystemArealMap
+0x303 - IHallway
+0x401 - ISuperAI
+0x105 - INResFile
+0x106 - INResFileMetadata
+0x501 - IMissionData
+0x502 - IResTree
+0x700 - INetWatcher
+0x701 - INetworkInterface
+
+
+0x12 - microtexture mapping chunk
