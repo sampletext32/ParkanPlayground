@@ -72,6 +72,14 @@ public static class OpcodeMap
         OneByteOpcodes[0x4E] = "dec"; // DEC ESI
         OneByteOpcodes[0x4F] = "dec"; // DEC EDI
         
+        // ADD instructions
+        OneByteOpcodes[0x00] = "add"; // ADD r/m8, r8
+        OneByteOpcodes[0x01] = "add"; // ADD r/m32, r32
+        OneByteOpcodes[0x02] = "add"; // ADD r8, r/m8
+        OneByteOpcodes[0x03] = "add"; // ADD r32, r/m32
+        OneByteOpcodes[0x04] = "add"; // ADD AL, imm8
+        OneByteOpcodes[0x05] = "add"; // ADD EAX, imm32
+        
         // Group 1 instructions (ADD, OR, ADC, SBB, AND, SUB, XOR, CMP)
         OneByteOpcodes[0x80] = "group1b";
         OneByteOpcodes[0x81] = "group1d";
@@ -80,6 +88,9 @@ public static class OpcodeMap
         // Group 3 instructions (TEST, NOT, NEG, MUL, IMUL, DIV, IDIV)
         OneByteOpcodes[0xF6] = "group3b"; // 8-bit operations
         OneByteOpcodes[0xF7] = "group3d"; // 32-bit operations
+        
+        // Group 5 instructions (INC, DEC, CALL, CALL, JMP, JMP, PUSH)
+        OneByteOpcodes[0xFF] = "group5";
         
         // TEST instructions
         OneByteOpcodes[0x84] = "test"; // TEST r/m8, r8
