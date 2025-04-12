@@ -206,6 +206,11 @@ public class InstructionHandlerFactory
     {
         // Add Or handlers
         _handlers.Add(new OrR8Rm8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new OrR32Rm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new OrAlImmHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new OrEaxImmHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new OrImmWithRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new OrImmWithRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
     }
     
     /// <summary>
