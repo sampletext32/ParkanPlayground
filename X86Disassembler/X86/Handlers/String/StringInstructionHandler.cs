@@ -5,6 +5,19 @@ namespace X86Disassembler.X86.Handlers.String;
 /// </summary>
 public class StringInstructionHandler : InstructionHandler
 {
+    // Dictionary mapping opcodes to their mnemonics
+    private static readonly Dictionary<byte, string> _mnemonics = new Dictionary<byte, string>
+    {
+        { 0xA4, "movs" }, // MOVSB
+        { 0xA5, "movs" }, // MOVSD
+        { 0xAA, "stos" }, // STOSB
+        { 0xAB, "stos" }, // STOSD
+        { 0xAC, "lods" }, // LODSB
+        { 0xAD, "lods" }, // LODSD
+        { 0xAE, "scas" }, // SCASB
+        { 0xAF, "scas" }  // SCASD
+    };
+    
     /// <summary>
     /// Initializes a new instance of the StringInstructionHandler class
     /// </summary>
@@ -24,10 +37,7 @@ public class StringInstructionHandler : InstructionHandler
     public override bool CanHandle(byte opcode)
     {
         // Check if the opcode is a string instruction
-        return opcode == 0xA4 || opcode == 0xA5 || // MOVS
-               opcode == 0xAA || opcode == 0xAB || // STOS
-               opcode == 0xAC || opcode == 0xAD || // LODS
-               opcode == 0xAE || opcode == 0xAF;   // SCAS
+        return _mnemonics.ContainsKey(opcode);
     }
     
     /// <summary>
@@ -39,7 +49,15 @@ public class StringInstructionHandler : InstructionHandler
     public override bool Decode(byte opcode, Instruction instruction)
     {
         // Set the mnemonic
-        instruction.Mnemonic = OpcodeMap.GetMnemonic(opcode);
+        if (_mnemonics.TryGetValue(opcode, out string? mnemonic))
+        {
+            instruction.Mnemonic = mnemonic;
+        }
+        else
+        {
+            // This shouldn't happen if CanHandle is called first
+            return false;
+        }
         
         // Set the operands based on the string operation
         switch (opcode)
