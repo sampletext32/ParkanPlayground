@@ -80,6 +80,7 @@ public class OpcodeMap
         OneByteOpcodes[0xCC] = "int3";
         OneByteOpcodes[0x90] = "nop";
         OneByteOpcodes[0xC3] = "ret";
+        OneByteOpcodes[0xC2] = "ret"; // RET imm16
         OneByteOpcodes[0xE8] = "call";
         OneByteOpcodes[0xE9] = "jmp";
         OneByteOpcodes[0xEB] = "jmp";
