@@ -3,7 +3,7 @@ namespace X86Disassembler.X86.Handlers.Group3;
 /// <summary>
 /// Handler for NEG r/m32 instruction (0xF7 /3)
 /// </summary>
-public class NegRm32Handler : Group3BaseHandler
+public class NegRm32Handler : InstructionHandler
 {
     /// <summary>
     /// Initializes a new instance of the NegRm32Handler class
@@ -65,7 +65,7 @@ public class NegRm32Handler : Group3BaseHandler
         byte rm = (byte)(modRM & 0x07);
         
         // Decode the operand
-        string operand = _modRMDecoder.DecodeModRM(mod, rm, false);
+        string operand = ModRMDecoder.DecodeModRM(mod, rm, false);
         
         // Set the operands
         instruction.Operands = operand;

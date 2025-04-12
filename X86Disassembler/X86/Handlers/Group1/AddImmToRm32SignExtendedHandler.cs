@@ -3,7 +3,7 @@ namespace X86Disassembler.X86.Handlers.Group1;
 /// <summary>
 /// Handler for ADD r/m32, imm8 (sign-extended) instruction (0x83 /0)
 /// </summary>
-public class AddImmToRm32SignExtendedHandler : Group1BaseHandler
+public class AddImmToRm32SignExtendedHandler : InstructionHandler
 {
     /// <summary>
     /// Initializes a new instance of the AddImmToRm32SignExtendedHandler class
@@ -65,7 +65,7 @@ public class AddImmToRm32SignExtendedHandler : Group1BaseHandler
         byte rm = (byte)(modRM & 0x07);
         
         // Decode the destination operand
-        string destOperand = _modRMDecoder.DecodeModRM(mod, rm, false);
+        string destOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
         
         // Read the immediate value
         if (position >= Length)

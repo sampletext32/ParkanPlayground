@@ -3,7 +3,7 @@ namespace X86Disassembler.X86.Handlers.Group3;
 /// <summary>
 /// Handler for NOT r/m32 instruction (0xF7 /2)
 /// </summary>
-public class NotRm32Handler : Group3BaseHandler
+public class NotRm32Handler : InstructionHandler
 {
     /// <summary>
     /// Initializes a new instance of the NotRm32Handler class
@@ -81,7 +81,7 @@ public class NotRm32Handler : Group3BaseHandler
         else
         {
             // Use the ModR/M decoder for memory addressing
-            operand = _modRMDecoder.DecodeModRM(mod, rm, false);
+            operand = ModRMDecoder.DecodeModRM(mod, rm, false);
         }
         
         // Set the operands

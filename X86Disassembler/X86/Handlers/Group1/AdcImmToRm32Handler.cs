@@ -3,7 +3,7 @@ namespace X86Disassembler.X86.Handlers.Group1;
 /// <summary>
 /// Handler for ADC r/m32, imm32 instruction (0x81 /2)
 /// </summary>
-public class AdcImmToRm32Handler : Group1BaseHandler
+public class AdcImmToRm32Handler : InstructionHandler
 {
     /// <summary>
     /// Initializes a new instance of the AdcImmToRm32Handler class
@@ -65,7 +65,7 @@ public class AdcImmToRm32Handler : Group1BaseHandler
         byte rm = (byte)(modRM & 0x07);
         
         // Decode the destination operand
-        string destOperand = _modRMDecoder.DecodeModRM(mod, rm, false);
+        string destOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
         
         // Read the immediate value
         if (position + 3 >= Length)

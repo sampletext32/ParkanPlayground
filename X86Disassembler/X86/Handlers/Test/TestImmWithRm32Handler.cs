@@ -1,11 +1,9 @@
-using X86Disassembler.X86.Handlers.Group3;
-
 namespace X86Disassembler.X86.Handlers.Test;
 
 /// <summary>
 /// Handler for TEST r/m32, imm32 instruction (0xF7 /0)
 /// </summary>
-public class TestImmWithRm32Handler : Group3BaseHandler
+public class TestImmWithRm32Handler : InstructionHandler
 {
     /// <summary>
     /// Initializes a new instance of the TestImmWithRm32Handler class
@@ -75,7 +73,7 @@ public class TestImmWithRm32Handler : Group3BaseHandler
         else
         {
             // Use the ModR/M decoder for memory addressing
-            destOperand = _modRMDecoder.DecodeModRM(mod, rm, false);
+            destOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
         }
         
         // Read the immediate value

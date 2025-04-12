@@ -1,11 +1,9 @@
-using X86Disassembler.X86.Handlers.Group1;
-
 namespace X86Disassembler.X86.Handlers.Xor;
 
 /// <summary>
 /// Handler for XOR r/m32, imm8 (sign-extended) instruction (0x83 /6)
 /// </summary>
-public class XorImmWithRm32SignExtendedHandler : Group1BaseHandler
+public class XorImmWithRm32SignExtendedHandler : InstructionHandler
 {
     /// <summary>
     /// Initializes a new instance of the XorImmWithRm32SignExtendedHandler class
@@ -67,7 +65,7 @@ public class XorImmWithRm32SignExtendedHandler : Group1BaseHandler
         byte rm = (byte)(modRM & 0x07);
         
         // Decode the destination operand
-        string destOperand = _modRMDecoder.DecodeModRM(mod, rm, false);
+        string destOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
         
         // Read the immediate value (sign-extended from 8 to 32 bits)
         if (position >= Length)

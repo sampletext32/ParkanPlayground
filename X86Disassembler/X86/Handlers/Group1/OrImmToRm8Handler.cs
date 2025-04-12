@@ -3,7 +3,7 @@ namespace X86Disassembler.X86.Handlers.Group1;
 /// <summary>
 /// Handler for OR r/m8, imm8 instruction (0x80 /1)
 /// </summary>
-public class OrImmToRm8Handler : Group1BaseHandler
+public class OrImmToRm8Handler : InstructionHandler
 {
     /// <summary>
     /// Initializes a new instance of the OrImmToRm8Handler class
@@ -73,7 +73,7 @@ public class OrImmToRm8Handler : Group1BaseHandler
         else
         {
             // Use ModR/M decoder for memory addressing
-            destOperand = _modRMDecoder.DecodeModRM(mod, rm, false);
+            destOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
         }
         
         Decoder.SetPosition(position);
