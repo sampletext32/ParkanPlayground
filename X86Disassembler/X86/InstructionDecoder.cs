@@ -94,6 +94,11 @@ public class InstructionDecoder
         OneByteOpcodes[0xDE] = "fiadd"; // Various FP instructions based on ModR/M
         OneByteOpcodes[0xDF] = "fistp"; // Various FP instructions based on ModR/M
         
+        // Group 1 instructions (ADD, OR, ADC, SBB, AND, SUB, XOR, CMP)
+        OneByteOpcodes[0x80] = "group1b";
+        OneByteOpcodes[0x81] = "group1d";
+        OneByteOpcodes[0x83] = "group1s"; // Sign-extended immediate
+        
         // Data transfer instructions
         for (int i = 0x88; i <= 0x8B; i++)
         {
@@ -438,6 +443,42 @@ public class InstructionDecoder
                     // Calculate target address (relative to next instruction)
                     uint targetAddress = (uint)(_position + offset);
                     operands = $"0x{targetAddress:X8}";
+                }
+                break;
+                
+            case 0x83: // Group 1 with sign-extended immediate byte
+                if (_position < _length)
+                {
+                    byte modRM = _codeBuffer[_position++];
+                    byte mod = (byte)((modRM & MODRM_MOD_MASK) >> 6);
+                    byte reg = (byte)((modRM & MODRM_REG_MASK) >> 3); // This is the operation type
+                    byte rm = (byte)(modRM & MODRM_RM_MASK);
+                    
+                    // Determine the operation based on reg field
+                    string[] group1Ops = { "add", "or", "adc", "sbb", "and", "sub", "xor", "cmp" };
+                    mnemonic = group1Ops[reg];
+                    
+                    // Decode the destination operand
+                    string destOperand;
+                    if (mod == 3) // Register operand
+                    {
+                        destOperand = RegisterNames32[rm];
+                    }
+                    else // Memory operand
+                    {
+                        destOperand = DecodeModRM(mod, rm, false);
+                    }
+                    
+                    // Read the immediate byte
+                    if (_position < _length)
+                    {
+                        sbyte imm8 = (sbyte)_codeBuffer[_position++];
+                        operands = $"{destOperand}, 0x{imm8:X2}";
+                    }
+                    else
+                    {
+                        operands = $"{destOperand}, ???";
+                    }
                 }
                 break;
                 
