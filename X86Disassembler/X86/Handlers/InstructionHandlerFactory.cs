@@ -53,9 +53,10 @@ public class InstructionHandlerFactory
         // Register specific instruction handlers
         _handlers.Add(new Int3Handler(_codeBuffer, _decoder, _length));
         
-        RegisterArithmeticImmediateHandlers();
-        RegisterArithmeticUnaryHandlers();
+        // Register handlers in order of priority (most specific first)
+        RegisterArithmeticImmediateHandlers(); // Group 1 instructions (including 0x83)
         RegisterAddHandlers();
+        RegisterArithmeticUnaryHandlers();
         RegisterCmpHandlers();
         RegisterXorHandlers();
         RegisterOrHandlers();
@@ -65,7 +66,7 @@ public class InstructionHandlerFactory
         RegisterCallHandlers();
         RegisterReturnHandlers();
         RegisterDecHandlers();
-        RegisterIncHandlers();
+        RegisterIncHandlers(); // INC/DEC handlers after Group 1 handlers
         RegisterPushHandlers();
         RegisterPopHandlers();
         RegisterLeaHandlers();
@@ -103,6 +104,9 @@ public class InstructionHandlerFactory
     /// </summary>
     private void RegisterArithmeticImmediateHandlers()
     {
+        // Add the Group1SignExtendedHandler first to ensure it has priority for 0x83 opcode
+        _handlers.Add(new Group1SignExtendedHandler(_codeBuffer, _decoder, _length));
+        
         // ADC handlers
         _handlers.Add(new AdcImmToRm32Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new AdcImmToRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
@@ -354,6 +358,14 @@ public class InstructionHandlerFactory
     /// <returns>The handler that can decode the opcode, or null if no handler can decode it</returns>
     public IInstructionHandler? GetHandler(byte opcode)
     {
+        // Special case for 0x83 opcode (Group 1 instructions with sign-extended immediate)
+        if (opcode == 0x83)
+        {
+            // Return the Group1SignExtendedHandler directly for 0x83 opcode
+            return new ArithmeticImmediate.Group1SignExtendedHandler(_codeBuffer, _decoder, _length);
+        }
+        
+        // For all other opcodes, use the normal handler selection logic
         return _handlers.FirstOrDefault(h => h.CanHandle(opcode));
     }
 }

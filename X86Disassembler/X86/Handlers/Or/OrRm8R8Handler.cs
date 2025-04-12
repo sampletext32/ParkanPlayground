@@ -48,7 +48,19 @@ public class OrRm8R8Handler : InstructionHandler
             return true;
         }
         
-        byte modRM = CodeBuffer[position++];
+        byte modRM = CodeBuffer[position];
+        
+        // Check if the next byte is a valid ModR/M byte or potentially another opcode
+        // For the specific case of 0x83, it's a different instruction (ADD r/m32, imm8)
+        if (modRM == 0x83)
+        {
+            // This is likely the start of another instruction, not a ModR/M byte
+            instruction.Operands = "??";
+            return true;
+        }
+        
+        // Proceed with normal ModR/M decoding
+        position++;
         Decoder.SetPosition(position);
         
         // Extract fields from ModR/M byte
