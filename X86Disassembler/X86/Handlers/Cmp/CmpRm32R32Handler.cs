@@ -53,7 +53,7 @@ public class CmpRm32R32Handler : InstructionHandler
         byte rm = (byte)(modRM & 0x07);         // Bottom 3 bits
         
         // Get the register name for the reg field
-        string regName = GetRegisterName(reg);
+        string regName = GetRegister32(reg);
         
         // Handle the different addressing modes
         string rmOperand;
@@ -61,7 +61,7 @@ public class CmpRm32R32Handler : InstructionHandler
         if (mod == 3) // Direct register addressing
         {
             // Get the register name for the r/m field
-            rmOperand = GetRegisterName(rm);
+            rmOperand = GetRegister32(rm);
         }
         else // Memory addressing
         {
@@ -101,7 +101,7 @@ public class CmpRm32R32Handler : InstructionHandler
             }
             else // Simple addressing modes
             {
-                string baseReg = GetRegisterName(rm);
+                string baseReg = GetRegister32(rm);
                 
                 if (mod == 0) // No displacement
                 {
@@ -153,27 +153,5 @@ public class CmpRm32R32Handler : InstructionHandler
         instruction.Operands = $"{rmOperand}, {regName}";
         
         return true;
-    }
-    
-    /// <summary>
-    /// Gets the register name for a register number
-    /// </summary>
-    /// <param name="regNum">The register number</param>
-    /// <returns>The register name</returns>
-    private string GetRegisterName(byte regNum)
-    {
-        // 32-bit registers
-        switch (regNum)
-        {
-            case 0: return "eax";
-            case 1: return "ecx";
-            case 2: return "edx";
-            case 3: return "ebx";
-            case 4: return "esp";
-            case 5: return "ebp";
-            case 6: return "esi";
-            case 7: return "edi";
-            default: return "??";
-        }
     }
 }
