@@ -13,6 +13,7 @@ using X86Disassembler.X86.Handlers.Or;
 using X86Disassembler.X86.Handlers.Pop;
 using X86Disassembler.X86.Handlers.Push;
 using X86Disassembler.X86.Handlers.Ret;
+using X86Disassembler.X86.Handlers.String;
 using X86Disassembler.X86.Handlers.Test;
 using X86Disassembler.X86.Handlers.Xchg;
 using X86Disassembler.X86.Handlers.Xor;
@@ -41,32 +42,36 @@ public class InstructionHandlerFactory
         _decoder = decoder;
         _length = length;
         
-        RegisterHandlers();
+        RegisterAllHandlers();
     }
     
     /// <summary>
     /// Registers all handlers
     /// </summary>
-    private void RegisterHandlers()
+    private void RegisterAllHandlers()
     {
         // Register specific instruction handlers
         _handlers.Add(new Int3Handler(_codeBuffer, _decoder, _length));
-
-        RegisterArithmeticUnaryHandlers();
+        
         RegisterArithmeticImmediateHandlers();
-        RegisterReturnHandlers();
-        RegisterCallHandlers();
-        RegisterJumpHandlers();
-        RegisterTestHandlers();
+        RegisterArithmeticUnaryHandlers();
+        RegisterAddHandlers();
+        RegisterCmpHandlers();
         RegisterXorHandlers();
         RegisterOrHandlers();
-        RegisterLeaHandlers();
-        RegisterCmpHandlers();
+        RegisterTestHandlers();
+        RegisterDataTransferHandlers();
+        RegisterJumpHandlers();
+        RegisterCallHandlers();
+        RegisterReturnHandlers();
         RegisterDecHandlers();
         RegisterIncHandlers();
-        RegisterAddHandlers();
-        RegisterDataTransferHandlers();
+        RegisterPushHandlers();
+        RegisterPopHandlers();
+        RegisterLeaHandlers();
         RegisterFloatingPointHandlers();
+        RegisterStringHandlers();
+        RegisterMovHandlers();
     }
     
     /// <summary>
@@ -293,6 +298,51 @@ public class InstructionHandlerFactory
         _handlers.Add(new LoadStoreFloat64Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new Int16OperationHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new LoadStoreInt16Handler(_codeBuffer, _decoder, _length));
+    }
+    
+    /// <summary>
+    /// Registers all String instruction handlers
+    /// </summary>
+    private void RegisterStringHandlers()
+    {
+        // Add String instruction handlers
+        _handlers.Add(new RepMovsHandler(_codeBuffer, _decoder, _length));
+    }
+    
+    /// <summary>
+    /// Registers all MOV instruction handlers
+    /// </summary>
+    private void RegisterMovHandlers()
+    {
+        // Add MOV handlers
+        _handlers.Add(new MovRegMemHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new MovMemRegHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new MovRegImm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new MovRegImm8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new MovEaxMoffsHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new MovMoffsEaxHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new MovRm32Imm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new MovRm8Imm8Handler(_codeBuffer, _decoder, _length));
+    }
+    
+    /// <summary>
+    /// Registers all PUSH instruction handlers
+    /// </summary>
+    private void RegisterPushHandlers()
+    {
+        // Add PUSH handlers
+        _handlers.Add(new PushRegHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new PushImm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new PushImm8Handler(_codeBuffer, _decoder, _length));
+    }
+    
+    /// <summary>
+    /// Registers all POP instruction handlers
+    /// </summary>
+    private void RegisterPopHandlers()
+    {
+        // Add POP handlers
+        _handlers.Add(new PopRegHandler(_codeBuffer, _decoder, _length));
     }
     
     /// <summary>
