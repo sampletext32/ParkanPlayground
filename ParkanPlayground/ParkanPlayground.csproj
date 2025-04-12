@@ -13,4 +13,8 @@
       <ProjectReference Include="..\VarsetLib\VarsetLib.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="SharpDisasm" Version="1.1.11" />
+    </ItemGroup>
+
 </Project>

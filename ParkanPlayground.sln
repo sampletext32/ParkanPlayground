@@ -1,4 +1,3 @@
-﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParkanPlayground", "ParkanPlayground\ParkanPlayground.csproj", "{7DB19000-6F41-4BAE-A904-D34EFCA065E9}"
 EndProject
@@ -26,6 +25,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScrLib", "ScrLib\ScrLib.csproj", "{C445359B-97D4-4432-9331-708B5A14887A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VarsetLib", "VarsetLib\VarsetLib.csproj", "{0EC800E2-1444-40D5-9EDD-93276F4D1FF5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visualisator", "Visualisator\Visualisator.csproj", "{667A7E03-5CAA-4591-9980-F6C722911A35}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "X86Disassembler", "X86Disassembler\X86Disassembler.csproj", "{B5C2E94A-0F63-4E09-BC04-F2518E2CC1F0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -77,5 +80,13 @@ Global
 		{0EC800E2-1444-40D5-9EDD-93276F4D1FF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0EC800E2-1444-40D5-9EDD-93276F4D1FF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0EC800E2-1444-40D5-9EDD-93276F4D1FF5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{667A7E03-5CAA-4591-9980-F6C722911A35}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{667A7E03-5CAA-4591-9980-F6C722911A35}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{667A7E03-5CAA-4591-9980-F6C722911A35}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{667A7E03-5CAA-4591-9980-F6C722911A35}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5C2E94A-0F63-4E09-BC04-F2518E2CC1F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5C2E94A-0F63-4E09-BC04-F2518E2CC1F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5C2E94A-0F63-4E09-BC04-F2518E2CC1F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5C2E94A-0F63-4E09-BC04-F2518E2CC1F0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
