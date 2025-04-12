@@ -16,6 +16,7 @@ using X86Disassembler.X86.Handlers.Ret;
 using X86Disassembler.X86.Handlers.Test;
 using X86Disassembler.X86.Handlers.Xchg;
 using X86Disassembler.X86.Handlers.Xor;
+using System.Linq;
 
 namespace X86Disassembler.X86.Handlers;
 
@@ -45,54 +46,27 @@ public class InstructionHandlerFactory
     }
     
     /// <summary>
-    /// Registers all instruction handlers
+    /// Registers all handlers
     /// </summary>
     private void RegisterHandlers()
     {
-        // Register group handlers
-        RegisterArithmeticUnaryHandlers();
-        RegisterArithmeticImmediateHandlers();
-        
         // Register specific instruction handlers
         _handlers.Add(new Int3Handler(_codeBuffer, _decoder, _length));
 
-        // Register Return handlers
+        RegisterArithmeticUnaryHandlers();
+        RegisterArithmeticImmediateHandlers();
         RegisterReturnHandlers();
-        
-        // Register Call handlers
         RegisterCallHandlers();
-        
-        // Register Jump handlers
         RegisterJumpHandlers();
-        
-        // Register Test handlers
         RegisterTestHandlers();
-        
-        // Register Xor handlers
         RegisterXorHandlers();
-        
-        // Register Or handlers
         RegisterOrHandlers();
-        
-        // Register Lea handlers
         RegisterLeaHandlers();
-        
-        // Register Cmp handlers
         RegisterCmpHandlers();
-        
-        // Register Dec handlers
         RegisterDecHandlers();
-        
-        // Register Inc handlers
         RegisterIncHandlers();
-        
-        // Register Add handlers
         RegisterAddHandlers();
-        
-        // Register Data Transfer handlers
         RegisterDataTransferHandlers();
-        
-        // Register floating point handlers
         RegisterFloatingPointHandlers();
     }
     
@@ -249,6 +223,7 @@ public class InstructionHandlerFactory
     {
         // Add Cmp handlers
         _handlers.Add(new CmpR32Rm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new CmpImmWithRm8Handler(_codeBuffer, _decoder, _length));
     }
     
     /// <summary>
