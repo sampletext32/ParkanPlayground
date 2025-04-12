@@ -23,7 +23,7 @@ public class Instruction
     /// <summary>
     /// Gets or sets the raw bytes of the instruction
     /// </summary>
-    public byte[] RawBytes { get; set; } = Array.Empty<byte>();
+    public byte[] RawBytes { get; set; } = [];
     
     /// <summary>
     /// Returns a string representation of the instruction

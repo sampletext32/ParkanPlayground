@@ -3,7 +3,7 @@ namespace X86Disassembler.X86;
 /// <summary>
 /// Provides mapping between opcodes and their mnemonics
 /// </summary>
-public class OpcodeMap
+public static class OpcodeMap
 {
     // One-byte opcode map
     private static readonly string[] OneByteOpcodes = new string[256];
@@ -12,16 +12,6 @@ public class OpcodeMap
     private static readonly string[] ConditionCodes = {
         "o", "no", "b", "ae", "e", "ne", "be", "a",
         "s", "ns", "p", "np", "l", "ge", "le", "g"
-    };
-    
-    // Group 1 operations (used with opcodes 0x80, 0x81, 0x83)
-    public static readonly string[] Group1Operations = { 
-        "add", "or", "adc", "sbb", "and", "sub", "xor", "cmp" 
-    };
-    
-    // Group 3 operations (used with opcodes 0xF6, 0xF7)
-    public static readonly string[] Group3Operations = { 
-        "test", "???", "not", "neg", "mul", "imul", "div", "idiv" 
     };
     
     // Static constructor to initialize the opcode maps
@@ -137,35 +127,5 @@ public class OpcodeMap
     public static string GetMnemonic(byte opcode)
     {
         return OneByteOpcodes[opcode];
-    }
-    
-    /// <summary>
-    /// Checks if the opcode is a Group 1 opcode
-    /// </summary>
-    /// <param name="opcode">The opcode to check</param>
-    /// <returns>True if the opcode is a Group 1 opcode</returns>
-    public static bool IsGroup1Opcode(byte opcode)
-    {
-        return opcode == 0x80 || opcode == 0x81 || opcode == 0x83;
-    }
-    
-    /// <summary>
-    /// Checks if the opcode is a Group 3 opcode
-    /// </summary>
-    /// <param name="opcode">The opcode to check</param>
-    /// <returns>True if the opcode is a Group 3 opcode</returns>
-    public static bool IsGroup3Opcode(byte opcode)
-    {
-        return opcode == 0xF6 || opcode == 0xF7;
-    }
-    
-    /// <summary>
-    /// Checks if the opcode is a floating-point instruction
-    /// </summary>
-    /// <param name="opcode">The opcode to check</param>
-    /// <returns>True if the opcode is a floating-point instruction</returns>
-    public static bool IsFloatingPointOpcode(byte opcode)
-    {
-        return opcode >= 0xD8 && opcode <= 0xDF;
     }
 }

@@ -6,11 +6,11 @@ namespace X86Disassembler.X86.Handlers.Jump;
 public class TwoByteConditionalJumpHandler : InstructionHandler
 {
     // Mnemonics for conditional jumps
-    private static readonly string[] ConditionalJumpMnemonics = new string[]
-    {
+    private static readonly string[] ConditionalJumpMnemonics =
+    [
         "jo", "jno", "jb", "jnb", "jz", "jnz", "jbe", "jnbe",
         "js", "jns", "jp", "jnp", "jl", "jnl", "jle", "jnle"
-    };
+    ];
     
     /// <summary>
     /// Initializes a new instance of the TwoByteConditionalJumpHandler class

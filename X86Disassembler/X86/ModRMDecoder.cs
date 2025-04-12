@@ -239,34 +239,4 @@ public class ModRMDecoder
             _ => RegisterNames32[index]
         };
     }
-    
-    /// <summary>
-    /// Gets the 8-bit register name based on the register number
-    /// </summary>
-    /// <param name="reg">The register number (0-7)</param>
-    /// <returns>The register name</returns>
-    public static string GetRegister8(int reg)
-    {
-        if (reg >= 0 && reg < RegisterNames8.Length)
-        {
-            return RegisterNames8[reg];
-        }
-        
-        return $"r{reg}?";
-    }
-    
-    /// <summary>
-    /// Gets the 32-bit register name based on the register number
-    /// </summary>
-    /// <param name="reg">The register number (0-7)</param>
-    /// <returns>The register name</returns>
-    public static string GetRegister32(int reg)
-    {
-        if (reg >= 0 && reg < RegisterNames32.Length)
-        {
-            return RegisterNames32[reg];
-        }
-        
-        return $"r{reg}?";
-    }
 }

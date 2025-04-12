@@ -18,7 +18,7 @@ namespace X86Disassembler.X86.Handlers;
 /// </summary>
 public class InstructionHandlerFactory
 {
-    private readonly List<IInstructionHandler> _handlers = new();
+    private readonly List<IInstructionHandler> _handlers = [];
     private readonly byte[] _codeBuffer;
     private readonly InstructionDecoder _decoder;
     private readonly int _length;

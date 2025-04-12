@@ -6,11 +6,11 @@ namespace X86Disassembler.X86.Handlers.Jump;
 public class ConditionalJumpHandler : InstructionHandler
 {
     // Mnemonics for conditional jumps
-    private static readonly string[] ConditionalJumpMnemonics = new string[]
-    {
+    private static readonly string[] Mnemonics =
+    [
         "jo", "jno", "jb", "jnb", "jz", "jnz", "jbe", "jnbe",
         "js", "jns", "jp", "jnp", "jl", "jnl", "jle", "jnle"
-    };
+    ];
     
     /// <summary>
     /// Initializes a new instance of the ConditionalJumpHandler class
@@ -44,7 +44,7 @@ public class ConditionalJumpHandler : InstructionHandler
     {
         // Get the mnemonic from the table
         int index = opcode - 0x70;
-        instruction.Mnemonic = ConditionalJumpMnemonics[index];
+        instruction.Mnemonic = Mnemonics[index];
         
         // Get the current position in the code buffer
         int position = Decoder.GetPosition();

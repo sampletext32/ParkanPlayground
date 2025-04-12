@@ -7,7 +7,7 @@ public class Int32OperationHandler : FloatingPointBaseHandler
 {
     // DA opcode - operations on int32
     private static readonly string[] Mnemonics =
-    {
+    [
         "fiadd",
         "fimul",
         "ficom",
@@ -15,8 +15,8 @@ public class Int32OperationHandler : FloatingPointBaseHandler
         "fisub",
         "fisubr",
         "fidiv",
-        "fidivr",
-    };
+        "fidivr"
+    ];
 
     /// <summary>
     /// Initializes a new instance of the Int32OperationHandler class

@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86;
 
-using X86Disassembler.X86.Handlers;
+using Handlers;
 
 /// <summary>
 /// Decodes x86 instructions from a byte buffer
@@ -25,7 +25,7 @@ public class InstructionDecoder
     private bool _segmentOverridePrefix;
     private bool _lockPrefix;
     private bool _repPrefix;
-    private string _segmentOverride = string.Empty;
+    private string _segmentOverride;
     
     /// <summary>
     /// Initializes a new instance of the InstructionDecoder class
@@ -37,7 +37,7 @@ public class InstructionDecoder
         _codeBuffer = codeBuffer;
         _length = length;
         _position = 0;
-        _segmentOverride = string.Empty;
+        _segmentOverride = "";
         
         // Create the instruction handler factory
         _handlerFactory = new InstructionHandlerFactory(_codeBuffer, this, _length);
