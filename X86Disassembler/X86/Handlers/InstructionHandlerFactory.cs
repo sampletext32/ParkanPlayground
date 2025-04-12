@@ -45,6 +45,8 @@ public class InstructionHandlerFactory
         RegisterGroup1Handlers();
         
         // Register specific instruction handlers
+        _handlers.Add(new Int3Handler(_codeBuffer, _decoder, _length));
+
         _handlers.Add(new RetHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new RetImmHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new CallRel32Handler(_codeBuffer, _decoder, _length));
