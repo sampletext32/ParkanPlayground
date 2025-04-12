@@ -22,7 +22,6 @@ public class InstructionDecoder
     // Specialized decoders
     private readonly PrefixDecoder _prefixDecoder;
     private readonly ModRMDecoder _modRMDecoder;
-    private readonly StringInstructionDecoder _stringDecoder;
     
     /// <summary>
     /// Initializes a new instance of the InstructionDecoder class
@@ -38,7 +37,6 @@ public class InstructionDecoder
         // Create specialized decoders
         _prefixDecoder = new PrefixDecoder();
         _modRMDecoder = new ModRMDecoder(codeBuffer, this, length);
-        _stringDecoder = new StringInstructionDecoder(codeBuffer, length);
         
         // Create the instruction handler factory
         _handlerFactory = new InstructionHandlerFactory(_codeBuffer, this, _length);
@@ -75,20 +73,6 @@ public class InstructionDecoder
             if (_prefixDecoder.DecodePrefix(prefix))
             {
                 _position++;
-                
-                // Special case for REP/REPNE prefix followed by string instruction
-                if ((prefix == 0xF2 || prefix == 0xF3) && _position < _length)
-                {
-                    byte nextByte = _codeBuffer[_position];
-                    if (_stringDecoder.IsStringInstruction(nextByte))
-                    {
-                        // Skip the string operation opcode
-                        _position++;
-                        
-                        // Handle REP string instruction
-                        return _stringDecoder.CreateStringInstruction(prefix, nextByte, startPosition, _position);
-                    }
-                }
             }
             else
             {

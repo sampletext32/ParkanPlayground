@@ -307,6 +307,7 @@ public class InstructionHandlerFactory
     {
         // Add String instruction handlers
         _handlers.Add(new RepMovsHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new StringInstructionHandler(_codeBuffer, _decoder, _length));
     }
     
     /// <summary>
