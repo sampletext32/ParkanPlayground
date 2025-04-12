@@ -1,5 +1,8 @@
 namespace X86Disassembler.X86.Handlers;
 
+using X86Disassembler.X86.Handlers.Group1;
+using X86Disassembler.X86.Handlers.Group3;
+
 /// <summary>
 /// Factory for creating instruction handlers
 /// </summary>
@@ -45,11 +48,82 @@ public class InstructionHandlerFactory
         _handlers.Add(new ConditionalJumpHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new TwoByteConditionalJumpHandler(_codeBuffer, _decoder, _length));
         
+        // Register Group1 handlers
+        RegisterGroup1Handlers();
+        
+        // Register Group3 handlers
+        RegisterGroup3Handlers();
+        
         // Register group handlers for instructions that share similar decoding logic
-        _handlers.Add(new Group1Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new Group3Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new FloatingPointHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new DataTransferHandler(_codeBuffer, _decoder, _length));
+    }
+    
+    /// <summary>
+    /// Registers the Group1 handlers
+    /// </summary>
+    private void RegisterGroup1Handlers()
+    {
+        // ADD handlers
+        _handlers.Add(new AddImmToRm8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new AddImmToRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new AddImmToRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+        
+        // OR handlers
+        _handlers.Add(new OrImmToRm8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new OrImmToRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new OrImmToRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+        
+        // ADC handlers
+        _handlers.Add(new AdcImmToRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new AdcImmToRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+        
+        // SBB handlers
+        _handlers.Add(new SbbImmFromRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new SbbImmFromRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+        
+        // AND handlers
+        _handlers.Add(new AndImmWithRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new AndImmWithRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+        
+        // SUB handlers
+        _handlers.Add(new SubImmFromRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new SubImmFromRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+        
+        // XOR handlers
+        _handlers.Add(new XorImmWithRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new XorImmWithRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+        
+        // CMP handlers
+        _handlers.Add(new CmpImmWithRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new CmpImmWithRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+    }
+    
+    /// <summary>
+    /// Registers the Group3 handlers
+    /// </summary>
+    private void RegisterGroup3Handlers()
+    {
+        // TEST handler
+        _handlers.Add(new TestImmWithRm32Handler(_codeBuffer, _decoder, _length));
+        
+        // NOT handler
+        _handlers.Add(new NotRm32Handler(_codeBuffer, _decoder, _length));
+        
+        // NEG handler
+        _handlers.Add(new NegRm32Handler(_codeBuffer, _decoder, _length));
+        
+        // MUL handler
+        _handlers.Add(new MulRm32Handler(_codeBuffer, _decoder, _length));
+        
+        // IMUL handler
+        _handlers.Add(new ImulRm32Handler(_codeBuffer, _decoder, _length));
+        
+        // DIV handler
+        _handlers.Add(new DivRm32Handler(_codeBuffer, _decoder, _length));
+        
+        // IDIV handler
+        _handlers.Add(new IdivRm32Handler(_codeBuffer, _decoder, _length));
     }
     
     /// <summary>
