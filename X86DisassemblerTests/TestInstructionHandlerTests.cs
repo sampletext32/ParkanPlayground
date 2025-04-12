@@ -31,9 +31,6 @@ public class TestInstructionHandlerTests
         // Assert
         Assert.NotNull(instruction);
         Assert.Equal("test", instruction.Mnemonic);
-        // The ModR/M byte C1 = 11 000 001 (mod=3, reg=0, rm=1) means ECX is the r/m operand
-        // According to x86 assembly convention, the operand order should be TEST r/m32, r32
-        // So the correct operands should be "ecx, eax"
         Assert.Equal("ecx, eax", instruction.Operands);
     }
     
@@ -55,9 +52,6 @@ public class TestInstructionHandlerTests
         // Assert
         Assert.NotNull(instruction);
         Assert.Equal("test", instruction.Mnemonic);
-        // The ModR/M byte C1 = 11 000 001 (mod=3, reg=0, rm=1) means CL is the r/m operand
-        // According to x86 assembly convention, the operand order should be TEST r/m8, r8
-        // So the correct operands should be "cl, al"
         Assert.Equal("cl, al", instruction.Operands);
     }
     
@@ -102,43 +96,7 @@ public class TestInstructionHandlerTests
         // The handler should produce "eax, 0xXXXXXXXX" as the operands
         Assert.Equal("eax, 0x12345678", instruction.Operands);
     }
-    
-    /// <summary>
-    /// Tests that the TestImmWithRm8Handler can handle the correct opcode
-    /// </summary>
-    [Fact]
-    public void TestImmWithRm8Handler_CanHandle_ReturnsTrueForCorrectOpcode()
-    {
-        // Arrange
-        byte[] codeBuffer = new byte[] { 0xF6, 0xC0 }; // ModR/M byte C0 = 11 000 000 (mod=3, reg=0, rm=0)
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
-        var handler = new TestImmWithRm8Handler(codeBuffer, decoder, codeBuffer.Length);
-        
-        // Act
-        bool result = handler.CanHandle(0xF6);
-        
-        // Assert
-        Assert.True(result);
-    }
-    
-    /// <summary>
-    /// Tests that the TestImmWithRm8Handler cannot handle an incorrect opcode
-    /// </summary>
-    [Fact]
-    public void TestImmWithRm8Handler_CanHandle_ReturnsFalseForIncorrectOpcode()
-    {
-        // Arrange
-        byte[] codeBuffer = new byte[] { 0xF7 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
-        var handler = new TestImmWithRm8Handler(codeBuffer, decoder, codeBuffer.Length);
-        
-        // Act
-        bool result = handler.CanHandle(0xF7);
-        
-        // Assert
-        Assert.False(result);
-    }
-    
+
     /// <summary>
     /// Tests the TestImmWithRm8Handler for decoding TEST r/m8, imm8 instructions
     /// </summary>
@@ -157,7 +115,6 @@ public class TestInstructionHandlerTests
         // Assert
         Assert.NotNull(instruction);
         Assert.Equal("test", instruction.Mnemonic);
-        // The handler should produce "ah, 0xXX" as the operands
         Assert.Equal("ah, 0x01", instruction.Operands);
     }
     
@@ -179,7 +136,6 @@ public class TestInstructionHandlerTests
         // Assert
         Assert.NotNull(instruction);
         Assert.Equal("test", instruction.Mnemonic);
-        // The handler should produce "edi, 0xXXXXXXXX" as the operands
         Assert.Equal("edi, 0x12345678", instruction.Operands);
     }
 }

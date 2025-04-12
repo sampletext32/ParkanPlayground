@@ -52,7 +52,6 @@ public class InstructionDecoderTests
         // Assert
         Assert.NotNull(instruction);
         Assert.Equal("test", instruction.Mnemonic);
-        // The correct operand order is TEST r/m8, r8 (TEST CL, AL)
         Assert.Equal("cl, al", instruction.Operands);
         Assert.Equal(2, instruction.RawBytes.Length);
         Assert.Equal(0x84, instruction.RawBytes[0]);
@@ -76,7 +75,6 @@ public class InstructionDecoderTests
         // Assert
         Assert.NotNull(instruction);
         Assert.Equal("test", instruction.Mnemonic);
-        // The correct operand order is TEST r/m32, r32 (TEST ECX, EAX)
         Assert.Equal("ecx, eax", instruction.Operands);
         Assert.Equal(2, instruction.RawBytes.Length);
         Assert.Equal(0x85, instruction.RawBytes[0]);
@@ -100,7 +98,6 @@ public class InstructionDecoderTests
         // Assert
         Assert.NotNull(instruction);
         Assert.Equal("test", instruction.Mnemonic);
-        // The actual implementation produces "al, 0x42" as the operands
         Assert.Equal("al, 0x42", instruction.Operands);
         Assert.Equal(2, instruction.RawBytes.Length);
         Assert.Equal(0xA8, instruction.RawBytes[0]);
@@ -124,7 +121,6 @@ public class InstructionDecoderTests
         // Assert
         Assert.NotNull(instruction);
         Assert.Equal("test", instruction.Mnemonic);
-        // The actual implementation produces "eax, 0x12345678" as the operands
         Assert.Equal("eax, 0x12345678", instruction.Operands);
         Assert.Equal(5, instruction.RawBytes.Length);
         Assert.Equal(0xA9, instruction.RawBytes[0]);
@@ -151,7 +147,6 @@ public class InstructionDecoderTests
         // Assert
         Assert.NotNull(instruction);
         Assert.Equal("test", instruction.Mnemonic);
-        // The actual implementation produces "edi, 0x12345678" as the operands
         Assert.Equal("edi, 0x12345678", instruction.Operands);
         Assert.Equal(6, instruction.RawBytes.Length);
         Assert.Equal(0xF7, instruction.RawBytes[0]);
