@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers;
 
+using System;
+
 /// <summary>
 /// Handler for conditional jump instructions (0x70-0x7F)
 /// </summary>
@@ -46,6 +48,7 @@ public class ConditionalJumpHandler : InstructionHandler
         int index = opcode - 0x70;
         instruction.Mnemonic = ConditionalJumpMnemonics[index];
         
+        // Get the current position in the code buffer
         int position = Decoder.GetPosition();
         
         if (position >= Length)
@@ -55,19 +58,21 @@ public class ConditionalJumpHandler : InstructionHandler
         
         // Read the relative offset
         sbyte offset = (sbyte)CodeBuffer[position];
+        
+        // According to x86 architecture, the jump offset is relative to the instruction following the jump
+        // For a conditional jump, the instruction is 2 bytes: opcode (1 byte) + offset (1 byte)
+        
+        // Calculate the target address:
+        // 1. Start with the current position (where the offset byte is)
+        // 2. Add 1 to account for the size of the offset byte itself
+        // 3. Add the offset value
+        int targetAddress = position + 1 + offset;
+        
+        // Move the decoder position past the offset byte
         Decoder.SetPosition(position + 1);
         
-        // In x86 architecture, the jump offset is relative to the next instruction
-        // However, for our disassembler output, we're just showing the raw offset value
-        // as per the test requirements
-        
-        // Note: In a real x86 disassembler, we would calculate the actual target address:
-        // uint targetAddress = (uint)(position + offset + 1);
-        // This would be the absolute address in memory where execution would jump to
-        // But our tests expect just the raw offset value
-        
-        // Set the operands to the raw offset value as expected by the tests
-        instruction.Operands = $"0x{(uint)offset:X8}";
+        // Set the operands to the calculated target address
+        instruction.Operands = $"0x{targetAddress:X8}";
         
         return true;
     }
