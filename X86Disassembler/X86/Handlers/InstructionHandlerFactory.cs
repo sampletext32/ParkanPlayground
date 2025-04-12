@@ -41,6 +41,7 @@ public class InstructionHandlerFactory
         _handlers.Add(new JmpRel8Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new CallRel32Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new XorRegMemHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new TestRegMem8Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new TestRegMemHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new TestAlImmHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new TestEaxImmHandler(_codeBuffer, _decoder, _length));
@@ -104,8 +105,9 @@ public class InstructionHandlerFactory
     /// </summary>
     private void RegisterGroup3Handlers()
     {
-        // TEST handler
+        // TEST handlers
         _handlers.Add(new TestImmWithRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new TestImmWithRm8Handler(_codeBuffer, _decoder, _length));
         
         // NOT handler
         _handlers.Add(new NotRm32Handler(_codeBuffer, _decoder, _length));
