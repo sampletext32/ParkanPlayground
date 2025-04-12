@@ -1,4 +1,4 @@
-namespace X86Disassembler.X86.Handlers.Group1;
+namespace X86Disassembler.X86.Handlers.Cmp;
 
 /// <summary>
 /// Handler for CMP r/m8, imm8 instruction (0x80 /7)

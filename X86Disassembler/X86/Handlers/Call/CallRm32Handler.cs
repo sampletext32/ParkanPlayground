@@ -1,4 +1,4 @@
-namespace X86Disassembler.X86.Handlers.Group5;
+namespace X86Disassembler.X86.Handlers.Call;
 
 /// <summary>
 /// Handler for CALL r/m32 instruction (0xFF /2)
