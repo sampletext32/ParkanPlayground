@@ -209,6 +209,7 @@ public class InstructionHandlerFactory
     {
         // Add Cmp handlers
         _handlers.Add(new CmpR32Rm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new CmpRm32R32Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new CmpImmWithRm8Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new CmpAlImmHandler(_codeBuffer, _decoder, _length));
         
