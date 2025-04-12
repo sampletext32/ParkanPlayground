@@ -57,7 +57,7 @@ namespace X86Disassembler.PE
         public List<ImportDescriptor> ImportDescriptors { get; private set; }
         
         /// <summary>
-        /// Parses a PE file from the given byte array
+        /// Initializes a new instance of the PEFormat class
         /// </summary>
         /// <param name="fileData">The raw file data</param>
         public PEFormat(byte[] fileData)
@@ -66,56 +66,66 @@ namespace X86Disassembler.PE
             SectionHeaders = new List<SectionHeader>();
             ExportedFunctions = new List<ExportedFunction>();
             ImportDescriptors = new List<ImportDescriptor>();
-            Parse();
         }
         
         /// <summary>
         /// Parses the PE file structure
         /// </summary>
-        private void Parse()
+        /// <returns>True if parsing was successful, false otherwise</returns>
+        public bool Parse()
         {
-            using (MemoryStream stream = new MemoryStream(_fileData))
-            using (BinaryReader reader = new BinaryReader(stream))
+            try
             {
-                // Parse DOS header
-                DosHeader = ParseDOSHeader(reader);
-                
-                // Move to PE header
-                reader.BaseStream.Seek(DosHeader.e_lfanew, SeekOrigin.Begin);
-                
-                // Verify PE signature
-                uint peSignature = reader.ReadUInt32();
-                if (peSignature != PE_SIGNATURE)
+                using (MemoryStream stream = new MemoryStream(_fileData))
+                using (BinaryReader reader = new BinaryReader(stream))
                 {
-                    throw new InvalidDataException("Invalid PE signature");
+                    // Parse DOS header
+                    DosHeader = ParseDOSHeader(reader);
+                    
+                    // Move to PE header
+                    reader.BaseStream.Seek(DosHeader.e_lfanew, SeekOrigin.Begin);
+                    
+                    // Verify PE signature
+                    uint peSignature = reader.ReadUInt32();
+                    if (peSignature != PE_SIGNATURE)
+                    {
+                        throw new InvalidDataException("Invalid PE signature");
+                    }
+                    
+                    // Parse File Header
+                    FileHeader = ParseFileHeader(reader);
+                    
+                    // Parse Optional Header
+                    OptionalHeader = ParseOptionalHeader(reader);
+                    
+                    // Parse Section Headers
+                    for (int i = 0; i < FileHeader.NumberOfSections; i++)
+                    {
+                        SectionHeaders.Add(ParseSectionHeader(reader));
+                    }
+                    
+                    // Parse Export Directory
+                    if (OptionalHeader.DataDirectories.Length > IMAGE_DIRECTORY_ENTRY_EXPORT && 
+                        OptionalHeader.DataDirectories[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress != 0)
+                    {
+                        ExportDirectory = ParseExportDirectory(reader, OptionalHeader.DataDirectories[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
+                        ParseExportedFunctions(reader);
+                    }
+                    
+                    // Parse Import Descriptors
+                    if (OptionalHeader.DataDirectories.Length > IMAGE_DIRECTORY_ENTRY_IMPORT && 
+                        OptionalHeader.DataDirectories[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress != 0)
+                    {
+                        ImportDescriptors = ParseImportDescriptors(reader, OptionalHeader.DataDirectories[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
+                    }
                 }
                 
-                // Parse File Header
-                FileHeader = ParseFileHeader(reader);
-                
-                // Parse Optional Header
-                OptionalHeader = ParseOptionalHeader(reader);
-                
-                // Parse Section Headers
-                for (int i = 0; i < FileHeader.NumberOfSections; i++)
-                {
-                    SectionHeaders.Add(ParseSectionHeader(reader));
-                }
-                
-                // Parse Export Directory
-                if (OptionalHeader.DataDirectories.Length > IMAGE_DIRECTORY_ENTRY_EXPORT && 
-                    OptionalHeader.DataDirectories[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress != 0)
-                {
-                    ExportDirectory = ParseExportDirectory(reader, OptionalHeader.DataDirectories[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
-                    ParseExportedFunctions(reader);
-                }
-                
-                // Parse Import Descriptors
-                if (OptionalHeader.DataDirectories.Length > IMAGE_DIRECTORY_ENTRY_IMPORT && 
-                    OptionalHeader.DataDirectories[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress != 0)
-                {
-                    ImportDescriptors = ParseImportDescriptors(reader, OptionalHeader.DataDirectories[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
-                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error parsing PE file: {ex.Message}");
+                return false;
             }
         }
         

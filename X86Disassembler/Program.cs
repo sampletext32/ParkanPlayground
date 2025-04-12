@@ -22,9 +22,16 @@ namespace X86Disassembler
             Console.WriteLine($"Successfully loaded {DllPath}");
             Console.WriteLine($"File size: {binaryData.Length} bytes");
             
+            // Create the PE format parser
+            PEFormat peFile = new PEFormat(binaryData);
+            
             // Parse the PE format
             Console.WriteLine("\nParsing PE format...");
-            PEFormat peFile = new PEFormat(binaryData);
+            if (!peFile.Parse())
+            {
+                Console.WriteLine("Failed to parse PE file. Exiting.");
+                return;
+            }
             
             // Display basic PE information
             DisplayPEInfo(peFile);
