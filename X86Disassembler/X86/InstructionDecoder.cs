@@ -86,7 +86,7 @@ public class InstructionDecoder
                 _addressSizePrefix = true;
                 _position++;
             }
-            else if (prefix >= 0x26 && prefix <= 0x3E && (prefix & 0x7) == 0x6) // Segment override prefix
+            else if ((prefix >= 0x26 && prefix <= 0x3E && (prefix & 0x7) == 0x6) || prefix == 0x64 || prefix == 0x65) // Segment override prefix
             {
                 _segmentOverridePrefix = true;
                 switch (prefix)
@@ -118,6 +118,21 @@ public class InstructionDecoder
         
         if (_position >= _length)
         {
+            // If we reached the end of the buffer while processing prefixes,
+            // create an instruction with just the prefix information
+            if (_segmentOverridePrefix)
+            {
+                instruction.Mnemonic = _segmentOverride;
+                instruction.Operands = "";
+                
+                // Set the raw bytes
+                int length = _position - startPosition;
+                instruction.RawBytes = new byte[length];
+                Array.Copy(_codeBuffer, startPosition, instruction.RawBytes, 0, length);
+                
+                return instruction;
+            }
+            
             return null;
         }
         
@@ -142,10 +157,21 @@ public class InstructionDecoder
             instruction.Operands = "??";
         }
         
+        // Add segment override prefix to the instruction if present
+        if (_segmentOverridePrefix && !string.IsNullOrEmpty(instruction.Operands))
+        {
+            // If the instruction has memory operands, add the segment override
+            if (instruction.Operands.Contains("["))
+            {
+                // Replace the first '[' with the segment override
+                instruction.Operands = instruction.Operands.Replace("[", $"{_segmentOverride}:[" );
+            }
+        }
+        
         // Set the raw bytes
-        int length = _position - startPosition;
-        instruction.RawBytes = new byte[length];
-        Array.Copy(_codeBuffer, startPosition, instruction.RawBytes, 0, length);
+        int instructionLength = _position - startPosition;
+        instruction.RawBytes = new byte[instructionLength];
+        Array.Copy(_codeBuffer, startPosition, instruction.RawBytes, 0, instructionLength);
         
         return instruction;
     }
