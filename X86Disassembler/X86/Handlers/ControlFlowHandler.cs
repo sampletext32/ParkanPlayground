@@ -29,6 +29,22 @@ public class ControlFlowHandler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
+        // Two-byte opcodes (0F prefix)
+        if (opcode == 0x0F)
+        {
+            int position = Decoder.GetPosition();
+            if (position < Length)
+            {
+                byte secondByte = CodeBuffer[position];
+                // Two-byte conditional jumps (0F 80-0F 8F)
+                if (secondByte >= 0x80 && secondByte <= 0x8F)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
         // RET instruction
         if (opcode == 0xC3 || opcode == 0xC2)
         {
@@ -76,6 +92,29 @@ public class ControlFlowHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
+        // Handle two-byte opcodes (0F prefix)
+        if (opcode == 0x0F)
+        {
+            int position = Decoder.GetPosition();
+            if (position < Length)
+            {
+                byte secondByte = CodeBuffer[position];
+                Decoder.SetPosition(position + 1);
+                
+                // Two-byte conditional jumps (0F 80-0F 8F)
+                if (secondByte >= 0x80 && secondByte <= 0x8F)
+                {
+                    // Set mnemonic (j + condition code)
+                    int condIndex = secondByte - 0x80;
+                    instruction.Mnemonic = "j" + ConditionCodes[condIndex];
+                    
+                    // Decode 32-bit relative jump
+                    return DecodeTwoByteConditionalJump(instruction);
+                }
+            }
+            return false;
+        }
+        
         // Set the mnemonic based on the opcode
         instruction.Mnemonic = OpcodeMap.GetMnemonic(opcode);
         
@@ -161,7 +200,7 @@ public class ControlFlowHandler : InstructionHandler
         Decoder.SetPosition(position + 4);
         
         // Calculate the target address (relative to the next instruction)
-        uint targetAddress = (uint)(position + offset);
+        uint targetAddress = (uint)(position + offset + 4); // +4 because the offset is relative to the next instruction
         
         instruction.Operands = $"0x{targetAddress:X8}";
         return true;
@@ -184,7 +223,7 @@ public class ControlFlowHandler : InstructionHandler
         Decoder.SetPosition(position + 4);
         
         // Calculate the target address (relative to the next instruction)
-        uint targetAddress = (uint)(position + offset);
+        uint targetAddress = (uint)(position + offset + 4); // +4 because the offset is relative to the next instruction
         
         instruction.Operands = $"0x{targetAddress:X8}";
         return true;
@@ -231,6 +270,29 @@ public class ControlFlowHandler : InstructionHandler
         
         // Calculate the target address (relative to the next instruction)
         uint targetAddress = (uint)(position + offset + 1); // +1 because the offset is relative to the next instruction
+        
+        instruction.Operands = $"0x{targetAddress:X8}";
+        return true;
+    }
+    
+    /// <summary>
+    /// Decodes a two-byte conditional jump instruction with 32-bit relative offset
+    /// </summary>
+    private bool DecodeTwoByteConditionalJump(Instruction instruction)
+    {
+        int position = Decoder.GetPosition();
+        
+        if (position + 4 > Length)
+        {
+            return false;
+        }
+        
+        // Read the relative offset
+        int offset = BitConverter.ToInt32(CodeBuffer, position);
+        Decoder.SetPosition(position + 4);
+        
+        // Calculate the target address (relative to the next instruction)
+        uint targetAddress = (uint)(position + offset + 4); // +4 because the offset is relative to the next instruction
         
         instruction.Operands = $"0x{targetAddress:X8}";
         return true;
