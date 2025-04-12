@@ -16,7 +16,6 @@ using X86Disassembler.X86.Handlers.Ret;
 using X86Disassembler.X86.Handlers.Test;
 using X86Disassembler.X86.Handlers.Xchg;
 using X86Disassembler.X86.Handlers.Xor;
-using System.Linq;
 
 namespace X86Disassembler.X86.Handlers;
 
@@ -99,11 +98,6 @@ public class InstructionHandlerFactory
     /// </summary>
     private void RegisterArithmeticImmediateHandlers()
     {
-        // ADD handlers
-        _handlers.Add(new AddImmToRm8Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new AddImmToRm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new AddImmToRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
-        
         // ADC handlers
         _handlers.Add(new AdcImmToRm32Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new AdcImmToRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
@@ -119,14 +113,6 @@ public class InstructionHandlerFactory
         // SUB handlers
         _handlers.Add(new SubImmFromRm32Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new SubImmFromRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
-        
-        // XOR handlers
-        _handlers.Add(new XorImmWithRm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new XorImmWithRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
-        
-        // CMP handlers
-        _handlers.Add(new CmpImmWithRm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new CmpImmWithRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
     }
     
     /// <summary>
@@ -185,8 +171,10 @@ public class InstructionHandlerFactory
         _handlers.Add(new XorEaxImmHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new XorMemRegHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new XorRegMemHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new XorImmWithRm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new XorImmWithRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+        
+        // Add XOR immediate handlers
+        _handlers.Add(new Xor.XorImmWithRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new Xor.XorImmWithRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
     }
     
     /// <summary>
@@ -222,6 +210,11 @@ public class InstructionHandlerFactory
         // Add Cmp handlers
         _handlers.Add(new CmpR32Rm32Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new CmpImmWithRm8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new CmpAlImmHandler(_codeBuffer, _decoder, _length));
+        
+        // Add CMP immediate handlers from ArithmeticImmediate namespace
+        _handlers.Add(new CmpImmWithRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new CmpImmWithRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
     }
     
     /// <summary>
@@ -250,6 +243,11 @@ public class InstructionHandlerFactory
         // Add ADD handlers
         _handlers.Add(new AddR32Rm32Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new AddRm32R32Handler(_codeBuffer, _decoder, _length));
+        
+        // Add ADD immediate handlers from ArithmeticImmediate namespace
+        _handlers.Add(new AddImmToRm8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new AddImmToRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new AddImmToRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
     }
     
     /// <summary>
