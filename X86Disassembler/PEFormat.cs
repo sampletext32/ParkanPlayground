@@ -335,118 +335,162 @@ namespace X86Disassembler
             
             try
             {
-                reader.BaseStream.Seek(RvaToOffset(rva), SeekOrigin.Begin);
+                uint importTableOffset = RvaToOffset(rva);
+                reader.BaseStream.Seek(importTableOffset, SeekOrigin.Begin);
+                
+                int descriptorCount = 0;
                 
                 while (true)
                 {
-                    ImportDescriptor descriptor = new ImportDescriptor();
+                    descriptorCount++;
                     
-                    descriptor.OriginalFirstThunk = reader.ReadUInt32();
-                    descriptor.TimeDateStamp = reader.ReadUInt32();
-                    descriptor.ForwarderChain = reader.ReadUInt32();
-                    descriptor.Name = reader.ReadUInt32();
-                    descriptor.FirstThunk = reader.ReadUInt32();
+                    // Read the import descriptor
+                    uint originalFirstThunk = reader.ReadUInt32();
+                    uint timeDateStamp = reader.ReadUInt32();
+                    uint forwarderChain = reader.ReadUInt32();
+                    uint nameRva = reader.ReadUInt32();
+                    uint firstThunk = reader.ReadUInt32();
                     
                     // Check if we've reached the end of the import descriptors
-                    if (descriptor.OriginalFirstThunk == 0 && descriptor.Name == 0 && descriptor.FirstThunk == 0)
+                    if (originalFirstThunk == 0 && nameRva == 0 && firstThunk == 0)
                     {
                         break;
                     }
                     
+                    ImportDescriptor descriptor = new ImportDescriptor
+                    {
+                        OriginalFirstThunk = originalFirstThunk,
+                        TimeDateStamp = timeDateStamp,
+                        ForwarderChain = forwarderChain,
+                        Name = nameRva,
+                        FirstThunk = firstThunk,
+                        DllName = "Unknown" // Default name in case we can't read it
+                    };
+                    
+                    // Try to read the DLL name
                     try
                     {
-                        // Read the DLL name
-                        uint dllNameOffset = RvaToOffset(descriptor.Name);
-                        reader.BaseStream.Seek(dllNameOffset, SeekOrigin.Begin);
-                        
-                        List<byte> nameBytes = new List<byte>();
-                        byte b;
-                        while ((b = reader.ReadByte()) != 0)
+                        if (nameRva != 0)
                         {
-                            nameBytes.Add(b);
-                        }
-                        descriptor.DllName = Encoding.ASCII.GetString(nameBytes.ToArray());
-                        
-                        // Read the imported functions (use FirstThunk if OriginalFirstThunk is 0)
-                        uint thunkRVA = descriptor.OriginalFirstThunk != 0 ? descriptor.OriginalFirstThunk : descriptor.FirstThunk;
-                        
-                        if (thunkRVA != 0)
-                        {
-                            try
+                            uint nameOffset = RvaToOffset(nameRva);
+                            reader.BaseStream.Seek(nameOffset, SeekOrigin.Begin);
+                            
+                            // Read the null-terminated ASCII string
+                            StringBuilder nameBuilder = new StringBuilder();
+                            byte b;
+                            
+                            while ((b = reader.ReadByte()) != 0)
                             {
-                                uint thunkOffset = RvaToOffset(thunkRVA);
-                                uint currentThunkOffset = thunkOffset;
-                                
-                                while (true)
-                                {
-                                    reader.BaseStream.Seek(currentThunkOffset, SeekOrigin.Begin);
-                                    uint thunk = reader.ReadUInt32();
-                                    
-                                    if (thunk == 0)
-                                    {
-                                        break;
-                                    }
-                                    
-                                    ImportedFunction function = new ImportedFunction();
-                                    function.ThunkRVA = thunkRVA + (currentThunkOffset - thunkOffset);
-                                    
-                                    // Check if the function is imported by ordinal
-                                    if ((thunk & 0x80000000) != 0)
-                                    {
-                                        function.IsOrdinal = true;
-                                        function.Ordinal = (ushort)(thunk & 0xFFFF);
-                                        function.Name = $"Ordinal_{function.Ordinal}";
-                                    }
-                                    else
-                                    {
-                                        // Read the function name and hint
-                                        try
-                                        {
-                                            uint nameOffset = RvaToOffset(thunk);
-                                            reader.BaseStream.Seek(nameOffset, SeekOrigin.Begin);
-                                            
-                                            function.Hint = reader.ReadUInt16();
-                                            
-                                            List<byte> funcNameBytes = new List<byte>();
-                                            byte c;
-                                            while ((c = reader.ReadByte()) != 0)
-                                            {
-                                                funcNameBytes.Add(c);
-                                            }
-                                            function.Name = Encoding.ASCII.GetString(funcNameBytes.ToArray());
-                                        }
-                                        catch (Exception)
-                                        {
-                                            function.Name = $"Function_at_{thunk:X8}";
-                                        }
-                                    }
-                                    
-                                    descriptor.Functions.Add(function);
-                                    
-                                    currentThunkOffset += 4; // Move to the next thunk
-                                }
+                                nameBuilder.Append((char)b);
                             }
-                            catch (Exception)
-                            {
-                                // Skip this thunk table if there's an error
-                            }
+                            
+                            descriptor.DllName = nameBuilder.ToString();
                         }
                     }
                     catch (Exception)
                     {
-                        // If we can't read the DLL name, use a placeholder
-                        descriptor.DllName = $"DLL_at_{descriptor.Name:X8}";
+                        // If we can't read the name, keep the default "Unknown"
                     }
                     
+                    // Parse the imported functions
+                    ParseImportedFunctions(reader, descriptor);
+                    
                     descriptors.Add(descriptor);
+                    
+                    // Return to the import table to read the next descriptor
+                    reader.BaseStream.Seek(importTableOffset + (descriptorCount * 20), SeekOrigin.Begin);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine($"Error parsing import descriptors: {ex.Message}");
                 // Return whatever descriptors we've managed to parse
             }
             
             return descriptors;
+        }
+        
+        /// <summary>
+        /// Parses the imported functions for a given import descriptor
+        /// </summary>
+        private void ParseImportedFunctions(BinaryReader reader, ImportDescriptor descriptor)
+        {
+            try
+            {
+                // Use OriginalFirstThunk if available, otherwise use FirstThunk
+                uint thunkRva = descriptor.OriginalFirstThunk != 0 ? descriptor.OriginalFirstThunk : descriptor.FirstThunk;
+                
+                if (thunkRva == 0)
+                {
+                    return; // No functions to parse
+                }
+                
+                uint thunkOffset = RvaToOffset(thunkRva);
+                int functionCount = 0;
+                
+                while (true)
+                {
+                    reader.BaseStream.Seek(thunkOffset + (functionCount * 4), SeekOrigin.Begin);
+                    uint thunkData = reader.ReadUInt32();
+                    
+                    if (thunkData == 0)
+                    {
+                        break; // End of the function list
+                    }
+                    
+                    ImportedFunction function = new ImportedFunction
+                    {
+                        ThunkRVA = thunkRva + (uint)(functionCount * 4)
+                    };
+                    
+                    // Check if imported by ordinal (high bit set)
+                    if ((thunkData & 0x80000000) != 0)
+                    {
+                        function.IsOrdinal = true;
+                        function.Ordinal = (ushort)(thunkData & 0xFFFF);
+                        function.Name = $"Ordinal_{function.Ordinal}";
+                    }
+                    else
+                    {
+                        // Imported by name - the thunkData is an RVA to a hint/name structure
+                        try
+                        {
+                            uint hintNameOffset = RvaToOffset(thunkData);
+                            reader.BaseStream.Seek(hintNameOffset, SeekOrigin.Begin);
+                            
+                            // Read the hint (2 bytes)
+                            function.Hint = reader.ReadUInt16();
+                            
+                            // Read the function name (null-terminated ASCII string)
+                            StringBuilder nameBuilder = new StringBuilder();
+                            byte b;
+                            
+                            while ((b = reader.ReadByte()) != 0)
+                            {
+                                nameBuilder.Append((char)b);
+                            }
+                            
+                            function.Name = nameBuilder.ToString();
+                            
+                            if (string.IsNullOrEmpty(function.Name))
+                            {
+                                function.Name = $"Function_at_{thunkData:X8}";
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            function.Name = $"Function_at_{thunkData:X8}";
+                        }
+                    }
+                    
+                    descriptor.Functions.Add(function);
+                    functionCount++;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error parsing imported functions for {descriptor.DllName}: {ex.Message}");
+            }
         }
         
         /// <summary>
