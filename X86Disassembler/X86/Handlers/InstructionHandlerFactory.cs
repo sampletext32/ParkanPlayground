@@ -249,6 +249,7 @@ public class InstructionHandlerFactory
         // Add ADD handlers
         _handlers.Add(new AddR32Rm32Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new AddRm32R32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new AddEaxImmHandler(_codeBuffer, _decoder, _length));
         
         // Add ADD immediate handlers from ArithmeticImmediate namespace
         _handlers.Add(new AddImmToRm8Handler(_codeBuffer, _decoder, _length));
