@@ -23,6 +23,15 @@ namespace X86Disassembler.PE
         public uint Characteristics;       // Characteristics
         
         /// <summary>
+        /// Initializes a new instance of the SectionHeader class
+        /// </summary>
+        public SectionHeader()
+        {
+            // Initialize string field to avoid nullability warning
+            Name = string.Empty;
+        }
+        
+        /// <summary>
         /// Checks if the section contains code
         /// </summary>
         /// <returns>True if the section contains code, false otherwise</returns>

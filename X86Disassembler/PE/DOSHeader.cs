@@ -26,5 +26,15 @@ namespace X86Disassembler.PE
         public ushort e_oeminfo;     // OEM information; e_oemid specific
         public ushort[] e_res2;      // Reserved words
         public uint e_lfanew;        // File address of new exe header
+        
+        /// <summary>
+        /// Initializes a new instance of the DOSHeader class
+        /// </summary>
+        public DOSHeader()
+        {
+            // Initialize arrays to avoid nullability warnings
+            e_res = new ushort[4];
+            e_res2 = new ushort[10];
+        }
     }
 }

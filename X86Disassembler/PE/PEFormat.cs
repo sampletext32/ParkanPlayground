@@ -82,6 +82,17 @@ namespace X86Disassembler.PE
             _fileHeaderParser = new FileHeaderParser();
             _optionalHeaderParser = new OptionalHeaderParser();
             _sectionHeaderParser = new SectionHeaderParser();
+            
+            // Initialize properties to avoid nullability warnings
+            DosHeader = new DOSHeader();
+            FileHeader = new FileHeader();
+            OptionalHeader = new OptionalHeader();
+            ExportDirectory = new ExportDirectory();
+            
+            // These will be initialized during Parse()
+            _peUtility = null!;
+            _exportDirectoryParser = null!;
+            _importDescriptorParser = null!;
         }
         
         /// <summary>
@@ -113,7 +124,7 @@ namespace X86Disassembler.PE
                     
                     // Parse Optional Header
                     OptionalHeader = _optionalHeaderParser.Parse(reader);
-                    Is64Bit = _optionalHeaderParser.Is64Bit(OptionalHeader);
+                    Is64Bit = OptionalHeader.Is64Bit();
                     
                     // Parse Section Headers
                     for (int i = 0; i < FileHeader.NumberOfSections; i++)

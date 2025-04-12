@@ -46,6 +46,22 @@ namespace X86Disassembler.PE
         public DataDirectory[] DataDirectories; // Data directories
         
         /// <summary>
+        /// Initializes a new instance of the OptionalHeader class
+        /// </summary>
+        public OptionalHeader()
+        {
+            // Initialize object fields to avoid nullability warnings
+            ImageBase = 0u; // Default to 32-bit value
+            SizeOfStackReserve = 0u;
+            SizeOfStackCommit = 0u;
+            SizeOfHeapReserve = 0u;
+            SizeOfHeapCommit = 0u;
+            
+            // Initialize array to avoid nullability warning
+            DataDirectories = new DataDirectory[0];
+        }
+        
+        /// <summary>
         /// Determines if the PE file is 64-bit based on the Magic value
         /// </summary>
         /// <returns>True if the PE file is 64-bit, false otherwise</returns>

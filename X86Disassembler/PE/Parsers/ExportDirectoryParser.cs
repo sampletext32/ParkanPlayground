@@ -140,9 +140,9 @@ namespace X86Disassembler.PE.Parsers
                 function.Address = functionRVA;
                 
                 // Check if this function has a name
-                if (ordinalToName.TryGetValue(i, out string name))
+                if (ordinalToName.TryGetValue(i, out string? name))
                 {
-                    function.Name = name;
+                    function.Name = name ?? $"Ordinal_{function.Ordinal}";
                 }
                 else
                 {
