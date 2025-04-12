@@ -21,7 +21,7 @@ public class OptionalHeader
     public uint BaseOfData;               // Base of data section (PE32 only)
         
     // Windows-specific fields
-    public object ImageBase;              // Image base address (uint for PE32, ulong for PE32+)
+    public ulong ImageBase;              // Image base address (uint for PE32, ulong for PE32+)
     public uint SectionAlignment;         // Section alignment
     public uint FileAlignment;            // File alignment
     public ushort MajorOperatingSystemVersion; // Major OS version
@@ -36,10 +36,10 @@ public class OptionalHeader
     public uint CheckSum;                 // Checksum
     public ushort Subsystem;              // Subsystem
     public ushort DllCharacteristics;     // DLL characteristics
-    public object SizeOfStackReserve;     // Size of stack reserve (uint for PE32, ulong for PE32+)
-    public object SizeOfStackCommit;      // Size of stack commit (uint for PE32, ulong for PE32+)
-    public object SizeOfHeapReserve;      // Size of heap reserve (uint for PE32, ulong for PE32+)
-    public object SizeOfHeapCommit;       // Size of heap commit (uint for PE32, ulong for PE32+)
+    public ulong SizeOfStackReserve;     // Size of stack reserve (uint for PE32, ulong for PE32+)
+    public ulong SizeOfStackCommit;      // Size of stack commit (uint for PE32, ulong for PE32+)
+    public ulong SizeOfHeapReserve;      // Size of heap reserve (uint for PE32, ulong for PE32+)
+    public ulong SizeOfHeapCommit;       // Size of heap commit (uint for PE32, ulong for PE32+)
     public uint LoaderFlags;              // Loader flags
     public uint NumberOfRvaAndSizes;      // Number of RVA and sizes
         
