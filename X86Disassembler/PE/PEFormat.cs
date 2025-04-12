@@ -203,7 +203,7 @@ namespace X86Disassembler.PE
             
             for (int i = 0; i < SectionHeaders.Count; i++)
             {
-                if (_sectionHeaderParser.IsSectionContainsCode(SectionHeaders[i]))
+                if (SectionHeaders[i].ContainsCode())
                 {
                     codeSections.Add(i);
                 }
@@ -219,7 +219,7 @@ namespace X86Disassembler.PE
         /// <returns>True if the section contains code, false otherwise</returns>
         public bool IsSectionContainsCode(SectionHeader section)
         {
-            return _sectionHeaderParser.IsSectionContainsCode(section);
+            return section.ContainsCode();
         }
     }
 }

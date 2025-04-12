@@ -34,19 +34,5 @@ namespace X86Disassembler.PE.Parsers
             
             return header;
         }
-        
-        /// <summary>
-        /// Checks if a section contains code
-        /// </summary>
-        /// <param name="section">The section to check</param>
-        /// <returns>True if the section contains code, false otherwise</returns>
-        public bool IsSectionContainsCode(SectionHeader section)
-        {
-            const uint IMAGE_SCN_CNT_CODE = 0x00000020;     // Section contains code
-            const uint IMAGE_SCN_MEM_EXECUTE = 0x20000000;   // Section is executable
-            
-            return (section.Characteristics & IMAGE_SCN_CNT_CODE) != 0 ||
-                   (section.Characteristics & IMAGE_SCN_MEM_EXECUTE) != 0;
-        }
     }
 }
