@@ -114,8 +114,8 @@ public class FloatingPointHandler : InstructionHandler
     /// </summary>
     private static void InitializeTwoByteInstructions()
     {
-        // DF E0 - FNSTSW AX (Store FPU status word to AX without checking for pending unmasked floating-point exceptions)
-        TwoByteInstructions.Add(0xDFE0, "fnstsw");
+        // We no longer need to handle FNSTSW AX (DF E0) here since we have a dedicated FnstswHandler
+        // that is registered before this handler in the InstructionHandlerFactory
         
         // Add other two-byte instructions as needed
     }
@@ -166,14 +166,8 @@ public class FloatingPointHandler : InstructionHandler
             if (TwoByteInstructions.TryGetValue(twoByteOpcode, out string? mnemonic) && mnemonic != null)
             {
                 instruction.Mnemonic = mnemonic;
-                
-                // Special handling for specific instructions
-                if (twoByteOpcode == 0xDFE0) // FNSTSW AX
-                {
-                    instruction.Operands = "ax";
-                    Decoder.SetPosition(position + 1); // Skip the second byte
-                    return true;
-                }
+                Decoder.SetPosition(position + 1); // Skip the second byte
+                return true;
             }
         }
         

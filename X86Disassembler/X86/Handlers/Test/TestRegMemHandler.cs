@@ -1,20 +1,20 @@
-namespace X86Disassembler.X86.Handlers;
+namespace X86Disassembler.X86.Handlers.Test;
 
 /// <summary>
-/// Handler for TEST r/m8, r8 instruction (0x84)
+/// Handler for TEST r/m32, r32 instruction (0x85)
 /// </summary>
-public class TestRegMem8Handler : InstructionHandler
+public class TestRegMemHandler : InstructionHandler
 {
     // ModR/M decoder
     private readonly ModRMDecoder _modRMDecoder;
     
     /// <summary>
-    /// Initializes a new instance of the TestRegMem8Handler class
+    /// Initializes a new instance of the TestRegMemHandler class
     /// </summary>
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public TestRegMem8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public TestRegMemHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
         : base(codeBuffer, decoder, length)
     {
         _modRMDecoder = new ModRMDecoder(codeBuffer, decoder, length);
@@ -27,11 +27,11 @@ public class TestRegMem8Handler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        return opcode == 0x84;
+        return opcode == 0x85;
     }
     
     /// <summary>
-    /// Decodes a TEST r/m8, r8 instruction
+    /// Decodes a TEST r/m32, r32 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -61,24 +61,24 @@ public class TestRegMem8Handler : InstructionHandler
         if (mod == 3)
         {
             // Get the register names
-            string rmReg = GetRegister8(rm);
-            string regReg = GetRegister8(reg);
+            string rmReg = GetRegister32(rm);
+            string regReg = GetRegister32(reg);
             
-            // Set the operands (TEST r/m8, r8)
-            // In x86 assembly, the TEST instruction has the operand order r/m8, r8
-            // According to Ghidra and standard x86 assembly convention, it should be TEST CL,AL
-            // where CL is the r/m operand and AL is the reg operand
+            // Set the operands (TEST r/m32, r32)
+            // In x86 assembly, the TEST instruction has the operand order r/m32, r32
+            // According to Ghidra and standard x86 assembly convention, it should be TEST ECX,EAX
+            // where ECX is the r/m operand and EAX is the reg operand
             instruction.Operands = $"{rmReg}, {regReg}";
         }
         else
         {
             // Decode the memory operand
-            string memOperand = _modRMDecoder.DecodeModRM(mod, rm, true);
+            string memOperand = _modRMDecoder.DecodeModRM(mod, rm, false);
             
             // Get the register name
-            string regReg = GetRegister8(reg);
+            string regReg = GetRegister32(reg);
             
-            // Set the operands (TEST r/m8, r8)
+            // Set the operands (TEST r/m32, r32)
             instruction.Operands = $"{memOperand}, {regReg}";
         }
         
@@ -86,13 +86,13 @@ public class TestRegMem8Handler : InstructionHandler
     }
     
     /// <summary>
-    /// Gets the 8-bit register name for the given register index
+    /// Gets the 32-bit register name for the given register index
     /// </summary>
     /// <param name="reg">The register index</param>
     /// <returns>The register name</returns>
-    private static string GetRegister8(byte reg)
+    private static string GetRegister32(byte reg)
     {
-        string[] registerNames = { "al", "cl", "dl", "bl", "ah", "ch", "dh", "bh" };
+        string[] registerNames = { "eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi" };
         return registerNames[reg & 0x07];
     }
 }
