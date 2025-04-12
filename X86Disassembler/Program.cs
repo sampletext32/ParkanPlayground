@@ -1,12 +1,13 @@
 using System;
 using System.IO;
+using X86Disassembler.PE;
 
 namespace X86Disassembler
 {
     internal class Program
     {
         // Path to the DLL file to disassemble
-        private const string DllPath = @"C:\Windows\SysWOW64\msvcrt.dll"; // Example path, replace with your target DLL
+        private const string DllPath = @"C:\Program Files (x86)\Nikita\Iron Strategy\Terrain.dll"; // Example path, replace with your target DLL
         
         static void Main(string[] args)
         {
