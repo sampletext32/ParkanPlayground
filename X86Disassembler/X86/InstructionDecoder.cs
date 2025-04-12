@@ -1,11 +1,13 @@
 namespace X86Disassembler.X86;
 
+using X86Disassembler.X86.Handlers;
+
 /// <summary>
-/// Decoder for x86 instructions
+/// Decodes x86 instructions
 /// </summary>
 public class InstructionDecoder
 {
-    // Instruction prefixes
+    // Instruction prefix bytes
     private const byte PREFIX_LOCK = 0xF0;
     private const byte PREFIX_REPNE = 0xF2;
     private const byte PREFIX_REP = 0xF3;
@@ -18,44 +20,6 @@ public class InstructionDecoder
     private const byte PREFIX_OPERAND_SIZE = 0x66;
     private const byte PREFIX_ADDRESS_SIZE = 0x67;
     
-    // Common opcodes
-    private const byte OPCODE_INT3 = 0xCC;
-    private const byte OPCODE_NOP = 0x90;
-    private const byte OPCODE_RET = 0xC3;
-    private const byte OPCODE_CALL_NEAR_RELATIVE = 0xE8;
-    private const byte OPCODE_JMP_NEAR_RELATIVE = 0xE9;
-    private const byte OPCODE_JMP_SHORT_RELATIVE = 0xEB;
-    
-    // Opcode groups
-    private const byte OPCODE_GROUP_1_BYTE = 0x80;
-    private const byte OPCODE_GROUP_1_WORD_DWORD = 0x81;
-    private const byte OPCODE_GROUP_1_BYTE_IMM8 = 0x83;
-    
-    // ModR/M byte masks
-    private const byte MODRM_MOD_MASK = 0xC0; // 11000000b
-    private const byte MODRM_REG_MASK = 0x38; // 00111000b
-    private const byte MODRM_RM_MASK = 0x07;  // 00000111b
-    
-    // SIB byte masks
-    private const byte SIB_SCALE_MASK = 0xC0; // 11000000b
-    private const byte SIB_INDEX_MASK = 0x38; // 00111000b
-    private const byte SIB_BASE_MASK = 0x07;  // 00000111b
-    
-    // Register names
-    private static readonly string[] RegisterNames8 = { "al", "cl", "dl", "bl", "ah", "ch", "dh", "bh" };
-    private static readonly string[] RegisterNames16 = { "ax", "cx", "dx", "bx", "sp", "bp", "si", "di" };
-    private static readonly string[] RegisterNames32 = { "eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi" };
-    private static readonly string[] SegmentRegisterNames = { "es", "cs", "ss", "ds", "fs", "gs" };
-    
-    // Condition codes for conditional jumps
-    private static readonly string[] ConditionCodes = {
-        "o", "no", "b", "ae", "e", "ne", "be", "a",
-        "s", "ns", "p", "np", "l", "ge", "le", "g"
-    };
-    
-    // One-byte opcode map
-    private static readonly string[] OneByteOpcodes = new string[256];
-    
     // Buffer containing the code to decode
     private readonly byte[] _codeBuffer;
     
@@ -65,178 +29,8 @@ public class InstructionDecoder
     // Length of the buffer
     private readonly int _length;
     
-    /// <summary>
-    /// Static constructor to initialize the opcode maps
-    /// </summary>
-    static InstructionDecoder()
-    {
-        InitializeOpcodeMaps();
-    }
-    
-    /// <summary>
-    /// Initializes the opcode maps
-    /// </summary>
-    private static void InitializeOpcodeMaps()
-    {
-        // Initialize all entries to "??" (unknown)
-        for (int i = 0; i < 256; i++)
-        {
-            OneByteOpcodes[i] = "??";
-        }
-        
-        // Floating-point instructions
-        OneByteOpcodes[0xD8] = "fadd";  // Various FP instructions based on ModR/M
-        OneByteOpcodes[0xD9] = "fld";   // Various FP instructions based on ModR/M
-        OneByteOpcodes[0xDA] = "fiadd"; // Various FP instructions based on ModR/M
-        OneByteOpcodes[0xDB] = "fild";  // Various FP instructions based on ModR/M
-        OneByteOpcodes[0xDC] = "fadd";  // Various FP instructions based on ModR/M
-        OneByteOpcodes[0xDD] = "fld";   // Various FP instructions based on ModR/M
-        OneByteOpcodes[0xDE] = "fiadd"; // Various FP instructions based on ModR/M
-        OneByteOpcodes[0xDF] = "fistp"; // Various FP instructions based on ModR/M
-        
-        // Group 1 instructions (ADD, OR, ADC, SBB, AND, SUB, XOR, CMP)
-        OneByteOpcodes[0x80] = "group1b";
-        OneByteOpcodes[0x81] = "group1d";
-        OneByteOpcodes[0x83] = "group1s"; // Sign-extended immediate
-        
-        // Data transfer instructions
-        for (int i = 0x88; i <= 0x8B; i++)
-        {
-            OneByteOpcodes[i] = "mov";
-        }
-        OneByteOpcodes[0xA0] = "mov"; // MOV AL, moffs8
-        OneByteOpcodes[0xA1] = "mov"; // MOV EAX, moffs32
-        OneByteOpcodes[0xA2] = "mov"; // MOV moffs8, AL
-        OneByteOpcodes[0xA3] = "mov"; // MOV moffs32, EAX
-        for (int i = 0xB0; i <= 0xB7; i++)
-        {
-            OneByteOpcodes[i] = "mov"; // MOV r8, imm8
-        }
-        for (int i = 0xB8; i <= 0xBF; i++)
-        {
-            OneByteOpcodes[i] = "mov"; // MOV r32, imm32
-        }
-        OneByteOpcodes[0xC6] = "mov"; // MOV r/m8, imm8
-        OneByteOpcodes[0xC7] = "mov"; // MOV r/m32, imm32
-        
-        // Push/Pop instructions
-        for (int i = 0x50; i <= 0x57; i++)
-        {
-            OneByteOpcodes[i] = "push"; // PUSH r32
-        }
-        for (int i = 0x58; i <= 0x5F; i++)
-        {
-            OneByteOpcodes[i] = "pop"; // POP r32
-        }
-        OneByteOpcodes[0x68] = "push"; // PUSH imm32
-        OneByteOpcodes[0x6A] = "push"; // PUSH imm8
-        OneByteOpcodes[0x8F] = "pop";  // POP r/m32
-        OneByteOpcodes[0x9C] = "pushf"; // PUSHF
-        OneByteOpcodes[0x9D] = "popf";  // POPF
-        
-        // Arithmetic instructions
-        for (int i = 0x00; i <= 0x05; i++)
-        {
-            OneByteOpcodes[i] = "add";
-        }
-        for (int i = 0x28; i <= 0x2D; i++)
-        {
-            OneByteOpcodes[i] = "sub";
-        }
-        for (int i = 0x30; i <= 0x35; i++)
-        {
-            OneByteOpcodes[i] = "xor";
-        }
-        for (int i = 0x38; i <= 0x3D; i++)
-        {
-            OneByteOpcodes[i] = "cmp";
-        }
-        OneByteOpcodes[0x40] = "inc"; // INC eax
-        OneByteOpcodes[0x41] = "inc"; // INC ecx
-        OneByteOpcodes[0x42] = "inc"; // INC edx
-        OneByteOpcodes[0x43] = "inc"; // INC ebx
-        OneByteOpcodes[0x44] = "inc"; // INC esp
-        OneByteOpcodes[0x45] = "inc"; // INC ebp
-        OneByteOpcodes[0x46] = "inc"; // INC esi
-        OneByteOpcodes[0x47] = "inc"; // INC edi
-        OneByteOpcodes[0x48] = "dec"; // DEC eax
-        OneByteOpcodes[0x49] = "dec"; // DEC ecx
-        OneByteOpcodes[0x4A] = "dec"; // DEC edx
-        OneByteOpcodes[0x4B] = "dec"; // DEC ebx
-        OneByteOpcodes[0x4C] = "dec"; // DEC esp
-        OneByteOpcodes[0x4D] = "dec"; // DEC ebp
-        OneByteOpcodes[0x4E] = "dec"; // DEC esi
-        OneByteOpcodes[0x4F] = "dec"; // DEC edi
-        
-        // Logical instructions
-        for (int i = 0x20; i <= 0x25; i++)
-        {
-            OneByteOpcodes[i] = "and";
-        }
-        for (int i = 0x08; i <= 0x0D; i++)
-        {
-            OneByteOpcodes[i] = "or";
-        }
-        OneByteOpcodes[0xF7] = "not"; // Group 3 - NOT, NEG, MUL, IMUL, DIV, IDIV
-        
-        // Shift and rotate instructions
-        OneByteOpcodes[0xD0] = "rol"; // Group 2 - ROL, ROR, RCL, RCR, SHL/SAL, SHR, SAR
-        OneByteOpcodes[0xD1] = "rol"; // Group 2 - ROL, ROR, RCL, RCR, SHL/SAL, SHR, SAR
-        OneByteOpcodes[0xD2] = "rol"; // Group 2 - ROL, ROR, RCL, RCR, SHL/SAL, SHR, SAR
-        OneByteOpcodes[0xD3] = "rol"; // Group 2 - ROL, ROR, RCL, RCR, SHL/SAL, SHR, SAR
-        
-        // Control flow instructions
-        OneByteOpcodes[0xC3] = "ret";
-        OneByteOpcodes[0xC2] = "ret";
-        OneByteOpcodes[0xCA] = "retf";
-        OneByteOpcodes[0xCB] = "retf";
-        OneByteOpcodes[0xCC] = "int3";
-        OneByteOpcodes[0xCD] = "int";
-        OneByteOpcodes[0xCE] = "into";
-        OneByteOpcodes[0xCF] = "iret";
-        OneByteOpcodes[0xE8] = "call";
-        OneByteOpcodes[0xE9] = "jmp";
-        OneByteOpcodes[0xEB] = "jmp";
-        OneByteOpcodes[0xFF] = "call"; // Group 5 - CALL, JMP, PUSH
-        
-        // Conditional jumps
-        for (int i = 0x70; i <= 0x7F; i++)
-        {
-            OneByteOpcodes[i] = "j" + ConditionCodes[i - 0x70];
-        }
-        
-        // String instructions
-        OneByteOpcodes[0xA4] = "movsb";
-        OneByteOpcodes[0xA5] = "movsd";
-        OneByteOpcodes[0xA6] = "cmpsb";
-        OneByteOpcodes[0xA7] = "cmpsd";
-        OneByteOpcodes[0xAA] = "stosb";
-        OneByteOpcodes[0xAB] = "stosd";
-        OneByteOpcodes[0xAC] = "lodsb";
-        OneByteOpcodes[0xAD] = "lodsd";
-        OneByteOpcodes[0xAE] = "scasb";
-        OneByteOpcodes[0xAF] = "scasd";
-        
-        // Misc instructions
-        OneByteOpcodes[0x90] = "nop";
-        OneByteOpcodes[0x91] = "xchg"; // XCHG eax, ecx
-        OneByteOpcodes[0x92] = "xchg"; // XCHG eax, edx
-        OneByteOpcodes[0x93] = "xchg"; // XCHG eax, ebx
-        OneByteOpcodes[0x94] = "xchg"; // XCHG eax, esp
-        OneByteOpcodes[0x95] = "xchg"; // XCHG eax, ebp
-        OneByteOpcodes[0x96] = "xchg"; // XCHG eax, esi
-        OneByteOpcodes[0x97] = "xchg"; // XCHG eax, edi
-        OneByteOpcodes[0x98] = "cwde";
-        OneByteOpcodes[0x99] = "cdq";
-        OneByteOpcodes[0xF4] = "hlt";
-        OneByteOpcodes[0xF5] = "cmc";
-        OneByteOpcodes[0xF8] = "clc";
-        OneByteOpcodes[0xF9] = "stc";
-        OneByteOpcodes[0xFA] = "cli";
-        OneByteOpcodes[0xFB] = "sti";
-        OneByteOpcodes[0xFC] = "cld";
-        OneByteOpcodes[0xFD] = "std";
-    }
+    // List of instruction handlers
+    private readonly List<InstructionHandler> _handlers;
     
     /// <summary>
     /// Initializes a new instance of the InstructionDecoder class
@@ -247,18 +41,15 @@ public class InstructionDecoder
         _codeBuffer = codeBuffer;
         _position = 0;
         _length = codeBuffer.Length;
-    }
-    
-    /// <summary>
-    /// Decodes an instruction at the specified position in the code buffer
-    /// </summary>
-    /// <param name="position">The position in the code buffer</param>
-    /// <param name="instruction">The instruction object to populate</param>
-    /// <returns>The number of bytes read</returns>
-    public int DecodeAt(int position, Instruction instruction)
-    {
-        _position = position;
-        return Decode(instruction);
+        
+        // Initialize the instruction handlers
+        _handlers = new List<InstructionHandler>
+        {
+            new Group1Handler(_codeBuffer, this, _length),
+            new FloatingPointHandler(_codeBuffer, this, _length),
+            new DataTransferHandler(_codeBuffer, this, _length),
+            new ControlFlowHandler(_codeBuffer, this, _length)
+        };
     }
     
     /// <summary>
@@ -350,238 +141,27 @@ public class InstructionDecoder
         // Read the opcode
         byte opcode = _codeBuffer[_position++];
         
-        // Get the mnemonic from the opcode map
-        string mnemonic = OneByteOpcodes[opcode];
-        
-        // Handle specific opcodes
-        string operands = string.Empty;
-        
-        switch (opcode)
+        // Try to find a handler for this opcode
+        bool handled = false;
+        foreach (var handler in _handlers)
         {
-            case 0xDF: // FISTP and other FPU instructions
-                if (_position < _length)
+            if (handler.CanHandle(opcode))
+            {
+                handled = handler.Decode(opcode, instruction);
+                if (handled)
                 {
-                    byte modRM = _codeBuffer[_position++];
-                    byte mod = (byte)((modRM & MODRM_MOD_MASK) >> 6);
-                    byte reg = (byte)((modRM & MODRM_REG_MASK) >> 3);
-                    byte rm = (byte)(modRM & MODRM_RM_MASK);
-                    
-                    // FISTP with memory operand
-                    if (reg == 7) // FISTP
-                    {
-                        if (mod == 0 && rm == 5) // Displacement only addressing
-                        {
-                            if (_position + 4 <= _length)
-                            {
-                                uint disp32 = BitConverter.ToUInt32(_codeBuffer, _position);
-                                _position += 4;
-                                operands = $"qword ptr [0x{disp32:X8}]";
-                            }
-                        }
-                        else
-                        {
-                            // Handle other addressing modes if needed
-                            operands = DecodeModRM(mod, rm, true);
-                        }
-                    }
+                    break;
                 }
-                break;
-                
-            case 0xA1: // MOV EAX, memory
-                if (_position + 4 <= _length)
-                {
-                    uint addr = BitConverter.ToUInt32(_codeBuffer, _position);
-                    _position += 4;
-                    operands = $"eax, [0x{addr:X8}]";
-                }
-                break;
-                
-            case OPCODE_INT3:
-                // No operands for INT3
-                break;
-                
-            case OPCODE_NOP:
-                // No operands for NOP
-                break;
-                
-            case OPCODE_RET:
-                // No operands for RET
-                break;
-                
-            case OPCODE_CALL_NEAR_RELATIVE:
-                if (_position + 4 <= _length)
-                {
-                    // Read 32-bit relative offset
-                    int offset = BitConverter.ToInt32(_codeBuffer, _position);
-                    _position += 4;
-                    
-                    // Calculate target address (relative to next instruction)
-                    uint targetAddress = (uint)(_position + offset);
-                    operands = $"0x{targetAddress:X8}";
-                }
-                break;
-                
-            case OPCODE_JMP_NEAR_RELATIVE:
-                if (_position + 4 <= _length)
-                {
-                    // Read 32-bit relative offset
-                    int offset = BitConverter.ToInt32(_codeBuffer, _position);
-                    _position += 4;
-                    
-                    // Calculate target address (relative to next instruction)
-                    uint targetAddress = (uint)(_position + offset);
-                    operands = $"0x{targetAddress:X8}";
-                }
-                break;
-                
-            case OPCODE_JMP_SHORT_RELATIVE:
-                if (_position < _length)
-                {
-                    // Read 8-bit relative offset
-                    sbyte offset = (sbyte)_codeBuffer[_position++];
-                    
-                    // Calculate target address (relative to next instruction)
-                    uint targetAddress = (uint)(_position + offset);
-                    operands = $"0x{targetAddress:X8}";
-                }
-                break;
-                
-            case 0x83: // Group 1 with sign-extended immediate byte
-                if (_position < _length)
-                {
-                    byte modRM = _codeBuffer[_position++];
-                    byte mod = (byte)((modRM & MODRM_MOD_MASK) >> 6);
-                    byte reg = (byte)((modRM & MODRM_REG_MASK) >> 3); // This is the operation type
-                    byte rm = (byte)(modRM & MODRM_RM_MASK);
-                    
-                    // Determine the operation based on reg field
-                    string[] group1Ops = { "add", "or", "adc", "sbb", "and", "sub", "xor", "cmp" };
-                    mnemonic = group1Ops[reg];
-                    
-                    // Decode the destination operand
-                    string destOperand;
-                    if (mod == 3) // Register operand
-                    {
-                        destOperand = RegisterNames32[rm];
-                    }
-                    else // Memory operand
-                    {
-                        destOperand = DecodeModRM(mod, rm, false);
-                    }
-                    
-                    // Read the immediate byte
-                    if (_position < _length)
-                    {
-                        sbyte imm8 = (sbyte)_codeBuffer[_position++];
-                        operands = $"{destOperand}, 0x{imm8:X2}";
-                    }
-                    else
-                    {
-                        operands = $"{destOperand}, ???";
-                    }
-                }
-                break;
-                
-            default:
-                // Handle register-based instructions
-                if (opcode >= 0x40 && opcode <= 0x47) // INC r32
-                {
-                    int reg = opcode - 0x40;
-                    operands = RegisterNames32[reg];
-                }
-                else if (opcode >= 0x48 && opcode <= 0x4F) // DEC r32
-                {
-                    int reg = opcode - 0x48;
-                    operands = RegisterNames32[reg];
-                }
-                else if (opcode >= 0x50 && opcode <= 0x57) // PUSH r32
-                {
-                    int reg = opcode - 0x50;
-                    operands = RegisterNames32[reg];
-                }
-                else if (opcode >= 0x58 && opcode <= 0x5F) // POP r32
-                {
-                    int reg = opcode - 0x58;
-                    operands = RegisterNames32[reg];
-                }
-                else if (opcode >= 0x91 && opcode <= 0x97) // XCHG eax, r32
-                {
-                    int reg = opcode - 0x90;
-                    operands = $"eax, {RegisterNames32[reg]}";
-                }
-                else if (opcode >= 0xB0 && opcode <= 0xB7) // MOV r8, imm8
-                {
-                    if (_position < _length)
-                    {
-                        int reg = opcode - 0xB0;
-                        byte imm8 = _codeBuffer[_position++];
-                        operands = $"{RegisterNames8[reg]}, 0x{imm8:X2}";
-                    }
-                }
-                else if (opcode >= 0xB8 && opcode <= 0xBF) // MOV r32, imm32
-                {
-                    if (_position + 4 <= _length)
-                    {
-                        int reg = opcode - 0xB8;
-                        uint imm32 = BitConverter.ToUInt32(_codeBuffer, _position);
-                        _position += 4;
-                        operands = $"{RegisterNames32[reg]}, 0x{imm32:X8}";
-                    }
-                }
-                else if (opcode >= 0x70 && opcode <= 0x7F) // Conditional jumps (short)
-                {
-                    if (_position < _length)
-                    {
-                        sbyte offset = (sbyte)_codeBuffer[_position++];
-                        uint targetAddress = (uint)(_position + offset);
-                        operands = $"0x{targetAddress:X8}";
-                    }
-                }
-                else if (opcode == 0x68) // PUSH imm32
-                {
-                    if (_position + 4 <= _length)
-                    {
-                        uint imm32 = BitConverter.ToUInt32(_codeBuffer, _position);
-                        _position += 4;
-                        operands = $"0x{imm32:X8}";
-                    }
-                }
-                else if (opcode == 0x6A) // PUSH imm8
-                {
-                    if (_position < _length)
-                    {
-                        byte imm8 = _codeBuffer[_position++];
-                        operands = $"0x{imm8:X2}";
-                    }
-                }
-                else if (opcode == 0xCD) // INT imm8
-                {
-                    if (_position < _length)
-                    {
-                        byte imm8 = _codeBuffer[_position++];
-                        operands = $"0x{imm8:X2}";
-                    }
-                }
-                else if (opcode == 0xE3) // JECXZ rel8
-                {
-                    if (_position < _length)
-                    {
-                        sbyte offset = (sbyte)_codeBuffer[_position++];
-                        uint targetAddress = (uint)(_position + offset);
-                        operands = $"0x{targetAddress:X8}";
-                    }
-                }
-                else
-                {
-                    // For other opcodes, we'll just show the raw bytes for now
-                    // In a full implementation, we would decode the ModR/M byte, SIB byte, etc.
-                }
-                break;
+            }
         }
         
-        // Set the instruction properties
-        instruction.Mnemonic = mnemonic;
-        instruction.Operands = operands;
+        // If no handler was found or the instruction couldn't be decoded,
+        // use a default mnemonic from the opcode map
+        if (!handled)
+        {
+            instruction.Mnemonic = OpcodeMap.GetMnemonic(opcode);
+            instruction.Operands = string.Empty;
+        }
         
         // Copy the instruction bytes
         int bytesRead = _position - startPosition;
@@ -592,100 +172,32 @@ public class InstructionDecoder
     }
     
     /// <summary>
-    /// Decodes a ModR/M byte to get the operand string
+    /// Sets the current position in the code buffer
     /// </summary>
-    /// <param name="mod">The mod field (2 bits)</param>
-    /// <param name="rm">The r/m field (3 bits)</param>
-    /// <param name="is64Bit">True if the operand is 64-bit</param>
-    /// <returns>The operand string</returns>
-    private string DecodeModRM(byte mod, byte rm, bool is64Bit)
+    /// <param name="position">The new position</param>
+    public void SetPosition(int position)
     {
-        string sizePrefix = is64Bit ? "qword" : "dword";
-        
-        switch (mod)
-        {
-            case 0: // [reg] or disp32
-                if (rm == 5) // disp32
-                {
-                    if (_position + 4 <= _length)
-                    {
-                        uint disp32 = BitConverter.ToUInt32(_codeBuffer, _position);
-                        _position += 4;
-                        return $"{sizePrefix} ptr [0x{disp32:X8}]";
-                    }
-                    return $"{sizePrefix} ptr [???]";
-                }
-                else if (rm == 4) // SIB
-                {
-                    // Handle SIB byte
-                    if (_position < _length)
-                    {
-                        byte sib = _codeBuffer[_position++];
-                        // Decode SIB byte (not implemented yet)
-                        return $"{sizePrefix} ptr [SIB]";
-                    }
-                    return $"{sizePrefix} ptr [???]";
-                }
-                else
-                {
-                    return $"{sizePrefix} ptr [{RegisterNames32[rm]}]";
-                }
-                
-            case 1: // [reg + disp8]
-                if (rm == 4) // SIB + disp8
-                {
-                    // Handle SIB byte
-                    if (_position + 1 < _length)
-                    {
-                        byte sib = _codeBuffer[_position++];
-                        sbyte disp8 = (sbyte)_codeBuffer[_position++];
-                        // Decode SIB byte (not implemented yet)
-                        return $"{sizePrefix} ptr [SIB+0x{disp8:X2}]";
-                    }
-                    return $"{sizePrefix} ptr [???]";
-                }
-                else
-                {
-                    if (_position < _length)
-                    {
-                        sbyte disp8 = (sbyte)_codeBuffer[_position++];
-                        string dispStr = disp8 < 0 ? $"-0x{-disp8:X2}" : $"+0x{disp8:X2}";
-                        return $"{sizePrefix} ptr [{RegisterNames32[rm]}{dispStr}]";
-                    }
-                    return $"{sizePrefix} ptr [{RegisterNames32[rm]}+???]";
-                }
-                
-            case 2: // [reg + disp32]
-                if (rm == 4) // SIB + disp32
-                {
-                    // Handle SIB byte
-                    if (_position + 4 < _length)
-                    {
-                        byte sib = _codeBuffer[_position++];
-                        int disp32 = BitConverter.ToInt32(_codeBuffer, _position);
-                        _position += 4;
-                        // Decode SIB byte (not implemented yet)
-                        return $"{sizePrefix} ptr [SIB+0x{disp32:X8}]";
-                    }
-                    return $"{sizePrefix} ptr [???]";
-                }
-                else
-                {
-                    if (_position + 4 <= _length)
-                    {
-                        int disp32 = BitConverter.ToInt32(_codeBuffer, _position);
-                        _position += 4;
-                        string dispStr = disp32 < 0 ? $"-0x{-disp32:X8}" : $"+0x{disp32:X8}";
-                        return $"{sizePrefix} ptr [{RegisterNames32[rm]}{dispStr}]";
-                    }
-                    return $"{sizePrefix} ptr [{RegisterNames32[rm]}+???]";
-                }
-                
-            case 3: // reg
-                return is64Bit ? "mm" + rm : RegisterNames32[rm];
-                
-            default:
-                return "???";
-        }
+        _position = position;
+    }
+    
+    /// <summary>
+    /// Gets the current position in the code buffer
+    /// </summary>
+    /// <returns>The current position</returns>
+    public int GetPosition()
+    {
+        return _position;
+    }
+    
+    /// <summary>
+    /// Decodes an instruction at the specified position in the code buffer
+    /// </summary>
+    /// <param name="position">The position in the code buffer</param>
+    /// <param name="instruction">The instruction object to populate</param>
+    /// <returns>The number of bytes read</returns>
+    public int DecodeAt(int position, Instruction instruction)
+    {
+        _position = position;
+        return Decode(instruction);
     }
 }
