@@ -23,7 +23,11 @@ public class StringInstructionHandler : InstructionHandler
     /// <returns>True if this handler can handle the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        return IsStringInstruction(opcode);
+        // Check if the opcode is a string instruction
+        return opcode == 0xA4 || opcode == 0xA5 || // MOVS
+               opcode == 0xAA || opcode == 0xAB || // STOS
+               opcode == 0xAC || opcode == 0xAD || // LODS
+               opcode == 0xAE || opcode == 0xAF;   // SCAS
     }
     
     /// <summary>
@@ -37,52 +41,38 @@ public class StringInstructionHandler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = OpcodeMap.GetMnemonic(opcode);
         
-        // Set the operands
-        instruction.Operands = GetStringOperands(opcode);
-        
-        return true;
-    }
-    
-    /// <summary>
-    /// Checks if the opcode is a string instruction
-    /// </summary>
-    /// <param name="opcode">The opcode to check</param>
-    /// <returns>True if the opcode is a string instruction</returns>
-    private bool IsStringInstruction(byte opcode)
-    {
-        return opcode == 0xA4 || opcode == 0xA5 || // MOVS
-               opcode == 0xAA || opcode == 0xAB || // STOS
-               opcode == 0xAC || opcode == 0xAD || // LODS
-               opcode == 0xAE || opcode == 0xAF;   // SCAS
-    }
-    
-    /// <summary>
-    /// Gets the operands for a string instruction
-    /// </summary>
-    /// <param name="stringOp">The string operation opcode</param>
-    /// <returns>The operands string</returns>
-    private string GetStringOperands(byte stringOp)
-    {
-        switch (stringOp)
+        // Set the operands based on the string operation
+        switch (opcode)
         {
             case 0xA4: // MOVSB
-                return "byte ptr [edi], byte ptr [esi]";
+                instruction.Operands = "byte ptr [edi], byte ptr [esi]";
+                break;
             case 0xA5: // MOVSD
-                return "dword ptr [edi], dword ptr [esi]";
+                instruction.Operands = "dword ptr [edi], dword ptr [esi]";
+                break;
             case 0xAA: // STOSB
-                return "byte ptr [edi], al";
+                instruction.Operands = "byte ptr [edi], al";
+                break;
             case 0xAB: // STOSD
-                return "dword ptr [edi], eax";
+                instruction.Operands = "dword ptr [edi], eax";
+                break;
             case 0xAC: // LODSB
-                return "al, byte ptr [esi]";
+                instruction.Operands = "al, byte ptr [esi]";
+                break;
             case 0xAD: // LODSD
-                return "eax, dword ptr [esi]";
+                instruction.Operands = "eax, dword ptr [esi]";
+                break;
             case 0xAE: // SCASB
-                return "al, byte ptr [edi]";
+                instruction.Operands = "al, byte ptr [edi]";
+                break;
             case 0xAF: // SCASD
-                return "eax, dword ptr [edi]";
+                instruction.Operands = "eax, dword ptr [edi]";
+                break;
             default:
-                return "??";
+                instruction.Operands = "??";
+                break;
         }
+        
+        return true;
     }
 }
