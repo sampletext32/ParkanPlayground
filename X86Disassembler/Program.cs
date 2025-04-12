@@ -50,8 +50,9 @@ internal class Program
             DisassembleCodeSections(peFormat);
             
             Console.WriteLine();
-            Console.WriteLine("Press any key to exit...");
-            Console.ReadKey();
+            Console.WriteLine("Press Enter to exit...");
+            Console.Read(); // Use Read instead of ReadKey to avoid errors in redirected console
+            
         }
         catch (Exception ex)
         {
@@ -91,7 +92,7 @@ internal class Program
         if (peFormat.ExportDirectory != null)
         {
             Console.WriteLine("\nExported Functions:");
-            Console.WriteLine($"DLL Name: {peFormat.ExportDirectory.Name}");
+            Console.WriteLine($"DLL Name: {peFormat.ExportDirectory.DllName}");
             Console.WriteLine($"Number of Functions: {peFormat.ExportDirectory.NumberOfFunctions}");
             Console.WriteLine($"Number of Names: {peFormat.ExportDirectory.NumberOfNames}");
             
@@ -111,7 +112,7 @@ internal class Program
             for (int i = 0; i < peFormat.ImportDescriptors.Count; i++)
             {
                 var descriptor = peFormat.ImportDescriptors[i];
-                Console.WriteLine($"  DLL: {descriptor.Name}");
+                Console.WriteLine($"  DLL: {descriptor.DllName}");
                 
                 for (int j = 0; j < descriptor.Functions.Count; j++)
                 {
