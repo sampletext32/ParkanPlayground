@@ -1,7 +1,7 @@
 namespace X86Disassembler.X86.Handlers.String;
 
 /// <summary>
-/// Handler for string instructions (MOVS, STOS, LODS, SCAS)
+/// Handler for string instructions (MOVS, STOS, LODS, SCAS) with and without REP/REPNE prefixes
 /// </summary>
 public class StringInstructionHandler : InstructionHandler
 {
@@ -17,6 +17,10 @@ public class StringInstructionHandler : InstructionHandler
         { 0xAE, "scas" }, // SCASB
         { 0xAF, "scas" }  // SCASD
     };
+    
+    // REP/REPNE prefix opcodes
+    private const byte REP_PREFIX = 0xF3;
+    private const byte REPNE_PREFIX = 0xF2;
     
     /// <summary>
     /// Initializes a new instance of the StringInstructionHandler class
@@ -37,7 +41,23 @@ public class StringInstructionHandler : InstructionHandler
     public override bool CanHandle(byte opcode)
     {
         // Check if the opcode is a string instruction
-        return _mnemonics.ContainsKey(opcode);
+        if (_mnemonics.ContainsKey(opcode))
+        {
+            return true;
+        }
+        
+        // Check if the opcode is a REP/REPNE prefix followed by a string instruction
+        if (opcode == REP_PREFIX || opcode == REPNE_PREFIX)
+        {
+            int position = Decoder.GetPosition();
+            if (position < Length)
+            {
+                byte nextByte = CodeBuffer[position];
+                return _mnemonics.ContainsKey(nextByte);
+            }
+        }
+        
+        return false;
     }
     
     /// <summary>
@@ -48,10 +68,34 @@ public class StringInstructionHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        if (_mnemonics.TryGetValue(opcode, out string? mnemonic))
+        // Check if this is a REP/REPNE prefix
+        bool hasRepPrefix = opcode == REP_PREFIX || opcode == REPNE_PREFIX;
+        string prefixString = opcode == REP_PREFIX ? "rep " : (opcode == REPNE_PREFIX ? "repne " : "");
+        
+        // If this is a REP/REPNE prefix, get the actual string instruction opcode
+        byte stringOpcode = opcode;
+        if (hasRepPrefix)
         {
-            instruction.Mnemonic = mnemonic;
+            int position = Decoder.GetPosition();
+            if (position >= Length)
+            {
+                return false;
+            }
+            
+            stringOpcode = CodeBuffer[position];
+            if (!_mnemonics.ContainsKey(stringOpcode))
+            {
+                return false;
+            }
+            
+            // Skip the string instruction opcode
+            Decoder.SetPosition(position + 1);
+        }
+        
+        // Set the mnemonic
+        if (_mnemonics.TryGetValue(stringOpcode, out string? mnemonic))
+        {
+            instruction.Mnemonic = prefixString + mnemonic;
         }
         else
         {
@@ -60,7 +104,7 @@ public class StringInstructionHandler : InstructionHandler
         }
         
         // Set the operands based on the string operation
-        switch (opcode)
+        switch (stringOpcode)
         {
             case 0xA4: // MOVSB
                 instruction.Operands = "byte ptr [edi], byte ptr [esi]";

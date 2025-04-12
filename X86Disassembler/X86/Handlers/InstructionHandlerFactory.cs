@@ -305,8 +305,7 @@ public class InstructionHandlerFactory
     /// </summary>
     private void RegisterStringHandlers()
     {
-        // Add String instruction handlers
-        _handlers.Add(new RepMovsHandler(_codeBuffer, _decoder, _length));
+        // Add String instruction handler that handles both regular and REP/REPNE prefixed string instructions
         _handlers.Add(new StringInstructionHandler(_codeBuffer, _decoder, _length));
     }
     
