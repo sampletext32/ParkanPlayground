@@ -318,10 +318,27 @@ namespace X86Disassembler
             directory.AddressOfNameOrdinals = reader.ReadUInt32();
             
             // Read the DLL name
-            uint dllNameRVA = directory.Name;
-            reader.BaseStream.Seek(RvaToOffset(dllNameRVA), SeekOrigin.Begin);
-            byte[] dllNameBytes = reader.ReadBytes(256);
-            directory.DllName = Encoding.ASCII.GetString(dllNameBytes).TrimEnd('\0');
+            try
+            {
+                uint dllNameRVA = directory.Name;
+                uint dllNameOffset = RvaToOffset(dllNameRVA);
+                reader.BaseStream.Seek(dllNameOffset, SeekOrigin.Begin);
+                
+                // Read the null-terminated ASCII string
+                StringBuilder nameBuilder = new StringBuilder();
+                byte b;
+                
+                while ((b = reader.ReadByte()) != 0)
+                {
+                    nameBuilder.Append((char)b);
+                }
+                
+                directory.DllName = nameBuilder.ToString();
+            }
+            catch (Exception)
+            {
+                directory.DllName = "Unknown";
+            }
             
             return directory;
         }
