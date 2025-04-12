@@ -70,7 +70,7 @@ public class Float32OperationHandler : FloatingPointBaseHandler
         if (mod != 3) // Memory operand
         {
             string operand = ModRMDecoder.DecodeModRM(mod, rm, false);
-            instruction.Operands = $"dword ptr {operand}";
+            instruction.Operands = operand;
         }
         else // Register operand (ST(i))
         {

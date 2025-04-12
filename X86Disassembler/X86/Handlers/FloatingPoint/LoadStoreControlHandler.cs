@@ -74,11 +74,20 @@ public class LoadStoreControlHandler : FloatingPointBaseHandler
             // Different operand types based on the instruction
             if (reg == 0 || reg == 2 || reg == 3) // fld, fst, fstp
             {
-                instruction.Operands = $"dword ptr {operand}";
+                // Keep the dword ptr prefix from ModRMDecoder
+                instruction.Operands = operand;
             }
             else // fldenv, fldcw, fnstenv, fnstcw
             {
-                instruction.Operands = operand;
+                if (reg == 5) // fldcw - should use word ptr
+                {
+                    instruction.Operands = operand.Replace("dword ptr", "word ptr");
+                }
+                else // fldenv, fnstenv, fnstcw
+                {
+                    // Remove the dword ptr prefix for other control operations
+                    instruction.Operands = operand.Replace("dword ptr ", "");
+                }
             }
         }
         else // Register operand (ST(i))

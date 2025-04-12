@@ -68,15 +68,16 @@ public class LoadStoreFloat64Handler : FloatingPointBaseHandler
         // For memory operands, set the operand
         if (mod != 3) // Memory operand
         {
-            string operand = ModRMDecoder.DecodeModRM(mod, rm, false);
-
+            string operand = ModRMDecoder.DecodeModRM(mod, rm, true); // true for 64-bit operand
+            
             if (reg == 0 || reg == 2 || reg == 3) // fld, fst, fstp
             {
-                instruction.Operands = $"qword ptr {operand}";
+                instruction.Operands = operand;
             }
             else // frstor, fnsave, fnstsw
             {
-                instruction.Operands = operand;
+                // Remove the qword ptr prefix for these operations
+                instruction.Operands = operand.Replace("qword ptr ", "");
             }
         }
         else // Register operand (ST(i))

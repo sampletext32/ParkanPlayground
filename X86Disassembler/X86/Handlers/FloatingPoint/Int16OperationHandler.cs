@@ -69,8 +69,10 @@ public class Int16OperationHandler : FloatingPointBaseHandler
         // For memory operands, set the operand
         if (mod != 3) // Memory operand
         {
+            // Need to modify the default dword ptr to word ptr for 16-bit integers
             string operand = ModRMDecoder.DecodeModRM(mod, rm, false);
-            instruction.Operands = $"word ptr {operand}";
+            operand = operand.Replace("dword ptr", "word ptr");
+            instruction.Operands = operand;
         }
         else // Register operand (ST(i))
         {

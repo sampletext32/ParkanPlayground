@@ -70,14 +70,17 @@ public class LoadStoreInt32Handler : FloatingPointBaseHandler
         if (mod != 3) // Memory operand
         {
             string operand = ModRMDecoder.DecodeModRM(mod, rm, false);
-
+            
             if (reg == 0 || reg == 2 || reg == 3) // fild, fist, fistp
             {
-                instruction.Operands = $"dword ptr {operand}";
+                // Keep the dword ptr prefix for integer operations
+                instruction.Operands = operand;
             }
             else if (reg == 5 || reg == 7) // fld, fstp (extended precision)
             {
-                instruction.Operands = $"tword ptr {operand}";
+                // Replace dword ptr with tword ptr for extended precision
+                operand = operand.Replace("dword ptr", "tword ptr");
+                instruction.Operands = operand;
             }
             else
             {

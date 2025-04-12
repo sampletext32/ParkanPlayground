@@ -69,8 +69,8 @@ public class Float64OperationHandler : FloatingPointBaseHandler
         // For memory operands, set the operand
         if (mod != 3) // Memory operand
         {
-            string operand = ModRMDecoder.DecodeModRM(mod, rm, false);
-            instruction.Operands = $"qword ptr {operand}";
+            string operand = ModRMDecoder.DecodeModRM(mod, rm, true); // true for 64-bit operand
+            instruction.Operands = operand;
         }
         else // Register operand (ST(i))
         {

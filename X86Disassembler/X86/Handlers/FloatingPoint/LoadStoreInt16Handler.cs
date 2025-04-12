@@ -77,21 +77,27 @@ public class LoadStoreInt16Handler : FloatingPointBaseHandler
         if (mod != 3) // Memory operand
         {
             string operand = ModRMDecoder.DecodeModRM(mod, rm, false);
-
+            
             if (reg == 0 || reg == 2 || reg == 3 || reg == 5 || reg == 7) // fild, fist, fistp, fild, fistp
             {
                 if (reg == 5 || reg == 7) // 64-bit integer
                 {
-                    instruction.Operands = $"qword ptr {operand}";
+                    // Replace dword ptr with qword ptr for 64-bit integers
+                    operand = operand.Replace("dword ptr", "qword ptr");
+                    instruction.Operands = operand;
                 }
                 else // 16-bit integer
                 {
-                    instruction.Operands = $"word ptr {operand}";
+                    // Replace dword ptr with word ptr for 16-bit integers
+                    operand = operand.Replace("dword ptr", "word ptr");
+                    instruction.Operands = operand;
                 }
             }
             else if (reg == 4 || reg == 6) // fbld, fbstp
             {
-                instruction.Operands = $"tbyte ptr {operand}";
+                // Replace dword ptr with tbyte ptr for 80-bit packed BCD
+                operand = operand.Replace("dword ptr", "tbyte ptr");
+                instruction.Operands = operand;
             }
             else
             {
