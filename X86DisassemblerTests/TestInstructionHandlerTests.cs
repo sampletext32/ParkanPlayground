@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Handlers.Test;
+
 namespace X86DisassemblerTests;
 
 using System;

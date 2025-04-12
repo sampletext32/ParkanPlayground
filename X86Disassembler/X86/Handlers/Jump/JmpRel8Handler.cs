@@ -1,4 +1,4 @@
-namespace X86Disassembler.X86.Handlers;
+namespace X86Disassembler.X86.Handlers.Jump;
 
 /// <summary>
 /// Handler for JMP rel8 instruction (0xEB)

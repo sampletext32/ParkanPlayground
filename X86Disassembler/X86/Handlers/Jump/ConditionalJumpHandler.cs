@@ -1,6 +1,4 @@
-namespace X86Disassembler.X86.Handlers;
-
-using System;
+namespace X86Disassembler.X86.Handlers.Jump;
 
 /// <summary>
 /// Handler for conditional jump instructions (0x70-0x7F)

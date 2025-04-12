@@ -1,4 +1,6 @@
-namespace X86Disassembler.X86.Handlers.Group3;
+using X86Disassembler.X86.Handlers.Group3;
+
+namespace X86Disassembler.X86.Handlers.Test;
 
 /// <summary>
 /// Handler for TEST r/m32, imm32 instruction (0xF7 /0)

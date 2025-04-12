@@ -1,4 +1,4 @@
-namespace X86Disassembler.X86.Handlers;
+namespace X86Disassembler.X86.Handlers.Jump;
 
 /// <summary>
 /// Handler for two-byte conditional jump instructions (0x0F 0x80-0x8F)

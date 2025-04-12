@@ -1,3 +1,4 @@
+using X86Disassembler.X86.Handlers.Jump;
 using X86Disassembler.X86.Handlers.Test;
 
 namespace X86Disassembler.X86.Handlers;
@@ -13,7 +14,7 @@ public class InstructionHandlerFactory
     private readonly byte[] _codeBuffer;
     private readonly InstructionDecoder _decoder;
     private readonly int _length;
-    private readonly List<IInstructionHandler> _handlers = new List<IInstructionHandler>();
+    private readonly List<IInstructionHandler> _handlers = [];
     
     /// <summary>
     /// Initializes a new instance of the InstructionHandlerFactory class
@@ -39,18 +40,24 @@ public class InstructionHandlerFactory
         // Register specific instruction handlers
         _handlers.Add(new RetHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new RetImmHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new JmpRel32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new JmpRel8Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new CallRel32Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new XorRegMemHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new FnstswHandler(_codeBuffer, _decoder, _length));
+
+        // TEST handlers
+        _handlers.Add(new TestImmWithRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new TestImmWithRm8Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new TestRegMem8Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new TestRegMemHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new TestAlImmHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new TestEaxImmHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new FnstswHandler(_codeBuffer, _decoder, _length));
+        
+        // JMP handlers
+        _handlers.Add(new JmpRel32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new JmpRel8Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new ConditionalJumpHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new TwoByteConditionalJumpHandler(_codeBuffer, _decoder, _length));
-        
+
         // Register Group1 handlers
         RegisterGroup1Handlers();
         
@@ -107,10 +114,6 @@ public class InstructionHandlerFactory
     /// </summary>
     private void RegisterGroup3Handlers()
     {
-        // TEST handlers
-        _handlers.Add(new TestImmWithRm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new TestImmWithRm8Handler(_codeBuffer, _decoder, _length));
-        
         // NOT handler
         _handlers.Add(new NotRm32Handler(_codeBuffer, _decoder, _length));
         
