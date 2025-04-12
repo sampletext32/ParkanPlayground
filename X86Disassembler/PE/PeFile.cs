@@ -5,7 +5,7 @@ namespace X86Disassembler.PE;
 /// <summary>
 /// Represents a Portable Executable (PE) file format parser
 /// </summary>
-public class PEFormat
+public class PeFile
 {
     // DOS Header constants
     private const ushort DOS_SIGNATURE = 0x5A4D; // 'MZ'
@@ -66,7 +66,7 @@ public class PEFormat
     /// Initializes a new instance of the PEFormat class
     /// </summary>
     /// <param name="fileData">The raw file data</param>
-    public PEFormat(byte[] fileData)
+    public PeFile(byte[] fileData)
     {
         _fileData = fileData;
         SectionHeaders = new List<SectionHeader>();

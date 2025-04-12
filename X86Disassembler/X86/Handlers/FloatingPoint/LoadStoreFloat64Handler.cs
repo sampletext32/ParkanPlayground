@@ -13,8 +13,9 @@ public class LoadStoreFloat64Handler : FloatingPointBaseHandler
         "fst",
         "fstp",
         "frstor",
+        "??",
         "fnsave",
-        "fnstsw"
+        "fnstsw",
     ];
 
     /// <summary>

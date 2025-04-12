@@ -32,75 +32,28 @@ public class Program
         
         // Parse the PE format
         Console.WriteLine("Parsing PE format...\n");
-        PEFormat peFormat = new PEFormat(fileBytes);
-        peFormat.Parse();
+        PeFile peFile = new PeFile(fileBytes);
+        peFile.Parse();
         
         // Print PE file information
         Console.WriteLine("PE File Information:");
-        Console.WriteLine($"Architecture: {(peFormat.OptionalHeader.Is64Bit() ? "64-bit" : "32-bit")}");
-        Console.WriteLine($"Entry Point: 0x{peFormat.OptionalHeader.AddressOfEntryPoint:X8}");
-        Console.WriteLine($"Image Base: 0x{peFormat.OptionalHeader.ImageBase:X8}");
-        Console.WriteLine($"Number of Sections: {peFormat.FileHeader.NumberOfSections}");
+        Console.WriteLine($"Architecture: {(peFile.OptionalHeader.Is64Bit() ? "64-bit" : "32-bit")}");
+        Console.WriteLine($"Entry Point: 0x{peFile.OptionalHeader.AddressOfEntryPoint:X8}");
+        Console.WriteLine($"Image Base: 0x{peFile.OptionalHeader.ImageBase:X8}");
+        Console.WriteLine($"Number of Sections: {peFile.FileHeader.NumberOfSections}");
         Console.WriteLine();
         
         // Print section information
-        Console.WriteLine("Sections:");
-        foreach (var section in peFormat.SectionHeaders)
-        {
-            string flags = "";
-            if (section.ContainsCode()) flags += "Code ";
-            if (section.IsExecutable()) flags += "Exec ";
-            if (section.IsReadable()) flags += "Read ";
-            if (section.IsWritable()) flags += "Write";
-            
-            Console.WriteLine($"  {peFormat.SectionHeaders.IndexOf(section)}: {section.Name,-8} VA=0x{section.VirtualAddress:X8} Size={section.VirtualSize,-8} [{flags}]");
-        }
-        Console.WriteLine();
-        
+        PrintPeSections(peFile);
+
         // Print export information
-        if (peFormat.ExportDirectory != null)
-        {
-            Console.WriteLine("Exported Functions:");
-            Console.WriteLine($"DLL Name: {peFormat.ExportDirectory.DllName}");
-            Console.WriteLine($"Number of Functions: {peFormat.ExportDirectory.NumberOfFunctions}");
-            Console.WriteLine($"Number of Names: {peFormat.ExportDirectory.NumberOfNames}");
-            
-            for (int i = 0; i < peFormat.ExportedFunctions.Count; i++)
-            {
-                var export = peFormat.ExportedFunctions[i];
-                Console.WriteLine($"  {i}: {export.Name} (Ordinal={export.Ordinal}, RVA=0x{export.AddressRva:X8})");
-            }
-            Console.WriteLine();
-        }
-        
+        PrintPeExports(peFile);
+
         // Print import information
-        if (peFormat.ImportDescriptors.Count > 0)
-        {
-            Console.WriteLine("Imported Functions:");
-            Console.WriteLine($"Number of Imported DLLs: {peFormat.ImportDescriptors.Count}");
-            
-            foreach (var import in peFormat.ImportDescriptors)
-            {
-                Console.WriteLine($"  DLL: {import.DllName}");
-                
-                for (int i = 0; i < import.Functions.Count; i++)
-                {
-                    var function = import.Functions[i];
-                    if (function.IsOrdinal)
-                    {
-                        Console.WriteLine($"    {i}: Ordinal {function.Ordinal}");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"    {i}: {function.Name} (Hint={function.Hint})");
-                    }
-                }
-            }
-            Console.WriteLine();
-        }
+        PrintPeImports(peFile);
         
         // Find code sections
-        var codeSections = peFormat.SectionHeaders.FindAll(s => s.ContainsCode());
+        var codeSections = peFile.SectionHeaders.FindAll(s => s.ContainsCode());
         Console.WriteLine($"Found {codeSections.Count} code section(s):");
         foreach (var section in codeSections)
         {
@@ -112,7 +65,7 @@ public class Program
         if (codeSections.Count > 0)
         {
             var section = codeSections[0];
-            byte[] codeBytes = peFormat.GetSectionData(peFormat.SectionHeaders.IndexOf(section));
+            byte[] codeBytes = peFile.GetSectionData(peFile.SectionHeaders.IndexOf(section));
             
             Console.WriteLine($"Disassembling section {section.Name} at RVA 0x{section.VirtualAddress:X8}:");
             
@@ -132,11 +85,67 @@ public class Program
             // Print a summary of how many more instructions there are
             if (instructions.Count > count)
             {
-                Console.WriteLine($"... ({instructions.Count - count} more bytes not shown)");
+                Console.WriteLine($"... ({instructions.Count - count} more instructions not shown)");
             }
         }
         
-        Console.WriteLine("\nPress Enter to exit...");
-        Console.ReadLine();
+        // Console.WriteLine("\nPress Enter to exit...");
+        // Console.ReadLine();
+    }
+
+    private static void PrintPeImports(PeFile peFile)
+    {
+        Console.WriteLine("Imported Functions:");
+        Console.WriteLine($"Number of Imported DLLs: {peFile.ImportDescriptors.Count}");
+
+        foreach (var import in peFile.ImportDescriptors)
+        {
+            Console.WriteLine($"  DLL: {import.DllName}");
+                
+            for (int i = 0; i < import.Functions.Count; i++)
+            {
+                var function = import.Functions[i];
+                if (function.IsOrdinal)
+                {
+                    Console.WriteLine($"    {i}: Ordinal {function.Ordinal}");
+                }
+                else
+                {
+                    Console.WriteLine($"    {i}: {function.Name} (Hint={function.Hint})");
+                }
+            }
+        }
+        Console.WriteLine();
+    }
+
+    private static void PrintPeExports(PeFile peFile)
+    {
+        Console.WriteLine("Exported Functions:");
+        Console.WriteLine($"DLL Name: {peFile.ExportDirectory.DllName}");
+        Console.WriteLine($"Number of Functions: {peFile.ExportDirectory.NumberOfFunctions}");
+        Console.WriteLine($"Number of Names: {peFile.ExportDirectory.NumberOfNames}");
+            
+        for (int i = 0; i < peFile.ExportedFunctions.Count; i++)
+        {
+            var export = peFile.ExportedFunctions[i];
+            Console.WriteLine($"  {i}: {export.Name} (Ordinal={export.Ordinal}, RVA=0x{export.AddressRva:X8})");
+        }
+        Console.WriteLine();
+    }
+
+    private static void PrintPeSections(PeFile peFile)
+    {
+        Console.WriteLine("Sections:");
+        foreach (var section in peFile.SectionHeaders)
+        {
+            string flags = "";
+            if (section.ContainsCode()) flags += "Code ";
+            if (section.IsExecutable()) flags += "Exec ";
+            if (section.IsReadable()) flags += "Read ";
+            if (section.IsWritable()) flags += "Write";
+            
+            Console.WriteLine($"  {peFile.SectionHeaders.IndexOf(section)}: {section.Name,-8} VA=0x{section.VirtualAddress:X8} Size={section.VirtualSize,-8} [{flags}]");
+        }
+        Console.WriteLine();
     }
 }
