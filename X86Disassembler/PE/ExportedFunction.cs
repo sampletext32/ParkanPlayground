@@ -7,7 +7,7 @@ public class ExportedFunction
 {
     public string Name;           // Function name
     public ushort Ordinal;        // Function ordinal
-    public uint Address;          // Function RVA
+    public uint AddressRva;       // Function RVA
     public bool IsForwarder;      // True if this is a forwarder
     public string ForwarderName;  // Name of the forwarded function
     

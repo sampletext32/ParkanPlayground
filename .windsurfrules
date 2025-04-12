@@ -1,0 +1,19 @@
+when creating or edditing code, adjust namespace declaration style to oneliner, e.g. "namespace MyNamespace;".
+
+always separate usings, namespaces, type declarations, methods and properties with empty line.
+
+always add comments to the code, when the code is not trivial.
+
+always put classes into separate files.
+
+always try to build the project you've edited.
+
+always summarize the changes you've made.
+
+always add changes to git with descriptive comment, but be concise.
+
+never use terminal commands to edit code. In case of a failure, write it to user and stop execution.
+
+never address compiler warnings yourself. If you see a warning, suggest to address it.
+
+when working with RVA variables, always add that to variable name, e.g. "nameRVA".

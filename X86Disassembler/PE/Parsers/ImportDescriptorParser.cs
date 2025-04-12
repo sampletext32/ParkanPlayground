@@ -50,11 +50,11 @@ public class ImportDescriptorParser
                 
                 ImportDescriptor descriptor = new ImportDescriptor
                 {
-                    OriginalFirstThunk = originalFirstThunk,
+                    OriginalFirstThunkRva = originalFirstThunk,
                     TimeDateStamp = timeDateStamp,
                     ForwarderChain = forwarderChain,
-                    Name = nameRva,
-                    FirstThunk = firstThunk,
+                    DllNameRva = nameRva,
+                    FirstThunkRva = firstThunk,
                     DllName = "Unknown" // Default name in case we can't read it
                 };
                 
@@ -111,7 +111,7 @@ public class ImportDescriptorParser
         try
         {
             // Use OriginalFirstThunk if available, otherwise use FirstThunk
-            uint thunkRva = descriptor.OriginalFirstThunk != 0 ? descriptor.OriginalFirstThunk : descriptor.FirstThunk;
+            uint thunkRva = descriptor.OriginalFirstThunkRva != 0 ? descriptor.OriginalFirstThunkRva : descriptor.FirstThunkRva;
             
             if (thunkRva == 0)
             {
@@ -133,7 +133,7 @@ public class ImportDescriptorParser
                 
                 ImportedFunction function = new ImportedFunction
                 {
-                    ThunkRVA = thunkRva + (uint)(functionCount * 4)
+                    ThunkRva = thunkRva + (uint)(functionCount * 4)
                 };
                 
                 // Check if imported by ordinal (high bit set)

@@ -9,8 +9,8 @@ public class ExportDirectory
     public uint TimeDateStamp;         // Time and date stamp
     public ushort MajorVersion;        // Major version
     public ushort MinorVersion;        // Minor version
-    public uint Name;                  // RVA of the name of the DLL
-    public string DllName;            // The actual name of the DLL
+    public uint DllNameRva;            // RVA of the name of the DLL
+    public string DllName;             // The actual name of the DLL
     public uint Base;                  // Ordinal base
     public uint NumberOfFunctions;     // Number of functions
     public uint NumberOfNames;         // Number of names

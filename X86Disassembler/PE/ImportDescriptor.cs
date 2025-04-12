@@ -5,12 +5,12 @@ namespace X86Disassembler.PE;
 /// </summary>
 public class ImportDescriptor
 {
-    public uint OriginalFirstThunk;  // RVA to original first thunk
-    public uint TimeDateStamp;       // Time and date stamp
-    public uint ForwarderChain;      // Forwarder chain
-    public uint Name;                // RVA to the name of the DLL
-    public string DllName;          // The actual name of the DLL
-    public uint FirstThunk;          // RVA to first thunk
+    public uint OriginalFirstThunkRva;  // RVA to original first thunk
+    public uint TimeDateStamp;          // Time and date stamp
+    public uint ForwarderChain;         // Forwarder chain
+    public uint DllNameRva;             // RVA to the name of the DLL
+    public string DllName;              // The actual name of the DLL
+    public uint FirstThunkRva;          // RVA to first thunk
         
     public List<ImportedFunction> Functions { get; } = new List<ImportedFunction>();
         

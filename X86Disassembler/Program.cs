@@ -99,7 +99,7 @@ internal class Program
             for (int i = 0; i < peFormat.ExportedFunctions.Count; i++)
             {
                 var function = peFormat.ExportedFunctions[i];
-                Console.WriteLine($"  {i}: {function.Name} (Ordinal={function.Ordinal}, RVA=0x{function.Address:X8})");
+                Console.WriteLine($"  {i}: {function.Name} (Ordinal={function.Ordinal}, RVA=0x{function.AddressRva:X8})");
             }
         }
         
