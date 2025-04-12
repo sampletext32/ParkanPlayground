@@ -109,6 +109,23 @@ public class InstructionDecoder
             {
                 _repPrefix = true;
                 _position++;
+                
+                // Special case for string instructions
+                if (_position < _length)
+                {
+                    byte stringOp = _codeBuffer[_position];
+                    if (stringOp == 0xA4 || stringOp == 0xA5 || // MOVS
+                        stringOp == 0xAA || stringOp == 0xAB || // STOS
+                        stringOp == 0xAC || stringOp == 0xAD || // LODS
+                        stringOp == 0xAE || stringOp == 0xAF)   // SCAS
+                    {
+                        // Skip the string operation opcode
+                        _position++;
+                        
+                        // Handle REP string instruction
+                        return CreateStringInstruction(prefix, stringOp, startPosition);
+                    }
+                }
             }
             else
             {
@@ -157,6 +174,12 @@ public class InstructionDecoder
             instruction.Operands = "??";
         }
         
+        // Add REP prefix to the instruction if present
+        if (_repPrefix && !instruction.Mnemonic.StartsWith("rep"))
+        {
+            instruction.Mnemonic = $"rep {instruction.Mnemonic}";
+        }
+        
         // Add segment override prefix to the instruction if present
         if (_segmentOverridePrefix && !string.IsNullOrEmpty(instruction.Operands))
         {
@@ -169,9 +192,65 @@ public class InstructionDecoder
         }
         
         // Set the raw bytes
-        int instructionLength = _position - startPosition;
-        instruction.RawBytes = new byte[instructionLength];
-        Array.Copy(_codeBuffer, startPosition, instruction.RawBytes, 0, instructionLength);
+        int bytesLength = _position - startPosition;
+        instruction.RawBytes = new byte[bytesLength];
+        Array.Copy(_codeBuffer, startPosition, instruction.RawBytes, 0, bytesLength);
+        
+        return instruction;
+    }
+    
+    /// <summary>
+    /// Creates an instruction for a string operation with REP/REPNE prefix
+    /// </summary>
+    /// <param name="prefix">The REP/REPNE prefix (0xF2 or 0xF3)</param>
+    /// <param name="stringOp">The string operation opcode</param>
+    /// <param name="startPosition">The start position of the instruction</param>
+    /// <returns>The created instruction</returns>
+    private Instruction CreateStringInstruction(byte prefix, byte stringOp, int startPosition)
+    {
+        // Create a new instruction
+        Instruction instruction = new Instruction
+        {
+            Address = (uint)startPosition,
+        };
+        
+        // Get the mnemonic for the string operation
+        string mnemonic = OpcodeMap.GetMnemonic(stringOp);
+        instruction.Mnemonic = prefix == 0xF3 ? $"rep {mnemonic}" : $"repne {mnemonic}";
+        
+        // Set operands based on the string operation
+        switch (stringOp)
+        {
+            case 0xA4: // MOVSB
+                instruction.Operands = "byte ptr [edi], byte ptr [esi]";
+                break;
+            case 0xA5: // MOVSD
+                instruction.Operands = "dword ptr [edi], dword ptr [esi]";
+                break;
+            case 0xAA: // STOSB
+                instruction.Operands = "byte ptr [edi], al";
+                break;
+            case 0xAB: // STOSD
+                instruction.Operands = "dword ptr [edi], eax";
+                break;
+            case 0xAC: // LODSB
+                instruction.Operands = "al, byte ptr [esi]";
+                break;
+            case 0xAD: // LODSD
+                instruction.Operands = "eax, dword ptr [esi]";
+                break;
+            case 0xAE: // SCASB
+                instruction.Operands = "al, byte ptr [edi]";
+                break;
+            case 0xAF: // SCASD
+                instruction.Operands = "eax, dword ptr [edi]";
+                break;
+        }
+        
+        // Set the raw bytes
+        int length = _position - startPosition;
+        instruction.RawBytes = new byte[length];
+        Array.Copy(_codeBuffer, startPosition, instruction.RawBytes, 0, length);
         
         return instruction;
     }

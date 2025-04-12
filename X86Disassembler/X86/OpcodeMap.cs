@@ -118,6 +118,16 @@ public static class OpcodeMap
         OneByteOpcodes[0xA2] = "mov"; // MOV moffs8, AL
         OneByteOpcodes[0xA3] = "mov"; // MOV moffs32, EAX
         
+        // String instructions
+        OneByteOpcodes[0xA4] = "movs"; // MOVS byte
+        OneByteOpcodes[0xA5] = "movs"; // MOVS dword
+        OneByteOpcodes[0xAA] = "stos"; // STOS byte
+        OneByteOpcodes[0xAB] = "stos"; // STOS dword
+        OneByteOpcodes[0xAC] = "lods"; // LODS byte
+        OneByteOpcodes[0xAD] = "lods"; // LODS dword
+        OneByteOpcodes[0xAE] = "scas"; // SCAS byte
+        OneByteOpcodes[0xAF] = "scas"; // SCAS dword
+        
         // Control flow instructions
         OneByteOpcodes[0xCC] = "int3";
         OneByteOpcodes[0x90] = "nop";
@@ -178,6 +188,6 @@ public static class OpcodeMap
     /// <returns>The mnemonic</returns>
     public static string GetMnemonic(byte opcode)
     {
-        return "TODO UNKNOWN: " + OneByteOpcodes[opcode];
+        return OneByteOpcodes[opcode];
     }
 }
