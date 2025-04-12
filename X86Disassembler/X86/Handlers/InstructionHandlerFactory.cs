@@ -110,11 +110,6 @@ public class InstructionHandlerFactory
         _handlers.Add(new AddImmToRm32Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new AddImmToRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
         
-        // OR handlers
-        _handlers.Add(new OrImmToRm8Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new OrImmToRm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new OrImmToRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
-        
         // ADC handlers
         _handlers.Add(new AdcImmToRm32Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new AdcImmToRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
@@ -204,7 +199,11 @@ public class InstructionHandlerFactory
     /// </summary>
     private void RegisterOrHandlers()
     {
-        // Add Or handlers
+        // Add OR handlers
+        _handlers.Add(new OrImmToRm8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new OrImmToRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new OrImmToRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+
         _handlers.Add(new OrR8Rm8Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new OrR32Rm32Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new OrAlImmHandler(_codeBuffer, _decoder, _length));

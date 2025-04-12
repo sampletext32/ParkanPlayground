@@ -1,4 +1,4 @@
-namespace X86Disassembler.X86.Handlers.ArithmeticImmediate;
+namespace X86Disassembler.X86.Handlers.Or;
 
 /// <summary>
 /// Handler for OR r/m32, imm32 instruction (0x81 /1)
