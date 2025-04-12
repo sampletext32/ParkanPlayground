@@ -1,23 +1,26 @@
 using X86Disassembler.X86.Handlers.Call;
+using X86Disassembler.X86.Handlers.Group1;
+using X86Disassembler.X86.Handlers.Group3;
 using X86Disassembler.X86.Handlers.Jump;
+using X86Disassembler.X86.Handlers.Mov;
+using X86Disassembler.X86.Handlers.Pop;
+using X86Disassembler.X86.Handlers.Push;
 using X86Disassembler.X86.Handlers.Ret;
 using X86Disassembler.X86.Handlers.Test;
+using X86Disassembler.X86.Handlers.Xchg;
 using X86Disassembler.X86.Handlers.Xor;
 
 namespace X86Disassembler.X86.Handlers;
-
-using X86Disassembler.X86.Handlers.Group1;
-using X86Disassembler.X86.Handlers.Group3;
 
 /// <summary>
 /// Factory for creating instruction handlers
 /// </summary>
 public class InstructionHandlerFactory
 {
+    private readonly List<IInstructionHandler> _handlers = new();
     private readonly byte[] _codeBuffer;
     private readonly InstructionDecoder _decoder;
     private readonly int _length;
-    private readonly List<IInstructionHandler> _handlers = [];
     
     /// <summary>
     /// Initializes a new instance of the InstructionHandlerFactory class
@@ -31,7 +34,6 @@ public class InstructionHandlerFactory
         _decoder = decoder;
         _length = length;
         
-        // Register all instruction handlers
         RegisterHandlers();
     }
     
@@ -40,49 +42,38 @@ public class InstructionHandlerFactory
     /// </summary>
     private void RegisterHandlers()
     {
-        // Register Group3 handlers first to ensure they take precedence
-        // over generic handlers for the same opcodes
+        // Register group handlers
         RegisterGroup3Handlers();
-        
-        // Register Group1 handlers
         RegisterGroup1Handlers();
         
         // Register specific instruction handlers
         _handlers.Add(new Int3Handler(_codeBuffer, _decoder, _length));
 
-        _handlers.Add(new RetHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new RetImmHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new CallRel32Handler(_codeBuffer, _decoder, _length));
+        // Register Return handlers
+        RegisterReturnHandlers();
         
-        // XOR handlers
-        _handlers.Add(new XorRegMemHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new XorMemRegHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new XorAlImmHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new XorEaxImmHandler(_codeBuffer, _decoder, _length));
-
+        // Register Call handlers
+        RegisterCallHandlers();
+        
+        // Register Jump handlers
+        RegisterJumpHandlers();
+        
+        // Register Test handlers
+        RegisterTestHandlers();
+        
+        // Register Xor handlers
+        RegisterXorHandlers();
+        
+        // Register Data Transfer handlers
+        RegisterDataTransferHandlers();
+        
+        // Register floating point handlers
         _handlers.Add(new FnstswHandler(_codeBuffer, _decoder, _length));
-
-        // TEST handlers
-        _handlers.Add(new TestImmWithRm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new TestImmWithRm8Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new TestRegMem8Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new TestRegMemHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new TestAlImmHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new TestEaxImmHandler(_codeBuffer, _decoder, _length));
-        
-        // JMP handlers
-        _handlers.Add(new JmpRel32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new JmpRel8Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new ConditionalJumpHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new TwoByteConditionalJumpHandler(_codeBuffer, _decoder, _length));
-        
-        // Register group handlers for instructions that share similar decoding logic
         _handlers.Add(new FloatingPointHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new DataTransferHandler(_codeBuffer, _decoder, _length));
     }
     
     /// <summary>
-    /// Registers the Group1 handlers
+    /// Registers all Group1 instruction handlers
     /// </summary>
     private void RegisterGroup1Handlers()
     {
@@ -122,7 +113,7 @@ public class InstructionHandlerFactory
     }
     
     /// <summary>
-    /// Registers the Group3 handlers
+    /// Registers all Group3 instruction handlers
     /// </summary>
     private void RegisterGroup3Handlers()
     {
@@ -146,20 +137,96 @@ public class InstructionHandlerFactory
     }
     
     /// <summary>
-    /// Gets a handler that can decode the given opcode
+    /// Registers all Return instruction handlers
+    /// </summary>
+    private void RegisterReturnHandlers()
+    {
+        // Add Return handlers
+        _handlers.Add(new RetHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new RetImmHandler(_codeBuffer, _decoder, _length));
+    }
+    
+    /// <summary>
+    /// Registers all Call instruction handlers
+    /// </summary>
+    private void RegisterCallHandlers()
+    {
+        // Add Call handlers
+        _handlers.Add(new CallRel32Handler(_codeBuffer, _decoder, _length));
+    }
+    
+    /// <summary>
+    /// Registers all Jump instruction handlers
+    /// </summary>
+    private void RegisterJumpHandlers()
+    {
+        // JMP handlers
+        _handlers.Add(new JmpRel32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new JmpRel8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new ConditionalJumpHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new TwoByteConditionalJumpHandler(_codeBuffer, _decoder, _length));
+    }
+    
+    /// <summary>
+    /// Registers all Test instruction handlers
+    /// </summary>
+    private void RegisterTestHandlers()
+    {
+        // TEST handlers
+        _handlers.Add(new TestImmWithRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new TestImmWithRm8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new TestRegMem8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new TestRegMemHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new TestAlImmHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new TestEaxImmHandler(_codeBuffer, _decoder, _length));
+    }
+    
+    /// <summary>
+    /// Registers all Xor instruction handlers
+    /// </summary>
+    private void RegisterXorHandlers()
+    {
+        // Add Xor handlers
+        _handlers.Add(new XorAlImmHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new XorEaxImmHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new XorMemRegHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new XorRegMemHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new XorImmWithRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new XorImmWithRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+    }
+    
+    /// <summary>
+    /// Registers all Data Transfer instruction handlers
+    /// </summary>
+    private void RegisterDataTransferHandlers()
+    {
+        // Add MOV handlers
+        _handlers.Add(new MovRegMemHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new MovMemRegHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new MovRegImm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new MovRegImm8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new MovEaxMoffsHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new MovMoffsEaxHandler(_codeBuffer, _decoder, _length));
+        
+        // Add PUSH handlers
+        _handlers.Add(new PushRegHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new PushImm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new PushImm8Handler(_codeBuffer, _decoder, _length));
+        
+        // Add POP handlers
+        _handlers.Add(new PopRegHandler(_codeBuffer, _decoder, _length));
+        
+        // Add XCHG handlers
+        _handlers.Add(new XchgEaxRegHandler(_codeBuffer, _decoder, _length));
+    }
+    
+    /// <summary>
+    /// Gets the handler that can decode the given opcode
     /// </summary>
     /// <param name="opcode">The opcode to decode</param>
-    /// <returns>A handler that can decode the opcode, or null if no handler is found</returns>
+    /// <returns>The handler that can decode the opcode, or null if no handler can decode it</returns>
     public IInstructionHandler? GetHandler(byte opcode)
     {
-        foreach (var handler in _handlers)
-        {
-            if (handler.CanHandle(opcode))
-            {
-                return handler;
-            }
-        }
-        
-        return null;
+        return _handlers.FirstOrDefault(h => h.CanHandle(opcode));
     }
 }
