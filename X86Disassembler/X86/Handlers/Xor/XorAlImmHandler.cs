@@ -1,17 +1,17 @@
-namespace X86Disassembler.X86.Handlers;
+namespace X86Disassembler.X86.Handlers.Xor;
 
 /// <summary>
-/// Handler for RET instruction (0xC3)
+/// Handler for XOR AL, imm8 instruction (0x34)
 /// </summary>
-public class RetHandler : InstructionHandler
+public class XorAlImmHandler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the RetHandler class
+    /// Initializes a new instance of the XorAlImmHandler class
     /// </summary>
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public RetHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public XorAlImmHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
         : base(codeBuffer, decoder, length)
     {
     }
@@ -23,11 +23,11 @@ public class RetHandler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        return opcode == 0xC3;
+        return opcode == 0x34;
     }
     
     /// <summary>
-    /// Decodes a RET instruction
+    /// Decodes a XOR AL, imm8 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -35,10 +35,21 @@ public class RetHandler : InstructionHandler
     public override bool Decode(byte opcode, Instruction instruction)
     {
         // Set the mnemonic
-        instruction.Mnemonic = "ret";
+        instruction.Mnemonic = "xor";
         
-        // No operands for RET
-        instruction.Operands = string.Empty;
+        int position = Decoder.GetPosition();
+        
+        if (position >= Length)
+        {
+            return false;
+        }
+        
+        // Read the immediate value
+        byte imm8 = CodeBuffer[position];
+        Decoder.SetPosition(position + 1);
+        
+        // Set the operands
+        instruction.Operands = $"al, 0x{imm8:X2}";
         
         return true;
     }

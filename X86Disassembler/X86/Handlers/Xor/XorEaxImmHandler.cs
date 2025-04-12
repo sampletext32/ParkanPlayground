@@ -1,17 +1,17 @@
-namespace X86Disassembler.X86.Handlers;
+namespace X86Disassembler.X86.Handlers.Xor;
 
 /// <summary>
-/// Handler for XOR AL, imm8 instruction (0x34)
+/// Handler for XOR EAX, imm32 instruction (0x35)
 /// </summary>
-public class XorAlImmHandler : InstructionHandler
+public class XorEaxImmHandler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the XorAlImmHandler class
+    /// Initializes a new instance of the XorEaxImmHandler class
     /// </summary>
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public XorAlImmHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public XorEaxImmHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
         : base(codeBuffer, decoder, length)
     {
     }
@@ -23,11 +23,11 @@ public class XorAlImmHandler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        return opcode == 0x34;
+        return opcode == 0x35;
     }
     
     /// <summary>
-    /// Decodes a XOR AL, imm8 instruction
+    /// Decodes a XOR EAX, imm32 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -39,17 +39,17 @@ public class XorAlImmHandler : InstructionHandler
         
         int position = Decoder.GetPosition();
         
-        if (position >= Length)
+        if (position + 4 > Length)
         {
             return false;
         }
         
         // Read the immediate value
-        byte imm8 = CodeBuffer[position];
-        Decoder.SetPosition(position + 1);
+        uint imm32 = BitConverter.ToUInt32(CodeBuffer, position);
+        Decoder.SetPosition(position + 4);
         
         // Set the operands
-        instruction.Operands = $"al, 0x{imm8:X2}";
+        instruction.Operands = $"eax, 0x{imm32:X8}";
         
         return true;
     }

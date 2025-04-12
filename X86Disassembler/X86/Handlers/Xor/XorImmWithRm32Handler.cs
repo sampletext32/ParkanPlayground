@@ -1,17 +1,19 @@
-namespace X86Disassembler.X86.Handlers.Group1;
+using X86Disassembler.X86.Handlers.Group1;
+
+namespace X86Disassembler.X86.Handlers.Xor;
 
 /// <summary>
-/// Handler for XOR r/m32, imm8 (sign-extended) instruction (0x83 /6)
+/// Handler for XOR r/m32, imm32 instruction (0x81 /6)
 /// </summary>
-public class XorImmWithRm32SignExtendedHandler : Group1BaseHandler
+public class XorImmWithRm32Handler : Group1BaseHandler
 {
     /// <summary>
-    /// Initializes a new instance of the XorImmWithRm32SignExtendedHandler class
+    /// Initializes a new instance of the XorImmWithRm32Handler class
     /// </summary>
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public XorImmWithRm32SignExtendedHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public XorImmWithRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
         : base(codeBuffer, decoder, length)
     {
     }
@@ -23,7 +25,7 @@ public class XorImmWithRm32SignExtendedHandler : Group1BaseHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        if (opcode != 0x83)
+        if (opcode != 0x81)
             return false;
             
         // Check if the reg field of the ModR/M byte is 6 (XOR)
@@ -38,7 +40,7 @@ public class XorImmWithRm32SignExtendedHandler : Group1BaseHandler
     }
     
     /// <summary>
-    /// Decodes a XOR r/m32, imm8 (sign-extended) instruction
+    /// Decodes a XOR r/m32, imm32 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -67,15 +69,14 @@ public class XorImmWithRm32SignExtendedHandler : Group1BaseHandler
         // Decode the destination operand
         string destOperand = _modRMDecoder.DecodeModRM(mod, rm, false);
         
-        // Read the immediate value (sign-extended from 8 to 32 bits)
-        if (position >= Length)
+        // Read the immediate value
+        if (position + 3 >= Length)
         {
             return false;
         }
         
-        sbyte imm8 = (sbyte)CodeBuffer[position];
-        int imm32 = imm8; // Sign-extend to 32 bits
-        Decoder.SetPosition(position + 1);
+        uint imm32 = BitConverter.ToUInt32(CodeBuffer, position);
+        Decoder.SetPosition(position + 4);
         
         // Set the operands
         instruction.Operands = $"{destOperand}, 0x{imm32:X8}";

@@ -1,17 +1,17 @@
-namespace X86Disassembler.X86.Handlers;
+namespace X86Disassembler.X86.Handlers.Call;
 
 /// <summary>
-/// Handler for RET instruction with immediate operand (0xC2)
+/// Handler for CALL rel32 instruction (0xE8)
 /// </summary>
-public class RetImmHandler : InstructionHandler
+public class CallRel32Handler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the RetImmHandler class
+    /// Initializes a new instance of the CallRel32Handler class
     /// </summary>
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public RetImmHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public CallRel32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
         : base(codeBuffer, decoder, length)
     {
     }
@@ -23,11 +23,11 @@ public class RetImmHandler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        return opcode == 0xC2;
+        return opcode == 0xE8;
     }
     
     /// <summary>
-    /// Decodes a RET instruction with immediate operand
+    /// Decodes a CALL rel32 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -35,21 +35,24 @@ public class RetImmHandler : InstructionHandler
     public override bool Decode(byte opcode, Instruction instruction)
     {
         // Set the mnemonic
-        instruction.Mnemonic = "ret";
+        instruction.Mnemonic = "call";
         
         int position = Decoder.GetPosition();
         
-        if (position + 2 > Length)
+        if (position + 4 > Length)
         {
             return false;
         }
         
-        // Read the immediate value
-        ushort imm16 = BitConverter.ToUInt16(CodeBuffer, position);
-        Decoder.SetPosition(position + 2);
+        // Read the relative offset
+        int offset = BitConverter.ToInt32(CodeBuffer, position);
+        Decoder.SetPosition(position + 4);
+        
+        // Calculate the target address
+        uint targetAddress = (uint)(position + offset + 4);
         
         // Set the operands
-        instruction.Operands = $"0x{imm16:X4}";
+        instruction.Operands = $"0x{targetAddress:X8}";
         
         return true;
     }

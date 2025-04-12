@@ -1,17 +1,17 @@
-namespace X86Disassembler.X86.Handlers;
+namespace X86Disassembler.X86.Handlers.Ret;
 
 /// <summary>
-/// Handler for XOR EAX, imm32 instruction (0x35)
+/// Handler for RET instruction with immediate operand (0xC2)
 /// </summary>
-public class XorEaxImmHandler : InstructionHandler
+public class RetImmHandler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the XorEaxImmHandler class
+    /// Initializes a new instance of the RetImmHandler class
     /// </summary>
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public XorEaxImmHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public RetImmHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
         : base(codeBuffer, decoder, length)
     {
     }
@@ -23,11 +23,11 @@ public class XorEaxImmHandler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        return opcode == 0x35;
+        return opcode == 0xC2;
     }
     
     /// <summary>
-    /// Decodes a XOR EAX, imm32 instruction
+    /// Decodes a RET instruction with immediate operand
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -35,21 +35,21 @@ public class XorEaxImmHandler : InstructionHandler
     public override bool Decode(byte opcode, Instruction instruction)
     {
         // Set the mnemonic
-        instruction.Mnemonic = "xor";
+        instruction.Mnemonic = "ret";
         
         int position = Decoder.GetPosition();
         
-        if (position + 4 > Length)
+        if (position + 2 > Length)
         {
             return false;
         }
         
         // Read the immediate value
-        uint imm32 = BitConverter.ToUInt32(CodeBuffer, position);
-        Decoder.SetPosition(position + 4);
+        ushort imm16 = BitConverter.ToUInt16(CodeBuffer, position);
+        Decoder.SetPosition(position + 2);
         
         // Set the operands
-        instruction.Operands = $"eax, 0x{imm32:X8}";
+        instruction.Operands = $"0x{imm16:X4}";
         
         return true;
     }

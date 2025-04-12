@@ -1,4 +1,4 @@
-namespace X86Disassembler.X86.Handlers;
+namespace X86Disassembler.X86.Handlers.Xor;
 
 /// <summary>
 /// Handler for XOR r/m32, r32 instruction (0x31)

@@ -1,17 +1,17 @@
-namespace X86Disassembler.X86.Handlers;
+namespace X86Disassembler.X86.Handlers.Ret;
 
 /// <summary>
-/// Handler for CALL rel32 instruction (0xE8)
+/// Handler for RET instruction (0xC3)
 /// </summary>
-public class CallRel32Handler : InstructionHandler
+public class RetHandler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the CallRel32Handler class
+    /// Initializes a new instance of the RetHandler class
     /// </summary>
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public CallRel32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public RetHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
         : base(codeBuffer, decoder, length)
     {
     }
@@ -23,11 +23,11 @@ public class CallRel32Handler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        return opcode == 0xE8;
+        return opcode == 0xC3;
     }
     
     /// <summary>
-    /// Decodes a CALL rel32 instruction
+    /// Decodes a RET instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -35,24 +35,10 @@ public class CallRel32Handler : InstructionHandler
     public override bool Decode(byte opcode, Instruction instruction)
     {
         // Set the mnemonic
-        instruction.Mnemonic = "call";
+        instruction.Mnemonic = "ret";
         
-        int position = Decoder.GetPosition();
-        
-        if (position + 4 > Length)
-        {
-            return false;
-        }
-        
-        // Read the relative offset
-        int offset = BitConverter.ToInt32(CodeBuffer, position);
-        Decoder.SetPosition(position + 4);
-        
-        // Calculate the target address
-        uint targetAddress = (uint)(position + offset + 4);
-        
-        // Set the operands
-        instruction.Operands = $"0x{targetAddress:X8}";
+        // No operands for RET
+        instruction.Operands = string.Empty;
         
         return true;
     }

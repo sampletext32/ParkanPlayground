@@ -1,5 +1,8 @@
+using X86Disassembler.X86.Handlers.Call;
 using X86Disassembler.X86.Handlers.Jump;
+using X86Disassembler.X86.Handlers.Ret;
 using X86Disassembler.X86.Handlers.Test;
+using X86Disassembler.X86.Handlers.Xor;
 
 namespace X86Disassembler.X86.Handlers;
 
