@@ -1,4 +1,5 @@
 using X86Disassembler.X86.Handlers.Call;
+using X86Disassembler.X86.Handlers.FloatingPoint;
 using X86Disassembler.X86.Handlers.Group1;
 using X86Disassembler.X86.Handlers.Group3;
 using X86Disassembler.X86.Handlers.Jump;
@@ -68,8 +69,7 @@ public class InstructionHandlerFactory
         RegisterDataTransferHandlers();
         
         // Register floating point handlers
-        _handlers.Add(new FnstswHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new FloatingPointHandler(_codeBuffer, _decoder, _length));
+        RegisterFloatingPointHandlers();
     }
     
     /// <summary>
@@ -218,6 +218,23 @@ public class InstructionHandlerFactory
         
         // Add XCHG handlers
         _handlers.Add(new XchgEaxRegHandler(_codeBuffer, _decoder, _length));
+    }
+    
+    /// <summary>
+    /// Registers all Floating Point instruction handlers
+    /// </summary>
+    private void RegisterFloatingPointHandlers()
+    {
+        // Add Floating Point handlers
+        _handlers.Add(new FnstswHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new Float32OperationHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new LoadStoreControlHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new Int32OperationHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new LoadStoreInt32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new Float64OperationHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new LoadStoreFloat64Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new Int16OperationHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new LoadStoreInt16Handler(_codeBuffer, _decoder, _length));
     }
     
     /// <summary>

@@ -5,9 +5,6 @@ namespace X86Disassembler.X86.Handlers.Test;
 /// </summary>
 public class TestRegMem8Handler : InstructionHandler
 {
-    // ModR/M decoder
-    private readonly ModRMDecoder _modRMDecoder;
-    
     /// <summary>
     /// Initializes a new instance of the TestRegMem8Handler class
     /// </summary>
@@ -17,7 +14,6 @@ public class TestRegMem8Handler : InstructionHandler
     public TestRegMem8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
         : base(codeBuffer, decoder, length)
     {
-        _modRMDecoder = new ModRMDecoder(codeBuffer, decoder, length);
     }
     
     /// <summary>
@@ -73,7 +69,7 @@ public class TestRegMem8Handler : InstructionHandler
         else
         {
             // Decode the memory operand
-            string memOperand = _modRMDecoder.DecodeModRM(mod, rm, true);
+            string memOperand = ModRMDecoder.DecodeModRM(mod, rm, true);
             
             // Get the register name
             string regReg = GetRegister8(reg);
@@ -83,16 +79,5 @@ public class TestRegMem8Handler : InstructionHandler
         }
         
         return true;
-    }
-    
-    /// <summary>
-    /// Gets the 8-bit register name for the given register index
-    /// </summary>
-    /// <param name="reg">The register index</param>
-    /// <returns>The register name</returns>
-    private static string GetRegister8(byte reg)
-    {
-        string[] registerNames = { "al", "cl", "dl", "bl", "ah", "ch", "dh", "bh" };
-        return registerNames[reg & 0x07];
     }
 }

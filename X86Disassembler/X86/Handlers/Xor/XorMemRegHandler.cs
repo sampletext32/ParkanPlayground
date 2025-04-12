@@ -5,9 +5,6 @@ namespace X86Disassembler.X86.Handlers.Xor;
 /// </summary>
 public class XorMemRegHandler : InstructionHandler
 {
-    // ModR/M decoder
-    private readonly ModRMDecoder _modRMDecoder;
-    
     /// <summary>
     /// Initializes a new instance of the XorMemRegHandler class
     /// </summary>
@@ -17,7 +14,6 @@ public class XorMemRegHandler : InstructionHandler
     public XorMemRegHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
         : base(codeBuffer, decoder, length)
     {
-        _modRMDecoder = new ModRMDecoder(codeBuffer, decoder, length);
     }
     
     /// <summary>
@@ -58,7 +54,7 @@ public class XorMemRegHandler : InstructionHandler
         byte rm = (byte)(modRM & 0x07);
         
         // Decode the destination operand
-        string destOperand = _modRMDecoder.DecodeModRM(mod, rm, false);
+        string destOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
         
         // Get the source register
         string srcReg = GetRegister32(reg);
@@ -67,16 +63,5 @@ public class XorMemRegHandler : InstructionHandler
         instruction.Operands = $"{destOperand}, {srcReg}";
         
         return true;
-    }
-    
-    /// <summary>
-    /// Gets the 32-bit register name for the given register index
-    /// </summary>
-    /// <param name="reg">The register index</param>
-    /// <returns>The register name</returns>
-    private static string GetRegister32(byte reg)
-    {
-        string[] registerNames = { "eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi" };
-        return registerNames[reg & 0x07];
     }
 }

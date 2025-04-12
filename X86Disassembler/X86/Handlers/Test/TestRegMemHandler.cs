@@ -5,9 +5,6 @@ namespace X86Disassembler.X86.Handlers.Test;
 /// </summary>
 public class TestRegMemHandler : InstructionHandler
 {
-    // ModR/M decoder
-    private readonly ModRMDecoder _modRMDecoder;
-    
     /// <summary>
     /// Initializes a new instance of the TestRegMemHandler class
     /// </summary>
@@ -17,7 +14,6 @@ public class TestRegMemHandler : InstructionHandler
     public TestRegMemHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
         : base(codeBuffer, decoder, length)
     {
-        _modRMDecoder = new ModRMDecoder(codeBuffer, decoder, length);
     }
     
     /// <summary>
@@ -73,7 +69,7 @@ public class TestRegMemHandler : InstructionHandler
         else
         {
             // Decode the memory operand
-            string memOperand = _modRMDecoder.DecodeModRM(mod, rm, false);
+            string memOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
             
             // Get the register name
             string regReg = GetRegister32(reg);
@@ -83,16 +79,5 @@ public class TestRegMemHandler : InstructionHandler
         }
         
         return true;
-    }
-    
-    /// <summary>
-    /// Gets the 32-bit register name for the given register index
-    /// </summary>
-    /// <param name="reg">The register index</param>
-    /// <returns>The register name</returns>
-    private static string GetRegister32(byte reg)
-    {
-        string[] registerNames = { "eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi" };
-        return registerNames[reg & 0x07];
     }
 }

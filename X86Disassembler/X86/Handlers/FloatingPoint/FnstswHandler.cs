@@ -1,4 +1,4 @@
-namespace X86Disassembler.X86.Handlers;
+namespace X86Disassembler.X86.Handlers.FloatingPoint;
 
 /// <summary>
 /// Handler for FNSTSW instruction (0xDFE0)

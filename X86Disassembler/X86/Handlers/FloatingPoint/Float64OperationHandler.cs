@@ -1,17 +1,30 @@
-namespace X86Disassembler.X86.Handlers.Xor;
+namespace X86Disassembler.X86.Handlers.FloatingPoint;
 
 /// <summary>
-/// Handler for XOR r32, r/m32 instruction (0x33)
+/// Handler for floating-point operations on float64 (DC opcode)
 /// </summary>
-public class XorRegMemHandler : InstructionHandler
+public class Float64OperationHandler : FloatingPointBaseHandler
 {
+    // DC opcode - operations on float64
+    private static readonly string[] Mnemonics =
+    [
+        "fadd",
+        "fmul",
+        "fcom",
+        "fcomp",
+        "fsub",
+        "fsubr",
+        "fdiv",
+        "fdivr"
+    ];
+
     /// <summary>
-    /// Initializes a new instance of the XorRegMemHandler class
+    /// Initializes a new instance of the Float64OperationHandler class
     /// </summary>
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public XorRegMemHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public Float64OperationHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
         : base(codeBuffer, decoder, length)
     {
     }
@@ -23,27 +36,24 @@ public class XorRegMemHandler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        return opcode == 0x33;
+        return opcode == 0xDC;
     }
     
     /// <summary>
-    /// Decodes an XOR r32, r/m32 instruction
+    /// Decodes a floating-point instruction for float64 operations
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "xor";
-        
         int position = Decoder.GetPosition();
         
         if (position >= Length)
         {
             return false;
         }
-        
+
         // Read the ModR/M byte
         byte modRM = CodeBuffer[position++];
         Decoder.SetPosition(position);
@@ -53,14 +63,20 @@ public class XorRegMemHandler : InstructionHandler
         byte reg = (byte)((modRM & 0x38) >> 3);
         byte rm = (byte)(modRM & 0x07);
         
-        // Decode the source operand
-        string srcOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
+        // Set the mnemonic based on the opcode and reg field
+        instruction.Mnemonic = Mnemonics[reg];
         
-        // Get the destination register
-        string destReg = GetRegister32(reg);
-        
-        // Set the operands
-        instruction.Operands = $"{destReg}, {srcOperand}";
+        // For memory operands, set the operand
+        if (mod != 3) // Memory operand
+        {
+            string operand = ModRMDecoder.DecodeModRM(mod, rm, false);
+            instruction.Operands = $"qword ptr {operand}";
+        }
+        else // Register operand (ST(i))
+        {
+            // For DC C0-DC FF, the operands are reversed: ST(i), ST(0)
+            instruction.Operands = $"st({rm}), st(0)";
+        }
         
         return true;
     }
