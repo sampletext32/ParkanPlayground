@@ -1,17 +1,17 @@
-namespace X86Disassembler.X86.Handlers.Group1;
+namespace X86Disassembler.X86.Handlers.ArithmeticUnary;
 
 /// <summary>
-/// Handler for ADD r/m32, imm32 instruction (0x81 /0)
+/// Handler for NOT r/m32 instruction (0xF7 /2)
 /// </summary>
-public class AddImmToRm32Handler : InstructionHandler
+public class NotRm32Handler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the AddImmToRm32Handler class
+    /// Initializes a new instance of the NotRm32Handler class
     /// </summary>
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public AddImmToRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public NotRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
         : base(codeBuffer, decoder, length)
     {
     }
@@ -23,10 +23,11 @@ public class AddImmToRm32Handler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        if (opcode != 0x81)
+        // This handler only handles opcode 0xF7
+        if (opcode != 0xF7)
             return false;
             
-        // Check if the reg field of the ModR/M byte is 0 (ADD)
+        // Check if the reg field of the ModR/M byte is 2 (NOT)
         int position = Decoder.GetPosition();
         if (position >= Length)
             return false;
@@ -34,20 +35,17 @@ public class AddImmToRm32Handler : InstructionHandler
         byte modRM = CodeBuffer[position];
         byte reg = (byte)((modRM & 0x38) >> 3);
         
-        return reg == 0; // 0 = ADD
+        return reg == 2; // 2 = NOT
     }
     
     /// <summary>
-    /// Decodes an ADD r/m32, imm32 instruction
+    /// Decodes a NOT r/m32 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "add";
-        
         int position = Decoder.GetPosition();
         
         if (position >= Length)
@@ -57,27 +55,37 @@ public class AddImmToRm32Handler : InstructionHandler
         
         // Read the ModR/M byte
         byte modRM = CodeBuffer[position++];
-        Decoder.SetPosition(position);
         
         // Extract the fields from the ModR/M byte
         byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 0 for ADD
+        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 2 for NOT
         byte rm = (byte)(modRM & 0x07);
         
-        // Decode the destination operand
-        string destOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
-        
-        // Read the immediate value
-        if (position + 3 >= Length)
+        // Verify this is a NOT instruction
+        if (reg != 2)
         {
             return false;
         }
         
-        uint imm32 = BitConverter.ToUInt32(CodeBuffer, position);
-        Decoder.SetPosition(position + 4);
+        // Set the mnemonic
+        instruction.Mnemonic = "not";
+        
+        Decoder.SetPosition(position);
+        
+        // For direct register addressing (mod == 3), the r/m field specifies a register
+        string operand;
+        if (mod == 3)
+        {
+            operand = GetRegister32(rm);
+        }
+        else
+        {
+            // Use the ModR/M decoder for memory addressing
+            operand = ModRMDecoder.DecodeModRM(mod, rm, false);
+        }
         
         // Set the operands
-        instruction.Operands = $"{destOperand}, 0x{imm32:X8}";
+        instruction.Operands = operand;
         
         return true;
     }

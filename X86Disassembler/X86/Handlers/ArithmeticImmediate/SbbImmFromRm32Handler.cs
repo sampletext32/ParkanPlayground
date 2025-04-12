@@ -1,17 +1,17 @@
-namespace X86Disassembler.X86.Handlers.Group1;
+namespace X86Disassembler.X86.Handlers.ArithmeticImmediate;
 
 /// <summary>
-/// Handler for OR r/m32, imm32 instruction (0x81 /1)
+/// Handler for SBB r/m32, imm32 instruction (0x81 /3)
 /// </summary>
-public class OrImmToRm32Handler : InstructionHandler
+public class SbbImmFromRm32Handler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the OrImmToRm32Handler class
+    /// Initializes a new instance of the SbbImmFromRm32Handler class
     /// </summary>
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public OrImmToRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public SbbImmFromRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
         : base(codeBuffer, decoder, length)
     {
     }
@@ -26,7 +26,7 @@ public class OrImmToRm32Handler : InstructionHandler
         if (opcode != 0x81)
             return false;
             
-        // Check if the reg field of the ModR/M byte is 1 (OR)
+        // Check if the reg field of the ModR/M byte is 3 (SBB)
         int position = Decoder.GetPosition();
         if (position >= Length)
             return false;
@@ -34,11 +34,11 @@ public class OrImmToRm32Handler : InstructionHandler
         byte modRM = CodeBuffer[position];
         byte reg = (byte)((modRM & 0x38) >> 3);
         
-        return reg == 1; // 1 = OR
+        return reg == 3; // 3 = SBB
     }
     
     /// <summary>
-    /// Decodes an OR r/m32, imm32 instruction
+    /// Decodes a SBB r/m32, imm32 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -46,7 +46,7 @@ public class OrImmToRm32Handler : InstructionHandler
     public override bool Decode(byte opcode, Instruction instruction)
     {
         // Set the mnemonic
-        instruction.Mnemonic = "or";
+        instruction.Mnemonic = "sbb";
         
         int position = Decoder.GetPosition();
         
@@ -61,7 +61,7 @@ public class OrImmToRm32Handler : InstructionHandler
         
         // Extract the fields from the ModR/M byte
         byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 1 for OR
+        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 3 for SBB
         byte rm = (byte)(modRM & 0x07);
         
         // Decode the destination operand

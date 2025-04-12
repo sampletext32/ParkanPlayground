@@ -1,17 +1,17 @@
-namespace X86Disassembler.X86.Handlers.Group1;
+namespace X86Disassembler.X86.Handlers.ArithmeticImmediate;
 
 /// <summary>
-/// Handler for SUB r/m32, imm8 (sign-extended) instruction (0x83 /5)
+/// Handler for OR r/m32, imm8 (sign-extended) instruction (0x83 /1)
 /// </summary>
-public class SubImmFromRm32SignExtendedHandler : InstructionHandler
+public class OrImmToRm32SignExtendedHandler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the SubImmFromRm32SignExtendedHandler class
+    /// Initializes a new instance of the OrImmToRm32SignExtendedHandler class
     /// </summary>
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public SubImmFromRm32SignExtendedHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public OrImmToRm32SignExtendedHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
         : base(codeBuffer, decoder, length)
     {
     }
@@ -26,7 +26,7 @@ public class SubImmFromRm32SignExtendedHandler : InstructionHandler
         if (opcode != 0x83)
             return false;
             
-        // Check if the reg field of the ModR/M byte is 5 (SUB)
+        // Check if the reg field of the ModR/M byte is 1 (OR)
         int position = Decoder.GetPosition();
         if (position >= Length)
             return false;
@@ -34,11 +34,11 @@ public class SubImmFromRm32SignExtendedHandler : InstructionHandler
         byte modRM = CodeBuffer[position];
         byte reg = (byte)((modRM & 0x38) >> 3);
         
-        return reg == 5; // 5 = SUB
+        return reg == 1; // 1 = OR
     }
     
     /// <summary>
-    /// Decodes a SUB r/m32, imm8 (sign-extended) instruction
+    /// Decodes an OR r/m32, imm8 (sign-extended) instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -46,7 +46,7 @@ public class SubImmFromRm32SignExtendedHandler : InstructionHandler
     public override bool Decode(byte opcode, Instruction instruction)
     {
         // Set the mnemonic
-        instruction.Mnemonic = "sub";
+        instruction.Mnemonic = "or";
         
         int position = Decoder.GetPosition();
         
@@ -61,24 +61,24 @@ public class SubImmFromRm32SignExtendedHandler : InstructionHandler
         
         // Extract the fields from the ModR/M byte
         byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 5 for SUB
+        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 1 for OR
         byte rm = (byte)(modRM & 0x07);
         
         // Decode the destination operand
         string destOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
         
-        // Read the immediate value
+        // Read the immediate value (sign-extended from 8 to 32 bits)
         if (position >= Length)
         {
             return false;
         }
         
-        // Read the immediate value as a signed byte and sign-extend it
-        sbyte imm8 = (sbyte)CodeBuffer[position++];
-        Decoder.SetPosition(position);
+        sbyte imm8 = (sbyte)CodeBuffer[position];
+        int imm32 = imm8; // Sign-extend to 32 bits
+        Decoder.SetPosition(position + 1);
         
         // Set the operands
-        instruction.Operands = $"{destOperand}, 0x{(uint)imm8:X2}";
+        instruction.Operands = $"{destOperand}, 0x{imm32:X8}";
         
         return true;
     }

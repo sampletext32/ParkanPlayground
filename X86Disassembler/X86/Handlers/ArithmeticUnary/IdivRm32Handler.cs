@@ -1,17 +1,17 @@
-namespace X86Disassembler.X86.Handlers.Group1;
+namespace X86Disassembler.X86.Handlers.ArithmeticUnary;
 
 /// <summary>
-/// Handler for CMP r/m32, imm8 (sign-extended) instruction (0x83 /7)
+/// Handler for IDIV r/m32 instruction (0xF7 /7)
 /// </summary>
-public class CmpImmWithRm32SignExtendedHandler : InstructionHandler
+public class IdivRm32Handler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the CmpImmWithRm32SignExtendedHandler class
+    /// Initializes a new instance of the IdivRm32Handler class
     /// </summary>
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public CmpImmWithRm32SignExtendedHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public IdivRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
         : base(codeBuffer, decoder, length)
     {
     }
@@ -23,10 +23,10 @@ public class CmpImmWithRm32SignExtendedHandler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        if (opcode != 0x83)
+        if (opcode != 0xF7)
             return false;
             
-        // Check if the reg field of the ModR/M byte is 7 (CMP)
+        // Check if the reg field of the ModR/M byte is 7 (IDIV)
         int position = Decoder.GetPosition();
         if (position >= Length)
             return false;
@@ -34,11 +34,11 @@ public class CmpImmWithRm32SignExtendedHandler : InstructionHandler
         byte modRM = CodeBuffer[position];
         byte reg = (byte)((modRM & 0x38) >> 3);
         
-        return reg == 7; // 7 = CMP
+        return reg == 7; // 7 = IDIV
     }
     
     /// <summary>
-    /// Decodes a CMP r/m32, imm8 (sign-extended) instruction
+    /// Decodes an IDIV r/m32 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -46,7 +46,7 @@ public class CmpImmWithRm32SignExtendedHandler : InstructionHandler
     public override bool Decode(byte opcode, Instruction instruction)
     {
         // Set the mnemonic
-        instruction.Mnemonic = "cmp";
+        instruction.Mnemonic = "idiv";
         
         int position = Decoder.GetPosition();
         
@@ -61,24 +61,14 @@ public class CmpImmWithRm32SignExtendedHandler : InstructionHandler
         
         // Extract the fields from the ModR/M byte
         byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 7 for CMP
+        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 7 for IDIV
         byte rm = (byte)(modRM & 0x07);
         
-        // Decode the destination operand
-        string destOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
-        
-        // Read the immediate value
-        if (position >= Length)
-        {
-            return false;
-        }
-        
-        // Read the immediate value as a signed byte and sign-extend it
-        sbyte imm8 = (sbyte)CodeBuffer[position++];
-        Decoder.SetPosition(position);
+        // Decode the operand
+        string operand = ModRMDecoder.DecodeModRM(mod, rm, false);
         
         // Set the operands
-        instruction.Operands = $"{destOperand}, 0x{(uint)imm8:X2}";
+        instruction.Operands = operand;
         
         return true;
     }

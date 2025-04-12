@@ -1,17 +1,17 @@
-namespace X86Disassembler.X86.Handlers.Group1;
+namespace X86Disassembler.X86.Handlers.ArithmeticImmediate;
 
 /// <summary>
-/// Handler for SBB r/m32, imm8 (sign-extended) instruction (0x83 /3)
+/// Handler for AND r/m32, imm8 (sign-extended) instruction (0x83 /4)
 /// </summary>
-public class SbbImmFromRm32SignExtendedHandler : InstructionHandler
+public class AndImmWithRm32SignExtendedHandler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the SbbImmFromRm32SignExtendedHandler class
+    /// Initializes a new instance of the AndImmWithRm32SignExtendedHandler class
     /// </summary>
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public SbbImmFromRm32SignExtendedHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public AndImmWithRm32SignExtendedHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
         : base(codeBuffer, decoder, length)
     {
     }
@@ -26,7 +26,7 @@ public class SbbImmFromRm32SignExtendedHandler : InstructionHandler
         if (opcode != 0x83)
             return false;
             
-        // Check if the reg field of the ModR/M byte is 3 (SBB)
+        // Check if the reg field of the ModR/M byte is 4 (AND)
         int position = Decoder.GetPosition();
         if (position >= Length)
             return false;
@@ -34,11 +34,11 @@ public class SbbImmFromRm32SignExtendedHandler : InstructionHandler
         byte modRM = CodeBuffer[position];
         byte reg = (byte)((modRM & 0x38) >> 3);
         
-        return reg == 3; // 3 = SBB
+        return reg == 4; // 4 = AND
     }
     
     /// <summary>
-    /// Decodes a SBB r/m32, imm8 (sign-extended) instruction
+    /// Decodes an AND r/m32, imm8 (sign-extended) instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -46,7 +46,7 @@ public class SbbImmFromRm32SignExtendedHandler : InstructionHandler
     public override bool Decode(byte opcode, Instruction instruction)
     {
         // Set the mnemonic
-        instruction.Mnemonic = "sbb";
+        instruction.Mnemonic = "and";
         
         int position = Decoder.GetPosition();
         
@@ -61,7 +61,7 @@ public class SbbImmFromRm32SignExtendedHandler : InstructionHandler
         
         // Extract the fields from the ModR/M byte
         byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 3 for SBB
+        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 4 for AND
         byte rm = (byte)(modRM & 0x07);
         
         // Decode the destination operand

@@ -1,17 +1,17 @@
-namespace X86Disassembler.X86.Handlers.Group3;
+namespace X86Disassembler.X86.Handlers.ArithmeticUnary;
 
 /// <summary>
-/// Handler for DIV r/m32 instruction (0xF7 /6)
+/// Handler for IMUL r/m32 instruction (0xF7 /5)
 /// </summary>
-public class DivRm32Handler : InstructionHandler
+public class ImulRm32Handler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the DivRm32Handler class
+    /// Initializes a new instance of the ImulRm32Handler class
     /// </summary>
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public DivRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public ImulRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
         : base(codeBuffer, decoder, length)
     {
     }
@@ -26,7 +26,7 @@ public class DivRm32Handler : InstructionHandler
         if (opcode != 0xF7)
             return false;
             
-        // Check if the reg field of the ModR/M byte is 6 (DIV)
+        // Check if the reg field of the ModR/M byte is 5 (IMUL)
         int position = Decoder.GetPosition();
         if (position >= Length)
             return false;
@@ -34,11 +34,11 @@ public class DivRm32Handler : InstructionHandler
         byte modRM = CodeBuffer[position];
         byte reg = (byte)((modRM & 0x38) >> 3);
         
-        return reg == 6; // 6 = DIV
+        return reg == 5; // 5 = IMUL
     }
     
     /// <summary>
-    /// Decodes a DIV r/m32 instruction
+    /// Decodes an IMUL r/m32 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -46,7 +46,7 @@ public class DivRm32Handler : InstructionHandler
     public override bool Decode(byte opcode, Instruction instruction)
     {
         // Set the mnemonic
-        instruction.Mnemonic = "div";
+        instruction.Mnemonic = "imul";
         
         int position = Decoder.GetPosition();
         
@@ -61,7 +61,7 @@ public class DivRm32Handler : InstructionHandler
         
         // Extract the fields from the ModR/M byte
         byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 6 for DIV
+        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 5 for IMUL
         byte rm = (byte)(modRM & 0x07);
         
         // Decode the operand

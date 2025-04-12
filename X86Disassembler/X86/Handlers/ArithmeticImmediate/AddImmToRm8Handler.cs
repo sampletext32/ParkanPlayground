@@ -1,4 +1,4 @@
-namespace X86Disassembler.X86.Handlers.Group1;
+namespace X86Disassembler.X86.Handlers.ArithmeticImmediate;
 
 /// <summary>
 /// Handler for ADD r/m8, imm8 instruction (0x80 /0)

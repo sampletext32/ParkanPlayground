@@ -1,17 +1,17 @@
-namespace X86Disassembler.X86.Handlers.Group1;
+namespace X86Disassembler.X86.Handlers.ArithmeticImmediate;
 
 /// <summary>
-/// Handler for CMP r/m32, imm32 instruction (0x81 /7)
+/// Handler for OR r/m8, imm8 instruction (0x80 /1)
 /// </summary>
-public class CmpImmWithRm32Handler : InstructionHandler
+public class OrImmToRm8Handler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the CmpImmWithRm32Handler class
+    /// Initializes a new instance of the OrImmToRm8Handler class
     /// </summary>
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public CmpImmWithRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public OrImmToRm8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
         : base(codeBuffer, decoder, length)
     {
     }
@@ -23,10 +23,10 @@ public class CmpImmWithRm32Handler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        if (opcode != 0x81)
+        if (opcode != 0x80)
             return false;
             
-        // Check if the reg field of the ModR/M byte is 7 (CMP)
+        // Check if the reg field of the ModR/M byte is 1 (OR)
         int position = Decoder.GetPosition();
         if (position >= Length)
             return false;
@@ -34,11 +34,11 @@ public class CmpImmWithRm32Handler : InstructionHandler
         byte modRM = CodeBuffer[position];
         byte reg = (byte)((modRM & 0x38) >> 3);
         
-        return reg == 7; // 7 = CMP
+        return reg == 1; // 1 = OR
     }
     
     /// <summary>
-    /// Decodes a CMP r/m32, imm32 instruction
+    /// Decodes an OR r/m8, imm8 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -46,7 +46,7 @@ public class CmpImmWithRm32Handler : InstructionHandler
     public override bool Decode(byte opcode, Instruction instruction)
     {
         // Set the mnemonic
-        instruction.Mnemonic = "cmp";
+        instruction.Mnemonic = "or";
         
         int position = Decoder.GetPosition();
         
@@ -57,27 +57,38 @@ public class CmpImmWithRm32Handler : InstructionHandler
         
         // Read the ModR/M byte
         byte modRM = CodeBuffer[position++];
-        Decoder.SetPosition(position);
         
         // Extract the fields from the ModR/M byte
         byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 7 for CMP
+        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 1 for OR
         byte rm = (byte)(modRM & 0x07);
         
-        // Decode the destination operand
-        string destOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
+        // For direct register addressing (mod == 3), use 8-bit register names
+        string destOperand;
+        if (mod == 3)
+        {
+            // Use 8-bit register names for direct register addressing
+            destOperand = GetRegister8(rm);
+        }
+        else
+        {
+            // Use ModR/M decoder for memory addressing
+            destOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
+        }
+        
+        Decoder.SetPosition(position);
         
         // Read the immediate value
-        if (position + 3 >= Length)
+        if (position >= Length)
         {
             return false;
         }
         
-        uint imm32 = BitConverter.ToUInt32(CodeBuffer, position);
-        Decoder.SetPosition(position + 4);
+        byte imm8 = CodeBuffer[position++];
+        Decoder.SetPosition(position);
         
         // Set the operands
-        instruction.Operands = $"{destOperand}, 0x{imm32:X8}";
+        instruction.Operands = $"{destOperand}, 0x{imm8:X2}";
         
         return true;
     }

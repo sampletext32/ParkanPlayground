@@ -1,7 +1,7 @@
+using X86Disassembler.X86.Handlers.ArithmeticImmediate;
+using X86Disassembler.X86.Handlers.ArithmeticUnary;
 using X86Disassembler.X86.Handlers.Call;
 using X86Disassembler.X86.Handlers.FloatingPoint;
-using X86Disassembler.X86.Handlers.Group1;
-using X86Disassembler.X86.Handlers.Group3;
 using X86Disassembler.X86.Handlers.Jump;
 using X86Disassembler.X86.Handlers.Mov;
 using X86Disassembler.X86.Handlers.Pop;
@@ -44,8 +44,8 @@ public class InstructionHandlerFactory
     private void RegisterHandlers()
     {
         // Register group handlers
-        RegisterGroup3Handlers();
-        RegisterGroup1Handlers();
+        RegisterArithmeticUnaryHandlers();
+        RegisterArithmeticImmediateHandlers();
         
         // Register specific instruction handlers
         _handlers.Add(new Int3Handler(_codeBuffer, _decoder, _length));
@@ -73,9 +73,33 @@ public class InstructionHandlerFactory
     }
     
     /// <summary>
-    /// Registers all Group1 instruction handlers
+    /// Registers all ArithmeticUnary instruction handlers
     /// </summary>
-    private void RegisterGroup1Handlers()
+    private void RegisterArithmeticUnaryHandlers()
+    {
+        // NOT handler
+        _handlers.Add(new NotRm32Handler(_codeBuffer, _decoder, _length));
+        
+        // NEG handler
+        _handlers.Add(new NegRm32Handler(_codeBuffer, _decoder, _length));
+        
+        // MUL handler
+        _handlers.Add(new MulRm32Handler(_codeBuffer, _decoder, _length));
+        
+        // IMUL handler
+        _handlers.Add(new ImulRm32Handler(_codeBuffer, _decoder, _length));
+        
+        // DIV handler
+        _handlers.Add(new DivRm32Handler(_codeBuffer, _decoder, _length));
+        
+        // IDIV handler
+        _handlers.Add(new IdivRm32Handler(_codeBuffer, _decoder, _length));
+    }
+    
+    /// <summary>
+    /// Registers all ArithmeticImmediate instruction handlers
+    /// </summary>
+    private void RegisterArithmeticImmediateHandlers()
     {
         // ADD handlers
         _handlers.Add(new AddImmToRm8Handler(_codeBuffer, _decoder, _length));
@@ -110,30 +134,6 @@ public class InstructionHandlerFactory
         // CMP handlers
         _handlers.Add(new CmpImmWithRm32Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new CmpImmWithRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
-    }
-    
-    /// <summary>
-    /// Registers all Group3 instruction handlers
-    /// </summary>
-    private void RegisterGroup3Handlers()
-    {
-        // NOT handler
-        _handlers.Add(new NotRm32Handler(_codeBuffer, _decoder, _length));
-        
-        // NEG handler
-        _handlers.Add(new NegRm32Handler(_codeBuffer, _decoder, _length));
-        
-        // MUL handler
-        _handlers.Add(new MulRm32Handler(_codeBuffer, _decoder, _length));
-        
-        // IMUL handler
-        _handlers.Add(new ImulRm32Handler(_codeBuffer, _decoder, _length));
-        
-        // DIV handler
-        _handlers.Add(new DivRm32Handler(_codeBuffer, _decoder, _length));
-        
-        // IDIV handler
-        _handlers.Add(new IdivRm32Handler(_codeBuffer, _decoder, _length));
     }
     
     /// <summary>

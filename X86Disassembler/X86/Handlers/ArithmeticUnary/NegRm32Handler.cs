@@ -1,17 +1,17 @@
-namespace X86Disassembler.X86.Handlers.Group1;
+namespace X86Disassembler.X86.Handlers.ArithmeticUnary;
 
 /// <summary>
-/// Handler for ADC r/m32, imm32 instruction (0x81 /2)
+/// Handler for NEG r/m32 instruction (0xF7 /3)
 /// </summary>
-public class AdcImmToRm32Handler : InstructionHandler
+public class NegRm32Handler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the AdcImmToRm32Handler class
+    /// Initializes a new instance of the NegRm32Handler class
     /// </summary>
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public AdcImmToRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public NegRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
         : base(codeBuffer, decoder, length)
     {
     }
@@ -23,10 +23,10 @@ public class AdcImmToRm32Handler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        if (opcode != 0x81)
+        if (opcode != 0xF7)
             return false;
             
-        // Check if the reg field of the ModR/M byte is 2 (ADC)
+        // Check if the reg field of the ModR/M byte is 3 (NEG)
         int position = Decoder.GetPosition();
         if (position >= Length)
             return false;
@@ -34,11 +34,11 @@ public class AdcImmToRm32Handler : InstructionHandler
         byte modRM = CodeBuffer[position];
         byte reg = (byte)((modRM & 0x38) >> 3);
         
-        return reg == 2; // 2 = ADC
+        return reg == 3; // 3 = NEG
     }
     
     /// <summary>
-    /// Decodes an ADC r/m32, imm32 instruction
+    /// Decodes a NEG r/m32 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -46,7 +46,7 @@ public class AdcImmToRm32Handler : InstructionHandler
     public override bool Decode(byte opcode, Instruction instruction)
     {
         // Set the mnemonic
-        instruction.Mnemonic = "adc";
+        instruction.Mnemonic = "neg";
         
         int position = Decoder.GetPosition();
         
@@ -61,23 +61,14 @@ public class AdcImmToRm32Handler : InstructionHandler
         
         // Extract the fields from the ModR/M byte
         byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 2 for ADC
+        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 3 for NEG
         byte rm = (byte)(modRM & 0x07);
         
-        // Decode the destination operand
-        string destOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
-        
-        // Read the immediate value
-        if (position + 3 >= Length)
-        {
-            return false;
-        }
-        
-        uint imm32 = BitConverter.ToUInt32(CodeBuffer, position);
-        Decoder.SetPosition(position + 4);
+        // Decode the operand
+        string operand = ModRMDecoder.DecodeModRM(mod, rm, false);
         
         // Set the operands
-        instruction.Operands = $"{destOperand}, 0x{imm32:X8}";
+        instruction.Operands = operand;
         
         return true;
     }

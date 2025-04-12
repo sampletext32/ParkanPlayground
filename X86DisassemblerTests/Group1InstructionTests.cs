@@ -3,7 +3,6 @@ namespace X86DisassemblerTests;
 using System;
 using Xunit;
 using X86Disassembler.X86;
-using X86Disassembler.X86.Handlers.Group1;
 
 /// <summary>
 /// Tests for Group1 instruction handlers

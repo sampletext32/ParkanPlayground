@@ -1,4 +1,4 @@
-namespace X86Disassembler.X86.Handlers.Group1;
+namespace X86Disassembler.X86.Handlers.ArithmeticImmediate;
 
 /// <summary>
 /// Handler for AND r/m32, imm32 instruction (0x81 /4)

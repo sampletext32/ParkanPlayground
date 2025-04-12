@@ -1,17 +1,17 @@
-namespace X86Disassembler.X86.Handlers.Group1;
+namespace X86Disassembler.X86.Handlers.ArithmeticImmediate;
 
 /// <summary>
-/// Handler for ADD r/m32, imm8 (sign-extended) instruction (0x83 /0)
+/// Handler for ADC r/m32, imm32 instruction (0x81 /2)
 /// </summary>
-public class AddImmToRm32SignExtendedHandler : InstructionHandler
+public class AdcImmToRm32Handler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the AddImmToRm32SignExtendedHandler class
+    /// Initializes a new instance of the AdcImmToRm32Handler class
     /// </summary>
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public AddImmToRm32SignExtendedHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public AdcImmToRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
         : base(codeBuffer, decoder, length)
     {
     }
@@ -23,10 +23,10 @@ public class AddImmToRm32SignExtendedHandler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        if (opcode != 0x83)
+        if (opcode != 0x81)
             return false;
             
-        // Check if the reg field of the ModR/M byte is 0 (ADD)
+        // Check if the reg field of the ModR/M byte is 2 (ADC)
         int position = Decoder.GetPosition();
         if (position >= Length)
             return false;
@@ -34,11 +34,11 @@ public class AddImmToRm32SignExtendedHandler : InstructionHandler
         byte modRM = CodeBuffer[position];
         byte reg = (byte)((modRM & 0x38) >> 3);
         
-        return reg == 0; // 0 = ADD
+        return reg == 2; // 2 = ADC
     }
     
     /// <summary>
-    /// Decodes an ADD r/m32, imm8 (sign-extended) instruction
+    /// Decodes an ADC r/m32, imm32 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -46,7 +46,7 @@ public class AddImmToRm32SignExtendedHandler : InstructionHandler
     public override bool Decode(byte opcode, Instruction instruction)
     {
         // Set the mnemonic
-        instruction.Mnemonic = "add";
+        instruction.Mnemonic = "adc";
         
         int position = Decoder.GetPosition();
         
@@ -61,24 +61,23 @@ public class AddImmToRm32SignExtendedHandler : InstructionHandler
         
         // Extract the fields from the ModR/M byte
         byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 0 for ADD
+        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 2 for ADC
         byte rm = (byte)(modRM & 0x07);
         
         // Decode the destination operand
         string destOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
         
         // Read the immediate value
-        if (position >= Length)
+        if (position + 3 >= Length)
         {
             return false;
         }
         
-        // Read the immediate value as a signed byte and sign-extend it
-        sbyte imm8 = (sbyte)CodeBuffer[position++];
-        Decoder.SetPosition(position);
+        uint imm32 = BitConverter.ToUInt32(CodeBuffer, position);
+        Decoder.SetPosition(position + 4);
         
         // Set the operands
-        instruction.Operands = $"{destOperand}, 0x{(uint)imm8:X2}";
+        instruction.Operands = $"{destOperand}, 0x{imm32:X8}";
         
         return true;
     }
