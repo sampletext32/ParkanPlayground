@@ -57,14 +57,30 @@ public class TestRegMem8Handler : InstructionHandler
         byte reg = (byte)((modRM & 0x38) >> 3);
         byte rm = (byte)(modRM & 0x07);
         
-        // Decode the destination operand
-        string destOperand = _modRMDecoder.DecodeModRM(mod, rm, true);
-        
-        // Get the source register
-        string srcReg = GetRegister8(reg);
-        
-        // Set the operands
-        instruction.Operands = $"{destOperand}, {srcReg}";
+        // For direct register addressing (mod == 3), the r/m field specifies a register
+        if (mod == 3)
+        {
+            // Get the register names
+            string rmReg = GetRegister8(rm);
+            string regReg = GetRegister8(reg);
+            
+            // Set the operands (TEST r/m8, r8)
+            // In x86 assembly, the TEST instruction has the operand order r/m8, r8
+            // According to Ghidra and standard x86 assembly convention, it should be TEST CL,AL
+            // where CL is the r/m operand and AL is the reg operand
+            instruction.Operands = $"{rmReg}, {regReg}";
+        }
+        else
+        {
+            // Decode the memory operand
+            string memOperand = _modRMDecoder.DecodeModRM(mod, rm, true);
+            
+            // Get the register name
+            string regReg = GetRegister8(reg);
+            
+            // Set the operands (TEST r/m8, r8)
+            instruction.Operands = $"{memOperand}, {regReg}";
+        }
         
         return true;
     }

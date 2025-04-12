@@ -52,8 +52,8 @@ public class InstructionDecoderTests
         // Assert
         Assert.NotNull(instruction);
         Assert.Equal("test", instruction.Mnemonic);
-        // The actual implementation produces "al, cl" as the operands
-        Assert.Equal("al, cl", instruction.Operands);
+        // The correct operand order is TEST r/m8, r8 (TEST CL, AL)
+        Assert.Equal("cl, al", instruction.Operands);
         Assert.Equal(2, instruction.RawBytes.Length);
         Assert.Equal(0x84, instruction.RawBytes[0]);
         Assert.Equal(0xC1, instruction.RawBytes[1]);
@@ -76,8 +76,8 @@ public class InstructionDecoderTests
         // Assert
         Assert.NotNull(instruction);
         Assert.Equal("test", instruction.Mnemonic);
-        // The actual implementation produces "eax, ecx" as the operands
-        Assert.Equal("eax, ecx", instruction.Operands);
+        // The correct operand order is TEST r/m32, r32 (TEST ECX, EAX)
+        Assert.Equal("ecx, eax", instruction.Operands);
         Assert.Equal(2, instruction.RawBytes.Length);
         Assert.Equal(0x85, instruction.RawBytes[0]);
         Assert.Equal(0xC1, instruction.RawBytes[1]);
@@ -176,7 +176,6 @@ public class InstructionDecoderTests
         
         // Act - First instruction
         var instruction1 = decoder.DecodeInstruction();
-        Debug.WriteLine($"After first instruction, decoder position: {decoder.GetPosition()}");
         
         // Assert - First instruction
         Assert.NotNull(instruction1);
@@ -185,12 +184,11 @@ public class InstructionDecoderTests
         
         // Act - Second instruction
         var instruction2 = decoder.DecodeInstruction();
-        Debug.WriteLine($"After second instruction, decoder position: {decoder.GetPosition()}");
         
         // Assert - Second instruction
         Assert.NotNull(instruction2);
         Assert.Equal("jz", instruction2.Mnemonic);
         // The correct target address according to x86 architecture
-        Assert.Equal("0x00000032", instruction2?.Operands ?? string.Empty);
+        Assert.Equal("0x00000032", instruction2.Operands);
     }
 }

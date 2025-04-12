@@ -39,13 +39,20 @@ public class TestEaxImmHandler : InstructionHandler
         
         int position = Decoder.GetPosition();
         
-        if (position + 4 > Length)
+        if (position + 3 >= Length)
         {
             return false;
         }
         
-        // Read the immediate value
-        uint imm32 = BitConverter.ToUInt32(CodeBuffer, position);
+        // Read the immediate value - x86 is little-endian, so we need to read the bytes in the correct order
+        byte b0 = CodeBuffer[position];
+        byte b1 = CodeBuffer[position + 1];
+        byte b2 = CodeBuffer[position + 2];
+        byte b3 = CodeBuffer[position + 3];
+        
+        // Combine the bytes to form a 32-bit immediate value
+        uint imm32 = (uint)(b0 | (b1 << 8) | (b2 << 16) | (b3 << 24));
+        
         Decoder.SetPosition(position + 4);
         
         // Set the operands

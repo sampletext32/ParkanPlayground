@@ -23,18 +23,9 @@ public class TestImmWithRm8Handler : Group3BaseHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        if (opcode != 0xF6)
-            return false;
-            
-        // Check if the reg field of the ModR/M byte is 0 (TEST)
-        int position = Decoder.GetPosition();
-        if (position >= Length)
-            return false;
-            
-        byte modRM = CodeBuffer[position];
-        byte reg = (byte)((modRM & 0x38) >> 3);
-        
-        return reg == 0; // 0 = TEST
+        // This handler only handles opcode 0xF6
+        // The reg field check (for TEST operation) will be done in the Decode method
+        return opcode == 0xF6;
     }
     
     /// <summary>
@@ -45,9 +36,6 @@ public class TestImmWithRm8Handler : Group3BaseHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "test";
-        
         int position = Decoder.GetPosition();
         
         if (position >= Length)
@@ -57,20 +45,29 @@ public class TestImmWithRm8Handler : Group3BaseHandler
         
         // Read the ModR/M byte
         byte modRM = CodeBuffer[position++];
-        Decoder.SetPosition(position);
         
         // Extract the fields from the ModR/M byte
         byte mod = (byte)((modRM & 0xC0) >> 6);
         byte reg = (byte)((modRM & 0x38) >> 3); // Should be 0 for TEST
         byte rm = (byte)(modRM & 0x07);
         
-        // Decode the destination operand
+        // Check if the reg field is 0 (TEST operation)
+        if (reg != 0)
+        {
+            return false; // Not a TEST instruction
+        }
+        
+        // Set the mnemonic
+        instruction.Mnemonic = "test";
+        
+        Decoder.SetPosition(position);
+        
+        // Get the operand based on the addressing mode
         string destOperand;
         
-        // Special case for direct register addressing (mod == 3)
+        // For direct register addressing (mod == 3), the r/m field specifies a register
         if (mod == 3)
         {
-            // Get the register name based on the rm field
             destOperand = GetRegister8(rm);
         }
         else
@@ -92,16 +89,5 @@ public class TestImmWithRm8Handler : Group3BaseHandler
         instruction.Operands = $"{destOperand}, 0x{imm8:X2}";
         
         return true;
-    }
-    
-    /// <summary>
-    /// Gets the 8-bit register name for the given register index
-    /// </summary>
-    /// <param name="reg">The register index</param>
-    /// <returns>The register name</returns>
-    private static new string GetRegister8(byte reg)
-    {
-        string[] registerNames = { "al", "cl", "dl", "bl", "ah", "ch", "dh", "bh" };
-        return registerNames[reg & 0x07];
     }
 }

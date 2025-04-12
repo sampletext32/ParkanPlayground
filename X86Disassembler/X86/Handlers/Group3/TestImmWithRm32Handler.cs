@@ -23,18 +23,9 @@ public class TestImmWithRm32Handler : Group3BaseHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        if (opcode != 0xF7)
-            return false;
-            
-        // Check if the reg field of the ModR/M byte is 0 (TEST)
-        int position = Decoder.GetPosition();
-        if (position >= Length)
-            return false;
-            
-        byte modRM = CodeBuffer[position];
-        byte reg = (byte)((modRM & 0x38) >> 3);
-        
-        return reg == 0; // 0 = TEST
+        // This handler only handles opcode 0xF7
+        // The reg field check (for TEST operation) will be done in the Decode method
+        return opcode == 0xF7;
     }
     
     /// <summary>
@@ -45,9 +36,6 @@ public class TestImmWithRm32Handler : Group3BaseHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "test";
-        
         int position = Decoder.GetPosition();
         
         if (position >= Length)
@@ -57,15 +45,36 @@ public class TestImmWithRm32Handler : Group3BaseHandler
         
         // Read the ModR/M byte
         byte modRM = CodeBuffer[position++];
-        Decoder.SetPosition(position);
         
         // Extract the fields from the ModR/M byte
         byte mod = (byte)((modRM & 0xC0) >> 6);
         byte reg = (byte)((modRM & 0x38) >> 3); // Should be 0 for TEST
         byte rm = (byte)(modRM & 0x07);
         
-        // Decode the destination operand
-        string destOperand = _modRMDecoder.DecodeModRM(mod, rm, false);
+        // Check if the reg field is 0 (TEST operation)
+        if (reg != 0)
+        {
+            return false; // Not a TEST instruction
+        }
+        
+        // Set the mnemonic
+        instruction.Mnemonic = "test";
+        
+        Decoder.SetPosition(position);
+        
+        // Get the operand based on the addressing mode
+        string destOperand;
+        
+        // For direct register addressing (mod == 3), the r/m field specifies a register
+        if (mod == 3)
+        {
+            destOperand = GetRegister32(rm);
+        }
+        else
+        {
+            // Use the ModR/M decoder for memory addressing
+            destOperand = _modRMDecoder.DecodeModRM(mod, rm, false);
+        }
         
         // Read the immediate value
         if (position + 3 >= Length)
@@ -73,6 +82,7 @@ public class TestImmWithRm32Handler : Group3BaseHandler
             return false;
         }
         
+        // Read the immediate value using BitConverter
         uint imm32 = BitConverter.ToUInt32(CodeBuffer, position);
         Decoder.SetPosition(position + 4);
         
