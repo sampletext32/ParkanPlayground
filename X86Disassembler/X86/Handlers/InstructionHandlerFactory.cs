@@ -5,7 +5,7 @@ using X86Disassembler.X86.Handlers.Call;
 using X86Disassembler.X86.Handlers.Cmp;
 using X86Disassembler.X86.Handlers.Dec;
 using X86Disassembler.X86.Handlers.FloatingPoint;
-using X86Disassembler.X86.Handlers.Group5;
+using X86Disassembler.X86.Handlers.Inc;
 using X86Disassembler.X86.Handlers.Jump;
 using X86Disassembler.X86.Handlers.Lea;
 using X86Disassembler.X86.Handlers.Mov;
@@ -83,11 +83,11 @@ public class InstructionHandlerFactory
         // Register Dec handlers
         RegisterDecHandlers();
         
+        // Register Inc handlers
+        RegisterIncHandlers();
+        
         // Register Add handlers
         RegisterAddHandlers();
-        
-        // Register Group5 handlers
-        RegisterGroup5Handlers();
         
         // Register Data Transfer handlers
         RegisterDataTransferHandlers();
@@ -172,6 +172,7 @@ public class InstructionHandlerFactory
     {
         // Add Call handlers
         _handlers.Add(new CallRel32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new CallRm32Handler(_codeBuffer, _decoder, _length));
     }
     
     /// <summary>
@@ -260,22 +261,22 @@ public class InstructionHandlerFactory
     }
     
     /// <summary>
+    /// Registers all Inc instruction handlers
+    /// </summary>
+    private void RegisterIncHandlers()
+    {
+        // Add Inc handlers
+        _handlers.Add(new IncRegHandler(_codeBuffer, _decoder, _length));
+    }
+    
+    /// <summary>
     /// Registers all Add instruction handlers
     /// </summary>
     private void RegisterAddHandlers()
     {
-        // Add Add handlers
+        // Add ADD handlers
         _handlers.Add(new AddR32Rm32Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new AddRm32R32Handler(_codeBuffer, _decoder, _length));
-    }
-    
-    /// <summary>
-    /// Registers all Group5 instruction handlers
-    /// </summary>
-    private void RegisterGroup5Handlers()
-    {
-        // Add Group5 handlers
-        _handlers.Add(new CallRm32Handler(_codeBuffer, _decoder, _length));
     }
     
     /// <summary>

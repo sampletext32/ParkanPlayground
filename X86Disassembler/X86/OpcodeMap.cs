@@ -72,6 +72,16 @@ public static class OpcodeMap
         OneByteOpcodes[0x4E] = "dec"; // DEC ESI
         OneByteOpcodes[0x4F] = "dec"; // DEC EDI
         
+        // INC instructions
+        OneByteOpcodes[0x40] = "inc"; // INC EAX
+        OneByteOpcodes[0x41] = "inc"; // INC ECX
+        OneByteOpcodes[0x42] = "inc"; // INC EDX
+        OneByteOpcodes[0x43] = "inc"; // INC EBX
+        OneByteOpcodes[0x44] = "inc"; // INC ESP
+        OneByteOpcodes[0x45] = "inc"; // INC EBP
+        OneByteOpcodes[0x46] = "inc"; // INC ESI
+        OneByteOpcodes[0x47] = "inc"; // INC EDI
+        
         // ADD instructions
         OneByteOpcodes[0x00] = "add"; // ADD r/m8, r8
         OneByteOpcodes[0x01] = "add"; // ADD r/m32, r32
