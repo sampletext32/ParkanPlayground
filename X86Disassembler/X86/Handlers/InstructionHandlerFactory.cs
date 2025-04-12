@@ -1,6 +1,7 @@
 using X86Disassembler.X86.Handlers.ArithmeticImmediate;
 using X86Disassembler.X86.Handlers.ArithmeticUnary;
 using X86Disassembler.X86.Handlers.Call;
+using X86Disassembler.X86.Handlers.Cmp;
 using X86Disassembler.X86.Handlers.FloatingPoint;
 using X86Disassembler.X86.Handlers.Jump;
 using X86Disassembler.X86.Handlers.Lea;
@@ -10,8 +11,8 @@ using X86Disassembler.X86.Handlers.Pop;
 using X86Disassembler.X86.Handlers.Push;
 using X86Disassembler.X86.Handlers.Ret;
 using X86Disassembler.X86.Handlers.Test;
-using X86Disassembler.X86.Handlers.Xor;
 using X86Disassembler.X86.Handlers.Xchg;
+using X86Disassembler.X86.Handlers.Xor;
 
 namespace X86Disassembler.X86.Handlers;
 
@@ -72,6 +73,9 @@ public class InstructionHandlerFactory
         
         // Register Lea handlers
         RegisterLeaHandlers();
+        
+        // Register Cmp handlers
+        RegisterCmpHandlers();
         
         // Register Data Transfer handlers
         RegisterDataTransferHandlers();
@@ -226,6 +230,15 @@ public class InstructionHandlerFactory
     }
     
     /// <summary>
+    /// Registers all Cmp instruction handlers
+    /// </summary>
+    private void RegisterCmpHandlers()
+    {
+        // Add Cmp handlers
+        _handlers.Add(new CmpR32Rm32Handler(_codeBuffer, _decoder, _length));
+    }
+    
+    /// <summary>
     /// Registers all Data Transfer instruction handlers
     /// </summary>
     private void RegisterDataTransferHandlers()
@@ -237,6 +250,7 @@ public class InstructionHandlerFactory
         _handlers.Add(new MovRegImm8Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new MovEaxMoffsHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new MovMoffsEaxHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new MovRm32Imm32Handler(_codeBuffer, _decoder, _length));
         
         // Add PUSH handlers
         _handlers.Add(new PushRegHandler(_codeBuffer, _decoder, _length));

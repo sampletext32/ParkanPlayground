@@ -50,6 +50,18 @@ public static class OpcodeMap
         // LEA instruction
         OneByteOpcodes[0x8D] = "lea"; // LEA r32, m
         
+        // CMP instructions
+        OneByteOpcodes[0x38] = "cmp"; // CMP r/m8, r8
+        OneByteOpcodes[0x39] = "cmp"; // CMP r/m32, r32
+        OneByteOpcodes[0x3A] = "cmp"; // CMP r8, r/m8
+        OneByteOpcodes[0x3B] = "cmp"; // CMP r32, r/m32
+        OneByteOpcodes[0x3C] = "cmp"; // CMP AL, imm8
+        OneByteOpcodes[0x3D] = "cmp"; // CMP EAX, imm32
+        
+        // MOV instructions
+        OneByteOpcodes[0xC6] = "mov"; // MOV r/m8, imm8
+        OneByteOpcodes[0xC7] = "mov"; // MOV r/m32, imm32
+        
         // Group 1 instructions (ADD, OR, ADC, SBB, AND, SUB, XOR, CMP)
         OneByteOpcodes[0x80] = "group1b";
         OneByteOpcodes[0x81] = "group1d";
