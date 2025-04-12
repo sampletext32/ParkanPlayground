@@ -266,6 +266,7 @@ public class InstructionHandlerFactory
     {
         // Add Add handlers
         _handlers.Add(new AddR32Rm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new AddRm32R32Handler(_codeBuffer, _decoder, _length));
     }
     
     /// <summary>
@@ -290,6 +291,7 @@ public class InstructionHandlerFactory
         _handlers.Add(new MovEaxMoffsHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new MovMoffsEaxHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new MovRm32Imm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new MovRm8Imm8Handler(_codeBuffer, _decoder, _length));
         
         // Add PUSH handlers
         _handlers.Add(new PushRegHandler(_codeBuffer, _decoder, _length));
