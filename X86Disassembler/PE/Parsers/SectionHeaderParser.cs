@@ -1,38 +1,36 @@
-using System.IO;
 using System.Text;
 
-namespace X86Disassembler.PE.Parsers
+namespace X86Disassembler.PE.Parsers;
+
+/// <summary>
+/// Parser for section headers in a PE file
+/// </summary>
+public class SectionHeaderParser : IParser<SectionHeader>
 {
     /// <summary>
-    /// Parser for section headers in a PE file
+    /// Parse a section header from the binary reader
     /// </summary>
-    public class SectionHeaderParser : IParser<SectionHeader>
+    /// <param name="reader">The binary reader positioned at the start of the section header</param>
+    /// <returns>The parsed section header</returns>
+    public SectionHeader Parse(BinaryReader reader)
     {
-        /// <summary>
-        /// Parse a section header from the binary reader
-        /// </summary>
-        /// <param name="reader">The binary reader positioned at the start of the section header</param>
-        /// <returns>The parsed section header</returns>
-        public SectionHeader Parse(BinaryReader reader)
-        {
-            SectionHeader header = new SectionHeader();
-            
-            // Read section name (8 bytes)
-            byte[] nameBytes = reader.ReadBytes(8);
-            // Convert to string, removing any null characters
-            header.Name = Encoding.ASCII.GetString(nameBytes).TrimEnd('\0');
-            
-            header.VirtualSize = reader.ReadUInt32();
-            header.VirtualAddress = reader.ReadUInt32();
-            header.SizeOfRawData = reader.ReadUInt32();
-            header.PointerToRawData = reader.ReadUInt32();
-            header.PointerToRelocations = reader.ReadUInt32();
-            header.PointerToLinenumbers = reader.ReadUInt32();
-            header.NumberOfRelocations = reader.ReadUInt16();
-            header.NumberOfLinenumbers = reader.ReadUInt16();
-            header.Characteristics = reader.ReadUInt32();
-            
-            return header;
-        }
+        SectionHeader header = new SectionHeader();
+        
+        // Read section name (8 bytes)
+        byte[] nameBytes = reader.ReadBytes(8);
+        // Convert to string, removing any null characters
+        header.Name = Encoding.ASCII.GetString(nameBytes).TrimEnd('\0');
+        
+        header.VirtualSize = reader.ReadUInt32();
+        header.VirtualAddress = reader.ReadUInt32();
+        header.SizeOfRawData = reader.ReadUInt32();
+        header.PointerToRawData = reader.ReadUInt32();
+        header.PointerToRelocations = reader.ReadUInt32();
+        header.PointerToLinenumbers = reader.ReadUInt32();
+        header.NumberOfRelocations = reader.ReadUInt16();
+        header.NumberOfLinenumbers = reader.ReadUInt16();
+        header.Characteristics = reader.ReadUInt32();
+        
+        return header;
     }
 }
