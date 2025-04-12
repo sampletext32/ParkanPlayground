@@ -8,16 +8,12 @@ public class FloatingPointHandler : InstructionHandler
     // Floating-point instruction mnemonics based on opcode and ModR/M reg field
     private static readonly string[][] FpuMnemonics = new string[8][];
     
-    // Two-byte floating-point instructions
-    private static readonly Dictionary<ushort, string> TwoByteInstructions = new Dictionary<ushort, string>();
-    
     /// <summary>
     /// Static constructor to initialize the FPU mnemonic tables
     /// </summary>
     static FloatingPointHandler()
     {
         InitializeFpuMnemonics();
-        InitializeTwoByteInstructions();
     }
     
     /// <summary>
@@ -110,17 +106,6 @@ public class FloatingPointHandler : InstructionHandler
     }
     
     /// <summary>
-    /// Initializes the two-byte floating-point instructions
-    /// </summary>
-    private static void InitializeTwoByteInstructions()
-    {
-        // We no longer need to handle FNSTSW AX (DF E0) here since we have a dedicated FnstswHandler
-        // that is registered before this handler in the InstructionHandlerFactory
-        
-        // Add other two-byte instructions as needed
-    }
-    
-    /// <summary>
     /// Initializes a new instance of the FloatingPointHandler class
     /// </summary>
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
@@ -154,21 +139,6 @@ public class FloatingPointHandler : InstructionHandler
         if (position >= Length)
         {
             return false;
-        }
-        
-        // Check for two-byte instructions
-        if (position < Length)
-        {
-            // Create a two-byte opcode by combining the primary opcode with the next byte
-            ushort twoByteOpcode = (ushort)((opcode << 8) | CodeBuffer[position]);
-            
-            // Check if this is a known two-byte instruction
-            if (TwoByteInstructions.TryGetValue(twoByteOpcode, out string? mnemonic) && mnemonic != null)
-            {
-                instruction.Mnemonic = mnemonic;
-                Decoder.SetPosition(position + 1); // Skip the second byte
-                return true;
-            }
         }
         
         // The opcode index in our tables (0-7 for D8-DF)
