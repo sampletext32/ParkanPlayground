@@ -84,6 +84,16 @@ public class InstructionDecoder
             OneByteOpcodes[i] = "??";
         }
         
+        // Floating-point instructions
+        OneByteOpcodes[0xD8] = "fadd";  // Various FP instructions based on ModR/M
+        OneByteOpcodes[0xD9] = "fld";   // Various FP instructions based on ModR/M
+        OneByteOpcodes[0xDA] = "fiadd"; // Various FP instructions based on ModR/M
+        OneByteOpcodes[0xDB] = "fild";  // Various FP instructions based on ModR/M
+        OneByteOpcodes[0xDC] = "fadd";  // Various FP instructions based on ModR/M
+        OneByteOpcodes[0xDD] = "fld";   // Various FP instructions based on ModR/M
+        OneByteOpcodes[0xDE] = "fiadd"; // Various FP instructions based on ModR/M
+        OneByteOpcodes[0xDF] = "fistp"; // Various FP instructions based on ModR/M
+        
         // Data transfer instructions
         for (int i = 0x88; i <= 0x8B; i++)
         {
