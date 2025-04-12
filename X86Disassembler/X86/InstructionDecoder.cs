@@ -48,7 +48,9 @@ public class InstructionDecoder
             new Group1Handler(_codeBuffer, this, _length),
             new FloatingPointHandler(_codeBuffer, this, _length),
             new DataTransferHandler(_codeBuffer, this, _length),
-            new ControlFlowHandler(_codeBuffer, this, _length)
+            new ControlFlowHandler(_codeBuffer, this, _length),
+            new Group3Handler(_codeBuffer, this, _length),
+            new TestHandler(_codeBuffer, this, _length)
         };
     }
     

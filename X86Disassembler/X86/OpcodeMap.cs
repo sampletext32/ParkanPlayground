@@ -19,6 +19,11 @@ public class OpcodeMap
         "add", "or", "adc", "sbb", "and", "sub", "xor", "cmp" 
     };
     
+    // Group 3 operations (used with opcodes 0xF6, 0xF7)
+    public static readonly string[] Group3Operations = { 
+        "test", "???", "not", "neg", "mul", "imul", "div", "idiv" 
+    };
+    
     // Static constructor to initialize the opcode maps
     static OpcodeMap()
     {
@@ -50,6 +55,16 @@ public class OpcodeMap
         OneByteOpcodes[0x80] = "group1b";
         OneByteOpcodes[0x81] = "group1d";
         OneByteOpcodes[0x83] = "group1s"; // Sign-extended immediate
+        
+        // Group 3 instructions (TEST, NOT, NEG, MUL, IMUL, DIV, IDIV)
+        OneByteOpcodes[0xF6] = "group3b"; // 8-bit operations
+        OneByteOpcodes[0xF7] = "group3d"; // 32-bit operations
+        
+        // TEST instructions
+        OneByteOpcodes[0x84] = "test"; // TEST r/m8, r8
+        OneByteOpcodes[0x85] = "test"; // TEST r/m32, r32
+        OneByteOpcodes[0xA8] = "test"; // TEST AL, imm8
+        OneByteOpcodes[0xA9] = "test"; // TEST EAX, imm32
         
         // Data transfer instructions
         for (int i = 0x88; i <= 0x8B; i++)
@@ -123,6 +138,16 @@ public class OpcodeMap
     public static bool IsGroup1Opcode(byte opcode)
     {
         return opcode == 0x80 || opcode == 0x81 || opcode == 0x83;
+    }
+    
+    /// <summary>
+    /// Checks if the opcode is a Group 3 opcode
+    /// </summary>
+    /// <param name="opcode">The opcode to check</param>
+    /// <returns>True if the opcode is a Group 3 opcode</returns>
+    public static bool IsGroup3Opcode(byte opcode)
+    {
+        return opcode == 0xF6 || opcode == 0xF7;
     }
     
     /// <summary>
