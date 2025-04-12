@@ -41,6 +41,12 @@ public static class OpcodeMap
         OneByteOpcodes[0xDE] = "fiadd";
         OneByteOpcodes[0xDF] = "fistp";
         
+        // OR instructions
+        OneByteOpcodes[0x0A] = "or"; // OR r8, r/m8
+        OneByteOpcodes[0x0B] = "or"; // OR r32, r/m32
+        OneByteOpcodes[0x0C] = "or"; // OR AL, imm8
+        OneByteOpcodes[0x0D] = "or"; // OR EAX, imm32
+        
         // Group 1 instructions (ADD, OR, ADC, SBB, AND, SUB, XOR, CMP)
         OneByteOpcodes[0x80] = "group1b";
         OneByteOpcodes[0x81] = "group1d";

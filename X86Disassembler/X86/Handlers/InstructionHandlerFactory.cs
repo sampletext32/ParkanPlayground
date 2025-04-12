@@ -4,6 +4,7 @@ using X86Disassembler.X86.Handlers.Call;
 using X86Disassembler.X86.Handlers.FloatingPoint;
 using X86Disassembler.X86.Handlers.Jump;
 using X86Disassembler.X86.Handlers.Mov;
+using X86Disassembler.X86.Handlers.Or;
 using X86Disassembler.X86.Handlers.Pop;
 using X86Disassembler.X86.Handlers.Push;
 using X86Disassembler.X86.Handlers.Ret;
@@ -64,6 +65,9 @@ public class InstructionHandlerFactory
         
         // Register Xor handlers
         RegisterXorHandlers();
+        
+        // Register Or handlers
+        RegisterOrHandlers();
         
         // Register Data Transfer handlers
         RegisterDataTransferHandlers();
@@ -193,6 +197,15 @@ public class InstructionHandlerFactory
         _handlers.Add(new XorRegMemHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new XorImmWithRm32Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new XorImmWithRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+    }
+    
+    /// <summary>
+    /// Registers all Or instruction handlers
+    /// </summary>
+    private void RegisterOrHandlers()
+    {
+        // Add Or handlers
+        _handlers.Add(new OrR8Rm8Handler(_codeBuffer, _decoder, _length));
     }
     
     /// <summary>
