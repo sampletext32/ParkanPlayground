@@ -353,6 +353,44 @@ public class InstructionDecoder
         
         switch (opcode)
         {
+            case 0xDF: // FISTP and other FPU instructions
+                if (_position < _length)
+                {
+                    byte modRM = _codeBuffer[_position++];
+                    byte mod = (byte)((modRM & MODRM_MOD_MASK) >> 6);
+                    byte reg = (byte)((modRM & MODRM_REG_MASK) >> 3);
+                    byte rm = (byte)(modRM & MODRM_RM_MASK);
+                    
+                    // FISTP with memory operand
+                    if (reg == 7) // FISTP
+                    {
+                        if (mod == 0 && rm == 5) // Displacement only addressing
+                        {
+                            if (_position + 4 <= _length)
+                            {
+                                uint disp32 = BitConverter.ToUInt32(_codeBuffer, _position);
+                                _position += 4;
+                                operands = $"qword ptr [0x{disp32:X8}]";
+                            }
+                        }
+                        else
+                        {
+                            // Handle other addressing modes if needed
+                            operands = DecodeModRM(mod, rm, true);
+                        }
+                    }
+                }
+                break;
+                
+            case 0xA1: // MOV EAX, memory
+                if (_position + 4 <= _length)
+                {
+                    uint addr = BitConverter.ToUInt32(_codeBuffer, _position);
+                    _position += 4;
+                    operands = $"eax, [0x{addr:X8}]";
+                }
+                break;
+                
             case OPCODE_INT3:
                 // No operands for INT3
                 break;
@@ -510,5 +548,103 @@ public class InstructionDecoder
         Array.Copy(_codeBuffer, startPosition, instruction.Bytes, 0, bytesRead);
         
         return bytesRead;
+    }
+    
+    /// <summary>
+    /// Decodes a ModR/M byte to get the operand string
+    /// </summary>
+    /// <param name="mod">The mod field (2 bits)</param>
+    /// <param name="rm">The r/m field (3 bits)</param>
+    /// <param name="is64Bit">True if the operand is 64-bit</param>
+    /// <returns>The operand string</returns>
+    private string DecodeModRM(byte mod, byte rm, bool is64Bit)
+    {
+        string sizePrefix = is64Bit ? "qword" : "dword";
+        
+        switch (mod)
+        {
+            case 0: // [reg] or disp32
+                if (rm == 5) // disp32
+                {
+                    if (_position + 4 <= _length)
+                    {
+                        uint disp32 = BitConverter.ToUInt32(_codeBuffer, _position);
+                        _position += 4;
+                        return $"{sizePrefix} ptr [0x{disp32:X8}]";
+                    }
+                    return $"{sizePrefix} ptr [???]";
+                }
+                else if (rm == 4) // SIB
+                {
+                    // Handle SIB byte
+                    if (_position < _length)
+                    {
+                        byte sib = _codeBuffer[_position++];
+                        // Decode SIB byte (not implemented yet)
+                        return $"{sizePrefix} ptr [SIB]";
+                    }
+                    return $"{sizePrefix} ptr [???]";
+                }
+                else
+                {
+                    return $"{sizePrefix} ptr [{RegisterNames32[rm]}]";
+                }
+                
+            case 1: // [reg + disp8]
+                if (rm == 4) // SIB + disp8
+                {
+                    // Handle SIB byte
+                    if (_position + 1 < _length)
+                    {
+                        byte sib = _codeBuffer[_position++];
+                        sbyte disp8 = (sbyte)_codeBuffer[_position++];
+                        // Decode SIB byte (not implemented yet)
+                        return $"{sizePrefix} ptr [SIB+0x{disp8:X2}]";
+                    }
+                    return $"{sizePrefix} ptr [???]";
+                }
+                else
+                {
+                    if (_position < _length)
+                    {
+                        sbyte disp8 = (sbyte)_codeBuffer[_position++];
+                        string dispStr = disp8 < 0 ? $"-0x{-disp8:X2}" : $"+0x{disp8:X2}";
+                        return $"{sizePrefix} ptr [{RegisterNames32[rm]}{dispStr}]";
+                    }
+                    return $"{sizePrefix} ptr [{RegisterNames32[rm]}+???]";
+                }
+                
+            case 2: // [reg + disp32]
+                if (rm == 4) // SIB + disp32
+                {
+                    // Handle SIB byte
+                    if (_position + 4 < _length)
+                    {
+                        byte sib = _codeBuffer[_position++];
+                        int disp32 = BitConverter.ToInt32(_codeBuffer, _position);
+                        _position += 4;
+                        // Decode SIB byte (not implemented yet)
+                        return $"{sizePrefix} ptr [SIB+0x{disp32:X8}]";
+                    }
+                    return $"{sizePrefix} ptr [???]";
+                }
+                else
+                {
+                    if (_position + 4 <= _length)
+                    {
+                        int disp32 = BitConverter.ToInt32(_codeBuffer, _position);
+                        _position += 4;
+                        string dispStr = disp32 < 0 ? $"-0x{-disp32:X8}" : $"+0x{disp32:X8}";
+                        return $"{sizePrefix} ptr [{RegisterNames32[rm]}{dispStr}]";
+                    }
+                    return $"{sizePrefix} ptr [{RegisterNames32[rm]}+???]";
+                }
+                
+            case 3: // reg
+                return is64Bit ? "mm" + rm : RegisterNames32[rm];
+                
+            default:
+                return "???";
+        }
     }
 }
