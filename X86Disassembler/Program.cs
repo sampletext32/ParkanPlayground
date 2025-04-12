@@ -99,17 +99,11 @@ namespace X86Disassembler
             Console.WriteLine($"Number of Functions: {peFile.ExportDirectory.NumberOfFunctions}");
             Console.WriteLine($"Number of Names: {peFile.ExportDirectory.NumberOfNames}");
             
-            // Display the first 10 exported functions (if any)
-            int count = Math.Min(10, peFile.ExportedFunctions.Count);
-            for (int i = 0; i < count; i++)
+            // Display all exported functions
+            for (int i = 0; i < peFile.ExportedFunctions.Count; i++)
             {
                 var function = peFile.ExportedFunctions[i];
                 Console.WriteLine($"  {i}: {function.Name} (Ordinal={function.Ordinal}, RVA=0x{function.Address:X8})");
-            }
-            
-            if (peFile.ExportedFunctions.Count > 10)
-            {
-                Console.WriteLine($"  ... and {peFile.ExportedFunctions.Count - 10} more");
             }
         }
         
@@ -124,16 +118,14 @@ namespace X86Disassembler
             Console.WriteLine("\nImported Functions:");
             Console.WriteLine($"Number of Imported DLLs: {peFile.ImportDescriptors.Count}");
             
-            // Display the first 5 imported DLLs and their functions
-            int dllCount = Math.Min(5, peFile.ImportDescriptors.Count);
-            for (int i = 0; i < dllCount; i++)
+            // Display all imported DLLs and their functions
+            for (int i = 0; i < peFile.ImportDescriptors.Count; i++)
             {
                 var descriptor = peFile.ImportDescriptors[i];
                 Console.WriteLine($"  DLL: {descriptor.DllName}");
                 
-                // Display the first 5 functions from this DLL
-                int funcCount = Math.Min(5, descriptor.Functions.Count);
-                for (int j = 0; j < funcCount; j++)
+                // Display all functions from this DLL
+                for (int j = 0; j < descriptor.Functions.Count; j++)
                 {
                     var function = descriptor.Functions[j];
                     if (function.IsOrdinal)
@@ -146,15 +138,10 @@ namespace X86Disassembler
                     }
                 }
                 
-                if (descriptor.Functions.Count > 5)
+                if (i < peFile.ImportDescriptors.Count - 1)
                 {
-                    Console.WriteLine($"    ... and {descriptor.Functions.Count - 5} more");
+                    Console.WriteLine(); // Add a blank line between DLLs for better readability
                 }
-            }
-            
-            if (peFile.ImportDescriptors.Count > 5)
-            {
-                Console.WriteLine($"  ... and {peFile.ImportDescriptors.Count - 5} more DLLs");
             }
         }
     }
