@@ -1,5 +1,3 @@
-namespace X86Disassembler;
-
 using System;
 using System.IO;
 using System.Text;
@@ -7,203 +5,138 @@ using System.Collections.Generic;
 using X86Disassembler.PE;
 using X86Disassembler.X86;
 
-internal class Program
+namespace X86Disassembler;
+
+/// <summary>
+/// Main program class
+/// </summary>
+public class Program
 {
-    // Path to the DLL file to disassemble
-    private const string DllPath = @"C:\Program Files (x86)\Nikita\Iron Strategy\Terrain.dll"; // Example path, replace with your target DLL
+    // Hardcoded file path for testing
+    private const string FilePath = @"C:\Program Files (x86)\Nikita\Iron Strategy\Terrain.dll";
     
-    // Maximum number of instructions to display per section
-    private const int MaxInstructionsToDisplay = 50;
-    
-    static void Main(string[] args)
+    /// <summary>
+    /// Main entry point
+    /// </summary>
+    /// <param name="args">Command line arguments</param>
+    public static void Main(string[] args)
     {
         Console.WriteLine("X86 Disassembler and Decompiler");
         Console.WriteLine("--------------------------------");
         
-        string filePath = DllPath;
+        // Load the file
+        Console.WriteLine($"Loading file: {FilePath}");
+        byte[] fileBytes = File.ReadAllBytes(FilePath);
+        Console.WriteLine($"Successfully loaded {FilePath}");
+        Console.WriteLine($"File size: {fileBytes.Length} bytes\n");
         
-        Console.WriteLine($"Loading file: {filePath}");
+        // Parse the PE format
+        Console.WriteLine("Parsing PE format...\n");
+        PEFormat peFormat = new PEFormat(fileBytes);
+        peFormat.Parse();
         
-        try
-        {
-            // Load the file into memory
-            byte[] fileBytes = File.ReadAllBytes(filePath);
-            Console.WriteLine($"Successfully loaded {filePath}");
-            Console.WriteLine($"File size: {fileBytes.Length} bytes");
-            Console.WriteLine();
-            
-            Console.WriteLine("Parsing PE format...");
-            Console.WriteLine();
-            
-            // Parse the PE format
-            PEFormat peFormat = new PEFormat(fileBytes);
-            if (!peFormat.Parse())
-            {
-                Console.WriteLine("Failed to parse PE file.");
-                return;
-            }
-            
-            // Display PE information
-            DisplayPEInfo(peFormat);
-            
-            // Disassemble code sections
-            DisassembleCodeSections(peFormat);
-            
-            Console.WriteLine();
-            Console.WriteLine("Press Enter to exit...");
-            Console.Read(); // Use Read instead of ReadKey to avoid errors in redirected console
-            
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error: {ex.Message}");
-            Console.WriteLine(ex.StackTrace);
-        }
-    }
-    
-    /// <summary>
-    /// Displays information about the PE file
-    /// </summary>
-    /// <param name="peFormat">The PE format object</param>
-    private static void DisplayPEInfo(PEFormat peFormat)
-    {
+        // Print PE file information
         Console.WriteLine("PE File Information:");
         Console.WriteLine($"Architecture: {(peFormat.OptionalHeader.Is64Bit() ? "64-bit" : "32-bit")}");
         Console.WriteLine($"Entry Point: 0x{peFormat.OptionalHeader.AddressOfEntryPoint:X8}");
         Console.WriteLine($"Image Base: 0x{peFormat.OptionalHeader.ImageBase:X8}");
         Console.WriteLine($"Number of Sections: {peFormat.FileHeader.NumberOfSections}");
+        Console.WriteLine();
         
-        Console.WriteLine("\nSections:");
-        for (int i = 0; i < peFormat.SectionHeaders.Count; i++)
+        // Print section information
+        Console.WriteLine("Sections:");
+        foreach (var section in peFormat.SectionHeaders)
         {
-            var section = peFormat.SectionHeaders[i];
             string flags = "";
-            
-            // Use the section's methods to determine characteristics
             if (section.ContainsCode()) flags += "Code ";
             if (section.IsExecutable()) flags += "Exec ";
             if (section.IsReadable()) flags += "Read ";
             if (section.IsWritable()) flags += "Write";
             
-            Console.WriteLine($"  {i}: {section.Name,-8} VA=0x{section.VirtualAddress:X8} Size={section.VirtualSize,-8} [{flags}]");
+            Console.WriteLine($"  {peFormat.SectionHeaders.IndexOf(section)}: {section.Name,-8} VA=0x{section.VirtualAddress:X8} Size={section.VirtualSize,-8} [{flags}]");
         }
+        Console.WriteLine();
         
-        // Display exported functions
+        // Print export information
         if (peFormat.ExportDirectory != null)
         {
-            Console.WriteLine("\nExported Functions:");
+            Console.WriteLine("Exported Functions:");
             Console.WriteLine($"DLL Name: {peFormat.ExportDirectory.DllName}");
             Console.WriteLine($"Number of Functions: {peFormat.ExportDirectory.NumberOfFunctions}");
             Console.WriteLine($"Number of Names: {peFormat.ExportDirectory.NumberOfNames}");
             
             for (int i = 0; i < peFormat.ExportedFunctions.Count; i++)
             {
-                var function = peFormat.ExportedFunctions[i];
-                Console.WriteLine($"  {i}: {function.Name} (Ordinal={function.Ordinal}, RVA=0x{function.AddressRva:X8})");
+                var export = peFormat.ExportedFunctions[i];
+                Console.WriteLine($"  {i}: {export.Name} (Ordinal={export.Ordinal}, RVA=0x{export.AddressRva:X8})");
             }
+            Console.WriteLine();
         }
         
-        // Display imported functions
+        // Print import information
         if (peFormat.ImportDescriptors.Count > 0)
         {
-            Console.WriteLine("\nImported Functions:");
+            Console.WriteLine("Imported Functions:");
             Console.WriteLine($"Number of Imported DLLs: {peFormat.ImportDescriptors.Count}");
             
-            for (int i = 0; i < peFormat.ImportDescriptors.Count; i++)
+            foreach (var import in peFormat.ImportDescriptors)
             {
-                var descriptor = peFormat.ImportDescriptors[i];
-                Console.WriteLine($"  DLL: {descriptor.DllName}");
+                Console.WriteLine($"  DLL: {import.DllName}");
                 
-                for (int j = 0; j < descriptor.Functions.Count; j++)
+                for (int i = 0; i < import.Functions.Count; i++)
                 {
-                    var function = descriptor.Functions[j];
+                    var function = import.Functions[i];
                     if (function.IsOrdinal)
                     {
-                        Console.WriteLine($"    {j}: Ordinal {function.Ordinal}");
+                        Console.WriteLine($"    {i}: Ordinal {function.Ordinal}");
                     }
                     else
                     {
-                        Console.WriteLine($"    {j}: {function.Name} (Hint={function.Hint})");
+                        Console.WriteLine($"    {i}: {function.Name} (Hint={function.Hint})");
                     }
                 }
-                
-                if (i < peFormat.ImportDescriptors.Count - 1)
-                {
-                    Console.WriteLine(); // Add a blank line between DLLs for better readability
-                }
             }
+            Console.WriteLine();
         }
-    }
-    
-    /// <summary>
-    /// Disassembles the code sections of the PE file
-    /// </summary>
-    /// <param name="peFormat">The PE format object</param>
-    private static void DisassembleCodeSections(PEFormat peFormat)
-    {
+        
         // Find code sections
         var codeSections = peFormat.SectionHeaders.FindAll(s => s.ContainsCode());
-        
-        Console.WriteLine($"\nFound {codeSections.Count} code section(s):");
+        Console.WriteLine($"Found {codeSections.Count} code section(s):");
         foreach (var section in codeSections)
         {
             Console.WriteLine($"  - {section.Name}: Size={section.VirtualSize} bytes, RVA=0x{section.VirtualAddress:X8}");
         }
         Console.WriteLine();
         
-        // Disassemble each code section
-        for (int i = 0; i < peFormat.SectionHeaders.Count; i++)
+        // Disassemble the first code section
+        if (codeSections.Count > 0)
         {
-            var section = peFormat.SectionHeaders[i];
+            var section = codeSections[0];
+            byte[] codeBytes = peFormat.GetSectionData(peFormat.SectionHeaders.IndexOf(section));
             
-            // Skip non-code sections
-            if (!section.ContainsCode())
-                continue;
-                
             Console.WriteLine($"Disassembling section {section.Name} at RVA 0x{section.VirtualAddress:X8}:");
             
-            // Get section data using the section index
-            byte[] sectionData = peFormat.GetSectionData(i);
+            // Create a disassembler for the code section
+            Disassembler disassembler = new Disassembler(codeBytes, section.VirtualAddress);
             
-            // Create a disassembler for this section
-            ulong baseAddress = peFormat.OptionalHeader.ImageBase + section.VirtualAddress;
-            Disassembler disassembler = new Disassembler(sectionData, baseAddress);
+            // Disassemble all instructions
+            var instructions = disassembler.Disassemble();
             
-            // Disassemble and display instructions
-            int count = 0;
-            int maxInstructions = MaxInstructionsToDisplay; // Use the constant
-            
-            while (count < maxInstructions)
+            // Print the first 100 instructions
+            int count = Math.Min(100, instructions.Count);
+            for (int i = 0; i < count; i++)
             {
-                Instruction? instruction = disassembler.DisassembleNext();
-                if (instruction == null)
-                {
-                    break;
-                }
-                
-                // Format the instruction bytes
-                StringBuilder bytesStr = new StringBuilder();
-                foreach (byte b in instruction.Bytes)
-                {
-                    bytesStr.Append($"{b:X2} ");
-                }
-                
-                // Format the instruction
-                // Calculate the RVA by subtracting the image base
-                ulong rva = instruction.Address - peFormat.OptionalHeader.ImageBase;
-                string addressStr = $"{rva:X8}";
-                string bytesDisplay = bytesStr.ToString().PadRight(20); // Pad to 20 characters
-                string operandsStr = string.IsNullOrEmpty(instruction.Operands) ? "" : $" {instruction.Operands}";
-                
-                Console.WriteLine($"  {addressStr}  {bytesDisplay}  {instruction.Mnemonic}{operandsStr}");
-                
-                count++;
+                Console.WriteLine(instructions[i]);
             }
             
-            if (sectionData.Length > count * 10) // If we've only shown a small portion
+            // Print a summary of how many more instructions there are
+            if (instructions.Count > count)
             {
-                Console.WriteLine($"  ... ({sectionData.Length - (count * 10)} more bytes not shown)");
+                Console.WriteLine($"... ({instructions.Count - count} more bytes not shown)");
             }
         }
+        
+        Console.WriteLine("\nPress Enter to exit...");
+        Console.ReadLine();
     }
 }

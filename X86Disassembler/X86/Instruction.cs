@@ -1,50 +1,56 @@
 namespace X86Disassembler.X86;
 
 /// <summary>
-/// Represents a decoded x86 instruction
+/// Represents an x86 instruction
 /// </summary>
 public class Instruction
 {
     /// <summary>
-    /// The address of the instruction in memory
+    /// Gets or sets the address of the instruction
     /// </summary>
-    public ulong Address { get; set; }
+    public uint Address { get; set; }
     
     /// <summary>
-    /// The raw bytes of the instruction
-    /// </summary>
-    public byte[] Bytes { get; set; } = Array.Empty<byte>();
-    
-    /// <summary>
-    /// The mnemonic of the instruction (e.g., "mov", "add", "jmp")
+    /// Gets or sets the mnemonic of the instruction
     /// </summary>
     public string Mnemonic { get; set; } = string.Empty;
     
     /// <summary>
-    /// The operands of the instruction as a formatted string
+    /// Gets or sets the operands of the instruction
     /// </summary>
     public string Operands { get; set; } = string.Empty;
     
     /// <summary>
-    /// The length of the instruction in bytes
+    /// Gets or sets the raw bytes of the instruction
     /// </summary>
-    public int Length => Bytes.Length;
+    public byte[] RawBytes { get; set; } = Array.Empty<byte>();
     
     /// <summary>
     /// Returns a string representation of the instruction
     /// </summary>
-    /// <returns>A formatted string representing the instruction</returns>
+    /// <returns>A string representation of the instruction</returns>
     public override string ToString()
     {
-        return $"{Address:X8}  {BytesToString()}  {Mnemonic} {Operands}".Trim();
-    }
-    
-    /// <summary>
-    /// Converts the instruction bytes to a formatted hex string
-    /// </summary>
-    /// <returns>A formatted hex string of the instruction bytes</returns>
-    private string BytesToString()
-    {
-        return string.Join(" ", Bytes.Select(b => b.ToString("X2")));
+        // Format the address
+        string addressStr = $"{Address:X8}";
+        
+        // Format the raw bytes
+        string bytesStr = string.Empty;
+        foreach (byte b in RawBytes)
+        {
+            bytesStr += $"{b:X2} ";
+        }
+        
+        // Pad the bytes string to a fixed width
+        bytesStr = bytesStr.PadRight(30);
+        
+        // Format the instruction
+        string instructionStr = Mnemonic;
+        if (!string.IsNullOrEmpty(Operands))
+        {
+            instructionStr += " " + Operands;
+        }
+        
+        return $"  {addressStr}  {bytesStr}{instructionStr}";
     }
 }

@@ -1,4 +1,5 @@
 using System.Text;
+using System.Collections.Generic;
 
 namespace X86Disassembler.X86;
 
@@ -7,77 +8,62 @@ namespace X86Disassembler.X86;
 /// </summary>
 public class Disassembler
 {
-    // Buffer containing the code to disassemble
+    // The buffer containing the code to disassemble
     private readonly byte[] _codeBuffer;
     
-    // Base address for the code (RVA)
-    private readonly ulong _baseAddress;
+    // The length of the buffer
+    private readonly int _length;
     
-    // Current position in the code buffer
-    private int _position;
-    
-    // Instruction decoder
-    private readonly InstructionDecoder _decoder;
+    // The base address of the code
+    private readonly uint _baseAddress;
     
     /// <summary>
     /// Initializes a new instance of the Disassembler class
     /// </summary>
     /// <param name="codeBuffer">The buffer containing the code to disassemble</param>
-    /// <param name="baseAddress">The base address (RVA) of the code</param>
-    public Disassembler(byte[] codeBuffer, ulong baseAddress)
+    /// <param name="baseAddress">The base address of the code</param>
+    public Disassembler(byte[] codeBuffer, uint baseAddress)
     {
         _codeBuffer = codeBuffer;
+        _length = codeBuffer.Length;
         _baseAddress = baseAddress;
-        _position = 0;
-        _decoder = new InstructionDecoder(codeBuffer);
     }
     
     /// <summary>
-    /// Disassembles the next instruction in the code buffer
-    /// </summary>
-    /// <returns>The disassembled instruction, or null if the end of the buffer is reached</returns>
-    public Instruction? DisassembleNext()
-    {
-        if (_position >= _codeBuffer.Length)
-        {
-            return null; // End of buffer reached
-        }
-        
-        // Create a new instruction
-        Instruction instruction = new Instruction
-        {
-            Address = _baseAddress + (uint)_position
-        };
-        
-        // Decode the instruction
-        int bytesRead = _decoder.DecodeAt(_position, instruction);
-        
-        if (bytesRead == 0)
-        {
-            return null; // Failed to decode instruction
-        }
-        
-        // Update position
-        _position += bytesRead;
-        
-        return instruction;
-    }
-    
-    /// <summary>
-    /// Disassembles all instructions in the code buffer
+    /// Disassembles the code buffer and returns the disassembled instructions
     /// </summary>
     /// <returns>A list of disassembled instructions</returns>
-    public List<Instruction> DisassembleAll()
+    public List<Instruction> Disassemble()
     {
         List<Instruction> instructions = new List<Instruction>();
         
-        // Reset position
-        _position = 0;
+        // Create an instruction decoder
+        InstructionDecoder decoder = new InstructionDecoder(_codeBuffer, _length);
         
-        // Disassemble all instructions
-        Instruction? instruction;
-        while ((instruction = DisassembleNext()) != null)
+        // Decode instructions until the end of the buffer is reached
+        while (true)
         {
+            int position = decoder.GetPosition();
+            
+            // Check if we've reached the end of the buffer
+            if (position >= _length)
+            {
+                break;
+            }
+            
+            // Decode the next instruction
+            Instruction? instruction = decoder.DecodeInstruction();
+            
+            // Check if decoding failed
+            if (instruction == null)
+            {
+                break;
+            }
+            
+            // Adjust the instruction address to include the base address
+            instruction.Address += _baseAddress;
+            
+            // Add the instruction to the list
             instructions.Add(instruction);
         }
         

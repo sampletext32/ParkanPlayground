@@ -1,9 +1,9 @@
 namespace X86Disassembler.X86.Handlers;
 
 /// <summary>
-/// Base class for all instruction handlers
+/// Abstract base class for instruction handlers
 /// </summary>
-public abstract class InstructionHandler
+public abstract class InstructionHandler : IInstructionHandler
 {
     // Buffer containing the code to decode
     protected readonly byte[] CodeBuffer;
