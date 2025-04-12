@@ -17,3 +17,5 @@ never use terminal commands to edit code. In case of a failure, write it to user
 never address compiler warnings yourself. If you see a warning, suggest to address it.
 
 when working with RVA variables, always add that to variable name, e.g. "nameRVA".
+
+always build only affected project, not full solution.
