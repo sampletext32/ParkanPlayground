@@ -5,6 +5,10 @@ namespace X86Disassembler.PE
     /// </summary>
     public class OptionalHeader
     {
+        // Optional Header Magic values
+        private const ushort PE32_MAGIC = 0x10B;           // 32-bit executable
+        private const ushort PE32PLUS_MAGIC = 0x20B;       // 64-bit executable
+        
         // Standard fields
         public ushort Magic;                  // Magic number (PE32 or PE32+)
         public byte MajorLinkerVersion;       // Major linker version
@@ -40,6 +44,15 @@ namespace X86Disassembler.PE
         public uint NumberOfRvaAndSizes;      // Number of RVA and sizes
         
         public DataDirectory[] DataDirectories; // Data directories
+        
+        /// <summary>
+        /// Determines if the PE file is 64-bit based on the Magic value
+        /// </summary>
+        /// <returns>True if the PE file is 64-bit, false otherwise</returns>
+        public bool Is64Bit()
+        {
+            return Magic == PE32PLUS_MAGIC;
+        }
     }
     
     /// <summary>
