@@ -3,14 +3,15 @@ using X86Disassembler.X86.Handlers.ArithmeticUnary;
 using X86Disassembler.X86.Handlers.Call;
 using X86Disassembler.X86.Handlers.FloatingPoint;
 using X86Disassembler.X86.Handlers.Jump;
+using X86Disassembler.X86.Handlers.Lea;
 using X86Disassembler.X86.Handlers.Mov;
 using X86Disassembler.X86.Handlers.Or;
 using X86Disassembler.X86.Handlers.Pop;
 using X86Disassembler.X86.Handlers.Push;
 using X86Disassembler.X86.Handlers.Ret;
 using X86Disassembler.X86.Handlers.Test;
-using X86Disassembler.X86.Handlers.Xchg;
 using X86Disassembler.X86.Handlers.Xor;
+using X86Disassembler.X86.Handlers.Xchg;
 
 namespace X86Disassembler.X86.Handlers;
 
@@ -68,6 +69,9 @@ public class InstructionHandlerFactory
         
         // Register Or handlers
         RegisterOrHandlers();
+        
+        // Register Lea handlers
+        RegisterLeaHandlers();
         
         // Register Data Transfer handlers
         RegisterDataTransferHandlers();
@@ -210,6 +214,15 @@ public class InstructionHandlerFactory
         _handlers.Add(new OrEaxImmHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new OrImmWithRm32Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new OrImmWithRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+    }
+    
+    /// <summary>
+    /// Registers all Lea instruction handlers
+    /// </summary>
+    private void RegisterLeaHandlers()
+    {
+        // Add Lea handlers
+        _handlers.Add(new LeaR32MHandler(_codeBuffer, _decoder, _length));
     }
     
     /// <summary>

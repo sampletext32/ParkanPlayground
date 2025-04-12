@@ -47,6 +47,9 @@ public static class OpcodeMap
         OneByteOpcodes[0x0C] = "or"; // OR AL, imm8
         OneByteOpcodes[0x0D] = "or"; // OR EAX, imm32
         
+        // LEA instruction
+        OneByteOpcodes[0x8D] = "lea"; // LEA r32, m
+        
         // Group 1 instructions (ADD, OR, ADC, SBB, AND, SUB, XOR, CMP)
         OneByteOpcodes[0x80] = "group1b";
         OneByteOpcodes[0x81] = "group1d";
