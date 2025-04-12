@@ -2,6 +2,7 @@ using X86Disassembler.X86.Handlers.ArithmeticImmediate;
 using X86Disassembler.X86.Handlers.ArithmeticUnary;
 using X86Disassembler.X86.Handlers.Call;
 using X86Disassembler.X86.Handlers.Cmp;
+using X86Disassembler.X86.Handlers.Dec;
 using X86Disassembler.X86.Handlers.FloatingPoint;
 using X86Disassembler.X86.Handlers.Jump;
 using X86Disassembler.X86.Handlers.Lea;
@@ -76,6 +77,9 @@ public class InstructionHandlerFactory
         
         // Register Cmp handlers
         RegisterCmpHandlers();
+        
+        // Register Dec handlers
+        RegisterDecHandlers();
         
         // Register Data Transfer handlers
         RegisterDataTransferHandlers();
@@ -236,6 +240,15 @@ public class InstructionHandlerFactory
     {
         // Add Cmp handlers
         _handlers.Add(new CmpR32Rm32Handler(_codeBuffer, _decoder, _length));
+    }
+    
+    /// <summary>
+    /// Registers all Dec instruction handlers
+    /// </summary>
+    private void RegisterDecHandlers()
+    {
+        // Add Dec handlers
+        _handlers.Add(new DecRegHandler(_codeBuffer, _decoder, _length));
     }
     
     /// <summary>

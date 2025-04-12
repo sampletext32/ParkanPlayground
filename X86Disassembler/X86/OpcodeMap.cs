@@ -62,6 +62,16 @@ public static class OpcodeMap
         OneByteOpcodes[0xC6] = "mov"; // MOV r/m8, imm8
         OneByteOpcodes[0xC7] = "mov"; // MOV r/m32, imm32
         
+        // DEC instructions
+        OneByteOpcodes[0x48] = "dec"; // DEC EAX
+        OneByteOpcodes[0x49] = "dec"; // DEC ECX
+        OneByteOpcodes[0x4A] = "dec"; // DEC EDX
+        OneByteOpcodes[0x4B] = "dec"; // DEC EBX
+        OneByteOpcodes[0x4C] = "dec"; // DEC ESP
+        OneByteOpcodes[0x4D] = "dec"; // DEC EBP
+        OneByteOpcodes[0x4E] = "dec"; // DEC ESI
+        OneByteOpcodes[0x4F] = "dec"; // DEC EDI
+        
         // Group 1 instructions (ADD, OR, ADC, SBB, AND, SUB, XOR, CMP)
         OneByteOpcodes[0x80] = "group1b";
         OneByteOpcodes[0x81] = "group1d";
