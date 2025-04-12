@@ -23,6 +23,7 @@ public class NotRm32Handler : Group3BaseHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
+        // This handler only handles opcode 0xF7
         if (opcode != 0xF7)
             return false;
             
@@ -45,9 +46,6 @@ public class NotRm32Handler : Group3BaseHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "not";
-        
         int position = Decoder.GetPosition();
         
         if (position >= Length)
@@ -57,15 +55,34 @@ public class NotRm32Handler : Group3BaseHandler
         
         // Read the ModR/M byte
         byte modRM = CodeBuffer[position++];
-        Decoder.SetPosition(position);
         
         // Extract the fields from the ModR/M byte
         byte mod = (byte)((modRM & 0xC0) >> 6);
         byte reg = (byte)((modRM & 0x38) >> 3); // Should be 2 for NOT
         byte rm = (byte)(modRM & 0x07);
         
-        // Decode the operand
-        string operand = _modRMDecoder.DecodeModRM(mod, rm, false);
+        // Verify this is a NOT instruction
+        if (reg != 2)
+        {
+            return false;
+        }
+        
+        // Set the mnemonic
+        instruction.Mnemonic = "not";
+        
+        Decoder.SetPosition(position);
+        
+        // For direct register addressing (mod == 3), the r/m field specifies a register
+        string operand;
+        if (mod == 3)
+        {
+            operand = GetRegister32(rm);
+        }
+        else
+        {
+            // Use the ModR/M decoder for memory addressing
+            operand = _modRMDecoder.DecodeModRM(mod, rm, false);
+        }
         
         // Set the operands
         instruction.Operands = operand;

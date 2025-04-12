@@ -57,15 +57,26 @@ public class OrImmToRm8Handler : Group1BaseHandler
         
         // Read the ModR/M byte
         byte modRM = CodeBuffer[position++];
-        Decoder.SetPosition(position);
         
         // Extract the fields from the ModR/M byte
         byte mod = (byte)((modRM & 0xC0) >> 6);
         byte reg = (byte)((modRM & 0x38) >> 3); // Should be 1 for OR
         byte rm = (byte)(modRM & 0x07);
         
-        // Decode the destination operand
-        string destOperand = _modRMDecoder.DecodeModRM(mod, rm, false);
+        // For direct register addressing (mod == 3), use 8-bit register names
+        string destOperand;
+        if (mod == 3)
+        {
+            // Use 8-bit register names for direct register addressing
+            destOperand = GetRegister8(rm);
+        }
+        else
+        {
+            // Use ModR/M decoder for memory addressing
+            destOperand = _modRMDecoder.DecodeModRM(mod, rm, false);
+        }
+        
+        Decoder.SetPosition(position);
         
         // Read the immediate value
         if (position >= Length)

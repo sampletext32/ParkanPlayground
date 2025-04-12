@@ -127,9 +127,17 @@ public class InstructionDecoder
         // Get a handler for the opcode
         var handler = _handlerFactory.GetHandler(opcode);
         
-        if (handler == null || !handler.Decode(opcode, instruction))
+        bool handlerSuccess = false;
+        
+        // Try to decode with a handler first
+        if (handler != null)
         {
-            // If no handler is found or decoding fails, create a default instruction
+            handlerSuccess = handler.Decode(opcode, instruction);
+        }
+        
+        // If no handler is found or decoding fails, create a default instruction
+        if (!handlerSuccess)
+        {
             instruction.Mnemonic = OpcodeMap.GetMnemonic(opcode);
             instruction.Operands = "??";
         }

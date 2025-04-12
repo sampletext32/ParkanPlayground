@@ -72,13 +72,14 @@ public class JumpInstructionTests
     }
     
     /// <summary>
-    /// Tests the TwoByteConditionalJumpHandler for decoding JNE rel32 instruction
+    /// Tests the TwoByteConditionalJumpHandler for decoding JNZ rel32 instruction
     /// </summary>
     [Fact]
-    public void TwoByteConditionalJumpHandler_DecodesJneRel32_Correctly()
+    public void TwoByteConditionalJumpHandler_DecodesJnzRel32_Correctly()
     {
         // Arrange
-        // JNE +0x12345678 (0F 85 78 56 34 12) - Jump 0x12345678 bytes forward if not equal
+        // JNZ +0x12345678 (0F 85 78 56 34 12) - Jump 0x12345678 bytes forward if not zero/not equal
+        // Note: JNZ and JNE are equivalent in x86
         byte[] codeBuffer = new byte[] { 0x0F, 0x85, 0x78, 0x56, 0x34, 0x12 };
         var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
         
@@ -87,7 +88,7 @@ public class JumpInstructionTests
         
         // Assert
         Assert.NotNull(instruction);
-        Assert.Equal("jne", instruction.Mnemonic);
+        Assert.Equal("jnz", instruction.Mnemonic);
         Assert.Equal("0x1234567E", instruction.Operands); // Current position (6) + offset (0x12345678) = 0x1234567E
     }
 }

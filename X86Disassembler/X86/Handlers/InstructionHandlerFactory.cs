@@ -37,11 +37,24 @@ public class InstructionHandlerFactory
     /// </summary>
     private void RegisterHandlers()
     {
+        // Register Group3 handlers first to ensure they take precedence
+        // over generic handlers for the same opcodes
+        RegisterGroup3Handlers();
+        
+        // Register Group1 handlers
+        RegisterGroup1Handlers();
+        
         // Register specific instruction handlers
         _handlers.Add(new RetHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new RetImmHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new CallRel32Handler(_codeBuffer, _decoder, _length));
+        
+        // XOR handlers
         _handlers.Add(new XorRegMemHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new XorMemRegHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new XorAlImmHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new XorEaxImmHandler(_codeBuffer, _decoder, _length));
+
         _handlers.Add(new FnstswHandler(_codeBuffer, _decoder, _length));
 
         // TEST handlers
@@ -57,12 +70,6 @@ public class InstructionHandlerFactory
         _handlers.Add(new JmpRel8Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new ConditionalJumpHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new TwoByteConditionalJumpHandler(_codeBuffer, _decoder, _length));
-
-        // Register Group1 handlers
-        RegisterGroup1Handlers();
-        
-        // Register Group3 handlers
-        RegisterGroup3Handlers();
         
         // Register group handlers for instructions that share similar decoding logic
         _handlers.Add(new FloatingPointHandler(_codeBuffer, _decoder, _length));
