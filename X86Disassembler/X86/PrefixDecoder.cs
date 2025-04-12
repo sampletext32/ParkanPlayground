@@ -11,6 +11,7 @@ public class PrefixDecoder
     private bool _segmentOverridePrefix;
     private bool _lockPrefix;
     private bool _repPrefix;
+    private bool _repnePrefix;
     private string _segmentOverride = string.Empty;
     
     /// <summary>
@@ -31,6 +32,7 @@ public class PrefixDecoder
         _segmentOverridePrefix = false;
         _lockPrefix = false;
         _repPrefix = false;
+        _repnePrefix = false;
         _segmentOverride = string.Empty;
     }
     
@@ -70,9 +72,14 @@ public class PrefixDecoder
             _lockPrefix = true;
             return true;
         }
-        else if (prefix == 0xF2 || prefix == 0xF3) // REP/REPNE prefix
+        else if (prefix == 0xF3) // REP prefix
         {
             _repPrefix = true;
+            return true;
+        }
+        else if (prefix == 0xF2) // REPNE prefix
+        {
+            _repnePrefix = true;
             return true;
         }
         
@@ -125,12 +132,21 @@ public class PrefixDecoder
     }
     
     /// <summary>
-    /// Checks if the REP/REPNE prefix is present
+    /// Checks if the REP prefix is present
     /// </summary>
-    /// <returns>True if the REP/REPNE prefix is present</returns>
+    /// <returns>True if the REP prefix is present</returns>
     public bool HasRepPrefix()
     {
         return _repPrefix;
+    }
+    
+    /// <summary>
+    /// Checks if the REPNE prefix is present
+    /// </summary>
+    /// <returns>True if the REPNE prefix is present</returns>
+    public bool HasRepnePrefix()
+    {
+        return _repnePrefix;
     }
     
     /// <summary>
@@ -154,13 +170,17 @@ public class PrefixDecoder
     }
     
     /// <summary>
-    /// Applies the REP prefix to the mnemonic if applicable
+    /// Applies the REP/REPNE prefix to the mnemonic if applicable
     /// </summary>
     /// <param name="mnemonic">The mnemonic</param>
-    /// <returns>The mnemonic with REP prefix applied</returns>
+    /// <returns>The mnemonic with REP/REPNE prefix applied</returns>
     public string ApplyRepPrefix(string mnemonic)
     {
-        if (_repPrefix && !mnemonic.StartsWith("rep"))
+        if (_repnePrefix && !mnemonic.StartsWith("repne"))
+        {
+            return $"repne {mnemonic}";
+        }
+        else if (_repPrefix && !mnemonic.StartsWith("rep"))
         {
             return $"rep {mnemonic}";
         }
