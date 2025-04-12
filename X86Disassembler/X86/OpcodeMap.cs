@@ -91,9 +91,9 @@ public static class OpcodeMap
         OneByteOpcodes[0x05] = "add"; // ADD EAX, imm32
         
         // Group 1 instructions (ADD, OR, ADC, SBB, AND, SUB, XOR, CMP)
-        OneByteOpcodes[0x80] = "group1b";
-        OneByteOpcodes[0x81] = "group1d";
-        OneByteOpcodes[0x83] = "group1s"; // Sign-extended immediate
+        OneByteOpcodes[0x80] = "group1b"; // Group 1 8-bit operations with immediate 8-bit
+        OneByteOpcodes[0x81] = "group1d"; // Group 1 32-bit operations with immediate 32-bit
+        OneByteOpcodes[0x83] = "group1ds"; // Group 1 32-bit operations with immediate 8-bit sign-extended
         
         // Group 3 instructions (TEST, NOT, NEG, MUL, IMUL, DIV, IDIV)
         OneByteOpcodes[0xF6] = "group3b"; // 8-bit operations
