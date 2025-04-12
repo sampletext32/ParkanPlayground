@@ -118,6 +118,14 @@ public class OpcodeMap
         OneByteOpcodes[0x6A] = "push"; // PUSH imm8
         OneByteOpcodes[0xCD] = "int";  // INT imm8
         OneByteOpcodes[0xE3] = "jecxz"; // JECXZ rel8
+        
+        // XOR instructions
+        OneByteOpcodes[0x30] = "xor"; // XOR r/m8, r8
+        OneByteOpcodes[0x31] = "xor"; // XOR r/m32, r32
+        OneByteOpcodes[0x32] = "xor"; // XOR r8, r/m8
+        OneByteOpcodes[0x33] = "xor"; // XOR r32, r/m32
+        OneByteOpcodes[0x34] = "xor"; // XOR AL, imm8
+        OneByteOpcodes[0x35] = "xor"; // XOR EAX, imm32
     }
     
     /// <summary>

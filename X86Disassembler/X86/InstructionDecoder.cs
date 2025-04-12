@@ -50,7 +50,8 @@ public class InstructionDecoder
             new DataTransferHandler(_codeBuffer, this, _length),
             new ControlFlowHandler(_codeBuffer, this, _length),
             new Group3Handler(_codeBuffer, this, _length),
-            new TestHandler(_codeBuffer, this, _length)
+            new TestHandler(_codeBuffer, this, _length),
+            new ArithmeticHandler(_codeBuffer, this, _length)
         };
     }
     
