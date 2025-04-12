@@ -316,6 +316,14 @@ public class DataTransferHandler : InstructionHandler
     /// </summary>
     private bool DecodeXCHGEAXReg(byte opcode, Instruction instruction)
     {
+        // Special case for NOP (XCHG EAX, EAX)
+        if (opcode == 0x90)
+        {
+            instruction.Mnemonic = "nop";
+            instruction.Operands = "";
+            return true;
+        }
+        
         // Register is encoded in the low 3 bits of the opcode
         int reg = opcode & 0x07;
         string regName = ModRMDecoder.GetRegisterName(reg, 32);

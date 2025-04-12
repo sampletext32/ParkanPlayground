@@ -73,6 +73,26 @@ public class DataTransferInstructionTests
     }
     
     /// <summary>
+    /// Tests the DataTransferHandler for decoding MOV r8, imm8 instruction (DecodeMOVRegImm8)
+    /// </summary>
+    [Fact]
+    public void DataTransferHandler_DecodesMovR8Imm8_Correctly()
+    {
+        // Arrange
+        // MOV AL, 0x42 (B0 42) - Register is encoded in the low 3 bits of the opcode
+        byte[] codeBuffer = new byte[] { 0xB0, 0x42 };
+        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        
+        // Act
+        var instruction = decoder.DecodeInstruction();
+        
+        // Assert
+        Assert.NotNull(instruction);
+        Assert.Equal("mov", instruction.Mnemonic);
+        Assert.Equal("al, 0x42", instruction.Operands);
+    }
+    
+    /// <summary>
     /// Tests the DataTransferHandler for decoding MOV EAX, moffs32 instruction
     /// </summary>
     [Fact]
@@ -154,6 +174,46 @@ public class DataTransferInstructionTests
     }
     
     /// <summary>
+    /// Tests the DataTransferHandler for decoding PUSH imm32 instruction (DecodePUSHImm32)
+    /// </summary>
+    [Fact]
+    public void DataTransferHandler_DecodesPushImm32_Correctly()
+    {
+        // Arrange
+        // PUSH 0x12345678 (68 78 56 34 12)
+        byte[] codeBuffer = new byte[] { 0x68, 0x78, 0x56, 0x34, 0x12 };
+        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        
+        // Act
+        var instruction = decoder.DecodeInstruction();
+        
+        // Assert
+        Assert.NotNull(instruction);
+        Assert.Equal("push", instruction.Mnemonic);
+        Assert.Equal("0x12345678", instruction.Operands);
+    }
+    
+    /// <summary>
+    /// Tests the DataTransferHandler for decoding PUSH imm8 instruction (DecodePUSHImm8)
+    /// </summary>
+    [Fact]
+    public void DataTransferHandler_DecodesPushImm8_Correctly()
+    {
+        // Arrange
+        // PUSH 0x42 (6A 42)
+        byte[] codeBuffer = new byte[] { 0x6A, 0x42 };
+        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        
+        // Act
+        var instruction = decoder.DecodeInstruction();
+        
+        // Assert
+        Assert.NotNull(instruction);
+        Assert.Equal("push", instruction.Mnemonic);
+        Assert.Equal("0x42", instruction.Operands);
+    }
+    
+    /// <summary>
     /// Tests the DataTransferHandler for decoding POP r32 instruction
     /// </summary>
     [Fact]
@@ -171,5 +231,45 @@ public class DataTransferInstructionTests
         Assert.NotNull(instruction);
         Assert.Equal("pop", instruction.Mnemonic);
         Assert.Equal("ecx", instruction.Operands);
+    }
+    
+    /// <summary>
+    /// Tests the DataTransferHandler for decoding XCHG EAX, r32 instruction (DecodeXCHGEAXReg)
+    /// </summary>
+    [Fact]
+    public void DataTransferHandler_DecodesXchgEaxReg_Correctly()
+    {
+        // Arrange
+        // XCHG EAX, ECX (91) - Register is encoded in the low 3 bits of the opcode
+        byte[] codeBuffer = new byte[] { 0x91 };
+        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        
+        // Act
+        var instruction = decoder.DecodeInstruction();
+        
+        // Assert
+        Assert.NotNull(instruction);
+        Assert.Equal("xchg", instruction.Mnemonic);
+        Assert.Equal("eax, ecx", instruction.Operands);
+    }
+    
+    /// <summary>
+    /// Tests the DataTransferHandler for decoding NOP instruction (special case of XCHG EAX, EAX)
+    /// </summary>
+    [Fact]
+    public void DataTransferHandler_DecodesNop_Correctly()
+    {
+        // Arrange
+        // NOP (90) - This is actually XCHG EAX, EAX which is treated as NOP
+        byte[] codeBuffer = new byte[] { 0x90 };
+        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        
+        // Act
+        var instruction = decoder.DecodeInstruction();
+        
+        // Assert
+        Assert.NotNull(instruction);
+        Assert.Equal("nop", instruction.Mnemonic);
+        Assert.Equal("", instruction.Operands);
     }
 }
