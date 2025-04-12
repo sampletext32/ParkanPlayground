@@ -1,4 +1,4 @@
-namespace X86Disassembler.X86.Handlers.ArithmeticImmediate;
+namespace X86Disassembler.X86.Handlers.Cmp;
 
 /// <summary>
 /// Handler for CMP r/m32, imm32 instruction (0x81 /7)

@@ -1,4 +1,4 @@
-namespace X86Disassembler.X86.Handlers.ArithmeticImmediate;
+namespace X86Disassembler.X86.Handlers.Add;
 
 /// <summary>
 /// Handler for ADD r/m32, imm8 (sign-extended) instruction (0x83 /0)
