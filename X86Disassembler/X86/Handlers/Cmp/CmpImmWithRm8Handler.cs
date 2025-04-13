@@ -28,7 +28,7 @@ public class CmpImmWithRm8Handler : InstructionHandler
 
         // Check if the reg field of the ModR/M byte is 7 (CMP)
         int position = Decoder.GetPosition();
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
             return false;
 
         byte modRM = CodeBuffer[position];
@@ -45,88 +45,51 @@ public class CmpImmWithRm8Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Save the original position for raw bytes calculation
-        int startPosition = Decoder.GetPosition();
-
         // Set the mnemonic
         instruction.Mnemonic = "cmp";
 
-        if (startPosition >= Length)
-        {
-            instruction.Operands = "??";
-            instruction.RawBytes = new byte[] {opcode};
-            return true;
-        }
-
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
-
-        // CMP r/m8, imm8 is encoded as 80 /7
-        if (reg != RegisterIndex.Bp)
-        {
-            instruction.Operands = "??";
-            return true;
-        }
-
+        var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
+        
         // Get the position after decoding the ModR/M byte
-        int newPosition = Decoder.GetPosition();
+        int position = Decoder.GetPosition();
 
         // Check if we have enough bytes for the immediate value
-        if (newPosition >= Length)
+        if (position >= Length)
         {
-            instruction.Operands = "??";
-            byte[] rawBytesImm = new byte[newPosition - startPosition + 1]; // +1 for opcode
-            rawBytesImm[0] = opcode;
-            for (int i = 0; i < newPosition - startPosition; i++)
-            {
-                if (startPosition + i < Length)
-                {
-                    rawBytesImm[i + 1] = CodeBuffer[startPosition + i];
-                }
-            }
-
-            instruction.RawBytes = rawBytesImm;
-            return true;
+            return false; // Not enough bytes for the immediate value
         }
 
         // Read the immediate byte
         byte imm8 = Decoder.ReadByte();
 
-        // Replace the size prefix with "byte ptr"
-        string operand;
-        if (destOperand.StartsWith("qword ptr "))
+        // Format the destination operand based on addressing mode
+        string destOperand;
+        if (mod == 3) // Register addressing mode
         {
-            operand = destOperand.Replace("qword ptr ", "byte ptr ");
+            // Get 8-bit register name
+            destOperand = ModRMDecoder.GetRegisterName(rm, 8);
         }
-        else if (destOperand.StartsWith("dword ptr "))
+        else // Memory addressing mode
         {
-            operand = destOperand.Replace("dword ptr ", "byte ptr ");
-        }
-        else if (mod != 3) // Memory operand without prefix
-        {
-            operand = $"byte ptr {destOperand}";
-        }
-        else // Register operand
-        {
-            operand = ModRMDecoder.GetRegisterName(rm, 8);
-        }
-
-        // Set the operands
-        instruction.Operands = $"{operand}, 0x{imm8:X2}";
-
-        // Set the raw bytes
-        byte[] rawBytes = new byte[newPosition - startPosition + 2]; // +1 for opcode, +1 for immediate
-        rawBytes[0] = opcode;
-        for (int i = 0; i < newPosition - startPosition; i++)
-        {
-            if (startPosition + i < Length)
+            // Ensure we have the correct size prefix (byte ptr)
+            if (memOperand.Contains("dword ptr") || memOperand.Contains("qword ptr"))
             {
-                rawBytes[i + 1] = CodeBuffer[startPosition + i];
+                // Replace the size prefix with "byte ptr"
+                destOperand = memOperand.Replace(memOperand.StartsWith("dword") ? "dword ptr " : "qword ptr ", "byte ptr ");
+            }
+            else
+            {
+                // Add the byte ptr prefix if it doesn't have one
+                destOperand = $"byte ptr {memOperand}";
             }
         }
+        
+        // Format the immediate value
+        string immStr = $"0x{imm8:X2}";
 
-        rawBytes[rawBytes.Length - 1] = imm8;
-        instruction.RawBytes = rawBytes;
+        // Set the operands
+        instruction.Operands = $"{destOperand}, {immStr}";
 
         return true;
     }
