@@ -6,6 +6,29 @@ namespace X86Disassembler.X86.Handlers.Nop;
 /// </summary>
 public class MultiByteNopHandler : InstructionHandler
 {
+    // Dictionary mapping ModR/M byte to NOP variant information (memory operand and additional bytes to skip)
+    private static readonly Dictionary<byte, (string MemOperand, int BytesToSkip, byte[] ExpectedBytes)> NopVariants = new()
+    {
+        // 3-byte NOP: 0F 1F 00
+        { 0x00, ("[eax]", 0, Array.Empty<byte>()) },
+        
+        // 4-byte NOP: 0F 1F 40 00
+        { 0x40, ("[eax]", 1, new byte[] { 0x00 }) },
+        
+        // 5-byte NOP: 0F 1F 44 00 00
+        { 0x44, ("[eax+eax*1]", 2, new byte[] { 0x00, 0x00 }) },
+        
+        // 6-byte NOP: 0F 1F 44 00 00 00
+        // Same ModR/M as 5-byte but with an extra 0x00 byte
+        // Handled separately in the code
+        
+        // 7-byte NOP: 0F 1F 80 00 00 00 00
+        { 0x80, ("[eax]", 4, new byte[] { 0x00, 0x00, 0x00, 0x00 }) },
+        
+        // 8-byte NOP: 0F 1F 84 00 00 00 00 00
+        { 0x84, ("[eax+eax*1]", 5, new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00 }) }
+    };
+
     /// <summary>
     /// Initializes a new instance of the MultiByteNopHandler class
     /// </summary>
@@ -30,16 +53,14 @@ public class MultiByteNopHandler : InstructionHandler
             return false;
         }
 
-        int position = Decoder.GetPosition();
-
         // Check if we have enough bytes to read the second opcode
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
 
         // Check if the second byte is 0x1F (part of the multi-byte NOP encoding)
-        byte secondByte = CodeBuffer[position];
+        byte secondByte = CodeBuffer[Decoder.GetPosition()];
         return secondByte == 0x1F;
     }
 
@@ -58,7 +79,7 @@ public class MultiByteNopHandler : InstructionHandler
         Decoder.ReadByte();
 
         // Check if we have enough bytes to read the ModR/M byte
-        if (Decoder.GetPosition() >= Length)
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
@@ -74,56 +95,35 @@ public class MultiByteNopHandler : InstructionHandler
         byte modRm = CodeBuffer[position];
         Decoder.SetPosition(position + 1); // Skip the ModR/M byte
         
-        // Determine the operand based on the NOP variant
-        string memOperand;
+        // Default memory operand if no specific variant is matched
+        string memOperand = "[eax]";
         
-        // 3-byte NOP: 0F 1F 00
-        if (modRm == 0x00)
-        {
-            memOperand = "[eax]";
-        }
-        // 4-byte NOP: 0F 1F 40 00
-        else if (modRm == 0x40 && position + 1 < Length && CodeBuffer[position + 1] == 0x00)
-        {
-            memOperand = "[eax]";
-            Decoder.SetPosition(position + 2); // Skip the displacement byte
-        }
-        // 5-byte NOP: 0F 1F 44 00 00
-        else if (modRm == 0x44 && position + 2 < Length && 
-                CodeBuffer[position + 1] == 0x00 && CodeBuffer[position + 2] == 0x00)
-        {
-            memOperand = "[eax+eax*1]";
-            Decoder.SetPosition(position + 3); // Skip the SIB and displacement bytes
-        }
-        // 6-byte NOP: 0F 1F 44 00 00 00
-        else if (modRm == 0x44 && position + 3 < Length && 
-                CodeBuffer[position + 1] == 0x00 && CodeBuffer[position + 2] == 0x00 &&
-                CodeBuffer[position + 3] == 0x00)
+        // Check for the 6-byte NOP special case (0x44 with 3 zero bytes)
+        if (modRm == 0x44 && position + 3 < Length && 
+            CodeBuffer[position + 1] == 0x00 && 
+            CodeBuffer[position + 2] == 0x00 && 
+            CodeBuffer[position + 3] == 0x00)
         {
             memOperand = "[eax+eax*1]";
             Decoder.SetPosition(position + 4); // Skip the SIB, displacement, and extra byte
         }
-        // 7-byte NOP: 0F 1F 80 00 00 00 00
-        else if (modRm == 0x80 && position + 4 < Length && 
-                CodeBuffer[position + 1] == 0x00 && CodeBuffer[position + 2] == 0x00 && 
-                CodeBuffer[position + 3] == 0x00 && CodeBuffer[position + 4] == 0x00)
+        // Look up the NOP variant in the dictionary
+        else if (NopVariants.TryGetValue(modRm, out var variant))
         {
-            memOperand = "[eax]";
-            Decoder.SetPosition(position + 5); // Skip the displacement bytes
-        }
-        // 8-byte NOP: 0F 1F 84 00 00 00 00 00
-        else if (modRm == 0x84 && position + 5 < Length && 
-                CodeBuffer[position + 1] == 0x00 && CodeBuffer[position + 2] == 0x00 && 
-                CodeBuffer[position + 3] == 0x00 && CodeBuffer[position + 4] == 0x00 && 
-                CodeBuffer[position + 5] == 0x00)
-        {
-            memOperand = "[eax+eax*1]";
-            Decoder.SetPosition(position + 6); // Skip the SIB and displacement bytes
-        }
-        // For any other variant, use a generic NOP operand
-        else
-        {
-            memOperand = "[eax]";
+            // Check if we have enough bytes and if they match the expected pattern
+            bool isValidVariant = position + variant.BytesToSkip < Length;
+            
+            // Verify all expected bytes match
+            for (int i = 0; i < variant.ExpectedBytes.Length && isValidVariant; i++)
+            {
+                isValidVariant = isValidVariant && CodeBuffer[position + 1 + i] == variant.ExpectedBytes[i];
+            }
+            
+            if (isValidVariant)
+            {
+                memOperand = variant.MemOperand;
+                Decoder.SetPosition(position + variant.BytesToSkip + 1); // +1 for ModR/M byte already skipped
+            }
         }
         
         // Set the operands with the appropriate size prefix
