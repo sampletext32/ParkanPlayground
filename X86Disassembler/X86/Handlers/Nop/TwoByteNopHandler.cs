@@ -2,7 +2,7 @@ namespace X86Disassembler.X86.Handlers.Nop;
 
 /// <summary>
 /// Handler for the 2-byte NOP instruction (0x66 0x90)
-/// This is a NOP with an operand size prefix
+/// This is actually XCHG AX, AX with an operand size prefix
 /// </summary>
 public class TwoByteNopHandler : InstructionHandler
 {
@@ -29,14 +29,15 @@ public class TwoByteNopHandler : InstructionHandler
     }
 
     /// <summary>
-    /// Decodes a 2-byte NOP instruction
+    /// Decodes a 2-byte NOP instruction (XCHG AX, AX)
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
+        // Although this is actually XCHG AX, AX, it's treated as NOP in the x86 architecture
+        // and is commonly disassembled as such
         instruction.Mnemonic = "nop";
         
         // NOP has no operands, even with the operand size prefix
