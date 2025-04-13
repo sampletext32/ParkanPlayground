@@ -4,6 +4,7 @@ using System.Text;
 using System.Collections.Generic;
 using X86Disassembler.PE;
 using X86Disassembler.X86;
+using X86Disassembler.Decompiler;
 
 namespace X86Disassembler;
 
@@ -70,7 +71,7 @@ public class Program
             Console.WriteLine($"Disassembling section {section.Name} at RVA 0x{section.VirtualAddress:X8}:");
             
             // Create a disassembler for the code section
-            Disassembler disassembler = new Disassembler(codeBytes, section.VirtualAddress);
+            Disassembler disassembler = new Disassembler(codeBytes, peFile.OptionalHeader.ImageBase + section.VirtualAddress);
             
             // Disassemble all instructions
             var instructions = disassembler.Disassemble();
@@ -97,6 +98,26 @@ public class Program
             {
                 Console.WriteLine($"... ({instructions.Count - count} more instructions not shown)");
             }
+            
+            // Decompile the instructions
+            Console.WriteLine("\nDecompiling the first function:\n");
+            
+            // For demonstration, we'll decompile a small subset of instructions
+            // In a real scenario, you'd identify function boundaries first
+            int functionSize = Math.Min(50, instructions.Count);
+            List<Instruction> functionInstructions = instructions.GetRange(0, functionSize);
+            
+            // Create a decompiler for the function
+            Decompiler.Decompiler decompiler = new Decompiler.Decompiler(
+                functionInstructions, 
+                functionInstructions[0].Address
+            );
+            
+            // Decompile the function
+            string decompiledCode = decompiler.Decompile();
+            
+            // Print the decompiled code
+            Console.WriteLine(decompiledCode);
         }
         
         // Console.WriteLine("\nPress Enter to exit...");

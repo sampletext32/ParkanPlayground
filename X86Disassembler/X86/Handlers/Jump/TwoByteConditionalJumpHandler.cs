@@ -55,8 +55,6 @@ public class TwoByteConditionalJumpHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        int position = Decoder.GetPosition();
-        
         // Check if we have enough bytes for the second byte
         if (!Decoder.CanReadByte())
         {   

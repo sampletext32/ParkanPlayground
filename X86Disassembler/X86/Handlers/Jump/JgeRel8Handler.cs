@@ -43,13 +43,11 @@ public class JgeRel8Handler : InstructionHandler
             instruction.Operands = "??";
             return true;
         }
-        
-        // Read the offset and calculate target address
-        int position = Decoder.GetPosition();
+
         sbyte offset = (sbyte)Decoder.ReadByte();
         
         // Calculate target address (instruction address + instruction length + offset)
-        uint targetAddress = (uint)(instruction.Address + 2 + offset);
+        ulong targetAddress = instruction.Address + 2UL + (uint)offset;
         
         // Format the target address
         instruction.Operands = $"0x{targetAddress:X8}";

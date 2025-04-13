@@ -8,7 +8,7 @@ public class Instruction
     /// <summary>
     /// Gets or sets the address of the instruction
     /// </summary>
-    public uint Address { get; set; }
+    public ulong Address { get; set; }
     
     /// <summary>
     /// Gets or sets the mnemonic of the instruction

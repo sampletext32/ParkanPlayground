@@ -15,7 +15,7 @@ public class Disassembler
     private readonly int _length;
     
     // The base address of the code
-    private readonly uint _baseAddress;
+    private readonly ulong _baseAddress;
     
     // Segment override prefixes
     private static readonly byte[] SegmentOverridePrefixes = { 0x26, 0x2E, 0x36, 0x3E, 0x64, 0x65 };
@@ -25,7 +25,7 @@ public class Disassembler
     /// </summary>
     /// <param name="codeBuffer">The buffer containing the code to disassemble</param>
     /// <param name="baseAddress">The base address of the code</param>
-    public Disassembler(byte[] codeBuffer, uint baseAddress)
+    public Disassembler(byte[] codeBuffer, ulong baseAddress)
     {
         _codeBuffer = codeBuffer;
         _length = codeBuffer.Length;

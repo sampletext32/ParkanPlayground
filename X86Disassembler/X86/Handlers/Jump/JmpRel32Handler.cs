@@ -38,8 +38,7 @@ public class JmpRel32Handler : InstructionHandler
         instruction.Mnemonic = "jmp";
         
         // Check if we have enough bytes for the offset (4 bytes)
-        int position = Decoder.GetPosition();
-        if (position + 4 > Length)
+        if (!Decoder.CanReadUInt())
         {
             return false;
         }
