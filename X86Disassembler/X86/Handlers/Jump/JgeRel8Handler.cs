@@ -34,33 +34,25 @@ public class JgeRel8Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Save the original position for raw bytes calculation
-        int startPosition = Decoder.GetPosition();
-        
         // Set the mnemonic
         instruction.Mnemonic = "jge";
         
-        if (startPosition >= Length)
+        // Check if we can read the offset byte
+        if (!Decoder.CanReadByte())
         {
             instruction.Operands = "??";
-            instruction.RawBytes = new byte[] { opcode };
             return true;
         }
         
-        // Read the relative offset
-        sbyte offset = (sbyte)CodeBuffer[startPosition];
-        Decoder.SetPosition(startPosition + 1);
+        // Read the offset and calculate target address
+        int position = Decoder.GetPosition();
+        sbyte offset = (sbyte)Decoder.ReadByte();
         
-        // Calculate the target address
-        // The target is calculated from the address of the next instruction (EIP + 2)
-        // EIP + 2 + offset
-        uint targetAddress = (uint)(instruction.Address + offset + 2);
+        // Calculate target address (instruction address + instruction length + offset)
+        uint targetAddress = (uint)(instruction.Address + 2 + offset);
         
-        // Set the operands
+        // Format the target address
         instruction.Operands = $"0x{targetAddress:X8}";
-        
-        // Set the raw bytes
-        instruction.RawBytes = new byte[] { opcode, (byte)offset };
         
         return true;
     }

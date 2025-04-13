@@ -11,7 +11,7 @@ public class JmpRel8Handler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public JmpRel8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public JmpRel8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
@@ -34,36 +34,24 @@ public class JmpRel8Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Save the original position for raw bytes calculation
-        int startPosition = Decoder.GetPosition();
-        
         // Set the mnemonic
         instruction.Mnemonic = "jmp";
         
-        // Check if we have enough bytes for the offset
-        if (startPosition >= Length)
+        // Check if we can read the offset byte
+        if (!Decoder.CanReadByte())
         {
-            // Not enough bytes for the offset
-            instruction.Operands = "??";
-            instruction.RawBytes = new byte[] { opcode };
             return true;
         }
         
-        // Read the relative offset
-        sbyte offset = (sbyte)CodeBuffer[startPosition];
+        // Read the offset and calculate target address
+        int position = Decoder.GetPosition();
+        sbyte offset = (sbyte)Decoder.ReadByte();
         
-        // Advance the decoder position past the offset byte
-        Decoder.SetPosition(startPosition + 1);
+        // Calculate target address (instruction address + instruction length + offset)
+        uint targetAddress = (uint)(instruction.Address + 2 + offset);
         
-        // Calculate the target address
-        // The target is relative to the next instruction (after the JMP instruction)
-        uint targetAddress = (uint)(instruction.Address + offset + 2);
-        
-        // Set the operands
+        // Format the target address
         instruction.Operands = $"0x{targetAddress:X8}";
-        
-        // Set the raw bytes
-        instruction.RawBytes = new byte[] { opcode, (byte)offset };
         
         return true;
     }

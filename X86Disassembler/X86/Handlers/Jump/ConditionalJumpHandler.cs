@@ -46,30 +46,18 @@ public class ConditionalJumpHandler : InstructionHandler
         int index = opcode - 0x70;
         instruction.Mnemonic = Mnemonics[index];
         
-        // Get the current position in the code buffer
-        int position = Decoder.GetPosition();
-        
-        if (position >= Length)
+        // Check if we can read the offset byte
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
         
-        // Read the relative offset
-        sbyte offset = (sbyte)CodeBuffer[position];
-        
-        // According to x86 architecture, the jump offset is relative to the instruction following the jump
-        // For a conditional jump, the instruction is 2 bytes: opcode (1 byte) + offset (1 byte)
-        
-        // Calculate the target address:
-        // 1. Start with the current position (where the offset byte is)
-        // 2. Add 1 to account for the size of the offset byte itself
-        // 3. Add the offset value
+        // Read the offset and calculate target address
+        int position = Decoder.GetPosition();
+        sbyte offset = (sbyte)Decoder.ReadByte();
         int targetAddress = position + 1 + offset;
         
-        // Move the decoder position past the offset byte
-        Decoder.SetPosition(position + 1);
-        
-        // Set the operands to the calculated target address
+        // Format the target address as a hexadecimal value
         instruction.Operands = $"0x{targetAddress:X8}";
         
         return true;
