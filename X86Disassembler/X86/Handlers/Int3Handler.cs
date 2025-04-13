@@ -1,12 +1,12 @@
 namespace X86Disassembler.X86.Handlers;
 
 /// <summary>
-/// Handler for CALL rel32 instruction (0xE8)
+/// Handler for INT3 instruction (0xCC)
 /// </summary>
 public class Int3Handler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the CallRel32Handler class
+    /// Initializes a new instance of the Int3Handler class
     /// </summary>
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
@@ -27,7 +27,7 @@ public class Int3Handler : InstructionHandler
     }
     
     /// <summary>
-    /// Decodes a CALL rel32 instruction
+    /// Decodes an INT3 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>

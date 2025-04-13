@@ -56,5 +56,6 @@ public class HandlerSelectionTests
         
         // Third instruction should be PUSH eax
         Assert.Equal("push", instructions[2].Mnemonic);
+        Assert.Equal("eax", instructions[2].Operands);
     }
 }

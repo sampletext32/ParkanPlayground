@@ -74,6 +74,16 @@ public class Program
             
             // Disassemble all instructions
             var instructions = disassembler.Disassemble();
+
+            var unknownIndex = instructions.FindIndex(
+                x => x.ToString()
+                    .Contains("??") || x.ToString()
+                    .Contains("TODO")
+            );
+            if (unknownIndex != -1)
+            {
+                _ = 5;
+            }
             
             // Print the first 100 instructions
             int count = Math.Min(100, instructions.Count);

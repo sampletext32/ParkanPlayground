@@ -37,8 +37,8 @@ public class Group1SignExtendedHandlerTests
     {
         // Arrange
         // This is the sequence from the problematic example:
-        // 08 83 C1 04 50 E8 42 01 00 00
-        byte[] codeBuffer = new byte[] { 0x08, 0x83, 0xC1, 0x04, 0x50, 0xE8, 0x42, 0x01, 0x00, 0x00 };
+        // 83 C1 04 50 E8 42 01 00 00
+        byte[] codeBuffer = new byte[] { 0x83, 0xC1, 0x04, 0x50, 0xE8, 0x42, 0x01, 0x00, 0x00 };
         var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
@@ -47,15 +47,12 @@ public class Group1SignExtendedHandlerTests
         // Assert
         Assert.True(instructions.Count >= 3, $"Expected at least 3 instructions, but got {instructions.Count}");
         
-        // First instruction should be OR r/m8, r8 (but might be incomplete)
-        Assert.Equal("or", instructions[0].Mnemonic);
+        // First instruction should be ADD ecx, 0x04
+        Assert.Equal("add", instructions[0].Mnemonic);
+        Assert.Equal("ecx, 0x00000004", instructions[0].Operands);
         
-        // Second instruction should be ADD ecx, 0x04
-        Assert.Equal("add", instructions[1].Mnemonic);
-        Assert.Equal("ecx, 0x00000004", instructions[1].Operands);
-        
-        // Third instruction should be PUSH eax
-        Assert.Equal("push", instructions[2].Mnemonic);
-        Assert.Equal("eax", instructions[2].Operands);
+        // Second instruction should be PUSH eax
+        Assert.Equal("push", instructions[1].Mnemonic);
+        Assert.Equal("eax", instructions[1].Operands);
     }
 }
