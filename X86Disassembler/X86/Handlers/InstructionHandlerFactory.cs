@@ -10,6 +10,7 @@ using X86Disassembler.X86.Handlers.Inc;
 using X86Disassembler.X86.Handlers.Jump;
 using X86Disassembler.X86.Handlers.Lea;
 using X86Disassembler.X86.Handlers.Mov;
+using X86Disassembler.X86.Handlers.Nop;
 using X86Disassembler.X86.Handlers.Or;
 using X86Disassembler.X86.Handlers.Pop;
 using X86Disassembler.X86.Handlers.Push;
@@ -78,6 +79,7 @@ public class InstructionHandlerFactory
         RegisterStringHandlers();
         RegisterMovHandlers();
         RegisterSubHandlers(); // Register SUB handlers
+        RegisterNopHandlers(); // Register NOP handlers
     }
     
     /// <summary>
@@ -394,6 +396,17 @@ public class InstructionHandlerFactory
         _handlers.Add(new SubR8Rm8Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new SubAlImm8Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new SubImmFromRm8Handler(_codeBuffer, _decoder, _length));
+    }
+    
+    /// <summary>
+    /// Registers all NOP instruction handlers
+    /// </summary>
+    private void RegisterNopHandlers()
+    {
+        // Register NOP handlers
+        _handlers.Add(new NopHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new TwoByteNopHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new MultiByteNopHandler(_codeBuffer, _decoder, _length));
     }
     
     /// <summary>
