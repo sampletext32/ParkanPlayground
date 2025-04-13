@@ -50,3 +50,40 @@ RawBytes;Instructions
 
 # SUB r/m16, imm8 (opcode 83 /5 with 0x66 prefix and sign extension)
 6683EB42;[{ "Mnemonic": "sub", "Operands": "ebx, 0x42" }]
+
+# Additional test cases for more complex addressing modes
+
+# SUB with SIB byte addressing (Scale-Index-Base)
+# SUB [eax+ecx*4], edx (opcode 29)
+291488;[{ "Mnemonic": "sub", "Operands": "dword ptr [eax+ecx*4], edx" }]
+
+# SUB edx, [eax+ecx*4] (opcode 2B)
+2B1488;[{ "Mnemonic": "sub", "Operands": "edx, dword ptr [eax+ecx*4]" }]
+
+# SUB with displacement-only addressing
+# SUB [0x12345678], eax (opcode 29)
+290578563412;[{ "Mnemonic": "sub", "Operands": "dword ptr [0x12345678], eax" }]
+
+# SUB with segment override prefixes
+# SUB fs:[ebx+0x10], ecx (opcode 29 with FS override)
+64294B10;[{ "Mnemonic": "sub", "Operands": "dword ptr fs:[ebx+0x10], ecx" }]
+
+# SUB ecx, gs:[ebx+0x10] (opcode 2B with GS override)
+652B4B10;[{ "Mnemonic": "sub", "Operands": "ecx, dword ptr gs:[ebx+0x10]" }]
+
+# SUB with complex addressing mode: base + index + scale + displacement
+# SUB [eax+ecx*4+0x12345678], edx (opcode 29)
+29948878563412;[{ "Mnemonic": "sub", "Operands": "dword ptr [eax+ecx*4+0x12345678], edx" }]
+
+# Edge cases for immediate values
+# SUB eax, 0x0 (opcode 83 /5 with zero immediate)
+83E800;[{ "Mnemonic": "sub", "Operands": "eax, 0x00" }]
+
+# SUB al, 0xFF (opcode 2C with max 8-bit immediate)
+2CFF;[{ "Mnemonic": "sub", "Operands": "al, 0xFF" }]
+
+# SUB eax, 0xFFFFFFFF (opcode 81 /5 with max 32-bit immediate)
+81E8FFFFFFFF;[{ "Mnemonic": "sub", "Operands": "eax, 0xFFFFFFFF" }]
+
+# SUB with negative immediate value (sign-extended)
+83E8FF;[{ "Mnemonic": "sub", "Operands": "eax, 0xFFFFFFFF" }]
