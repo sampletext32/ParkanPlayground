@@ -49,37 +49,27 @@ public class CmpImmWithRm32Handler : InstructionHandler
 
         // Read the ModR/M byte
         var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
-        
-        // Get the position after decoding the ModR/M byte
-        int position = Decoder.GetPosition();
-
-        // Check if we have enough bytes for the immediate value
-        if (!Decoder.CanReadUInt())
-        {
-            return false; // Not enough bytes for the immediate value
-        }
 
         // Read the immediate value
+        if (!Decoder.CanReadUInt())
+        {
+            return false;
+        }
+
         uint imm32 = Decoder.ReadUInt32();
 
         // Format the destination operand based on addressing mode
-        string destOperand;
         if (mod == 3) // Register addressing mode
         {
             // Get 32-bit register name
-            destOperand = ModRMDecoder.GetRegisterName(rm, 32);
-        }
-        else // Memory addressing mode
-        {
-            // Memory operand already includes dword ptr prefix
-            destOperand = memOperand;
+            memOperand = ModRMDecoder.GetRegisterName(rm, 32);
         }
         
         // Format the immediate value
         string immStr = $"0x{imm32:X8}";
 
         // Set the operands
-        instruction.Operands = $"{destOperand}, {immStr}";
+        instruction.Operands = $"{memOperand}, {immStr}";
 
         return true;
     }

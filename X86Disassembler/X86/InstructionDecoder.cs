@@ -11,20 +11,20 @@ public class InstructionDecoder
 {
     // The buffer containing the code to decode
     private readonly byte[] _codeBuffer;
-    
+
     // The length of the buffer
     private readonly int _length;
-    
+
     // The current position in the buffer
     private int _position;
-    
+
     // The instruction handler factory
     private readonly InstructionHandlerFactory _handlerFactory;
-    
+
     // Specialized decoders
     private readonly PrefixDecoder _prefixDecoder;
     private readonly ModRMDecoder _modRMDecoder;
-    
+
     /// <summary>
     /// Initializes a new instance of the InstructionDecoder class
     /// </summary>
@@ -35,40 +35,40 @@ public class InstructionDecoder
         _codeBuffer = codeBuffer;
         _length = length;
         _position = 0;
-        
+
         // Create specialized decoders
         _prefixDecoder = new PrefixDecoder();
         _modRMDecoder = new ModRMDecoder(codeBuffer, this, length);
-        
+
         // Create the instruction handler factory
         _handlerFactory = new InstructionHandlerFactory(_codeBuffer, this, _length);
     }
-    
+
     /// <summary>
     /// Decodes an instruction at the current position
     /// </summary>
     /// <returns>The decoded instruction, or null if the decoding failed</returns>
     public Instruction? DecodeInstruction()
     {
-        if (_position >= _length)
+        if (!CanReadByte())
         {
             return null;
         }
-        
+
         // Reset prefix flags
         _prefixDecoder.Reset();
-        
+
         // Save the start position of the instruction
         int startPosition = _position;
-        
+
         // Create a new instruction
         Instruction instruction = new Instruction
         {
-            Address = (uint)startPosition,
+            Address = (uint) startPosition,
         };
-        
+
         // Handle prefixes
-        while (_position < _length)
+        while (CanReadByte())
         {
             byte prefix = _codeBuffer[_position];
             
@@ -82,7 +82,7 @@ public class InstructionDecoder
             }
         }
         
-        if (_position >= _length)
+        if (!CanReadByte())
         {
             // If we reached the end of the buffer while processing prefixes,
             // create an instruction with just the prefix information
@@ -90,7 +90,7 @@ public class InstructionDecoder
             {
                 instruction.Mnemonic = _prefixDecoder.GetSegmentOverride();
                 instruction.Operands = "";
-                
+
                 // Set the raw bytes
                 int length = _position - startPosition;
                 instruction.RawBytes = new byte[length];
@@ -98,47 +98,53 @@ public class InstructionDecoder
                 
                 return instruction;
             }
-            
+
             return null;
         }
-        
+
         // Read the opcode
-        byte opcode = _codeBuffer[_position++];
+        byte opcode = ReadByte();
         
         // Get a handler for the opcode
         var handler = _handlerFactory.GetHandler(opcode);
-        
+
         Debug.WriteLine($"Resolved handler {handler?.GetType().Name}");
-        
+
         bool handlerSuccess = false;
-        
+
         // Try to decode with a handler first
         if (handler != null)
         {
             // Store the current segment override state
             bool hasSegmentOverride = _prefixDecoder.HasSegmentOverridePrefix();
             string segmentOverride = _prefixDecoder.GetSegmentOverride();
-            
+
             // Decode the instruction
             handlerSuccess = handler.Decode(opcode, instruction);
-            
+
             // Apply segment override prefix to the operands if needed
             if (handlerSuccess && hasSegmentOverride)
             {
                 instruction.Operands = _prefixDecoder.ApplySegmentOverride(instruction.Operands);
             }
         }
-        
+        else
+        {
+            instruction.Mnemonic = "Handler Not Found For opcode: " + opcode;
+            instruction.Operands = "??";
+            handlerSuccess = true;
+        }
+
         // If no handler is found or decoding fails, create a default instruction
         if (!handlerSuccess)
         {
-            instruction.Mnemonic = OpcodeMap.GetMnemonic(opcode);
+            instruction.Mnemonic = $"Handler {handler?.GetType().Name} failed for opcode. " + OpcodeMap.GetMnemonic(opcode);
             instruction.Operands = "??";
         }
-        
+
         // Apply REP/REPNE prefix to the mnemonic if needed
         instruction.Mnemonic = _prefixDecoder.ApplyRepPrefix(instruction.Mnemonic);
-        
+
         // Set the raw bytes
         int bytesLength = _position - startPosition;
         instruction.RawBytes = new byte[bytesLength];
@@ -146,7 +152,7 @@ public class InstructionDecoder
         
         return instruction;
     }
-    
+
     /// <summary>
     /// Gets the current position in the buffer
     /// </summary>
@@ -155,7 +161,7 @@ public class InstructionDecoder
     {
         return _position;
     }
-    
+
     /// <summary>
     /// Sets the current position in the buffer
     /// </summary>
@@ -164,7 +170,7 @@ public class InstructionDecoder
     {
         _position = position;
     }
-    
+
     /// <summary>
     /// Checks if the operand size prefix is present
     /// </summary>
@@ -173,7 +179,7 @@ public class InstructionDecoder
     {
         return _prefixDecoder.HasOperandSizePrefix();
     }
-    
+
     /// <summary>
     /// Checks if the address size prefix is present
     /// </summary>
@@ -182,7 +188,7 @@ public class InstructionDecoder
     {
         return _prefixDecoder.HasAddressSizePrefix();
     }
-    
+
     /// <summary>
     /// Checks if a segment override prefix is present
     /// </summary>
@@ -191,7 +197,7 @@ public class InstructionDecoder
     {
         return _prefixDecoder.HasSegmentOverridePrefix();
     }
-    
+
     /// <summary>
     /// Gets the segment override prefix
     /// </summary>
@@ -200,7 +206,7 @@ public class InstructionDecoder
     {
         return _prefixDecoder.GetSegmentOverride();
     }
-    
+
     /// <summary>
     /// Checks if the LOCK prefix is present
     /// </summary>
@@ -209,7 +215,7 @@ public class InstructionDecoder
     {
         return _prefixDecoder.HasLockPrefix();
     }
-    
+
     /// <summary>
     /// Checks if the REP/REPNE prefix is present
     /// </summary>
@@ -218,7 +224,7 @@ public class InstructionDecoder
     {
         return _prefixDecoder.HasRepPrefix();
     }
-    
+
     /// <summary>
     /// Checks if the instruction has an operand size override prefix (0x66)
     /// </summary>
@@ -254,7 +260,7 @@ public class InstructionDecoder
     {
         return _position + 3 < _length;
     }
-    
+
     /// <summary>
     /// Reads a byte from the buffer and advances the position
     /// </summary>
@@ -265,10 +271,10 @@ public class InstructionDecoder
         {
             return 0;
         }
-        
+
         return _codeBuffer[_position++];
     }
-    
+
     /// <summary>
     /// Reads a 16-bit value from the buffer and advances the position
     /// </summary>
@@ -279,12 +285,12 @@ public class InstructionDecoder
         {
             return 0;
         }
-        
-        ushort value = (ushort)(_codeBuffer[_position] | (_codeBuffer[_position + 1] << 8));
+
+        ushort value = (ushort) (_codeBuffer[_position] | (_codeBuffer[_position + 1] << 8));
         _position += 2;
         return value;
     }
-    
+
     /// <summary>
     /// Reads a 32-bit value from the buffer and advances the position
     /// </summary>
@@ -295,11 +301,11 @@ public class InstructionDecoder
         {
             return 0;
         }
-        
-        uint value = (uint)(_codeBuffer[_position] | 
-                          (_codeBuffer[_position + 1] << 8) | 
-                          (_codeBuffer[_position + 2] << 16) | 
-                          (_codeBuffer[_position + 3] << 24));
+
+        uint value = (uint) (_codeBuffer[_position] |
+                             (_codeBuffer[_position + 1] << 8) |
+                             (_codeBuffer[_position + 2] << 16) |
+                             (_codeBuffer[_position + 3] << 24));
         _position += 4;
         return value;
     }

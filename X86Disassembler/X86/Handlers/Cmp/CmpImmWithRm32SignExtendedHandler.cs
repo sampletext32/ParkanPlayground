@@ -48,8 +48,6 @@ public class CmpImmWithRm32SignExtendedHandler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "cmp";
 
-        int position = Decoder.GetPosition();
-
         if (!Decoder.CanReadByte())
         {
             return false;

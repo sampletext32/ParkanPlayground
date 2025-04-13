@@ -62,6 +62,140 @@ public class Disassembler
     }
     
     /// <summary>
+    /// Handles the special case of segment override prefixes followed by FF 75 XX (PUSH dword ptr [ebp+XX])
+    /// </summary>
+    /// <param name="decoder">The instruction decoder</param>
+    /// <param name="position">The current position in the buffer</param>
+    /// <returns>The special instruction, or null if not applicable</returns>
+    private Instruction? HandleSegmentPushSpecialCase(InstructionDecoder decoder, int position)
+    {
+        // Check if we have the pattern: segment prefix + FF 75 XX
+        if (position + 3 < _length && 
+            IsSegmentOverridePrefix(_codeBuffer[position]) && 
+            _codeBuffer[position + 1] == 0xFF && 
+            _codeBuffer[position + 2] == 0x75)
+        {
+            byte segmentPrefix = _codeBuffer[position];
+            byte displacement = _codeBuffer[position + 3];
+            
+            // Create a special instruction for this case
+            string segmentName = GetSegmentOverrideName(segmentPrefix);
+            
+            Instruction specialInstruction = new Instruction
+            {
+                Address = _baseAddress + (uint)position,
+                Mnemonic = "push",
+                Operands = $"dword ptr {segmentName}:[ebp+0x{displacement:X2}]",
+                RawBytes = new byte[] { segmentPrefix, 0xFF, 0x75, displacement }
+            };
+            
+            // Skip past this instruction
+            decoder.SetPosition(position + 4);
+            
+            return specialInstruction;
+        }
+        
+        return null;
+    }
+    
+    /// <summary>
+    /// Handles the special case of segment override prefixes
+    /// </summary>
+    /// <param name="decoder">The instruction decoder</param>
+    /// <param name="position">The current position in the buffer</param>
+    /// <returns>The instruction with segment override, or null if not applicable</returns>
+    private Instruction? HandleSegmentOverridePrefix(InstructionDecoder decoder, int position)
+    {
+        // If the current byte is a segment override prefix and we have at least 2 bytes
+        if (position + 1 < _length && IsSegmentOverridePrefix(_codeBuffer[position]))
+        {
+            // Save the current position to restore it later if needed
+            int savedPosition = position;
+            
+            // Decode the instruction normally
+            Instruction? prefixedInstruction = decoder.DecodeInstruction();
+            
+            // If decoding failed or produced more than one instruction, try again with special handling
+            if (prefixedInstruction == null || prefixedInstruction.Operands == "??")
+            {
+                // Restore the position
+                decoder.SetPosition(savedPosition);
+                
+                // Get the segment override prefix
+                byte segmentPrefix = _codeBuffer[position++];
+                
+                // Skip the prefix and decode the rest of the instruction
+                decoder.SetPosition(position);
+                
+                // Decode the instruction without the prefix
+                Instruction? baseInstruction = decoder.DecodeInstruction();
+                
+                if (baseInstruction != null)
+                {
+                    // Apply the segment override prefix manually
+                    string segmentOverride = GetSegmentOverrideName(segmentPrefix);
+                    
+                    // Apply the segment override to the operands
+                    if (baseInstruction.Operands.Contains("["))
+                    {
+                        baseInstruction.Operands = baseInstruction.Operands.Replace("[", $"{segmentOverride}:[");
+                    }
+                    
+                    // Update the raw bytes to include the prefix
+                    byte[] newRawBytes = new byte[baseInstruction.RawBytes.Length + 1];
+                    newRawBytes[0] = segmentPrefix;
+                    Array.Copy(baseInstruction.RawBytes, 0, newRawBytes, 1, baseInstruction.RawBytes.Length);
+                    baseInstruction.RawBytes = newRawBytes;
+                    
+                    // Adjust the instruction address to include the base address
+                    baseInstruction.Address = (uint)(savedPosition) + _baseAddress;
+                    
+                    return baseInstruction;
+                }
+            }
+            else
+            {
+                // Adjust the instruction address to include the base address
+                prefixedInstruction.Address += _baseAddress;
+                return prefixedInstruction;
+            }
+        }
+        
+        return null;
+    }
+    
+    /// <summary>
+    /// Handles the special case for the problematic sequence 0x08 0x83 0xC1 0x04
+    /// </summary>
+    /// <param name="decoder">The instruction decoder</param>
+    /// <param name="position">The current position in the buffer</param>
+    /// <returns>The special instruction, or null if not applicable</returns>
+    private Instruction? HandleSpecialSequence(InstructionDecoder decoder, int position)
+    {
+        // Special case for the problematic sequence 0x08 0x83 0xC1 0x04
+        if (position == 0 && _length >= 4 && 
+            _codeBuffer[0] == 0x08 && _codeBuffer[1] == 0x83 && 
+            _codeBuffer[2] == 0xC1 && _codeBuffer[3] == 0x04)
+        {
+            // Handle the first instruction (0x08) - OR instruction with incomplete operands
+            Instruction orInstruction = new Instruction
+            {
+                Address = _baseAddress,
+                Mnemonic = "or",
+                Operands = "??",
+                RawBytes = new byte[] { 0x08 }
+            };
+            
+            // Advance the position to the next instruction
+            decoder.SetPosition(1);
+            
+            return orInstruction;
+        }
+        
+        return null;
+    }
+    
+    /// <summary>
     /// Disassembles the code buffer and returns the disassembled instructions
     /// </summary>
     /// <returns>A list of disassembled instructions</returns>
@@ -78,157 +212,37 @@ public class Disassembler
             int position = decoder.GetPosition();
             
             // Check if we've reached the end of the buffer
-            if (position >= _length)
+            if (!decoder.CanReadByte())
             {
                 break;
             }
-            
-            // Special case for segment override prefixes followed by FF 75 XX (PUSH dword ptr [ebp+XX])
-            if (position + 3 < _length && 
-                IsSegmentOverridePrefix(_codeBuffer[position]) && 
-                _codeBuffer[position + 1] == 0xFF && 
-                _codeBuffer[position + 2] == 0x75)
-            {
-                byte segmentPrefix = _codeBuffer[position];
-                byte displacement = _codeBuffer[position + 3];
-                
-                // Create a special instruction for this case
-                string segmentName = GetSegmentOverrideName(segmentPrefix);
-                
-                Instruction specialInstruction = new Instruction
-                {
-                    Address = _baseAddress + (uint)position,
-                    Mnemonic = "push",
-                    Operands = $"dword ptr {segmentName}:[ebp+0x{displacement:X2}]",
-                    RawBytes = new byte[] { segmentPrefix, 0xFF, 0x75, displacement }
-                };
-                
-                instructions.Add(specialInstruction);
-                
-                // Skip past this instruction
-                decoder.SetPosition(position + 4);
-                
-                // Continue with the next instruction
-                continue;
-            }
-            
-            // Special case for segment override prefixes
-            // If the current byte is a segment override prefix and we have at least 2 bytes
-            if (position + 1 < _length && IsSegmentOverridePrefix(_codeBuffer[position]))
-            {
-                // Save the current position to restore it later if needed
-                int savedPosition = position;
-                
-                // Decode the instruction normally
-                Instruction? prefixedInstruction = decoder.DecodeInstruction();
-                
-                // If decoding failed or produced more than one instruction, try again with special handling
-                if (prefixedInstruction == null || prefixedInstruction.Operands == "??")
-                {
-                    // Restore the position
-                    decoder.SetPosition(savedPosition);
-                    
-                    // Get the segment override prefix
-                    byte segmentPrefix = _codeBuffer[position++];
-                    
-                    // Skip the prefix and decode the rest of the instruction
-                    decoder.SetPosition(position);
-                    
-                    // Decode the instruction without the prefix
-                    Instruction? baseInstruction = decoder.DecodeInstruction();
-                    
-                    if (baseInstruction != null)
-                    {
-                        // Apply the segment override prefix manually
-                        string segmentOverride = GetSegmentOverrideName(segmentPrefix);
-                        
-                        // Apply the segment override to the operands
-                        if (baseInstruction.Operands.Contains("["))
-                        {
-                            baseInstruction.Operands = baseInstruction.Operands.Replace("[", $"{segmentOverride}:[");
-                        }
-                        
-                        // Update the raw bytes to include the prefix
-                        byte[] newRawBytes = new byte[baseInstruction.RawBytes.Length + 1];
-                        newRawBytes[0] = segmentPrefix;
-                        Array.Copy(baseInstruction.RawBytes, 0, newRawBytes, 1, baseInstruction.RawBytes.Length);
-                        baseInstruction.RawBytes = newRawBytes;
-                        
-                        // Adjust the instruction address to include the base address
-                        baseInstruction.Address = (uint)(savedPosition) + _baseAddress;
-                        
-                        // Add the instruction to the list
-                        instructions.Add(baseInstruction);
-                        
-                        // Continue with the next instruction
-                        continue;
-                    }
-                }
-                
-                // If we got here, the normal decoding worked fine
-                if (prefixedInstruction != null)
-                {
-                    // Adjust the instruction address to include the base address
-                    prefixedInstruction.Address += _baseAddress;
-                    
-                    // Add the instruction to the list
-                    instructions.Add(prefixedInstruction);
-                }
-                
-                // Continue with the next instruction
-                continue;
-            }
-            
-            // Special case for the problematic sequence 0x08 0x83 0xC1 0x04
-            // If we're at position 0 and have at least 4 bytes, and the sequence matches
-            if (position == 0 && _length >= 4 && 
-                _codeBuffer[0] == 0x08 && _codeBuffer[1] == 0x83 && 
-                _codeBuffer[2] == 0xC1 && _codeBuffer[3] == 0x04)
-            {
-                // Handle the first instruction (0x08) - OR instruction with incomplete operands
-                Instruction orInstruction = new Instruction
-                {
-                    Address = _baseAddress,
-                    Mnemonic = "or",
-                    Operands = "??",
-                    RawBytes = new byte[] { 0x08 }
-                };
-                instructions.Add(orInstruction);
-                
-                // Advance the position to the next instruction
-                decoder.SetPosition(1);
-                
-                // Handle the second instruction (0x83 0xC1 0x04) - ADD ecx, 0x04
-                Instruction addInstruction = new Instruction
-                {
-                    Address = _baseAddress + 1,
-                    Mnemonic = "add",
-                    Operands = "ecx, 0x00000004",
-                    RawBytes = new byte[] { 0x83, 0xC1, 0x04 }
-                };
-                instructions.Add(addInstruction);
-                
-                // Advance the position past the ADD instruction
-                decoder.SetPosition(4);
-                
-                // Continue with the next instruction
-                continue;
-            }
-            
-            // Decode the next instruction normally
+
+            // If no special case applies, decode normally
             Instruction? instruction = decoder.DecodeInstruction();
             
-            // Check if decoding failed
-            if (instruction == null)
+            if (instruction != null)
             {
-                break;
+                // Adjust the instruction address to include the base address
+                instruction.Address += _baseAddress;
+                
+                // Add the instruction to the list
+                instructions.Add(instruction);
             }
-            
-            // Adjust the instruction address to include the base address
-            instruction.Address += _baseAddress;
-            
-            // Add the instruction to the list
-            instructions.Add(instruction);
+            else
+            {
+                // If decoding failed, create a dummy instruction for the unknown byte
+                byte unknownByte = decoder.ReadByte();
+                
+                Instruction dummyInstruction = new Instruction
+                {
+                    Address = _baseAddress + (uint)position,
+                    Mnemonic = "db", // Define Byte directive
+                    Operands = $"0x{unknownByte:X2}",
+                    RawBytes = new byte[] { unknownByte }
+                };
+                
+                instructions.Add(dummyInstruction);
+            }
         }
         
         return instructions;

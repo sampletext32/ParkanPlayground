@@ -1,7 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Call;
 
 /// <summary>
-/// Handler for CALL r/m32 instruction (0xFF /2)
+/// Handler for CALL r/m32 instruction (FF /2)
 /// </summary>
 public class CallRm32Handler : InstructionHandler
 {
@@ -23,7 +23,26 @@ public class CallRm32Handler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        return opcode == 0xFF;
+        // CALL r/m32 is encoded as FF /2
+        if (opcode != 0xFF)
+        {
+            return false;
+        }
+        
+        // Check if we have enough bytes to read the ModR/M byte
+        if (!Decoder.CanReadByte())
+        {
+            return false;
+        }
+        
+        // Peek at the ModR/M byte without advancing the position
+        byte modRM = CodeBuffer[Decoder.GetPosition()];
+        
+        // Extract the reg field (bits 3-5)
+        byte reg = (byte)((modRM & 0x38) >> 3);
+        
+        // CALL r/m32 is encoded as FF /2 (reg field = 2)
+        return reg == 2;
     }
 
     /// <summary>
@@ -34,6 +53,7 @@ public class CallRm32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
+        // Check if we have enough bytes for the ModR/M byte
         if (!Decoder.CanReadByte())
         {
             return false;
@@ -41,12 +61,6 @@ public class CallRm32Handler : InstructionHandler
 
         // Read the ModR/M byte
         var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
-
-        // CALL r/m32 is encoded as FF /2
-        if (reg != RegisterIndex.C)
-        {
-            return false;
-        }
 
         // Set the mnemonic
         instruction.Mnemonic = "call";

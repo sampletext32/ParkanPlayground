@@ -50,9 +50,6 @@ public class CmpImmWithRm8Handler : InstructionHandler
 
         // Read the ModR/M byte
         var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
-        
-        // Get the position after decoding the ModR/M byte
-        int position = Decoder.GetPosition();
 
         // Check if we have enough bytes for the immediate value
         if (!Decoder.CanReadByte())
