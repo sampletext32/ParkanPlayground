@@ -11,11 +11,11 @@ public class PushImm32Handler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public PushImm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
+    public PushImm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
         : base(codeBuffer, decoder, length)
     {
     }
-
+    
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -25,7 +25,7 @@ public class PushImm32Handler : InstructionHandler
     {
         return opcode == 0x68;
     }
-
+    
     /// <summary>
     /// Decodes a PUSH imm32 instruction
     /// </summary>
@@ -37,9 +37,14 @@ public class PushImm32Handler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "push";
 
+        if(!Decoder.CanReadUInt())
+        {
+            return false;
+        }
+
         // Read the immediate value
         uint imm32 = Decoder.ReadUInt32();
-
+        
         // Set the operands with 8-digit padding to match test expectations
         instruction.Operands = $"0x{imm32:X8}";
 

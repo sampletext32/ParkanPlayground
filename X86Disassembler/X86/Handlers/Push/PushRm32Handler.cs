@@ -23,7 +23,26 @@ public class PushRm32Handler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        return opcode == 0xFF;
+        // PUSH r/m32 is encoded as FF /6
+        if (opcode != 0xFF)
+        {
+            return false;
+        }
+        
+        // Check if we have enough bytes to read the ModR/M byte
+        if (!Decoder.CanReadByte())
+        {
+            return false;
+        }
+        
+        // Peek at the ModR/M byte without advancing the position
+        byte modRM = CodeBuffer[Decoder.GetPosition()];
+        
+        // Extract the reg field (bits 3-5)
+        byte reg = (byte)((modRM & 0x38) >> 3);
+        
+        // PUSH r/m32 is encoded as FF /6 (reg field = 6)
+        return reg == 6;
     }
 
     /// <summary>
@@ -34,24 +53,17 @@ public class PushRm32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        int position = Decoder.GetPosition();
-
-        if (position >= Length)
+        // Set the mnemonic
+        instruction.Mnemonic = "push";
+        
+        // Check if we have enough bytes for the ModR/M byte
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
 
         // Read the ModR/M byte
         var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
-
-        // PUSH r/m32 is encoded as FF /6
-        if (reg != RegisterIndex.Sp)
-        {
-            return false;
-        }
-
-        // Set the mnemonic
-        instruction.Mnemonic = "push";
 
         // For memory operands, set the operand
         if (mod != 3) // Memory operand

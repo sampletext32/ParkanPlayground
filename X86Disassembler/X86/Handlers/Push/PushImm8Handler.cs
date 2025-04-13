@@ -37,6 +37,11 @@ public class PushImm8Handler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "push";
 
+        if(!Decoder.CanReadByte())
+        {
+            return false;
+        }
+
         // Read the immediate value
         byte imm8 = Decoder.ReadByte();
 
