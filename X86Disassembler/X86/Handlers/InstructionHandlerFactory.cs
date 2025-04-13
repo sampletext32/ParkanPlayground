@@ -374,9 +374,26 @@ public class InstructionHandlerFactory
     /// </summary>
     private void RegisterSubHandlers()
     {
-        // Add SUB register/memory handlers
-        _handlers.Add(new Sub.SubRm32R32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new Sub.SubR32Rm32Handler(_codeBuffer, _decoder, _length));
+        // Register SUB handlers
+        
+        // 32-bit handlers
+        _handlers.Add(new SubRm32R32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new SubR32Rm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new SubImmFromRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new SubImmFromRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+        
+        // 16-bit handlers
+        _handlers.Add(new SubRm16R16Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new SubR16Rm16Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new SubAxImm16Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new SubImmFromRm16Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new SubImmFromRm16SignExtendedHandler(_codeBuffer, _decoder, _length));
+        
+        // 8-bit handlers
+        _handlers.Add(new SubRm8R8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new SubR8Rm8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new SubAlImm8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new SubImmFromRm8Handler(_codeBuffer, _decoder, _length));
     }
     
     /// <summary>

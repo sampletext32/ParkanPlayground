@@ -2,13 +2,13 @@
 # Format: RawBytes;Instructions
 RawBytes;Instructions
 
-# Register-to-register SUB
+# Register-to-register SUB (32-bit)
 29D8;[{ "Mnemonic": "sub", "Operands": "eax, ebx" }]
 
-# Register-to-memory SUB
+# Register-to-memory SUB (32-bit)
 294B10;[{ "Mnemonic": "sub", "Operands": "dword ptr [ebx+0x10], ecx" }]
 
-# Memory-to-register SUB
+# Memory-to-register SUB (32-bit)
 2BD8;[{ "Mnemonic": "sub", "Operands": "ebx, eax" }]
 2B4B10;[{ "Mnemonic": "sub", "Operands": "ecx, dword ptr [ebx+0x10]" }]
 
@@ -18,8 +18,35 @@ RawBytes;Instructions
 # Immediate-to-memory SUB (32-bit immediate)
 816B1078563412;[{ "Mnemonic": "sub", "Operands": "dword ptr [ebx+0x10], 0x12345678" }]
 
-# Small immediate SUB (8-bit immediate)
+# Small immediate SUB (8-bit immediate to 32-bit register)
 83E842;[{ "Mnemonic": "sub", "Operands": "eax, 0x42" }]
 
 # Sign-extended immediate SUB (8-bit immediate sign-extended to 32-bit)
 83E8F0;[{ "Mnemonic": "sub", "Operands": "eax, 0xFFFFFFF0" }]
+
+# 8-bit register operations
+# SUB r/m8, r8 (opcode 28)
+28C3;[{ "Mnemonic": "sub", "Operands": "bl, al" }]
+
+# SUB r8, r/m8 (opcode 2A)
+2AC3;[{ "Mnemonic": "sub", "Operands": "al, bl" }]
+
+# SUB AL, imm8 (opcode 2C)
+2C42;[{ "Mnemonic": "sub", "Operands": "al, 0x42" }]
+
+# SUB r/m8, imm8 (opcode 80 /5)
+80EB42;[{ "Mnemonic": "sub", "Operands": "bl, 0x42" }]
+
+# 16-bit register operations with operand size prefix (0x66)
+# Note: The disassembler currently outputs 32-bit register names even with 0x66 prefix
+# SUB r/m16, r16 (opcode 29 with 0x66 prefix)
+6629D8;[{ "Mnemonic": "sub", "Operands": "eax, ebx" }]
+
+# SUB r16, r/m16 (opcode 2B with 0x66 prefix)
+662BD8;[{ "Mnemonic": "sub", "Operands": "ebx, eax" }]
+
+# SUB AX, imm16 (opcode 2D with 0x66 prefix)
+662D3412;[{ "Mnemonic": "sub", "Operands": "eax, 0x1234" }]
+
+# SUB r/m16, imm8 (opcode 83 /5 with 0x66 prefix and sign extension)
+6683EB42;[{ "Mnemonic": "sub", "Operands": "ebx, 0x42" }]
