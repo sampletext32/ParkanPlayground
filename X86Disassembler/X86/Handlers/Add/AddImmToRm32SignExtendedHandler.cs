@@ -45,40 +45,127 @@ public class AddImmToRm32SignExtendedHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
+        // Save the original position for raw bytes calculation
+        int startPosition = Decoder.GetPosition();
+        
         // Set the mnemonic
         instruction.Mnemonic = "add";
         
-        int position = Decoder.GetPosition();
-        
-        if (position >= Length)
+        if (startPosition >= Length)
         {
-            return false;
+            instruction.Operands = "??";
+            instruction.RawBytes = new byte[] { opcode };
+            return true;
         }
         
         // Read the ModR/M byte
-        byte modRM = CodeBuffer[position++];
-        Decoder.SetPosition(position);
+        byte modRM = CodeBuffer[startPosition];
         
         // Extract the fields from the ModR/M byte
         byte mod = (byte)((modRM & 0xC0) >> 6);
         byte reg = (byte)((modRM & 0x38) >> 3); // Should be 0 for ADD
         byte rm = (byte)(modRM & 0x07);
         
+        // Track the bytes needed for this instruction
+        int bytesNeeded = 1; // ModR/M byte
+        
+        // Process SIB byte if needed
+        byte sib = 0;
+        if (mod != 3 && rm == 4) // SIB byte present
+        {
+            if (startPosition + bytesNeeded >= Length)
+            {
+                instruction.Operands = "??";
+                instruction.RawBytes = new byte[] { opcode, modRM };
+                return true;
+            }
+            sib = CodeBuffer[startPosition + bytesNeeded];
+            bytesNeeded++; // SIB byte
+        }
+        
+        // Handle displacement
+        int dispSize = 0;
+        if (mod == 0 && rm == 5) // 32-bit displacement
+        {
+            dispSize = 4;
+        }
+        else if (mod == 1) // 8-bit displacement
+        {
+            dispSize = 1;
+        }
+        else if (mod == 2) // 32-bit displacement
+        {
+            dispSize = 4;
+        }
+        
+        // Check if we have enough bytes for the displacement
+        if (startPosition + bytesNeeded + dispSize >= Length)
+        {
+            instruction.Operands = "??";
+            instruction.RawBytes = new byte[] { opcode, modRM };
+            return true;
+        }
+        
+        bytesNeeded += dispSize; // Add displacement bytes
+        
+        // Use ModRMDecoder to decode the destination operand
+        var modRMDecoder = new ModRMDecoder(CodeBuffer, Decoder, Length);
+        
+        // Set the decoder position to after the ModR/M byte
+        Decoder.SetPosition(startPosition + 1);
+        
         // Decode the destination operand
-        string destOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
+        string destOperand = modRMDecoder.DecodeModRM(mod, rm, false);
+        
+        // Get the position after decoding the ModR/M byte
+        int newPosition = Decoder.GetPosition();
         
         // Read the immediate value
-        if (position >= Length)
+        if (newPosition >= Length)
         {
-            return false;
+            instruction.Operands = $"{destOperand}, ??";
+            
+            // Set raw bytes without the immediate
+            int partialBytes = newPosition - startPosition + 1; // +1 for opcode
+            byte[] partialRawBytes = new byte[partialBytes];
+            partialRawBytes[0] = opcode;
+            for (int i = 0; i < partialBytes - 1; i++)
+            {
+                if (startPosition + i < Length)
+                {
+                    partialRawBytes[i + 1] = CodeBuffer[startPosition + i];
+                }
+            }
+            instruction.RawBytes = partialRawBytes;
+            
+            return true;
         }
         
         // Read the immediate value as a signed byte and sign-extend it
-        sbyte imm8 = (sbyte)CodeBuffer[position++];
-        Decoder.SetPosition(position);
+        sbyte imm8 = (sbyte)CodeBuffer[newPosition];
+        newPosition++; // Advance past the immediate byte
+        
+        // Set the decoder position
+        Decoder.SetPosition(newPosition);
+        
+        // Format the immediate value as a 32-bit hex value (sign-extended)
+        string immStr = $"0x{(uint)imm8:X8}";
         
         // Set the operands
-        instruction.Operands = $"{destOperand}, 0x{(uint)imm8:X2}";
+        instruction.Operands = $"{destOperand}, {immStr}";
+        
+        // Set the raw bytes
+        int totalBytes = newPosition - startPosition + 1; // +1 for opcode
+        byte[] rawBytes = new byte[totalBytes];
+        rawBytes[0] = opcode;
+        for (int i = 0; i < totalBytes - 1; i++)
+        {
+            if (startPosition + i < Length)
+            {
+                rawBytes[i + 1] = CodeBuffer[startPosition + i];
+            }
+        }
+        instruction.RawBytes = rawBytes;
         
         return true;
     }

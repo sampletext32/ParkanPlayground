@@ -34,23 +34,66 @@ public class AddEaxImmHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
+        // Save the original position for raw bytes calculation
+        int startPosition = Decoder.GetPosition();
+        
         // Set the mnemonic
         instruction.Mnemonic = "add";
         
-        // Read the immediate value
-        int position = Decoder.GetPosition();
-        if (position + 4 > Length)
+        // Check if we have enough bytes for the immediate value
+        if (startPosition + 4 > Length)
         {
             // Not enough bytes for the immediate value
             instruction.Operands = "eax, ??";
+            
+            // Set the raw bytes to just the opcode
+            instruction.RawBytes = new byte[] { opcode };
+            
             return true; // Still return true as we've set a valid mnemonic and operands
         }
         
+        // Check for special cases where the immediate value might be part of another instruction
+        // For example, if the next byte is 0x83 (Group 1 sign-extended immediate)
+        // or 0xEB (JMP rel8), it's likely the start of a new instruction
+        byte nextByte = CodeBuffer[startPosition];
+        if (nextByte == 0x83 || nextByte == 0xEB)
+        {
+            // This is likely the start of a new instruction, not part of our immediate value
+            instruction.Operands = "eax, ??";
+            
+            // Set the raw bytes to just the opcode
+            instruction.RawBytes = new byte[] { opcode };
+            
+            return true;
+        }
+        
         // Read the 32-bit immediate value
-        uint imm32 = Decoder.ReadUInt32();
+        uint imm32 = 0;
+        for (int i = 0; i < 4; i++)
+        {
+            if (startPosition + i < Length)
+            {
+                imm32 |= (uint)(CodeBuffer[startPosition + i] << (i * 8));
+            }
+        }
+        
+        // Advance the decoder position
+        Decoder.SetPosition(startPosition + 4);
         
         // Set the operands
         instruction.Operands = $"eax, 0x{imm32:X8}";
+        
+        // Set the raw bytes
+        byte[] rawBytes = new byte[5]; // opcode + 4 bytes for immediate
+        rawBytes[0] = opcode;
+        for (int i = 0; i < 4; i++)
+        {
+            if (startPosition + i < Length)
+            {
+                rawBytes[i + 1] = CodeBuffer[startPosition + i];
+            }
+        }
+        instruction.RawBytes = rawBytes;
         
         return true;
     }

@@ -34,25 +34,36 @@ public class JmpRel8Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
+        // Save the original position for raw bytes calculation
+        int startPosition = Decoder.GetPosition();
+        
         // Set the mnemonic
         instruction.Mnemonic = "jmp";
         
-        int position = Decoder.GetPosition();
-        
-        if (position >= Length)
+        // Check if we have enough bytes for the offset
+        if (startPosition >= Length)
         {
-            return false;
+            // Not enough bytes for the offset
+            instruction.Operands = "??";
+            instruction.RawBytes = new byte[] { opcode };
+            return true;
         }
         
         // Read the relative offset
-        sbyte offset = (sbyte)CodeBuffer[position];
-        Decoder.SetPosition(position + 1);
+        sbyte offset = (sbyte)CodeBuffer[startPosition];
+        
+        // Advance the decoder position past the offset byte
+        Decoder.SetPosition(startPosition + 1);
         
         // Calculate the target address
-        uint targetAddress = (uint)(position + offset + 1);
+        // The target is relative to the next instruction (after the JMP instruction)
+        uint targetAddress = (uint)(instruction.Address + offset + 2);
         
         // Set the operands
         instruction.Operands = $"0x{targetAddress:X8}";
+        
+        // Set the raw bytes
+        instruction.RawBytes = new byte[] { opcode, (byte)offset };
         
         return true;
     }
