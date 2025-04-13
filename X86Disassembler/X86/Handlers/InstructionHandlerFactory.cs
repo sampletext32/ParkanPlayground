@@ -181,12 +181,10 @@ public class InstructionHandlerFactory
         _handlers.Add(new XorRegMemHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new XorImmWithRm32Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new XorImmWithRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new XorEaxImmHandler(_codeBuffer, _decoder, _length));
         
         // 16-bit handlers
         _handlers.Add(new XorRm16R16Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new XorR16Rm16Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new XorAxImm16Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new XorImmWithRm16Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new XorImmWithRm16SignExtendedHandler(_codeBuffer, _decoder, _length));
         
@@ -195,6 +193,11 @@ public class InstructionHandlerFactory
         _handlers.Add(new XorR8Rm8Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new XorAlImmHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new XorImmWithRm8Handler(_codeBuffer, _decoder, _length));
+        
+        // special treatment with xor-ing eax
+        // precise handlers go first
+        _handlers.Add(new XorAxImm16Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new XorEaxImmHandler(_codeBuffer, _decoder, _length));
     }
     
     /// <summary>
