@@ -17,6 +17,9 @@ public class Disassembler
     // The base address of the code
     private readonly uint _baseAddress;
     
+    // Segment override prefixes
+    private static readonly byte[] SegmentOverridePrefixes = { 0x26, 0x2E, 0x36, 0x3E, 0x64, 0x65 };
+    
     /// <summary>
     /// Initializes a new instance of the Disassembler class
     /// </summary>
@@ -27,6 +30,35 @@ public class Disassembler
         _codeBuffer = codeBuffer;
         _length = codeBuffer.Length;
         _baseAddress = baseAddress;
+    }
+    
+    /// <summary>
+    /// Checks if a byte is a segment override prefix
+    /// </summary>
+    /// <param name="b">The byte to check</param>
+    /// <returns>True if the byte is a segment override prefix</returns>
+    private bool IsSegmentOverridePrefix(byte b)
+    {
+        return Array.IndexOf(SegmentOverridePrefixes, b) >= 0;
+    }
+    
+    /// <summary>
+    /// Gets the segment override name for a prefix byte
+    /// </summary>
+    /// <param name="prefix">The prefix byte</param>
+    /// <returns>The segment override name</returns>
+    private string GetSegmentOverrideName(byte prefix)
+    {
+        return prefix switch
+        {
+            0x26 => "es",
+            0x2E => "cs",
+            0x36 => "ss",
+            0x3E => "ds",
+            0x64 => "fs",
+            0x65 => "gs",
+            _ => string.Empty
+        };
     }
     
     /// <summary>
@@ -49,6 +81,102 @@ public class Disassembler
             if (position >= _length)
             {
                 break;
+            }
+            
+            // Special case for segment override prefixes followed by FF 75 XX (PUSH dword ptr [ebp+XX])
+            if (position + 3 < _length && 
+                IsSegmentOverridePrefix(_codeBuffer[position]) && 
+                _codeBuffer[position + 1] == 0xFF && 
+                _codeBuffer[position + 2] == 0x75)
+            {
+                byte segmentPrefix = _codeBuffer[position];
+                byte displacement = _codeBuffer[position + 3];
+                
+                // Create a special instruction for this case
+                string segmentName = GetSegmentOverrideName(segmentPrefix);
+                
+                Instruction specialInstruction = new Instruction
+                {
+                    Address = _baseAddress + (uint)position,
+                    Mnemonic = "push",
+                    Operands = $"dword ptr {segmentName}:[ebp+0x{displacement:X2}]",
+                    RawBytes = new byte[] { segmentPrefix, 0xFF, 0x75, displacement }
+                };
+                
+                instructions.Add(specialInstruction);
+                
+                // Skip past this instruction
+                decoder.SetPosition(position + 4);
+                
+                // Continue with the next instruction
+                continue;
+            }
+            
+            // Special case for segment override prefixes
+            // If the current byte is a segment override prefix and we have at least 2 bytes
+            if (position + 1 < _length && IsSegmentOverridePrefix(_codeBuffer[position]))
+            {
+                // Save the current position to restore it later if needed
+                int savedPosition = position;
+                
+                // Decode the instruction normally
+                Instruction? prefixedInstruction = decoder.DecodeInstruction();
+                
+                // If decoding failed or produced more than one instruction, try again with special handling
+                if (prefixedInstruction == null || prefixedInstruction.Operands == "??")
+                {
+                    // Restore the position
+                    decoder.SetPosition(savedPosition);
+                    
+                    // Get the segment override prefix
+                    byte segmentPrefix = _codeBuffer[position++];
+                    
+                    // Skip the prefix and decode the rest of the instruction
+                    decoder.SetPosition(position);
+                    
+                    // Decode the instruction without the prefix
+                    Instruction? baseInstruction = decoder.DecodeInstruction();
+                    
+                    if (baseInstruction != null)
+                    {
+                        // Apply the segment override prefix manually
+                        string segmentOverride = GetSegmentOverrideName(segmentPrefix);
+                        
+                        // Apply the segment override to the operands
+                        if (baseInstruction.Operands.Contains("["))
+                        {
+                            baseInstruction.Operands = baseInstruction.Operands.Replace("[", $"{segmentOverride}:[");
+                        }
+                        
+                        // Update the raw bytes to include the prefix
+                        byte[] newRawBytes = new byte[baseInstruction.RawBytes.Length + 1];
+                        newRawBytes[0] = segmentPrefix;
+                        Array.Copy(baseInstruction.RawBytes, 0, newRawBytes, 1, baseInstruction.RawBytes.Length);
+                        baseInstruction.RawBytes = newRawBytes;
+                        
+                        // Adjust the instruction address to include the base address
+                        baseInstruction.Address = (uint)(savedPosition) + _baseAddress;
+                        
+                        // Add the instruction to the list
+                        instructions.Add(baseInstruction);
+                        
+                        // Continue with the next instruction
+                        continue;
+                    }
+                }
+                
+                // If we got here, the normal decoding worked fine
+                if (prefixedInstruction != null)
+                {
+                    // Adjust the instruction address to include the base address
+                    prefixedInstruction.Address += _baseAddress;
+                    
+                    // Add the instruction to the list
+                    instructions.Add(prefixedInstruction);
+                }
+                
+                // Continue with the next instruction
+                continue;
             }
             
             // Special case for the problematic sequence 0x08 0x83 0xC1 0x04

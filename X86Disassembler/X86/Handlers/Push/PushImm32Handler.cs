@@ -44,8 +44,8 @@ public class PushImm32Handler : InstructionHandler
             return false;
         }
         
-        // Set the operands
-        instruction.Operands = $"0x{imm32:X}";
+        // Set the operands with 8-digit padding to match test expectations
+        instruction.Operands = $"0x{imm32:X8}";
         
         return true;
     }

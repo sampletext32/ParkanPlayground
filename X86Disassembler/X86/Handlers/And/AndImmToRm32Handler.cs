@@ -24,23 +24,17 @@ public class AndImmToRm32Handler : InstructionHandler
     public override bool CanHandle(byte opcode)
     {
         if (opcode != 0x81)
-        {
             return false;
-        }
-        
-        // Check if we have enough bytes to read the ModR/M byte
+            
+        // Check if the reg field of the ModR/M byte is 4 (AND)
         int position = Decoder.GetPosition();
         if (position >= Length)
-        {
             return false;
-        }
-        
-        // Read the ModR/M byte to check the reg field (bits 5-3)
+            
         byte modRM = CodeBuffer[position];
-        int reg = (modRM >> 3) & 0x7;
+        byte reg = (byte)((modRM & 0x38) >> 3);
         
-        // reg = 4 means AND operation
-        return reg == 4;
+        return reg == 4; // 4 = AND
     }
     
     /// <summary>
@@ -56,38 +50,45 @@ public class AndImmToRm32Handler : InstructionHandler
         
         int position = Decoder.GetPosition();
         
-        // Read the ModR/M byte
-        var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
+        if (position >= Length)
+        {
+            return false;
+        }
         
-        // Read immediate value
+        // Read the ModR/M byte
+        byte modRM = CodeBuffer[position++];
+        Decoder.SetPosition(position);
+        
+        // Extract the fields from the ModR/M byte
+        byte mod = (byte)((modRM & 0xC0) >> 6);
+        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 4 for AND
+        byte rm = (byte)(modRM & 0x07);
+        
+        // Decode the destination operand
+        string destOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
+        
+        // Read the immediate value
         if (position + 3 >= Length)
         {
-            // Incomplete instruction
-            if (mod == 3)
-            {
-                string rmRegName = ModRMDecoder.GetRegisterName(rm, 32);
-                instruction.Operands = $"{rmRegName}, ??";
-            }
-            else
-            {
-                instruction.Operands = $"{memOperand}, ??";
-            }
-            return true;
+            return false;
         }
         
-        // Read immediate value
-        uint imm32 = Decoder.ReadUInt32();
+        // Read the immediate value in little-endian format
+        byte b0 = CodeBuffer[position];
+        byte b1 = CodeBuffer[position + 1];
+        byte b2 = CodeBuffer[position + 2];
+        byte b3 = CodeBuffer[position + 3];
         
-        // Set operands
-        if (mod == 3)
-        {
-            string rmRegName = ModRMDecoder.GetRegisterName(rm, 32);
-            instruction.Operands = $"{rmRegName}, 0x{imm32:X8}";
-        }
-        else
-        {
-            instruction.Operands = $"{memOperand}, 0x{imm32:X8}";
-        }
+        // Format the immediate value as expected by the tests (0x12345678)
+        // Note: The bytes are reversed to match the expected format in the tests
+        string immStr = $"0x{b3:X2}{b2:X2}{b1:X2}{b0:X2}";
+        
+        // Advance the position past the immediate value
+        position += 4;
+        Decoder.SetPosition(position);
+        
+        // Set the operands
+        instruction.Operands = $"{destOperand}, {immStr}";
         
         return true;
     }

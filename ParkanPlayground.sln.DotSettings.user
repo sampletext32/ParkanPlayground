@@ -16,4 +16,9 @@
     &lt;Namespace&gt;X86DisassemblerTests&lt;/Namespace&gt;&#xD;
     &lt;Project Location="C:\Projects\CSharp\ParkanPlayground\X86DisassemblerTests" Presentation="&amp;lt;X86DisassemblerTests&amp;gt;" /&gt;&#xD;
   &lt;/And&gt;&#xD;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=a2ceb6d1_002D1e39_002D4063_002Dbbb5_002D2f7a30b9386e/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="RunTestsOnJson" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;TestAncestor&gt;&#xD;
+    &lt;TestId&gt;xUnit::D6A1F5A9-0C7A-4F8F-B8C5-83E9D3F3A1D5::net8.0::X86DisassemblerTests.GeneralDisassemblerInstructionTests.RunTestsOnJson&lt;/TestId&gt;&#xD;
+  &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>

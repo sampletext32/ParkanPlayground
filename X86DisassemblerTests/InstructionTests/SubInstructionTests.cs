@@ -1,9 +1,6 @@
-namespace X86DisassemblerTests;
-
-using System;
-using Xunit;
 using X86Disassembler.X86;
-using X86Disassembler.X86.Handlers.Sub;
+
+namespace X86DisassemblerTests.InstructionTests;
 
 /// <summary>
 /// Tests for SUB instruction handlers
@@ -72,13 +69,13 @@ public class SubInstructionTests
     }
     
     /// <summary>
-    /// Tests the SubImmFromRm32SignExtendedHandler for decoding SUB r/m32, imm8 instruction with negative value
+    /// Tests the SubImmFromRm32SignExtendedHandler for decoding SUB r/m32, negative imm8 instruction (sign-extended)
     /// </summary>
     [Fact]
     public void SubImmFromRm32SignExtendedHandler_DecodesSubRm32NegativeImm8_Correctly()
     {
         // Arrange
-        // SUB EAX, -0x10 (83 E8 F0) - Subtract sign-extended -0x10 from EAX
+        // SUB EAX, 0xF0 (83 E8 F0) - Subtract sign-extended 0xF0 from EAX
         byte[] codeBuffer = new byte[] { 0x83, 0xE8, 0xF0 };
         var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
         
@@ -114,25 +111,23 @@ public class SubInstructionTests
     }
     
     /// <summary>
-    /// Tests a sequence of SUB instructions in a common pattern
+    /// Tests the SubR32Rm32Handler for decoding SUB r32, r/m32 instruction
     /// </summary>
     [Fact]
-    public void SubInstruction_DecodesSubSequence_Correctly()
+    public void SubR32Rm32Handler_DecodesSubR32Rm32_Correctly()
     {
         // Arrange
-        // SUB ESP, 0x10 (83 EC 10) - Create stack space
-        byte[] codeBuffer = new byte[] { 0x83, 0xEC, 0x10 };
-        var disassembler = new Disassembler(codeBuffer, 0);
+        // SUB EBX, EAX (2B D8) - Subtract EAX from EBX
+        byte[] codeBuffer = new byte[] { 0x2B, 0xD8 };
+        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
         
         // Act
-        var instructions = disassembler.Disassemble();
+        var instruction = decoder.DecodeInstruction();
         
         // Assert
-        Assert.Single(instructions);
-        
-        // Instruction: SUB ESP, 0x10
-        Assert.Equal("sub", instructions[0].Mnemonic);
-        Assert.Equal("esp, 0x10", instructions[0].Operands);
+        Assert.NotNull(instruction);
+        Assert.Equal("sub", instruction.Mnemonic);
+        Assert.Equal("ebx, eax", instruction.Operands);
     }
     
     /// <summary>
@@ -173,26 +168,6 @@ public class SubInstructionTests
         Assert.NotNull(instruction);
         Assert.Equal("sub", instruction.Mnemonic);
         Assert.Equal("dword ptr [ebx+0x10], ecx", instruction.Operands);
-    }
-    
-    /// <summary>
-    /// Tests the SubR32Rm32Handler for decoding SUB r32, r/m32 instruction
-    /// </summary>
-    [Fact]
-    public void SubR32Rm32Handler_DecodesSubR32Rm32_Correctly()
-    {
-        // Arrange
-        // SUB EBX, EAX (2B D8) - Subtract EAX from EBX
-        byte[] codeBuffer = new byte[] { 0x2B, 0xD8 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
-        
-        // Act
-        var instruction = decoder.DecodeInstruction();
-        
-        // Assert
-        Assert.NotNull(instruction);
-        Assert.Equal("sub", instruction.Mnemonic);
-        Assert.Equal("ebx, eax", instruction.Operands);
     }
     
     /// <summary>

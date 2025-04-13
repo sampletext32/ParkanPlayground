@@ -339,6 +339,7 @@ public class InstructionHandlerFactory
         _handlers.Add(new PushRegHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new PushImm32Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new PushImm8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new PushRm32Handler(_codeBuffer, _decoder, _length)); // Add handler for PUSH r/m32 (FF /6)
     }
     
     /// <summary>

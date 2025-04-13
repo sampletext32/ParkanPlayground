@@ -111,7 +111,18 @@ public class InstructionDecoder
         // Try to decode with a handler first
         if (handler != null)
         {
+            // Store the current segment override state
+            bool hasSegmentOverride = _prefixDecoder.HasSegmentOverridePrefix();
+            string segmentOverride = _prefixDecoder.GetSegmentOverride();
+            
+            // Decode the instruction
             handlerSuccess = handler.Decode(opcode, instruction);
+            
+            // Apply segment override prefix to the operands if needed
+            if (handlerSuccess && hasSegmentOverride)
+            {
+                instruction.Operands = _prefixDecoder.ApplySegmentOverride(instruction.Operands);
+            }
         }
         
         // If no handler is found or decoding fails, create a default instruction
@@ -121,9 +132,8 @@ public class InstructionDecoder
             instruction.Operands = "??";
         }
         
-        // Apply prefixes to the instruction
+        // Apply REP/REPNE prefix to the mnemonic if needed
         instruction.Mnemonic = _prefixDecoder.ApplyRepPrefix(instruction.Mnemonic);
-        instruction.Operands = _prefixDecoder.ApplySegmentOverride(instruction.Operands);
         
         // Set the raw bytes
         int bytesLength = _position - startPosition;

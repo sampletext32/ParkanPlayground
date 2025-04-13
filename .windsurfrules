@@ -19,3 +19,5 @@ never address compiler warnings yourself. If you see a warning, suggest to addre
 when working with RVA variables, always add that to variable name, e.g. "nameRVA".
 
 always build only affected project, not full solution.
+
+never introduce special cases in general solutions.

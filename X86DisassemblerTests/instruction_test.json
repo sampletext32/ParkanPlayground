@@ -1,0 +1,397 @@
+[
+  {
+    "RawBytes": "50",
+    "Disassembled": [
+      {
+        "Mnemonic": "push",
+        "Operands": "eax"
+      }
+    ]
+  },
+  {
+    "RawBytes": "51",
+    "Disassembled": [
+      {
+        "Mnemonic": "push",
+        "Operands": "ecx"
+      }
+    ]
+  },
+  {
+    "RawBytes": "52",
+    "Disassembled": [
+      {
+        "Mnemonic": "push",
+        "Operands": "edx"
+      }
+    ]
+  },
+  {
+    "RawBytes": "53",
+    "Disassembled": [
+      {
+        "Mnemonic": "push",
+        "Operands": "ebx"
+      }
+    ]
+  },
+  {
+    "RawBytes": "54",
+    "Disassembled": [
+      {
+        "Mnemonic": "push",
+        "Operands": "esp"
+      }
+    ]
+  },
+  {
+    "RawBytes": "55",
+    "Disassembled": [
+      {
+        "Mnemonic": "push",
+        "Operands": "ebp"
+      }
+    ]
+  },
+  {
+    "RawBytes": "56",
+    "Disassembled": [
+      {
+        "Mnemonic": "push",
+        "Operands": "esi"
+      }
+    ]
+  },
+  {
+    "RawBytes": "57",
+    "Disassembled": [
+      {
+        "Mnemonic": "push",
+        "Operands": "edi"
+      }
+    ]
+  },
+  {
+    "RawBytes": "58",
+    "Disassembled": [
+      {
+        "Mnemonic": "pop",
+        "Operands": "eax"
+      }
+    ]
+  },
+  {
+    "RawBytes": "59",
+    "Disassembled": [
+      {
+        "Mnemonic": "pop",
+        "Operands": "ecx"
+      }
+    ]
+  },
+  {
+    "RawBytes": "5A",
+    "Disassembled": [
+      {
+        "Mnemonic": "pop",
+        "Operands": "edx"
+      }
+    ]
+  },
+  {
+    "RawBytes": "5B",
+    "Disassembled": [
+      {
+        "Mnemonic": "pop",
+        "Operands": "ebx"
+      }
+    ]
+  },
+  {
+    "RawBytes": "5C",
+    "Disassembled": [
+      {
+        "Mnemonic": "pop",
+        "Operands": "esp"
+      }
+    ]
+  },
+  {
+    "RawBytes": "5D",
+    "Disassembled": [
+      {
+        "Mnemonic": "pop",
+        "Operands": "ebp"
+      }
+    ]
+  },
+  {
+    "RawBytes": "5E",
+    "Disassembled": [
+      {
+        "Mnemonic": "pop",
+        "Operands": "esi"
+      }
+    ]
+  },
+  {
+    "RawBytes": "5F",
+    "Disassembled": [
+      {
+        "Mnemonic": "pop",
+        "Operands": "edi"
+      }
+    ]
+  },
+  {
+    "RawBytes": "6810000000",
+    "Disassembled": [
+      {
+        "Mnemonic": "push",
+        "Operands": "0x00000010"
+      }
+    ]
+  },
+  {
+    "RawBytes": "6A10",
+    "Disassembled": [
+      {
+        "Mnemonic": "push",
+        "Operands": "0x10"
+      }
+    ]
+  },
+  {
+    "RawBytes": "90",
+    "Disassembled": [
+      {
+        "Mnemonic": "nop",
+        "Operands": ""
+      }
+    ]
+  },
+  {
+    "RawBytes": "91",
+    "Disassembled": [
+      {
+        "Mnemonic": "xchg",
+        "Operands": "eax, ecx"
+      }
+    ]
+  },
+  {
+    "RawBytes": "92",
+    "Disassembled": [
+      {
+        "Mnemonic": "xchg",
+        "Operands": "eax, edx"
+      }
+    ]
+  },
+  {
+    "RawBytes": "93",
+    "Disassembled": [
+      {
+        "Mnemonic": "xchg",
+        "Operands": "eax, ebx"
+      }
+    ]
+  },
+  {
+    "RawBytes": "94",
+    "Disassembled": [
+      {
+        "Mnemonic": "xchg",
+        "Operands": "eax, esp"
+      }
+    ]
+  },
+  {
+    "RawBytes": "95",
+    "Disassembled": [
+      {
+        "Mnemonic": "xchg",
+        "Operands": "eax, ebp"
+      }
+    ]
+  },
+  {
+    "RawBytes": "96",
+    "Disassembled": [
+      {
+        "Mnemonic": "xchg",
+        "Operands": "eax, esi"
+      }
+    ]
+  },
+  {
+    "RawBytes": "97",
+    "Disassembled": [
+      {
+        "Mnemonic": "xchg",
+        "Operands": "eax, edi"
+      }
+    ]
+  },
+  {
+    "RawBytes": "29D8",
+    "Disassembled": [
+      {
+        "Mnemonic": "sub",
+        "Operands": "eax, ebx"
+      }
+    ]
+  },
+  {
+    "RawBytes": "294B10",
+    "Disassembled": [
+      {
+        "Mnemonic": "sub",
+        "Operands": "dword ptr [ebx+0x10], ecx"
+      }
+    ]
+  },
+  {
+    "RawBytes": "2BD8",
+    "Disassembled": [
+      {
+        "Mnemonic": "sub",
+        "Operands": "ebx, eax"
+      }
+    ]
+  },
+  {
+    "RawBytes": "2B4B10",
+    "Disassembled": [
+      {
+        "Mnemonic": "sub",
+        "Operands": "ecx, dword ptr [ebx+0x10]"
+      }
+    ]
+  },
+  {
+    "RawBytes": "81E878563412",
+    "Disassembled": [
+      {
+        "Mnemonic": "sub",
+        "Operands": "eax, 0x12345678"
+      }
+    ]
+  },
+  {
+    "RawBytes": "816B1078563412",
+    "Disassembled": [
+      {
+        "Mnemonic": "sub",
+        "Operands": "dword ptr [ebx+0x10], 0x12345678"
+      }
+    ]
+  },
+  {
+    "RawBytes": "83E842",
+    "Disassembled": [
+      {
+        "Mnemonic": "sub",
+        "Operands": "eax, 0x42"
+      }
+    ]
+  },
+  {
+    "RawBytes": "83E8F0",
+    "Disassembled": [
+      {
+        "Mnemonic": "sub",
+        "Operands": "eax, 0xFFFFFFF0"
+      }
+    ]
+  },
+  {
+    "RawBytes": "836B1042",
+    "Disassembled": [
+      {
+        "Mnemonic": "sub",
+        "Operands": "dword ptr [ebx+0x10], 0x42"
+      }
+    ]
+  },
+  {
+    "RawBytes": "83EC10",
+    "Disassembled": [
+      {
+        "Mnemonic": "sub",
+        "Operands": "esp, 0x10"
+      }
+    ]
+  },
+  {
+    "RawBytes": "83EC1029D82B4DFC",
+    "Disassembled": [
+      {
+        "Mnemonic": "sub",
+        "Operands": "esp, 0x10"
+      },
+      {
+        "Mnemonic": "sub",
+        "Operands": "eax, ebx"
+      },
+      {
+        "Mnemonic": "sub",
+        "Operands": "ecx, dword ptr [ebp-0x04]"
+      }
+    ]
+  },
+  {
+    "RawBytes": "26FF7510",
+    "Disassembled": [
+      {
+        "Mnemonic": "push",
+        "Operands": "dword ptr es:[ebp+0x10]"
+      }
+    ]
+  },
+  {
+    "RawBytes": "2EFF7510",
+    "Disassembled": [
+      {
+        "Mnemonic": "push",
+        "Operands": "dword ptr cs:[ebp+0x10]"
+      }
+    ]
+  },
+  {
+    "RawBytes": "36FF7510",
+    "Disassembled": [
+      {
+        "Mnemonic": "push",
+        "Operands": "dword ptr ss:[ebp+0x10]"
+      }
+    ]
+  },
+  {
+    "RawBytes": "3EFF7510",
+    "Disassembled": [
+      {
+        "Mnemonic": "push",
+        "Operands": "dword ptr ds:[ebp+0x10]"
+      }
+    ]
+  },
+  {
+    "RawBytes": "64FF7510",
+    "Disassembled": [
+      {
+        "Mnemonic": "push",
+        "Operands": "dword ptr fs:[ebp+0x10]"
+      }
+    ]
+  },
+  {
+    "RawBytes": "65FF7510",
+    "Disassembled": [
+      {
+        "Mnemonic": "push",
+        "Operands": "dword ptr gs:[ebp+0x10]"
+      }
+    ]
+  }
+]

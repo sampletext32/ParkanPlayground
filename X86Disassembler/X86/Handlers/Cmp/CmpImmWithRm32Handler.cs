@@ -73,11 +73,22 @@ public class CmpImmWithRm32Handler : InstructionHandler
             return false;
         }
         
-        uint imm32 = BitConverter.ToUInt32(CodeBuffer, position);
-        Decoder.SetPosition(position + 4);
+        // Read the immediate value in little-endian format
+        byte b0 = CodeBuffer[position];
+        byte b1 = CodeBuffer[position + 1];
+        byte b2 = CodeBuffer[position + 2];
+        byte b3 = CodeBuffer[position + 3];
+        
+        // Format the immediate value as expected by the tests (0x12345678)
+        // Note: The bytes are reversed to match the expected format in the tests
+        string immStr = $"0x{b3:X2}{b2:X2}{b1:X2}{b0:X2}";
+        
+        // Advance the position past the immediate value
+        position += 4;
+        Decoder.SetPosition(position);
         
         // Set the operands
-        instruction.Operands = $"{destOperand}, 0x{imm32:X8}";
+        instruction.Operands = $"{destOperand}, {immStr}";
         
         return true;
     }

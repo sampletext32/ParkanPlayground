@@ -64,8 +64,12 @@ public class SubImmFromRm32Handler : InstructionHandler
         byte reg = (byte)((modRM & 0x38) >> 3); // Should be 5 for SUB
         byte rm = (byte)(modRM & 0x07);
         
-        // Decode the destination operand
+        // Let the ModRMDecoder handle the ModR/M byte and any additional bytes (SIB, displacement)
+        // This will update the decoder position to point after the ModR/M and any additional bytes
         string destOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
+        
+        // Get the updated position after ModR/M decoding
+        position = Decoder.GetPosition();
         
         // Read the immediate value
         if (position + 3 >= Length)
@@ -73,20 +77,22 @@ public class SubImmFromRm32Handler : InstructionHandler
             return false;
         }
         
-        // Read the immediate value in little-endian format and convert to big-endian for display
+        // Read the immediate value in little-endian format
         byte b0 = CodeBuffer[position];
         byte b1 = CodeBuffer[position + 1];
         byte b2 = CodeBuffer[position + 2];
         byte b3 = CodeBuffer[position + 3];
         
-        // Convert from little-endian to big-endian for display
-        uint imm32 = (uint)((b3 << 24) | (b2 << 16) | (b1 << 8) | b0);
+        // Format the immediate value as expected by the tests (0x12345678)
+        // Note: Always use the same format regardless of operand type to match test expectations
+        string immStr = $"0x{b3:X2}{b2:X2}{b1:X2}{b0:X2}";
         
-        // Advance the position
-        Decoder.SetPosition(position + 4);
+        // Advance the position past the immediate value
+        position += 4;
+        Decoder.SetPosition(position);
         
         // Set the operands
-        instruction.Operands = $"{destOperand}, 0x{imm32:X8}";
+        instruction.Operands = $"{destOperand}, {immStr}";
         
         return true;
     }
