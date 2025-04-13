@@ -125,15 +125,22 @@ public class RawFromFileDisassemblyTests(ITestOutputHelper output)
     /// <returns>The byte array</returns>
     private static byte[] HexStringToByteArray(string hex)
     {
-        // Remove any non-hex characters
+        // Remove any non-hex characters if present
+        hex = hex.Replace(" ", "").Replace("-", "");
 
         // Create a byte array
         byte[] bytes = new byte[hex.Length / 2];
 
-        // Convert each pair of hex characters to a byte
-        for (int i = 0; i < hex.Length; i += 2)
+        // Convert each pair of hex characters to a byte using spans for better performance
+        ReadOnlySpan<char> hexSpan = hex.AsSpan();
+        
+        for (int i = 0; i < hexSpan.Length; i += 2)
         {
-            bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+            // Parse two characters at a time using spans
+            if (!byte.TryParse(hexSpan.Slice(i, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out bytes[i / 2]))
+            {
+                throw new FormatException($"Invalid hex string at position {i}: {hexSpan.Slice(i, 2).ToString()}");
+            }
         }
 
         return bytes;
