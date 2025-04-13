@@ -1,17 +1,17 @@
 namespace X86Disassembler.X86.Handlers.Sub;
 
 /// <summary>
-/// Handler for SUB r/m32, r32 instruction (0x29)
+/// Handler for SUB r/m16, r16 instruction (0x29 with 0x66 prefix)
 /// </summary>
-public class SubRm32R32Handler : InstructionHandler
+public class SubRm16R16Handler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the SubRm32R32Handler class
+    /// Initializes a new instance of the SubRm16R16Handler class
     /// </summary>
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public SubRm32R32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
+    public SubRm16R16Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
@@ -23,17 +23,21 @@ public class SubRm32R32Handler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        return opcode == 0x29;
+        // Check if the opcode is 0x29 and we have a 0x66 prefix
+        return opcode == 0x29 && Decoder.HasOperandSizeOverridePrefix();
     }
 
     /// <summary>
-    /// Decodes a SUB r/m32, r32 instruction
+    /// Decodes a SUB r/m16, r16 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
+        // Set the mnemonic
+        instruction.Mnemonic = "sub";
+
         int position = Decoder.GetPosition();
 
         if (position >= Length)
@@ -42,25 +46,23 @@ public class SubRm32R32Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        
-        // Extract the fields from the ModR/M byte
-        var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
 
-        // Set the mnemonic
-        instruction.Mnemonic = "sub";
+        // Get register name (16-bit)
+        string regName = ModRMDecoder.GetRegisterName(reg, 16);
 
-        // Get the register name
-        string regName = GetRegister32(reg);
-
-        // For memory operands, set the operand
-        if (mod != 3) // Memory operand
+        // For mod == 3, both operands are registers
+        if (mod == 3)
         {
-            instruction.Operands = $"{operand}, {regName}";
+            string rmRegName = ModRMDecoder.GetRegisterName(rm, 16);
+            instruction.Operands = $"{rmRegName}, {regName}";
         }
-        else // Register operand
+        else // Memory operand
         {
-            string rmName = GetRegister32(rm);
-            instruction.Operands = $"{rmName}, {regName}";
+            // Replace "dword" with "word" in the memory operand
+            memOperand = memOperand.Replace("dword", "word");
+
+            instruction.Operands = $"{memOperand}, {regName}";
         }
 
         return true;

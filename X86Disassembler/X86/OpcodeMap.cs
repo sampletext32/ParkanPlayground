@@ -188,6 +188,6 @@ public static class OpcodeMap
     /// <returns>The mnemonic</returns>
     public static string GetMnemonic(byte opcode)
     {
-        return OneByteOpcodes[opcode];
+        return "NO HANDLER: " + OneByteOpcodes[opcode];
     }
 }

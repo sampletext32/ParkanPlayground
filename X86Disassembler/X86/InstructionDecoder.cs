@@ -216,6 +216,15 @@ public class InstructionDecoder
     }
     
     /// <summary>
+    /// Checks if the instruction has an operand size override prefix (0x66)
+    /// </summary>
+    /// <returns>True if the instruction has an operand size override prefix</returns>
+    public bool HasOperandSizeOverridePrefix()
+    {
+        return _prefixDecoder.HasOperandSizePrefix();
+    }
+    
+    /// <summary>
     /// Reads a byte from the buffer and advances the position
     /// </summary>
     /// <returns>The byte read</returns>

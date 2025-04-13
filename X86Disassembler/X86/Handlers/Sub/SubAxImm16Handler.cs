@@ -37,28 +37,21 @@ public class SubAxImm16Handler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "sub";
-        
+
         int position = Decoder.GetPosition();
-        
+
         // Check if we have enough bytes for the immediate value
         if (position + 1 >= Length)
         {
             return false;
         }
-        
+
         // Read the immediate value (16-bit)
-        byte lowByte = CodeBuffer[position++];
-        byte highByte = CodeBuffer[position++];
-        
-        // Combine the bytes into a 16-bit value
-        ushort immediate = (ushort)((highByte << 8) | lowByte);
-        
-        // Update the decoder position
-        Decoder.SetPosition(position);
-        
+        var immediate = Decoder.ReadUInt16();
+
         // Set the operands (note: we use "eax" instead of "ax" to match the disassembler's output)
         instruction.Operands = $"eax, 0x{immediate:X4}";
-        
+
         return true;
     }
 }

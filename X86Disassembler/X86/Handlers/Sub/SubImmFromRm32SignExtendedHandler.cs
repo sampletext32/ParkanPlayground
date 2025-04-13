@@ -11,11 +11,11 @@ public class SubImmFromRm32SignExtendedHandler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public SubImmFromRm32SignExtendedHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public SubImmFromRm32SignExtendedHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -25,18 +25,18 @@ public class SubImmFromRm32SignExtendedHandler : InstructionHandler
     {
         if (opcode != 0x83)
             return false;
-            
+
         // Check if the reg field of the ModR/M byte is 5 (SUB)
         int position = Decoder.GetPosition();
         if (position >= Length)
             return false;
-            
+
         byte modRM = CodeBuffer[position];
-        byte reg = (byte)((modRM & 0x38) >> 3);
-        
+        byte reg = (byte) ((modRM & 0x38) >> 3);
+
         return reg == 5; // 5 = SUB
     }
-    
+
     /// <summary>
     /// Decodes a SUB r/m32, imm8 (sign-extended) instruction
     /// </summary>
@@ -47,49 +47,41 @@ public class SubImmFromRm32SignExtendedHandler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "sub";
-        
+
         int position = Decoder.GetPosition();
-        
+
         if (position >= Length)
         {
             return false;
         }
-        
-        // Read the ModR/M byte
-        byte modRM = CodeBuffer[position++];
-        Decoder.SetPosition(position);
-        
+
         // Extract the fields from the ModR/M byte
-        byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 5 for SUB
-        byte rm = (byte)(modRM & 0x07);
-        
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+
         // Let the ModRMDecoder handle the ModR/M byte and any additional bytes (SIB, displacement)
         // This will update the decoder position to point after the ModR/M and any additional bytes
-        string destOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
-        
+
         // Get the updated position after ModR/M decoding
         position = Decoder.GetPosition();
-        
+
         // Read the immediate value
         if (position >= Length)
         {
             return false;
         }
-        
+
         // Read the immediate value as a signed byte and sign-extend it to 32 bits
-        sbyte imm8 = (sbyte)CodeBuffer[position++];
+        sbyte imm8 = (sbyte) Decoder.ReadByte();
         int imm32 = imm8; // Automatic sign extension from sbyte to int
-        Decoder.SetPosition(position);
-        
+
         // Format the immediate value based on the operand type and value
         string immStr;
-        
+
         // For memory operands, use a different format as expected by the tests
         if (mod != 3) // Memory operand
         {
             // For memory operands, use the actual value as specified in the test
-            immStr = $"0x{(byte)imm8:X2}";
+            immStr = $"0x{(byte) imm8:X2}";
         }
         else // Register operand
         {
@@ -97,18 +89,18 @@ public class SubImmFromRm32SignExtendedHandler : InstructionHandler
             if (imm8 < 0)
             {
                 // For negative values, show the full 32-bit representation with 8-digit padding
-                immStr = $"0x{(uint)imm32:X8}";
+                immStr = $"0x{(uint) imm32:X8}";
             }
             else
             {
                 // For positive values, just show the value with 2-digit padding for consistency
-                immStr = $"0x{(byte)imm8:X2}";
+                immStr = $"0x{(byte) imm8:X2}";
             }
         }
-        
+
         // Set the operands
         instruction.Operands = $"{destOperand}, {immStr}";
-        
+
         return true;
     }
 }

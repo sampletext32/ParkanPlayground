@@ -36,32 +36,24 @@ public class SubImmFromRm16SignExtendedHandler : InstructionHandler
     public override bool Decode(byte opcode, Instruction instruction)
     {
         int position = Decoder.GetPosition();
-        
+
         if (position >= Length)
         {
             return false;
         }
-        
-        // Read the ModR/M byte
-        byte modRM = CodeBuffer[position++];
-        
+
         // Extract the fields from the ModR/M byte
-        byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3);
-        byte rm = (byte)(modRM & 0x07);
-        
+        var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
+
         // Check if this is a SUB instruction (reg field must be 5)
         if (reg != 5)
         {
             return false;
         }
-        
+
         // Set the mnemonic
         instruction.Mnemonic = "sub";
-        
-        // Update the decoder position
-        Decoder.SetPosition(position);
-        
+
         // For mod == 3, the r/m field specifies a register
         string destination;
         if (mod == 3)
@@ -73,39 +65,37 @@ public class SubImmFromRm16SignExtendedHandler : InstructionHandler
         {
             // Get the memory operand string
             destination = ModRMDecoder.DecodeModRM(mod, rm, false);
-            
+
             // Replace "dword" with "word" in the memory operand
             destination = destination.Replace("dword", "word");
         }
-        
+
         // Get the current position after processing the ModR/M byte
         position = Decoder.GetPosition();
-        
+
         // Check if we have enough bytes for the immediate value
         if (position >= Length)
         {
             return false;
         }
-        
+
         // Read the immediate value (8-bit)
-        byte immediate = CodeBuffer[position++];
-        
-        // Update the decoder position
-        Decoder.SetPosition(position);
-        
+        byte immediate = Decoder.ReadByte();
+
         // Set the operands (note: we use 32-bit register names to match the disassembler's output)
         if (mod == 3)
         {
             // For register operands, use the 32-bit register name
-            string reg32Name = destination.Replace("ax", "eax")
-                                         .Replace("bx", "ebx")
-                                         .Replace("cx", "ecx")
-                                         .Replace("dx", "edx")
-                                         .Replace("sp", "esp")
-                                         .Replace("bp", "ebp")
-                                         .Replace("si", "esi")
-                                         .Replace("di", "edi");
-            
+            string reg32Name = destination
+                .Replace("ax", "eax")
+                .Replace("bx", "ebx")
+                .Replace("cx", "ecx")
+                .Replace("dx", "edx")
+                .Replace("sp", "esp")
+                .Replace("bp", "ebp")
+                .Replace("si", "esi")
+                .Replace("di", "edi");
+
             instruction.Operands = $"{reg32Name}, 0x{immediate:X2}";
         }
         else
@@ -113,7 +103,7 @@ public class SubImmFromRm16SignExtendedHandler : InstructionHandler
             // For memory operands, keep the memory operand as is
             instruction.Operands = $"{destination}, 0x{immediate:X2}";
         }
-        
+
         return true;
     }
 }

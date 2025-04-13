@@ -37,26 +37,20 @@ public class SubR16Rm16Handler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "sub";
-        
+
         int position = Decoder.GetPosition();
-        
+
         if (position >= Length)
         {
             return false;
         }
-        
+
         // Read the ModR/M byte
-        byte modRM = CodeBuffer[position++];
-        Decoder.SetPosition(position);
-        
-        // Extract the fields from the ModR/M byte
-        byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3);
-        byte rm = (byte)(modRM & 0x07);
-        
+        var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
+
         // Get register name (16-bit)
         string regName = ModRMDecoder.GetRegisterName(reg, 16);
-        
+
         // For mod == 3, both operands are registers
         if (mod == 3)
         {
@@ -65,15 +59,12 @@ public class SubR16Rm16Handler : InstructionHandler
         }
         else // Memory operand
         {
-            // Get the memory operand string (use false for is64Bit)
-            string memOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
-            
             // Replace "dword" with "word" in the memory operand
             memOperand = memOperand.Replace("dword", "word");
-            
+
             instruction.Operands = $"{regName}, {memOperand}";
         }
-        
+
         return true;
     }
 }
