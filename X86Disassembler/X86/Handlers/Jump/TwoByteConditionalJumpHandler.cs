@@ -31,18 +31,20 @@ public class TwoByteConditionalJumpHandler : InstructionHandler
     public override bool CanHandle(byte opcode)
     {
         // Two-byte conditional jumps start with 0x0F
-        if (opcode == 0x0F)
+        if (opcode != 0x0F)
         {
-            int position = Decoder.GetPosition();
-            if (position < Length)
-            {
-                byte secondByte = CodeBuffer[position];
-                // Second byte must be in the range 0x80-0x8F
-                return secondByte >= 0x80 && secondByte <= 0x8F;
-            }
+            return false;
         }
         
-        return false;
+        int position = Decoder.GetPosition();
+        if (!Decoder.CanReadByte())
+        {
+            return false;
+        }
+            
+        byte secondByte = CodeBuffer[position];
+        // Second byte must be in the range 0x80-0x8F
+        return secondByte >= 0x80 && secondByte <= 0x8F;
     }
     
     /// <summary>
@@ -55,20 +57,21 @@ public class TwoByteConditionalJumpHandler : InstructionHandler
     {
         int position = Decoder.GetPosition();
         
-        if (position >= Length)
-        {
+        // Check if we have enough bytes for the second byte
+        if (!Decoder.CanReadByte())
+        {   
             return false;
         }
         
         // Read the second byte of the opcode
-        byte secondByte = CodeBuffer[position++];
-        Decoder.SetPosition(position);
+        byte secondByte = Decoder.ReadByte();
         
         // Get the mnemonic from the table
         int index = secondByte - 0x80;
         instruction.Mnemonic = ConditionalJumpMnemonics[index];
         
-        if (position + 4 > Length)
+        // Check if we have enough bytes for the offset
+        if (!Decoder.CanReadUInt())
         {
             return false;
         }
@@ -77,9 +80,10 @@ public class TwoByteConditionalJumpHandler : InstructionHandler
         uint offset = Decoder.ReadUInt32();
         
         // Calculate the target address
-        uint targetAddress = (uint)(position + offset + 4);
+        // For two-byte conditional jumps, the instruction is 6 bytes: first opcode (1) + second opcode (1) + offset (4)
+        uint targetAddress = (uint)(instruction.Address + 6 + offset);
         
-        // Set the operands
+        // Format the target address
         instruction.Operands = $"0x{targetAddress:X8}";
         
         return true;

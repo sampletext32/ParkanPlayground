@@ -34,51 +34,27 @@ public class MovRegMemHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Save the original position for raw bytes calculation
-        int startPosition = Decoder.GetPosition();
-
         // Set the mnemonic
         instruction.Mnemonic = "mov";
 
-        if (startPosition >= Length)
+        // Check if we have enough bytes for the ModR/M byte
+        if (!Decoder.CanReadByte())
         {
-            instruction.Operands = "??";
-            instruction.RawBytes = new byte[] {opcode};
-            return true;
+            return false;
         }
 
         // Determine operand size (0 = 8-bit, 1 = 32-bit)
-        bool operandSize32 = (opcode & 0x01) != 0;
-        int operandSize = operandSize32
-            ? 32
-            : 8;
+        int operandSize = (opcode & 0x01) != 0 ? 32 : 8;
 
         // Use ModRMDecoder to decode the ModR/M byte
-        var (mod, reg, rm, rmOperand) = ModRMDecoder.ReadModRM(); // false for 32-bit operand
+        var (mod, reg, rm, rmOperand) = ModRMDecoder.ReadModRM();
 
         // Get register name based on size
         string regName = ModRMDecoder.GetRegisterName(reg, operandSize);
 
-        // Get the position after decoding the ModR/M byte
-        int newPosition = Decoder.GetPosition();
-
         // Set the operands - register is the destination, r/m is the source (for 0x8B)
         // This matches the correct x86 instruction format: MOV r32, r/m32
         instruction.Operands = $"{regName}, {rmOperand}";
-
-        // Set the raw bytes
-        int totalBytes = newPosition - startPosition + 1; // +1 for opcode
-        byte[] rawBytes = new byte[totalBytes];
-        rawBytes[0] = opcode;
-        for (int i = 0; i < totalBytes - 1; i++)
-        {
-            if (startPosition + i < Length)
-            {
-                rawBytes[i + 1] = CodeBuffer[startPosition + i];
-            }
-        }
-
-        instruction.RawBytes = rawBytes;
 
         return true;
     }
