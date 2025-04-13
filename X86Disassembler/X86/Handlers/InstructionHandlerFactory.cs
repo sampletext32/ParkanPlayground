@@ -1,6 +1,6 @@
+using X86Disassembler.X86.Handlers.Adc;
 using X86Disassembler.X86.Handlers.Add;
 using X86Disassembler.X86.Handlers.And;
-using X86Disassembler.X86.Handlers.ArithmeticImmediate;
 using X86Disassembler.X86.Handlers.ArithmeticUnary;
 using X86Disassembler.X86.Handlers.Call;
 using X86Disassembler.X86.Handlers.Cmp;
@@ -14,7 +14,9 @@ using X86Disassembler.X86.Handlers.Or;
 using X86Disassembler.X86.Handlers.Pop;
 using X86Disassembler.X86.Handlers.Push;
 using X86Disassembler.X86.Handlers.Ret;
+using X86Disassembler.X86.Handlers.Sbb;
 using X86Disassembler.X86.Handlers.String;
+using X86Disassembler.X86.Handlers.Sub;
 using X86Disassembler.X86.Handlers.Test;
 using X86Disassembler.X86.Handlers.Xchg;
 using X86Disassembler.X86.Handlers.Xor;

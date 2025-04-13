@@ -1,17 +1,17 @@
-namespace X86Disassembler.X86.Handlers.ArithmeticImmediate;
+namespace X86Disassembler.X86.Handlers.Sub;
 
 /// <summary>
-/// Handler for SUB r/m32, imm32 instruction (0x81 /5)
+/// Handler for SUB r/m32, imm8 (sign-extended) instruction (0x83 /5)
 /// </summary>
-public class SubImmFromRm32Handler : InstructionHandler
+public class SubImmFromRm32SignExtendedHandler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the SubImmFromRm32Handler class
+    /// Initializes a new instance of the SubImmFromRm32SignExtendedHandler class
     /// </summary>
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public SubImmFromRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public SubImmFromRm32SignExtendedHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
         : base(codeBuffer, decoder, length)
     {
     }
@@ -23,7 +23,7 @@ public class SubImmFromRm32Handler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        if (opcode != 0x81)
+        if (opcode != 0x83)
             return false;
             
         // Check if the reg field of the ModR/M byte is 5 (SUB)
@@ -38,7 +38,7 @@ public class SubImmFromRm32Handler : InstructionHandler
     }
     
     /// <summary>
-    /// Decodes a SUB r/m32, imm32 instruction
+    /// Decodes a SUB r/m32, imm8 (sign-extended) instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -68,16 +68,17 @@ public class SubImmFromRm32Handler : InstructionHandler
         string destOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
         
         // Read the immediate value
-        if (position + 3 >= Length)
+        if (position >= Length)
         {
             return false;
         }
         
-        uint imm32 = BitConverter.ToUInt32(CodeBuffer, position);
-        Decoder.SetPosition(position + 4);
+        // Read the immediate value as a signed byte and sign-extend it
+        sbyte imm8 = (sbyte)CodeBuffer[position++];
+        Decoder.SetPosition(position);
         
         // Set the operands
-        instruction.Operands = $"{destOperand}, 0x{imm32:X8}";
+        instruction.Operands = $"{destOperand}, 0x{(uint)imm8:X2}";
         
         return true;
     }

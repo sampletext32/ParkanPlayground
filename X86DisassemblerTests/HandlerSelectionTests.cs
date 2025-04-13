@@ -4,7 +4,6 @@ using System;
 using Xunit;
 using X86Disassembler.X86;
 using X86Disassembler.X86.Handlers;
-using X86Disassembler.X86.Handlers.ArithmeticImmediate;
 using X86Disassembler.X86.Handlers.Inc;
 
 /// <summary>
