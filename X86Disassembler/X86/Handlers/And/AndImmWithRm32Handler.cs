@@ -1,17 +1,17 @@
-namespace X86Disassembler.X86.Handlers.Cmp;
+namespace X86Disassembler.X86.Handlers.And;
 
 /// <summary>
-/// Handler for CMP r/m32, imm32 instruction (0x81 /7)
+/// Handler for AND r/m32, imm32 instruction (0x81 /4)
 /// </summary>
-public class CmpImmWithRm32Handler : InstructionHandler
+public class AndImmWithRm32Handler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the CmpImmWithRm32Handler class
+    /// Initializes a new instance of the AndImmWithRm32Handler class
     /// </summary>
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public CmpImmWithRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
+    public AndImmWithRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
@@ -26,7 +26,7 @@ public class CmpImmWithRm32Handler : InstructionHandler
         if (opcode != 0x81)
             return false;
 
-        // Check if the reg field of the ModR/M byte is 7 (CMP)
+        // Check if the reg field of the ModR/M byte is 4 (AND)
         int position = Decoder.GetPosition();
         if (position >= Length)
             return false;
@@ -34,11 +34,11 @@ public class CmpImmWithRm32Handler : InstructionHandler
         byte modRM = CodeBuffer[position];
         byte reg = (byte) ((modRM & 0x38) >> 3);
 
-        return reg == 7; // 7 = CMP
+        return reg == 4; // 4 = AND
     }
 
     /// <summary>
-    /// Decodes a CMP r/m32, imm32 instruction
+    /// Decodes an AND r/m32, imm32 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -46,7 +46,7 @@ public class CmpImmWithRm32Handler : InstructionHandler
     public override bool Decode(byte opcode, Instruction instruction)
     {
         // Set the mnemonic
-        instruction.Mnemonic = "cmp";
+        instruction.Mnemonic = "and";
 
         // Read the ModR/M byte
         var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();

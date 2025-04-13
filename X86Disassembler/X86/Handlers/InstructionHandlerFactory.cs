@@ -373,6 +373,7 @@ public class InstructionHandlerFactory
     {
         // Add AND handlers
         _handlers.Add(new AndImmToRm8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new AndImmWithRm32Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new AndImmToRm32Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new AndImmToRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
 
