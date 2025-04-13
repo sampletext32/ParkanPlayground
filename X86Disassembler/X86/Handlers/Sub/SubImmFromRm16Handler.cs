@@ -24,7 +24,22 @@ public class SubImmFromRm16Handler : InstructionHandler
     public override bool CanHandle(byte opcode)
     {
         // Check if the opcode is 0x81 and we have a 0x66 prefix
-        return opcode == 0x81 && Decoder.HasOperandSizeOverridePrefix();
+        if (opcode != 0x81 || !Decoder.HasOperandSizeOverridePrefix())
+        {
+            return false;
+        }
+        
+        // Check if we have enough bytes to read the ModR/M byte
+        if (!Decoder.CanReadByte())
+        {
+            return false;
+        }
+        
+        // Check if the reg field is 5 (SUB)
+        byte modRM = CodeBuffer[Decoder.GetPosition()];
+        byte reg = (byte)((modRM & 0x38) >> 3);
+        
+        return reg == 5; // 5 = SUB
     }
 
     /// <summary>
@@ -35,9 +50,11 @@ public class SubImmFromRm16Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        int position = Decoder.GetPosition();
-
-        if (position >= Length)
+        // Set the mnemonic
+        instruction.Mnemonic = "sub";
+        
+        // Check if we have enough bytes for the ModR/M byte
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
@@ -45,33 +62,15 @@ public class SubImmFromRm16Handler : InstructionHandler
         // Extract the fields from the ModR/M byte
         var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
-        // Check if this is a SUB instruction (reg field must be 5)
-        if (reg != RegisterIndex.Di)
+        // For memory operands, replace "dword" with "word"
+        string destination = destOperand;
+        if (mod != 3) // Memory operand
         {
-            return false;
-        }
-
-        // Set the mnemonic
-        instruction.Mnemonic = "sub";
-
-        // For mod == 3, the r/m field specifies a register
-        string destination;
-        if (mod == 3)
-        {
-            // Get the register name (16-bit)
-            destination = ModRMDecoder.GetRegisterName(rm, 16);
-        }
-        else
-        {
-            // Replace "dword" with "word" in the memory operand
             destination = destOperand.Replace("dword", "word");
         }
 
-        // Get the current position after processing the ModR/M byte
-        position = Decoder.GetPosition();
-
         // Check if we have enough bytes for the immediate value
-        if (position + 1 >= Length)
+        if (!Decoder.CanReadUShort())
         {
             return false;
         }
@@ -79,27 +78,8 @@ public class SubImmFromRm16Handler : InstructionHandler
         // Read the immediate value (16-bit)
         ushort immediate = Decoder.ReadUInt16();
 
-        // Set the operands (note: we use 32-bit register names to match the disassembler's output)
-        if (mod == 3)
-        {
-            // For register operands, use the 32-bit register name
-            string reg32Name = destination
-                .Replace("ax", "eax")
-                .Replace("bx", "ebx")
-                .Replace("cx", "ecx")
-                .Replace("dx", "edx")
-                .Replace("sp", "esp")
-                .Replace("bp", "ebp")
-                .Replace("si", "esi")
-                .Replace("di", "edi");
-
-            instruction.Operands = $"{reg32Name}, 0x{immediate:X4}";
-        }
-        else
-        {
-            // For memory operands, keep the memory operand as is
-            instruction.Operands = $"{destination}, 0x{immediate:X4}";
-        }
+        // Set the operands
+        instruction.Operands = $"{destination}, 0x{immediate:X4}";
 
         return true;
     }
