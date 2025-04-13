@@ -71,7 +71,18 @@ public class XorImmWithRm16SignExtendedHandler : InstructionHandler
         short imm16 = (sbyte)Decoder.ReadByte();
         
         // Format the immediate value
-        string immStr = $"0x{(ushort)imm16:X4}";
+        // For 16-bit operations, we want to show the immediate value without leading zeros
+        string immStr;
+        if (imm16 < 0)
+        {
+            // For negative values, show the full sign-extended 16-bit value
+            immStr = $"0x{(ushort)imm16:X}";
+        }
+        else
+        {
+            // For positive values, show without leading zeros
+            immStr = $"0x{imm16:X}";
+        }
         
         // Set the operands
         instruction.Operands = $"{destOperand}, {immStr}";

@@ -45,13 +45,30 @@ public class XorR8Rm8Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        
+        // Advance past the ModR/M byte
+        Decoder.SetPosition(position + 1);
 
-        // Get register name
+        // Get register name (8-bit)
         string regName = ModRMDecoder.GetRegisterName(reg, 8);
 
+        // If mod == 3, then the r/m field specifies a register
+        if (mod == 3)
+        {
+            // Get the r/m register name (8-bit)
+            string rmRegName = ModRMDecoder.GetRegisterName(rm, 8);
+            
+            // Set the operands
+            instruction.Operands = $"{regName}, {rmRegName}";
+            return true;
+        }
+        
+        // Replace "dword ptr" with "byte ptr" to indicate 8-bit operation
+        string byteOperand = destOperand.Replace("dword ptr", "byte ptr");
+        
         // Set the operands
-        instruction.Operands = $"{regName}, {memOperand}";
+        instruction.Operands = $"{regName}, {byteOperand}";
 
         return true;
     }

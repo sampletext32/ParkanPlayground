@@ -58,6 +58,23 @@ public class XorImmWithRm8Handler : InstructionHandler
         // Read the ModR/M byte
         var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
         
+        // Advance past the ModR/M byte
+        Decoder.SetPosition(position + 1);
+        
+        // If mod == 3, then the r/m field specifies a register
+        if (mod == 3)
+        {
+            // Get the r/m register name (8-bit)
+            destOperand = ModRMDecoder.GetRegisterName(rm, 8);
+        }
+        else
+        {
+            // For memory operands, use the ModRMDecoder to get the full operand string
+
+            // Replace "dword ptr" with "byte ptr" to indicate 8-bit operation
+            destOperand = destOperand.Replace("dword ptr", "byte ptr");
+        }
+        
         // Get the updated position after ModR/M decoding
         position = Decoder.GetPosition();
         
