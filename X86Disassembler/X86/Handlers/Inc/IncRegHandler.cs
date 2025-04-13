@@ -36,13 +36,13 @@ public class IncRegHandler : InstructionHandler
     public override bool Decode(byte opcode, Instruction instruction)
     {
         // Calculate the register index (0 for EAX, 1 for ECX, etc.)
-        byte reg = (byte)(opcode - 0x40);
+        RegisterIndex reg = (RegisterIndex)(byte)(opcode - 0x40);
         
         // Set the mnemonic
         instruction.Mnemonic = "inc";
         
         // Set the operand (register name)
-        instruction.Operands = GetRegister32(reg);
+        instruction.Operands = ModRMDecoder.GetRegisterName(reg, 32);
         
         return true;
     }

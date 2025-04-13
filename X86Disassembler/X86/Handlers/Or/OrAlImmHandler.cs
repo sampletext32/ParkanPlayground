@@ -42,8 +42,7 @@ public class OrAlImmHandler : InstructionHandler
         }
 
         // Read the immediate byte
-        byte imm8 = CodeBuffer[position++];
-        Decoder.SetPosition(position);
+        byte imm8 = Decoder.ReadByte();
 
         // Set the mnemonic
         instruction.Mnemonic = "or";

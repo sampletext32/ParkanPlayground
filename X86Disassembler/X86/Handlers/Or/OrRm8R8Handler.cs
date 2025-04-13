@@ -5,9 +5,6 @@ namespace X86Disassembler.X86.Handlers.Or;
 /// </summary>
 public class OrRm8R8Handler : InstructionHandler
 {
-    // 8-bit register names
-    private static readonly string[] RegisterNames8 = { "al", "cl", "dl", "bl", "ah", "ch", "dh", "bh" };
-    
     /// <summary>
     /// Initializes a new instance of the OrRm8R8Handler class
     /// </summary>
@@ -59,17 +56,10 @@ public class OrRm8R8Handler : InstructionHandler
             return true;
         }
         
-        // Proceed with normal ModR/M decoding
-        position++;
-        Decoder.SetPosition(position);
-        
-        // Extract fields from ModR/M byte
-        byte mod = (byte)((modRM & 0xC0) >> 6); // Top 2 bits
-        byte reg = (byte)((modRM & 0x38) >> 3); // Middle 3 bits
-        byte rm = (byte)(modRM & 0x07);         // Bottom 3 bits
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
         
         // The register operand is in the reg field (8-bit register)
-        string regOperand = RegisterNames8[reg];
+        string regOperand = ModRMDecoder.GetRegisterName(reg, 8);
         
         // Handle the r/m operand based on mod field
         string rmOperand;
@@ -77,16 +67,12 @@ public class OrRm8R8Handler : InstructionHandler
         if (mod == 3) // Register-to-register
         {
             // Direct register addressing
-            rmOperand = RegisterNames8[rm];
+            rmOperand = ModRMDecoder.GetRegisterName(rm, 8);
         }
         else // Memory addressing
         {
-            // Use ModRMDecoder for memory addressing, but we need to adjust for 8-bit operands
-            var modRMDecoder = new ModRMDecoder(CodeBuffer, Decoder, Length);
-            string memOperand = modRMDecoder.DecodeModRM(mod, rm, false); // false = not 64-bit
-            
             // Replace "dword ptr" with "byte ptr" for 8-bit operands
-            rmOperand = memOperand.Replace("dword ptr", "byte ptr");
+            rmOperand = destOperand.Replace("dword ptr", "byte ptr");
         }
         
         // Set the operands (r/m8, r8 format)

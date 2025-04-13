@@ -46,7 +46,7 @@ public class SubR16Rm16Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
         // Get register name (16-bit)
         string regName = ModRMDecoder.GetRegisterName(reg, 16);
@@ -60,9 +60,9 @@ public class SubR16Rm16Handler : InstructionHandler
         else // Memory operand
         {
             // Replace "dword" with "word" in the memory operand
-            memOperand = memOperand.Replace("dword", "word");
+            destOperand = destOperand.Replace("dword", "word");
 
-            instruction.Operands = $"{regName}, {memOperand}";
+            instruction.Operands = $"{regName}, {destOperand}";
         }
 
         return true;

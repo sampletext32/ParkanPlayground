@@ -11,11 +11,11 @@ public class TestEaxImmHandler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public TestEaxImmHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public TestEaxImmHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -25,7 +25,7 @@ public class TestEaxImmHandler : InstructionHandler
     {
         return opcode == 0xA9;
     }
-    
+
     /// <summary>
     /// Decodes a TEST EAX, imm32 instruction
     /// </summary>
@@ -36,28 +36,20 @@ public class TestEaxImmHandler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "test";
-        
+
         int position = Decoder.GetPosition();
-        
+
         if (position + 3 >= Length)
         {
             return false;
         }
-        
+
         // Read the immediate value - x86 is little-endian, so we need to read the bytes in the correct order
-        byte b0 = CodeBuffer[position];
-        byte b1 = CodeBuffer[position + 1];
-        byte b2 = CodeBuffer[position + 2];
-        byte b3 = CodeBuffer[position + 3];
-        
-        // Combine the bytes to form a 32-bit immediate value
-        uint imm32 = (uint)(b0 | (b1 << 8) | (b2 << 16) | (b3 << 24));
-        
-        Decoder.SetPosition(position + 4);
-        
+        var imm32 = Decoder.ReadUInt32();
+
         // Set the operands
         instruction.Operands = $"eax, 0x{imm32:X8}";
-        
+
         return true;
     }
 }

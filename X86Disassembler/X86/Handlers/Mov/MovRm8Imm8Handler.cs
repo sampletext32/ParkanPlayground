@@ -34,22 +34,18 @@ public class MovRm8Imm8Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Save the original position for raw bytes calculation
-        int startPosition = Decoder.GetPosition();
-        int position = startPosition;
-
+        // Set the mnemonic
+        instruction.Mnemonic = "mov";
+        
+        int position = Decoder.GetPosition();
+        
         if (position >= Length)
         {
             return false;
         }
-
-        // Read the ModR/M byte
-        byte modRM = CodeBuffer[position++];
         
-        // Extract the fields from the ModR/M byte
-        byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3);
-        byte rm = (byte)(modRM & 0x07);
+        // Read the ModR/M byte
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
         
         // MOV r/m8, imm8 only uses reg=0
         if (reg != 0)
@@ -57,98 +53,28 @@ public class MovRm8Imm8Handler : InstructionHandler
             return false;
         }
         
-        // Track the bytes needed for this instruction
-        int bytesNeeded = 1; // ModR/M byte
-        
-        // Process SIB byte if needed
-        byte sib = 0;
-        if (mod != 3 && rm == 4) // SIB byte present
+        // For direct register addressing (mod == 3), use 8-bit register names
+        if (mod == 3)
         {
-            if (position >= Length)
-            {
-                return false;
-            }
-            sib = CodeBuffer[position++];
-            bytesNeeded++;
+            // Use 8-bit register names for direct register addressing
+            destOperand = ModRMDecoder.GetRegisterName(rm, 8);
+        }
+        else
+        {
+            // Replace the size prefix with "byte ptr" for memory operands
+            destOperand = destOperand.Replace("dword ptr", "byte ptr");
         }
         
-        // Handle displacement
-        int dispSize = 0;
-        if (mod == 0 && rm == 5) // 32-bit displacement
-        {
-            dispSize = 4;
-        }
-        else if (mod == 1) // 8-bit displacement
-        {
-            dispSize = 1;
-        }
-        else if (mod == 2) // 32-bit displacement
-        {
-            dispSize = 4;
-        }
-        
-        // Check if we have enough bytes for the displacement
-        if (position + dispSize > Length)
+        // Read the immediate value
+        if (Decoder.GetPosition() >= Length)
         {
             return false;
         }
         
-        // Skip over the displacement bytes
-        position += dispSize;
-        bytesNeeded += dispSize;
+        byte imm8 = Decoder.ReadByte();
         
-        // Read the immediate byte
-        if (position >= Length)
-        {
-            return false;
-        }
-        
-        byte imm8 = CodeBuffer[position++];
-        bytesNeeded++; // Immediate byte
-        
-        // Update the decoder position
-        Decoder.SetPosition(position);
-
-        // Set the mnemonic
-        instruction.Mnemonic = "mov";
-
-        // Use ModRMDecoder to get the operand string
-        var modRMDecoder = new ModRMDecoder(CodeBuffer, Decoder, Length);
-        
-        // Reset the decoder position to after the ModR/M byte
-        Decoder.SetPosition(startPosition + 1);
-        
-        // Get the operand string
-        string operand;
-        if (mod != 3) // Memory operand
-        {
-            string memOperand = modRMDecoder.DecodeModRM(mod, rm, false);
-            
-            // Replace the size prefix with "byte ptr"
-            operand = memOperand.Replace("dword ptr", "byte ptr");
-        }
-        else // Register operand
-        {
-            operand = GetRegister8(rm);
-        }
-
         // Set the operands
-        instruction.Operands = $"{operand}, 0x{imm8:X2}";
-        
-        // Set the raw bytes
-        byte[] rawBytes = new byte[bytesNeeded + 1]; // +1 for opcode
-        rawBytes[0] = opcode;
-        for (int i = 0; i < bytesNeeded; i++)
-        {
-            if (startPosition + i < Length)
-            {
-                rawBytes[i + 1] = CodeBuffer[startPosition + i];
-            }
-        }
-        instruction.RawBytes = rawBytes;
-
-        // Restore the decoder position
-        Decoder.SetPosition(position);
+        instruction.Operands = $"{destOperand}, 0x{imm8:X2}";
         
         return true;
     }

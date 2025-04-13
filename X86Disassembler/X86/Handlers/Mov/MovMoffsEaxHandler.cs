@@ -11,11 +11,11 @@ public class MovMoffsEaxHandler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public MovMoffsEaxHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public MovMoffsEaxHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -25,7 +25,7 @@ public class MovMoffsEaxHandler : InstructionHandler
     {
         return opcode == 0xA2 || opcode == 0xA3;
     }
-    
+
     /// <summary>
     /// Decodes a MOV moffs32, EAX or MOV moffs8, AL instruction
     /// </summary>
@@ -36,21 +36,22 @@ public class MovMoffsEaxHandler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "mov";
-        
+
         // Get the operand size and register name
-        int operandSize = (opcode == 0xA2) ? 8 : 32;
-        string regName = (opcode == 0xA2) ? "al" : "eax";
-        
+        int operandSize = opcode == 0xA2 ? 8 : 32;
+
+        string regName = ModRMDecoder.GetRegisterName(RegisterIndex.A, operandSize);
+
         // Read the memory offset
         uint offset = Decoder.ReadUInt32();
         if (Decoder.GetPosition() > Length)
         {
             return false;
         }
-        
+
         // Set the operands
         instruction.Operands = $"[0x{offset:X}], {regName}";
-        
+
         return true;
     }
 }

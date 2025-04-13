@@ -45,7 +45,7 @@ public class SubRm8R8Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
         // Get register name
         string regName = ModRMDecoder.GetRegisterName(reg, 8);
@@ -58,7 +58,7 @@ public class SubRm8R8Handler : InstructionHandler
         }
         else // Memory operand
         {
-            instruction.Operands = $"byte ptr {memOperand}, {regName}";
+            instruction.Operands = $"byte ptr {destOperand}, {regName}";
         }
 
         return true;

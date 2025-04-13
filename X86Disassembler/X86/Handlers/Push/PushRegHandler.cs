@@ -11,11 +11,11 @@ public class PushRegHandler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public PushRegHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public PushRegHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -25,7 +25,7 @@ public class PushRegHandler : InstructionHandler
     {
         return opcode >= 0x50 && opcode <= 0x57;
     }
-    
+
     /// <summary>
     /// Decodes a PUSH r32 instruction
     /// </summary>
@@ -36,14 +36,14 @@ public class PushRegHandler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "push";
-        
+
         // Register is encoded in the low 3 bits of the opcode
-        int reg = opcode & 0x07;
+        RegisterIndex reg = (RegisterIndex) (opcode & 0x07);
         string regName = ModRMDecoder.GetRegisterName(reg, 32);
-        
+
         // Set the operands
         instruction.Operands = regName;
-        
+
         return true;
     }
 }

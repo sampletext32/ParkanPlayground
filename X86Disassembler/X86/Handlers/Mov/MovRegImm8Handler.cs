@@ -11,11 +11,11 @@ public class MovRegImm8Handler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public MovRegImm8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public MovRegImm8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -25,7 +25,7 @@ public class MovRegImm8Handler : InstructionHandler
     {
         return opcode >= 0xB0 && opcode <= 0xB7;
     }
-    
+
     /// <summary>
     /// Decodes a MOV r8, imm8 instruction
     /// </summary>
@@ -36,21 +36,22 @@ public class MovRegImm8Handler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "mov";
-        
+
         // Register is encoded in the low 3 bits of the opcode
-        int reg = opcode & 0x07;
+        RegisterIndex reg = (RegisterIndex) (opcode & 0x07);
+
         string regName = ModRMDecoder.GetRegisterName(reg, 8);
-        
+
         // Read the immediate value
         byte imm8 = Decoder.ReadByte();
         if (Decoder.GetPosition() > Length)
         {
             return false;
         }
-        
+
         // Set the operands
         instruction.Operands = $"{regName}, 0x{imm8:X2}";
-        
+
         return true;
     }
 }

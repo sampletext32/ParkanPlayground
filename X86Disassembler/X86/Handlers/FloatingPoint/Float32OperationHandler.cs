@@ -3,7 +3,7 @@ namespace X86Disassembler.X86.Handlers.FloatingPoint;
 /// <summary>
 /// Handler for floating-point operations on float32 (D8 opcode)
 /// </summary>
-public class Float32OperationHandler : FloatingPointBaseHandler
+public class Float32OperationHandler : InstructionHandler
 {
     // D8 opcode - operations on float32
     private static readonly string[] Mnemonics =
@@ -55,27 +55,20 @@ public class Float32OperationHandler : FloatingPointBaseHandler
         }
 
         // Read the ModR/M byte
-        byte modRM = CodeBuffer[position++];
-        Decoder.SetPosition(position);
-
-        // Extract the fields from the ModR/M byte
-        byte mod = (byte) ((modRM & 0xC0) >> 6);
-        byte reg = (byte) ((modRM & 0x38) >> 3);
-        byte rm = (byte) (modRM & 0x07);
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
         // Set the mnemonic based on the opcode and reg field
-        instruction.Mnemonic = Mnemonics[reg];
+        instruction.Mnemonic = Mnemonics[(int)reg];
 
         // For memory operands, set the operand
         if (mod != 3) // Memory operand
         {
-            string operand = ModRMDecoder.DecodeModRM(mod, rm, false);
-            instruction.Operands = operand;
+            instruction.Operands = destOperand;
         }
         else // Register operand (ST(i))
         {
             // For register operands, we need to handle the stack registers
-            instruction.Operands = $"st(0), st({rm})";
+            instruction.Operands = $"st(0), st({(int)rm})";
         }
 
         return true;

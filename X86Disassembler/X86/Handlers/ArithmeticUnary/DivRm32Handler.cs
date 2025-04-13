@@ -56,19 +56,10 @@ public class DivRm32Handler : InstructionHandler
         }
         
         // Read the ModR/M byte
-        byte modRM = CodeBuffer[position++];
-        Decoder.SetPosition(position);
-        
-        // Extract the fields from the ModR/M byte
-        byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 6 for DIV
-        byte rm = (byte)(modRM & 0x07);
-        
-        // Decode the operand
-        string operand = ModRMDecoder.DecodeModRM(mod, rm, false);
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
         
         // Set the operands
-        instruction.Operands = operand;
+        instruction.Operands = destOperand;
         
         return true;
     }

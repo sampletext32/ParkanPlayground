@@ -42,16 +42,10 @@ public class PushRm32Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        byte modRM = CodeBuffer[position++];
-        Decoder.SetPosition(position);
-
-        // Extract the fields from the ModR/M byte
-        byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3);
-        byte rm = (byte)(modRM & 0x07);
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
         // PUSH r/m32 is encoded as FF /6
-        if (reg != 6)
+        if (reg != RegisterIndex.Sp)
         {
             return false;
         }
@@ -62,12 +56,11 @@ public class PushRm32Handler : InstructionHandler
         // For memory operands, set the operand
         if (mod != 3) // Memory operand
         {
-            string operand = ModRMDecoder.DecodeModRM(mod, rm, false);
-            instruction.Operands = operand;
+            instruction.Operands = destOperand;
         }
         else // Register operand
         {
-            string rmName = GetRegister32(rm);
+            string rmName = ModRMDecoder.GetRegisterName(rm, 32);
             instruction.Operands = rmName;
         }
 

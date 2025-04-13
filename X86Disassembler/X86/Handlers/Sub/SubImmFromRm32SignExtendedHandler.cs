@@ -70,9 +70,8 @@ public class SubImmFromRm32SignExtendedHandler : InstructionHandler
             return false;
         }
 
-        // Read the immediate value as a signed byte and sign-extend it to 32 bits
-        sbyte imm8 = (sbyte) Decoder.ReadByte();
-        int imm32 = imm8; // Automatic sign extension from sbyte to int
+        // Read the immediate value as a signed byte and sign-extend it to 32 bits with sign extension from sbyte to int
+        int imm32 = (sbyte) Decoder.ReadByte();
 
         // Format the immediate value based on the operand type and value
         string immStr;
@@ -81,12 +80,12 @@ public class SubImmFromRm32SignExtendedHandler : InstructionHandler
         if (mod != 3) // Memory operand
         {
             // For memory operands, use the actual value as specified in the test
-            immStr = $"0x{(byte) imm8:X2}";
+            immStr = $"0x{(byte) imm32:X2}";
         }
         else // Register operand
         {
             // For register operands, format based on whether it's negative or not
-            if (imm8 < 0)
+            if (imm32 < 0)
             {
                 // For negative values, show the full 32-bit representation with 8-digit padding
                 immStr = $"0x{(uint) imm32:X8}";
@@ -94,7 +93,7 @@ public class SubImmFromRm32SignExtendedHandler : InstructionHandler
             else
             {
                 // For positive values, just show the value with 2-digit padding for consistency
-                immStr = $"0x{(byte) imm8:X2}";
+                immStr = $"0x{(byte) imm32:X2}";
             }
         }
 

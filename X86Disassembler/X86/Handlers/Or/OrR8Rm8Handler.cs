@@ -42,31 +42,24 @@ public class OrR8Rm8Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        byte modRM = CodeBuffer[position++];
-        Decoder.SetPosition(position);
-
-        // Extract the fields from the ModR/M byte
-        byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3);
-        byte rm = (byte)(modRM & 0x07);
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
         // Set the mnemonic
         instruction.Mnemonic = "or";
 
         // Get the register name
-        string regName = GetRegister8(reg);
+        string regName = ModRMDecoder.GetRegisterName(reg, 8);
 
         // For memory operands, set the operand
         if (mod != 3) // Memory operand
         {
-            string operand = ModRMDecoder.DecodeModRM(mod, rm, false);
             // Replace dword ptr with byte ptr for 8-bit operations
-            operand = operand.Replace("dword ptr", "byte ptr");
-            instruction.Operands = $"{regName}, {operand}";
+            destOperand = destOperand.Replace("dword ptr", "byte ptr");
+            instruction.Operands = $"{regName}, {destOperand}";
         }
         else // Register operand
         {
-            string rmName = GetRegister8(rm);
+            string rmName = ModRMDecoder.GetRegisterName(rm, 8);
             instruction.Operands = $"{regName}, {rmName}";
         }
 

@@ -49,7 +49,7 @@ public class SubImmFromRm8Handler : InstructionHandler
         instruction.Mnemonic = "sub";
 
         // Extract the fields from the ModR/M byte
-        var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
         // Read the immediate byte
         var position = Decoder.GetPosition();
@@ -58,8 +58,7 @@ public class SubImmFromRm8Handler : InstructionHandler
             return false;
         }
 
-        byte imm8 = CodeBuffer[position++];
-        Decoder.SetPosition(position);
+        byte imm8 = Decoder.ReadByte();
 
         // Set the instruction information
         // For mod == 3, the operand is a register
@@ -71,8 +70,7 @@ public class SubImmFromRm8Handler : InstructionHandler
         else // Memory operand
         {
             // Get the memory operand string
-            string memOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
-            instruction.Operands = $"byte ptr {memOperand}, 0x{imm8:X2}";
+            instruction.Operands = $"byte ptr {destOperand}, 0x{imm8:X2}";
         }
 
         return true;

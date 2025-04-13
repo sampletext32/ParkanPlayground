@@ -3,7 +3,7 @@ namespace X86Disassembler.X86.Handlers.FloatingPoint;
 /// <summary>
 /// Handler for floating-point load, store, and control operations (D9 opcode)
 /// </summary>
-public class LoadStoreControlHandler : FloatingPointBaseHandler
+public class LoadStoreControlHandler : InstructionHandler
 {
     // D9 opcode - load, store, and control operations
     private static readonly string[] Mnemonics =
@@ -55,71 +55,63 @@ public class LoadStoreControlHandler : FloatingPointBaseHandler
         }
         
         // Read the ModR/M byte
-        byte modRM = CodeBuffer[position++];
-        Decoder.SetPosition(position);
-        
-        // Extract the fields from the ModR/M byte
-        byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3);
-        byte rm = (byte)(modRM & 0x07);
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
         
         // Set the mnemonic based on the opcode and reg field
-        instruction.Mnemonic = Mnemonics[reg];
+        instruction.Mnemonic = Mnemonics[(int)reg];
         
         // For memory operands, set the operand
         if (mod != 3) // Memory operand
         {
-            string operand = ModRMDecoder.DecodeModRM(mod, rm, false);
-            
             // Different operand types based on the instruction
-            if (reg == 0 || reg == 2 || reg == 3) // fld, fst, fstp
+            if (reg == RegisterIndex.A || reg == RegisterIndex.C || reg == RegisterIndex.D) // fld, fst, fstp
             {
                 // Keep the dword ptr prefix from ModRMDecoder
-                instruction.Operands = operand;
+                instruction.Operands = destOperand;
             }
             else // fldenv, fldcw, fnstenv, fnstcw
             {
-                if (reg == 5) // fldcw - should use word ptr
+                if (reg == RegisterIndex.Di) // fldcw - should use word ptr
                 {
-                    instruction.Operands = operand.Replace("dword ptr", "word ptr");
+                    instruction.Operands = destOperand.Replace("dword ptr", "word ptr");
                 }
                 else // fldenv, fnstenv, fnstcw
                 {
                     // Remove the dword ptr prefix for other control operations
-                    instruction.Operands = operand.Replace("dword ptr ", "");
+                    instruction.Operands = destOperand.Replace("dword ptr ", "");
                 }
             }
         }
         else // Register operand (ST(i))
         {
             // Special handling for D9C0-D9FF (register-register operations)
-            if (reg == 0) // FLD ST(i)
+            if (reg == RegisterIndex.A) // FLD ST(i)
             {
-                instruction.Operands = $"st({rm})";
+                instruction.Operands = $"st({(int)rm})";
             }
-            else if (reg == 1) // FXCH ST(i)
+            else if (reg == RegisterIndex.B) // FXCH ST(i)
             {
                 instruction.Mnemonic = "fxch";
-                instruction.Operands = $"st({rm})";
+                instruction.Operands = $"st({(int)rm})";
             }
-            else if (reg == 4)
+            else if (reg == RegisterIndex.Si)
             {
                 // D9E0-D9EF special instructions
                 switch (rm)
                 {
-                    case 0:
+                    case RegisterIndex.A:
                         instruction.Mnemonic = "fchs";
                         instruction.Operands = "";
                         break;
-                    case 1:
+                    case RegisterIndex.B:
                         instruction.Mnemonic = "fabs";
                         instruction.Operands = "";
                         break;
-                    case 4:
+                    case RegisterIndex.Si:
                         instruction.Mnemonic = "ftst";
                         instruction.Operands = "";
                         break;
-                    case 5:
+                    case RegisterIndex.Di:
                         instruction.Mnemonic = "fxam";
                         instruction.Operands = "";
                         break;
@@ -129,40 +121,40 @@ public class LoadStoreControlHandler : FloatingPointBaseHandler
                         break;
                 }
             }
-            else if (reg == 5)
+            else if (reg == RegisterIndex.Di)
             {
                 // D9F0-D9FF special instructions
                 switch (rm)
                 {
-                    case 0:
+                    case RegisterIndex.A:
                         instruction.Mnemonic = "f2xm1";
                         instruction.Operands = "";
                         break;
-                    case 1:
+                    case RegisterIndex.B:
                         instruction.Mnemonic = "fyl2x";
                         instruction.Operands = "";
                         break;
-                    case 2:
+                    case RegisterIndex.C:
                         instruction.Mnemonic = "fptan";
                         instruction.Operands = "";
                         break;
-                    case 3:
+                    case RegisterIndex.D:
                         instruction.Mnemonic = "fpatan";
                         instruction.Operands = "";
                         break;
-                    case 4:
+                    case RegisterIndex.Si:
                         instruction.Mnemonic = "fxtract";
                         instruction.Operands = "";
                         break;
-                    case 5:
+                    case RegisterIndex.Di:
                         instruction.Mnemonic = "fprem1";
                         instruction.Operands = "";
                         break;
-                    case 6:
+                    case RegisterIndex.Sp:
                         instruction.Mnemonic = "fdecstp";
                         instruction.Operands = "";
                         break;
-                    case 7:
+                    case RegisterIndex.Bp:
                         instruction.Mnemonic = "fincstp";
                         instruction.Operands = "";
                         break;
@@ -172,40 +164,40 @@ public class LoadStoreControlHandler : FloatingPointBaseHandler
                         break;
                 }
             }
-            else if (reg == 6)
+            else if (reg == RegisterIndex.Sp)
             {
                 // D9F0-D9FF more special instructions
                 switch (rm)
                 {
-                    case 0:
+                    case RegisterIndex.A:
                         instruction.Mnemonic = "fprem";
                         instruction.Operands = "";
                         break;
-                    case 1:
+                    case RegisterIndex.B:
                         instruction.Mnemonic = "fyl2xp1";
                         instruction.Operands = "";
                         break;
-                    case 2:
+                    case RegisterIndex.C:
                         instruction.Mnemonic = "fsqrt";
                         instruction.Operands = "";
                         break;
-                    case 3:
+                    case RegisterIndex.D:
                         instruction.Mnemonic = "fsincos";
                         instruction.Operands = "";
                         break;
-                    case 4:
+                    case RegisterIndex.Si:
                         instruction.Mnemonic = "frndint";
                         instruction.Operands = "";
                         break;
-                    case 5:
+                    case RegisterIndex.Di:
                         instruction.Mnemonic = "fscale";
                         instruction.Operands = "";
                         break;
-                    case 6:
+                    case RegisterIndex.Sp:
                         instruction.Mnemonic = "fsin";
                         instruction.Operands = "";
                         break;
-                    case 7:
+                    case RegisterIndex.Bp:
                         instruction.Mnemonic = "fcos";
                         instruction.Operands = "";
                         break;

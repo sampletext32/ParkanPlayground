@@ -105,10 +105,10 @@ RawBytes;Instructions
 
 # XOR with different addressing modes
 # XOR [ebp+0x8], eax (opcode 0x31)
-31458;[{ "Mnemonic": "xor", "Operands": "dword ptr [ebp+0x8], eax" }]
+314508;[{ "Mnemonic": "xor", "Operands": "dword ptr [ebp+0x08], eax" }]
 
 # XOR eax, [ebp+0x8] (opcode 0x33)
-33458;[{ "Mnemonic": "xor", "Operands": "eax, dword ptr [ebp+0x8]" }]
+334508;[{ "Mnemonic": "xor", "Operands": "eax, dword ptr [ebp+0x08]" }]
 
 # XOR with other segment overrides
 # XOR ss:[ebx+0x10], ecx (opcode 0x31 with SS override)

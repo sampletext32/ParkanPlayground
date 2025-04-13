@@ -3,7 +3,7 @@ namespace X86Disassembler.X86.Handlers.FloatingPoint;
 /// <summary>
 /// Handler for floating-point operations on int32 (DA opcode)
 /// </summary>
-public class Int32OperationHandler : FloatingPointBaseHandler
+public class Int32OperationHandler : InstructionHandler
 {
     // DA opcode - operations on int32
     private static readonly string[] Mnemonics =
@@ -55,47 +55,40 @@ public class Int32OperationHandler : FloatingPointBaseHandler
         }
 
         // Read the ModR/M byte
-        byte modRM = CodeBuffer[position++];
-        Decoder.SetPosition(position);
-
-        // Extract the fields from the ModR/M byte
-        byte mod = (byte) ((modRM & 0xC0) >> 6);
-        byte reg = (byte) ((modRM & 0x38) >> 3);
-        byte rm = (byte) (modRM & 0x07);
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
         // Set the mnemonic based on the opcode and reg field
-        instruction.Mnemonic = Mnemonics[reg];
+        instruction.Mnemonic = Mnemonics[(int)reg];
 
         // For memory operands, set the operand
         if (mod != 3) // Memory operand
         {
-            string operand = ModRMDecoder.DecodeModRM(mod, rm, false);
-            instruction.Operands = operand;
+            instruction.Operands = destOperand;
         }
         else // Register operand (ST(i))
         {
             // Special handling for register-register operations
-            if (reg == 0) // FCMOVB
+            if (reg == RegisterIndex.A) // FCMOVB
             {
                 instruction.Mnemonic = "fcmovb";
-                instruction.Operands = $"st(0), st({rm})";
+                instruction.Operands = $"st(0), st({(int)rm})";
             }
-            else if (reg == 1) // FCMOVE
+            else if (reg == RegisterIndex.B) // FCMOVE
             {
                 instruction.Mnemonic = "fcmove";
-                instruction.Operands = $"st(0), st({rm})";
+                instruction.Operands = $"st(0), st({(int)rm})";
             }
-            else if (reg == 2) // FCMOVBE
+            else if (reg == RegisterIndex.C) // FCMOVBE
             {
                 instruction.Mnemonic = "fcmovbe";
-                instruction.Operands = $"st(0), st({rm})";
+                instruction.Operands = $"st(0), st({(int)rm})";
             }
-            else if (reg == 3) // FCMOVU
+            else if (reg == RegisterIndex.D) // FCMOVU
             {
                 instruction.Mnemonic = "fcmovu";
-                instruction.Operands = $"st(0), st({rm})";
+                instruction.Operands = $"st(0), st({(int)rm})";
             }
-            else if (reg == 5 && rm == 1) // FUCOMPP
+            else if (reg == RegisterIndex.Di && rm == RegisterIndex.B) // FUCOMPP
             {
                 instruction.Mnemonic = "fucompp";
                 instruction.Operands = "";

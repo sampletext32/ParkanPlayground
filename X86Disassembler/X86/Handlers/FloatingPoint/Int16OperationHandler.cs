@@ -3,7 +3,7 @@ namespace X86Disassembler.X86.Handlers.FloatingPoint;
 /// <summary>
 /// Handler for floating-point operations on int16 (DE opcode)
 /// </summary>
-public class Int16OperationHandler : FloatingPointBaseHandler
+public class Int16OperationHandler : InstructionHandler
 {
     // DE opcode - operations on int16
     private static readonly string[] Mnemonics =
@@ -55,67 +55,59 @@ public class Int16OperationHandler : FloatingPointBaseHandler
         }
 
         // Read the ModR/M byte
-        byte modRM = CodeBuffer[position++];
-        Decoder.SetPosition(position);
-
-        // Extract the fields from the ModR/M byte
-        byte mod = (byte) ((modRM & 0xC0) >> 6);
-        byte reg = (byte) ((modRM & 0x38) >> 3);
-        byte rm = (byte) (modRM & 0x07);
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
         // Set the mnemonic based on the opcode and reg field
-        instruction.Mnemonic = Mnemonics[reg];
+        instruction.Mnemonic = Mnemonics[(int)reg];
 
         // For memory operands, set the operand
         if (mod != 3) // Memory operand
         {
             // Need to modify the default dword ptr to word ptr for 16-bit integers
-            string operand = ModRMDecoder.DecodeModRM(mod, rm, false);
-            operand = operand.Replace("dword ptr", "word ptr");
-            instruction.Operands = operand;
+            instruction.Operands = destOperand.Replace("dword ptr", "word ptr");
         }
         else // Register operand (ST(i))
         {
             // Special handling for register-register operations
-            if (reg == 0) // FADDP
+            if (reg == RegisterIndex.A) // FADDP
             {
                 instruction.Mnemonic = "faddp";
-                instruction.Operands = $"st({rm}), st(0)";
+                instruction.Operands = $"st({(int)rm}), st(0)";
             }
-            else if (reg == 1) // FMULP
+            else if (reg == RegisterIndex.B) // FMULP
             {
                 instruction.Mnemonic = "fmulp";
-                instruction.Operands = $"st({rm}), st(0)";
+                instruction.Operands = $"st({(int)rm}), st(0)";
             }
-            else if (reg == 2 && rm == 1) // FCOMP
+            else if (reg == RegisterIndex.C && rm == RegisterIndex.B) // FCOMP
             {
                 instruction.Mnemonic = "fcomp";
                 instruction.Operands = "";
             }
-            else if (reg == 3 && rm == 1) // FCOMPP
+            else if (reg == RegisterIndex.D && rm == RegisterIndex.B) // FCOMPP
             {
                 instruction.Mnemonic = "fcompp";
                 instruction.Operands = "";
             }
-            else if (reg == 4) // FSUBP
+            else if (reg == RegisterIndex.Si) // FSUBP
             {
                 instruction.Mnemonic = "fsubp";
-                instruction.Operands = $"st({rm}), st(0)";
+                instruction.Operands = $"st({(int)rm}), st(0)";
             }
-            else if (reg == 5) // FSUBRP
+            else if (reg == RegisterIndex.Di) // FSUBRP
             {
                 instruction.Mnemonic = "fsubrp";
-                instruction.Operands = $"st({rm}), st(0)";
+                instruction.Operands = $"st({(int)rm}), st(0)";
             }
-            else if (reg == 6) // FDIVP
+            else if (reg == RegisterIndex.Sp) // FDIVP
             {
                 instruction.Mnemonic = "fdivp";
-                instruction.Operands = $"st({rm}), st(0)";
+                instruction.Operands = $"st({(int)rm}), st(0)";
             }
-            else if (reg == 7) // FDIVRP
+            else if (reg == RegisterIndex.Bp) // FDIVRP
             {
                 instruction.Mnemonic = "fdivrp";
-                instruction.Operands = $"st({rm}), st(0)";
+                instruction.Operands = $"st({(int)rm}), st(0)";
             }
             else
             {

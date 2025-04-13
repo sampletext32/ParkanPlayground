@@ -3,7 +3,7 @@ namespace X86Disassembler.X86.Handlers.FloatingPoint;
 /// <summary>
 /// Handler for floating-point load/store int32 and miscellaneous operations (DB opcode)
 /// </summary>
-public class LoadStoreInt32Handler : FloatingPointBaseHandler
+public class LoadStoreInt32Handler : InstructionHandler
 {
     // DB opcode - load/store int32, misc
     private static readonly string[] Mnemonics =
@@ -55,69 +55,60 @@ public class LoadStoreInt32Handler : FloatingPointBaseHandler
         }
 
         // Read the ModR/M byte
-        byte modRM = CodeBuffer[position++];
-        Decoder.SetPosition(position);
-
-        // Extract the fields from the ModR/M byte
-        byte mod = (byte) ((modRM & 0xC0) >> 6);
-        byte reg = (byte) ((modRM & 0x38) >> 3);
-        byte rm = (byte) (modRM & 0x07);
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
         // Set the mnemonic based on the opcode and reg field
-        instruction.Mnemonic = Mnemonics[reg];
+        instruction.Mnemonic = Mnemonics[(int)reg];
 
         // For memory operands, set the operand
         if (mod != 3) // Memory operand
         {
-            string operand = ModRMDecoder.DecodeModRM(mod, rm, false);
-            
-            if (reg == 0 || reg == 2 || reg == 3) // fild, fist, fistp
+            if (reg == RegisterIndex.A || reg == RegisterIndex.C || reg == RegisterIndex.D) // fild, fist, fistp
             {
                 // Keep the dword ptr prefix for integer operations
-                instruction.Operands = operand;
+                instruction.Operands = destOperand;
             }
-            else if (reg == 5 || reg == 7) // fld, fstp (extended precision)
+            else if (reg == RegisterIndex.Di || reg == RegisterIndex.Bp) // fld, fstp (extended precision)
             {
                 // Replace dword ptr with tword ptr for extended precision
-                operand = operand.Replace("dword ptr", "tword ptr");
-                instruction.Operands = operand;
+                instruction.Operands = destOperand.Replace("dword ptr", "tword ptr");
             }
             else
             {
-                instruction.Operands = operand;
+                instruction.Operands = destOperand;
             }
         }
         else // Register operand (ST(i))
         {
             // Special handling for register-register operations
-            if (reg == 0) // FCMOVNB
+            if (reg == RegisterIndex.A) // FCMOVNB
             {
                 instruction.Mnemonic = "fcmovnb";
-                instruction.Operands = $"st(0), st({rm})";
+                instruction.Operands = $"st(0), st({(int)rm})";
             }
-            else if (reg == 1) // FCMOVNE
+            else if (reg == RegisterIndex.B) // FCMOVNE
             {
                 instruction.Mnemonic = "fcmovne";
-                instruction.Operands = $"st(0), st({rm})";
+                instruction.Operands = $"st(0), st({(int)rm})";
             }
-            else if (reg == 2) // FCMOVNBE
+            else if (reg == RegisterIndex.C) // FCMOVNBE
             {
                 instruction.Mnemonic = "fcmovnbe";
-                instruction.Operands = $"st(0), st({rm})";
+                instruction.Operands = $"st(0), st({(int)rm})";
             }
-            else if (reg == 3) // FCMOVNU
+            else if (reg == RegisterIndex.D) // FCMOVNU
             {
                 instruction.Mnemonic = "fcmovnu";
-                instruction.Operands = $"st(0), st({rm})";
+                instruction.Operands = $"st(0), st({(int)rm})";
             }
-            else if (reg == 4)
+            else if (reg == RegisterIndex.Si)
             {
-                if (rm == 2) // FCLEX
+                if (rm == RegisterIndex.C) // FCLEX
                 {
                     instruction.Mnemonic = "fclex";
                     instruction.Operands = "";
                 }
-                else if (rm == 3) // FINIT
+                else if (rm == RegisterIndex.D) // FINIT
                 {
                     instruction.Mnemonic = "finit";
                     instruction.Operands = "";
@@ -128,15 +119,15 @@ public class LoadStoreInt32Handler : FloatingPointBaseHandler
                     instruction.Operands = "";
                 }
             }
-            else if (reg == 5) // FUCOMI
+            else if (reg == RegisterIndex.Di) // FUCOMI
             {
                 instruction.Mnemonic = "fucomi";
-                instruction.Operands = $"st(0), st({rm})";
+                instruction.Operands = $"st(0), st({(int)rm})";
             }
-            else if (reg == 6) // FCOMI
+            else if (reg == RegisterIndex.Sp) // FCOMI
             {
                 instruction.Mnemonic = "fcomi";
-                instruction.Operands = $"st(0), st({rm})";
+                instruction.Operands = $"st(0), st({(int)rm})";
             }
             else
             {

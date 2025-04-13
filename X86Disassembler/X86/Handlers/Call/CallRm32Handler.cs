@@ -42,16 +42,10 @@ public class CallRm32Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        byte modRM = CodeBuffer[position++];
-        Decoder.SetPosition(position);
-
-        // Extract the fields from the ModR/M byte
-        byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3);
-        byte rm = (byte)(modRM & 0x07);
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
         // CALL r/m32 is encoded as FF /2
-        if (reg != 2)
+        if (reg != RegisterIndex.C)
         {
             return false;
         }
@@ -59,17 +53,14 @@ public class CallRm32Handler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "call";
 
-        // For memory operands, set the operand
-        if (mod != 3) // Memory operand
+        // For register operands, set the operand
+        if (mod == 3)
         {
-            string operand = ModRMDecoder.DecodeModRM(mod, rm, false);
-            instruction.Operands = operand;
+            // Register operand
+            destOperand = ModRMDecoder.GetRegisterName(rm, 32);
         }
-        else // Register operand
-        {
-            string rmName = GetRegister32(rm);
-            instruction.Operands = rmName;
-        }
+
+        instruction.Operands = destOperand;
 
         return true;
     }

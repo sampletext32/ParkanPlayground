@@ -56,7 +56,27 @@ public class XorImmWithRm16Handler : InstructionHandler
         }
         
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
+        
+        // For the first operand, handle based on addressing mode
+        string rmOperand;
+        if (mod == 3) // Register addressing mode
+        {
+            // Get 16-bit register name for the operand
+            rmOperand = ModRMDecoder.GetRegisterName(rm, 16);
+        }
+        else // Memory addressing mode
+        {
+            // For memory operands, replace "dword ptr" with "word ptr"
+            if (memOperand.StartsWith("dword ptr "))
+            {
+                rmOperand = memOperand.Replace("dword ptr", "word ptr");
+            }
+            else
+            {
+                rmOperand = memOperand;
+            }
+        }
         
         // Get the updated position after ModR/M decoding
         position = Decoder.GetPosition();
@@ -74,7 +94,7 @@ public class XorImmWithRm16Handler : InstructionHandler
         string immStr = $"0x{imm16:X4}";
         
         // Set the operands
-        instruction.Operands = $"{destOperand}, {immStr}";
+        instruction.Operands = $"{rmOperand}, {immStr}";
         
         return true;
     }

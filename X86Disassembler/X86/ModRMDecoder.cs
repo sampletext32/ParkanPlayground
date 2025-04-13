@@ -15,11 +15,11 @@ public class ModRMDecoder
     private const byte SIB_INDEX_MASK = 0x38; // 00111000b
     private const byte SIB_BASE_MASK = 0x07;  // 00000111b
     
-    // Register names
+    // Register names for different sizes
     private static readonly string[] RegisterNames8 = { "al", "cl", "dl", "bl", "ah", "ch", "dh", "bh" };
     private static readonly string[] RegisterNames16 = { "ax", "cx", "dx", "bx", "sp", "bp", "si", "di" };
     private static readonly string[] RegisterNames32 = { "eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi" };
-    
+
     // Buffer containing the code to decode
     private readonly byte[] _codeBuffer;
     
@@ -46,10 +46,10 @@ public class ModRMDecoder
     /// Decodes a ModR/M byte to get the operand string
     /// </summary>
     /// <param name="mod">The mod field (2 bits)</param>
-    /// <param name="rm">The r/m field (3 bits)</param>
+    /// <param name="rmIndex">The r/m field as RegisterIndex</param>
     /// <param name="is64Bit">True if the operand is 64-bit</param>
     /// <returns>The operand string</returns>
-    public string DecodeModRM(byte mod, byte rm, bool is64Bit)
+    public string DecodeModRM(byte mod, RegisterIndex rmIndex, bool is64Bit)
     {
         string sizePrefix = is64Bit ? "qword" : "dword";
         int position = _decoder.GetPosition();
@@ -57,7 +57,8 @@ public class ModRMDecoder
         switch (mod)
         {
             case 0: // [reg] or disp32
-                if (rm == 5) // disp32
+                // Special case: [EBP] is encoded as disp32 with no base register
+                if (rmIndex == RegisterIndex.Di) // disp32 (was EBP/BP)
                 {
                     if (position + 4 <= _length)
                     {
@@ -67,7 +68,8 @@ public class ModRMDecoder
                     }
                     return $"{sizePrefix} ptr [???]";
                 }
-                else if (rm == 4) // SIB
+                // Special case: [ESP] is encoded with SIB byte
+                else if (rmIndex == RegisterIndex.Si) // SIB (was ESP/SP)
                 {
                     // Handle SIB byte
                     if (position < _length)
@@ -80,11 +82,12 @@ public class ModRMDecoder
                 }
                 else
                 {
-                    return $"{sizePrefix} ptr [{RegisterNames32[rm]}]";
+                    // Regular case: [reg]
+                    return $"{sizePrefix} ptr [{GetRegisterName(rmIndex, 32)}]";
                 }
                 
             case 1: // [reg + disp8]
-                if (rm == 4) // SIB + disp8
+                if (rmIndex == RegisterIndex.Si) // SIB + disp8 (was ESP/SP)
                 {
                     // Handle SIB byte
                     if (position + 1 < _length)
@@ -102,14 +105,21 @@ public class ModRMDecoder
                     {
                         sbyte disp8 = (sbyte)_codeBuffer[position];
                         _decoder.SetPosition(position + 1);
+                        
+                        // Only show displacement if it's not zero
+                        if (disp8 == 0)
+                        {
+                            return $"{sizePrefix} ptr [{GetRegisterName(rmIndex, 32)}]";
+                        }
+                        
                         string dispStr8 = disp8 < 0 ? $"-0x{-disp8:X2}" : $"+0x{disp8:X2}";
-                        return $"{sizePrefix} ptr [{RegisterNames32[rm]}{dispStr8}]";
+                        return $"{sizePrefix} ptr [{GetRegisterName(rmIndex, 32)}{dispStr8}]";
                     }
-                    return $"{sizePrefix} ptr [{RegisterNames32[rm]}+???]";
+                    return $"{sizePrefix} ptr [{GetRegisterName(rmIndex, 32)}+???]";
                 }
                 
             case 2: // [reg + disp32]
-                if (rm == 4) // SIB + disp32
+                if (rmIndex == RegisterIndex.Si) // SIB + disp32 (was ESP/SP)
                 {
                     // Handle SIB byte
                     if (position + 4 < _length)
@@ -127,14 +137,21 @@ public class ModRMDecoder
                     {
                         int disp32 = BitConverter.ToInt32(_codeBuffer, position);
                         _decoder.SetPosition(position + 4);
+                        
+                        // Only show displacement if it's not zero
+                        if (disp32 == 0)
+                        {
+                            return $"{sizePrefix} ptr [{GetRegisterName(rmIndex, 32)}]";
+                        }
+                        
                         string dispStr32 = disp32 < 0 ? $"-0x{-disp32:X8}" : $"+0x{disp32:X8}";
-                        return $"{sizePrefix} ptr [{RegisterNames32[rm]}{dispStr32}]";
+                        return $"{sizePrefix} ptr [{GetRegisterName(rmIndex, 32)}{dispStr32}]";
                     }
-                    return $"{sizePrefix} ptr [{RegisterNames32[rm]}+???]";
+                    return $"{sizePrefix} ptr [{GetRegisterName(rmIndex, 32)}+???]";
                 }
                 
-            case 3: // reg
-                return is64Bit ? "mm" + rm : RegisterNames32[rm];
+            case 3: // reg (direct register access)
+                return is64Bit ? $"mm{(int)rmIndex}" : GetRegisterName(rmIndex, 32);
                 
             default:
                 return "???";
@@ -146,21 +163,22 @@ public class ModRMDecoder
     /// </summary>
     /// <param name="is64Bit">True if the operand is 64-bit</param>
     /// <returns>A tuple containing the mod, reg, rm fields and the decoded operand string</returns>
-    public (byte mod, byte reg, byte rm, string operand) ReadModRM(bool is64Bit = false)
+    public (byte mod, RegisterIndex reg, RegisterIndex rm, string operand) ReadModRM(bool is64Bit = false)
     {
         int position = _decoder.GetPosition();
         
         if (position >= _length)
         {
-            return (0, 0, 0, "???");
+            return (0, RegisterIndex.A, RegisterIndex.A, "???");
         }
         
         byte modRM = _codeBuffer[position];
         _decoder.SetPosition(position + 1);
         
+        // Extract fields from ModR/M byte
         byte mod = (byte)((modRM & MOD_MASK) >> 6);
-        byte reg = (byte)((modRM & REG_MASK) >> 3);
-        byte rm = (byte)(modRM & RM_MASK);
+        RegisterIndex reg = (RegisterIndex)((modRM & REG_MASK) >> 3);
+        RegisterIndex rm = (RegisterIndex)(modRM & RM_MASK);
         
         string operand = DecodeModRM(mod, rm, is64Bit);
         
@@ -179,14 +197,16 @@ public class ModRMDecoder
         string sizePrefix = is64Bit ? "qword" : "dword";
         int position = _decoder.GetPosition();
         
+        // Extract fields from SIB byte
         byte scale = (byte)((sib & SIB_SCALE_MASK) >> 6);
-        byte index = (byte)((sib & SIB_INDEX_MASK) >> 3);
-        byte @base = (byte)(sib & SIB_BASE_MASK);
+        RegisterIndex index = (RegisterIndex)((sib & SIB_INDEX_MASK) >> 3);
+        RegisterIndex @base = (RegisterIndex)(sib & SIB_BASE_MASK);
         
-        // Special case: no index register
-        if (index == 4)
+        // Special case: ESP/SP (4) in index field means no index register
+        if (index == RegisterIndex.Si)
         {
-            if (@base == 5 && displacement == 0) // Special case: disp32 only
+            // Special case: EBP/BP (5) in base field with no displacement means disp32 only
+            if (@base == RegisterIndex.Di && displacement == 0)
             {
                 if (position + 4 <= _length)
                 {
@@ -198,45 +218,56 @@ public class ModRMDecoder
             }
             else
             {
-                string baseDispStr = "";
-                if (displacement != 0)
+                // Base register only
+                // Only show displacement if it's not zero
+                if (displacement == 0)
                 {
-                    baseDispStr = displacement < 0 ? 
-                        $"-0x{-displacement:X}" : 
-                        $"+0x{displacement:X}";
+                    return $"{sizePrefix} ptr [{GetRegisterName(@base, 32)}]";
                 }
-                return $"{sizePrefix} ptr [{RegisterNames32[@base]}{baseDispStr}]";
+                
+                string baseDispStr = displacement < 0 ? 
+                    $"-0x{-displacement:X}" : 
+                    $"+0x{displacement:X}";
+                return $"{sizePrefix} ptr [{GetRegisterName(@base, 32)}{baseDispStr}]";
             }
         }
         
-        // Normal case with index register
+        // Normal case with base and index registers
         int scaleFactor = 1 << scale; // 1, 2, 4, or 8
+        
+        // Only include the scale factor if it's not 1
         string scaleStr = scaleFactor > 1 ? $"*{scaleFactor}" : "";
         
-        string indexDispStr = "";
-        if (displacement != 0)
+        // Only show displacement if it's not zero
+        if (displacement == 0)
         {
-            indexDispStr = displacement < 0 ? 
-                $"-0x{-displacement:X}" : 
-                $"+0x{displacement:X}";
+            return $"{sizePrefix} ptr [{GetRegisterName(@base, 32)}+{GetRegisterName(index, 32)}{scaleStr}]";
         }
         
-        return $"{sizePrefix} ptr [{RegisterNames32[@base]}+{RegisterNames32[index]}{scaleStr}{indexDispStr}]";
+        string indexDispStr = displacement < 0 ? 
+            $"-0x{-displacement:X}" : 
+            $"+0x{displacement:X}";
+        
+        return $"{sizePrefix} ptr [{GetRegisterName(@base, 32)}+{GetRegisterName(index, 32)}{scaleStr}{indexDispStr}]";
     }
-    
+
     /// <summary>
     /// Gets the register name based on the register index and size
     /// </summary>
-    /// <param name="index">The register index</param>
+    /// <param name="regIndex">The register index as RegisterIndex enum</param>
     /// <param name="size">The register size (8, 16, or 32 bits)</param>
     /// <returns>The register name</returns>
-    public static string GetRegisterName(int index, int size)
+    public static string GetRegisterName(RegisterIndex regIndex, int size)
     {
+        // Convert RegisterIndex to raw index for array access
+        int index = (int)regIndex;
+        
         return size switch
         {
             8 => RegisterNames8[index],
             16 => RegisterNames16[index],
-            _ => RegisterNames32[index]
+            32 => RegisterNames32[index],
+            _ => RegisterNames32[index] // Default to 32-bit registers
         };
     }
 }

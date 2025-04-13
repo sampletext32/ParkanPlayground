@@ -54,15 +54,10 @@ public class NotRm32Handler : InstructionHandler
         }
         
         // Read the ModR/M byte
-        byte modRM = CodeBuffer[position++];
-        
-        // Extract the fields from the ModR/M byte
-        byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 2 for NOT
-        byte rm = (byte)(modRM & 0x07);
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
         
         // Verify this is a NOT instruction
-        if (reg != 2)
+        if (reg != RegisterIndex.C)
         {
             return false;
         }
@@ -73,19 +68,13 @@ public class NotRm32Handler : InstructionHandler
         Decoder.SetPosition(position);
         
         // For direct register addressing (mod == 3), the r/m field specifies a register
-        string operand;
         if (mod == 3)
         {
-            operand = GetRegister32(rm);
-        }
-        else
-        {
-            // Use the ModR/M decoder for memory addressing
-            operand = ModRMDecoder.DecodeModRM(mod, rm, false);
+            destOperand = ModRMDecoder.GetRegisterName(rm, 32);
         }
         
         // Set the operands
-        instruction.Operands = operand;
+        instruction.Operands = destOperand;
         
         return true;
     }

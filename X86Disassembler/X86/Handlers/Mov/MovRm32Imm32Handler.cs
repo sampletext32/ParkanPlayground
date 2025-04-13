@@ -48,7 +48,7 @@ public class MovRm32Imm32Handler : InstructionHandler
         }
 
         // Use ModRMDecoder to decode the ModR/M byte
-        var (mod, reg, rm, rmOperand) = ModRMDecoder.ReadModRM(false);
+        var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM(false);
         
         // MOV r/m32, imm32 only uses reg=0
         if (reg != 0)
@@ -88,15 +88,10 @@ public class MovRm32Imm32Handler : InstructionHandler
         }
         
         // Read the immediate dword
-        byte b0 = CodeBuffer[newPosition];
-        byte b1 = CodeBuffer[newPosition + 1];
-        byte b2 = CodeBuffer[newPosition + 2];
-        byte b3 = CodeBuffer[newPosition + 3];
-        uint imm32 = (uint)(b0 | (b1 << 8) | (b2 << 16) | (b3 << 24));
-        Decoder.SetPosition(newPosition + 4);
+        uint imm32 = Decoder.ReadUInt32();
 
         // Set the operands
-        instruction.Operands = $"{rmOperand}, 0x{imm32:X8}";
+        instruction.Operands = $"{operand}, 0x{imm32:X8}";
         
         // Set the raw bytes
         byte[] rawBytes = new byte[Decoder.GetPosition() - startPosition + 1]; // +1 for opcode

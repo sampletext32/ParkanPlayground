@@ -11,11 +11,11 @@ public class MovRegMemHandler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public MovRegMemHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public MovRegMemHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -25,7 +25,7 @@ public class MovRegMemHandler : InstructionHandler
     {
         return opcode == 0x8A || opcode == 0x8B;
     }
-    
+
     /// <summary>
     /// Decodes a MOV r32, r/m32 or MOV r8, r/m8 instruction
     /// </summary>
@@ -36,42 +36,36 @@ public class MovRegMemHandler : InstructionHandler
     {
         // Save the original position for raw bytes calculation
         int startPosition = Decoder.GetPosition();
-        
+
         // Set the mnemonic
         instruction.Mnemonic = "mov";
-        
+
         if (startPosition >= Length)
         {
             instruction.Operands = "??";
-            instruction.RawBytes = new byte[] { opcode };
+            instruction.RawBytes = new byte[] {opcode};
             return true;
         }
-        
+
         // Determine operand size (0 = 8-bit, 1 = 32-bit)
         bool operandSize32 = (opcode & 0x01) != 0;
-        int operandSize = operandSize32 ? 32 : 8;
-        
+        int operandSize = operandSize32
+            ? 32
+            : 8;
+
         // Use ModRMDecoder to decode the ModR/M byte
-        var (mod, reg, rm, rmOperand) = ModRMDecoder.ReadModRM(false); // false for 32-bit operand
-        
+        var (mod, reg, rm, rmOperand) = ModRMDecoder.ReadModRM(); // false for 32-bit operand
+
         // Get register name based on size
-        string regName;
-        if (operandSize == 8)
-        {
-            regName = GetRegister8(reg);
-        }
-        else
-        {
-            regName = GetRegister32(reg);
-        }
-        
+        string regName = ModRMDecoder.GetRegisterName(reg, operandSize);
+
         // Get the position after decoding the ModR/M byte
         int newPosition = Decoder.GetPosition();
-        
+
         // Set the operands - register is the destination, r/m is the source (for 0x8B)
         // This matches the correct x86 instruction format: MOV r32, r/m32
         instruction.Operands = $"{regName}, {rmOperand}";
-        
+
         // Set the raw bytes
         int totalBytes = newPosition - startPosition + 1; // +1 for opcode
         byte[] rawBytes = new byte[totalBytes];
@@ -83,8 +77,9 @@ public class MovRegMemHandler : InstructionHandler
                 rawBytes[i + 1] = CodeBuffer[startPosition + i];
             }
         }
+
         instruction.RawBytes = rawBytes;
-        
+
         return true;
     }
 }

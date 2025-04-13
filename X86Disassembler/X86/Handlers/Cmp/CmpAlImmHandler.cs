@@ -11,11 +11,11 @@ public class CmpAlImmHandler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public CmpAlImmHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public CmpAlImmHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -25,7 +25,7 @@ public class CmpAlImmHandler : InstructionHandler
     {
         return opcode == 0x3C;
     }
-    
+
     /// <summary>
     /// Decodes a CMP AL, imm8 instruction
     /// </summary>
@@ -36,21 +36,21 @@ public class CmpAlImmHandler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "cmp";
-        
+
         int position = Decoder.GetPosition();
-        
+
         if (position >= Length)
         {
             return false;
         }
-        
+
         // Read the immediate value
-        byte imm8 = CodeBuffer[position++];
+        byte imm8 = Decoder.ReadByte();
         Decoder.SetPosition(position);
-        
+
         // Set the operands
         instruction.Operands = $"al, 0x{imm8:X2}";
-        
+
         return true;
     }
 }

@@ -11,11 +11,11 @@ public class CmpImmWithRm32SignExtendedHandler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public CmpImmWithRm32SignExtendedHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public CmpImmWithRm32SignExtendedHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -25,18 +25,18 @@ public class CmpImmWithRm32SignExtendedHandler : InstructionHandler
     {
         if (opcode != 0x83)
             return false;
-            
+
         // Check if the reg field of the ModR/M byte is 7 (CMP)
         int position = Decoder.GetPosition();
         if (position >= Length)
             return false;
-            
+
         byte modRM = CodeBuffer[position];
-        byte reg = (byte)((modRM & 0x38) >> 3);
-        
+        byte reg = (byte) ((modRM & 0x38) >> 3);
+
         return reg == 7; // 7 = CMP
     }
-    
+
     /// <summary>
     /// Decodes a CMP r/m32, imm8 (sign-extended) instruction
     /// </summary>
@@ -47,39 +47,30 @@ public class CmpImmWithRm32SignExtendedHandler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "cmp";
-        
+
         int position = Decoder.GetPosition();
-        
+
         if (position >= Length)
         {
             return false;
         }
-        
+
         // Read the ModR/M byte
-        byte modRM = CodeBuffer[position++];
-        Decoder.SetPosition(position);
-        
-        // Extract the fields from the ModR/M byte
-        byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 7 for CMP
-        byte rm = (byte)(modRM & 0x07);
-        
-        // Decode the destination operand
-        string destOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
-        
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+
         // Read the immediate value
         if (position >= Length)
         {
             return false;
         }
-        
+
         // Read the immediate value as a signed byte and sign-extend it
-        sbyte imm8 = (sbyte)CodeBuffer[position++];
+        sbyte imm8 = (sbyte) Decoder.ReadByte();
         Decoder.SetPosition(position);
-        
+
         // Set the operands
-        instruction.Operands = $"{destOperand}, 0x{(uint)imm8:X2}";
-        
+        instruction.Operands = $"{destOperand}, 0x{(uint) imm8:X2}";
+
         return true;
     }
 }

@@ -11,11 +11,11 @@ public class AddImmToRm8Handler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public AddImmToRm8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public AddImmToRm8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -25,18 +25,18 @@ public class AddImmToRm8Handler : InstructionHandler
     {
         if (opcode != 0x80)
             return false;
-            
+
         // Check if the reg field of the ModR/M byte is 0 (ADD)
         int position = Decoder.GetPosition();
         if (position >= Length)
             return false;
-            
+
         byte modRM = CodeBuffer[position];
-        byte reg = (byte)((modRM & 0x38) >> 3);
-        
+        byte reg = (byte) ((modRM & 0x38) >> 3);
+
         return reg == 0; // 0 = ADD
     }
-    
+
     /// <summary>
     /// Decodes an ADD r/m8, imm8 instruction
     /// </summary>
@@ -47,49 +47,35 @@ public class AddImmToRm8Handler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "add";
-        
+
         int position = Decoder.GetPosition();
-        
+
         if (position >= Length)
         {
             return false;
         }
-        
+
         // Read the ModR/M byte
-        byte modRM = CodeBuffer[position++];
-        
-        // Extract the fields from the ModR/M byte
-        byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 0 for ADD
-        byte rm = (byte)(modRM & 0x07);
-        
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+
         // For direct register addressing (mod == 3), use 8-bit register names
-        string destOperand;
         if (mod == 3)
         {
             // Use 8-bit register names for direct register addressing
-            destOperand = GetRegister8(rm);
+            destOperand = ModRMDecoder.GetRegisterName(rm, 8);
         }
-        else
-        {
-            // Use ModR/M decoder for memory addressing
-            destOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
-        }
-        
-        Decoder.SetPosition(position);
-        
+
         // Read the immediate value
         if (position >= Length)
         {
             return false;
         }
-        
-        byte imm8 = CodeBuffer[position++];
-        Decoder.SetPosition(position);
-        
+
+        byte imm8 = Decoder.ReadByte();
+
         // Set the operands
         instruction.Operands = $"{destOperand}, 0x{imm8:X2}";
-        
+
         return true;
     }
 }

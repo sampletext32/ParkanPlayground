@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace X86Disassembler.X86;
 
 using Handlers;
@@ -105,6 +107,8 @@ public class InstructionDecoder
         
         // Get a handler for the opcode
         var handler = _handlerFactory.GetHandler(opcode);
+        
+        Debug.WriteLine($"Resolved handler {handler?.GetType().Name}");
         
         bool handlerSuccess = false;
         

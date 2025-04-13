@@ -24,7 +24,7 @@ public class CmpInstructionSequenceTests
         // Assert
         Assert.Single(instructions);
         Assert.Equal("cmp", instructions[0].Mnemonic);
-        Assert.Equal("byte ptr [ebp+0x00], 0x03", instructions[0].Operands);
+        Assert.Equal("byte ptr [ebp], 0x03", instructions[0].Operands);
     }
     
     /// <summary>
@@ -47,7 +47,7 @@ public class CmpInstructionSequenceTests
         
         // First instruction: CMP BYTE PTR [EBP], 0x03
         Assert.Equal("cmp", instructions[0].Mnemonic);
-        Assert.Equal("byte ptr [ebp+0x00], 0x03", instructions[0].Operands);
+        Assert.Equal("byte ptr [ebp], 0x03", instructions[0].Operands);
         
         // Second instruction: JGE +5
         Assert.Equal("jge", instructions[1].Mnemonic);
@@ -81,7 +81,7 @@ public class CmpInstructionSequenceTests
         
         // First instruction: CMP BYTE PTR [EBP], 0x03
         Assert.Equal("cmp", instructions[0].Mnemonic);
-        Assert.Equal("byte ptr [ebp+0x00], 0x03", instructions[0].Operands);
+        Assert.Equal("byte ptr [ebp], 0x03", instructions[0].Operands);
         
         // Second instruction: JGE +5
         Assert.Equal("jge", instructions[1].Mnemonic);

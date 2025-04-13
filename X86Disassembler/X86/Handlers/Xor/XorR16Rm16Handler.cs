@@ -48,11 +48,31 @@ public class XorR16Rm16Handler : InstructionHandler
         // Read the ModR/M byte
         var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
 
-        // Get register name
+        // Get register name for the first operand (16-bit)
         string regName = ModRMDecoder.GetRegisterName(reg, 16);
+        
+        // For the second operand, handle based on addressing mode
+        string rmOperand;
+        if (mod == 3) // Register addressing mode
+        {
+            // Get 16-bit register name for the second operand
+            rmOperand = ModRMDecoder.GetRegisterName(rm, 16);
+        }
+        else // Memory addressing mode
+        {
+            // For memory operands, replace "dword ptr" with "word ptr"
+            if (memOperand.StartsWith("dword ptr "))
+            {
+                rmOperand = memOperand.Replace("dword ptr", "word ptr");
+            }
+            else
+            {
+                rmOperand = memOperand;
+            }
+        }
 
         // Set the operands
-        instruction.Operands = $"{regName}, {memOperand}";
+        instruction.Operands = $"{regName}, {rmOperand}";
 
         return true;
     }

@@ -3,7 +3,7 @@ namespace X86Disassembler.X86.Handlers.FloatingPoint;
 /// <summary>
 /// Handler for floating-point load/store float64 operations (DD opcode)
 /// </summary>
-public class LoadStoreFloat64Handler : FloatingPointBaseHandler
+public class LoadStoreFloat64Handler : InstructionHandler
 {
     // DD opcode - load/store float64
     private static readonly string[] Mnemonics =
@@ -55,59 +55,51 @@ public class LoadStoreFloat64Handler : FloatingPointBaseHandler
         }
 
         // Read the ModR/M byte
-        byte modRM = CodeBuffer[position++];
-        Decoder.SetPosition(position);
-
-        // Extract the fields from the ModR/M byte
-        byte mod = (byte) ((modRM & 0xC0) >> 6);
-        byte reg = (byte) ((modRM & 0x38) >> 3);
-        byte rm = (byte) (modRM & 0x07);
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM(true);// true for 64-bit operand
 
         // Set the mnemonic based on the opcode and reg field
-        instruction.Mnemonic = Mnemonics[reg];
+        instruction.Mnemonic = Mnemonics[(int)reg];
 
         // For memory operands, set the operand
         if (mod != 3) // Memory operand
         {
-            string operand = ModRMDecoder.DecodeModRM(mod, rm, true); // true for 64-bit operand
-            
-            if (reg == 0 || reg == 2 || reg == 3) // fld, fst, fstp
+            if (reg == RegisterIndex.A || reg == RegisterIndex.C || reg == RegisterIndex.D) // fld, fst, fstp
             {
-                instruction.Operands = operand;
+                instruction.Operands = destOperand;
             }
             else // frstor, fnsave, fnstsw
             {
                 // Remove the qword ptr prefix for these operations
-                instruction.Operands = operand.Replace("qword ptr ", "");
+                instruction.Operands = destOperand.Replace("qword ptr ", "");
             }
         }
         else // Register operand (ST(i))
         {
             // Special handling for register-register operations
-            if (reg == 0) // FFREE
+            if (reg == RegisterIndex.A) // FFREE
             {
                 instruction.Mnemonic = "ffree";
-                instruction.Operands = $"st({rm})";
+                instruction.Operands = $"st({(int)rm})";
             }
-            else if (reg == 2) // FST
+            else if (reg == RegisterIndex.C) // FST
             {
                 instruction.Mnemonic = "fst";
-                instruction.Operands = $"st({rm})";
+                instruction.Operands = $"st({(int)rm})";
             }
-            else if (reg == 3) // FSTP
+            else if (reg == RegisterIndex.D) // FSTP
             {
                 instruction.Mnemonic = "fstp";
-                instruction.Operands = $"st({rm})";
+                instruction.Operands = $"st({(int)rm})";
             }
-            else if (reg == 4) // FUCOM
+            else if (reg == RegisterIndex.Si) // FUCOM
             {
                 instruction.Mnemonic = "fucom";
-                instruction.Operands = $"st({rm})";
+                instruction.Operands = $"st({(int)rm})";
             }
-            else if (reg == 5) // FUCOMP
+            else if (reg == RegisterIndex.Di) // FUCOMP
             {
                 instruction.Mnemonic = "fucomp";
-                instruction.Operands = $"st({rm})";
+                instruction.Operands = $"st({(int)rm})";
             }
             else
             {

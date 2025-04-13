@@ -45,26 +45,4 @@ public abstract class InstructionHandler : IInstructionHandler
     /// <param name="instruction">The instruction object to populate</param>
     /// <returns>True if the instruction was successfully decoded</returns>
     public abstract bool Decode(byte opcode, Instruction instruction);
-
-    /// <summary>
-    /// Gets the 32-bit register name for the given register index
-    /// </summary>
-    /// <param name="reg">The register index</param>
-    /// <returns>The register name</returns>
-    protected static string GetRegister32(byte reg)
-    {
-        string[] registerNames = { "eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi" };
-        return registerNames[reg & 0x07];
-    }
-    
-    /// <summary>
-    /// Gets the 8-bit register name for the given register index
-    /// </summary>
-    /// <param name="reg">The register index</param>
-    /// <returns>The register name</returns>
-    protected static string GetRegister8(byte reg)
-    {
-        string[] registerNames = { "al", "cl", "dl", "bl", "ah", "ch", "dh", "bh" };
-        return registerNames[reg & 0x07];
-    }
 }

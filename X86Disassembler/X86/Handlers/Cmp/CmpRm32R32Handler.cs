@@ -37,117 +37,33 @@ public class CmpRm32R32Handler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "cmp";
         
-        int position = Decoder.GetPosition();
+        // Save the original position to properly handle the ModR/M byte
+        int originalPosition = Decoder.GetPosition();
         
-        if (position >= Length)
+        if (originalPosition >= Length)
         {
             return false;
         }
         
         // Read the ModR/M byte
-        byte modRM = CodeBuffer[position++];
-        
-        // Extract the fields from the ModR/M byte
-        byte mod = (byte)((modRM & 0xC0) >> 6); // Top 2 bits
-        byte reg = (byte)((modRM & 0x38) >> 3); // Middle 3 bits
-        byte rm = (byte)(modRM & 0x07);         // Bottom 3 bits
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
         
         // Get the register name for the reg field
-        string regName = GetRegister32(reg);
+        string regName = ModRMDecoder.GetRegisterName(reg, 32);
         
-        // Handle the different addressing modes
-        string rmOperand;
+        // Use the destOperand directly from ModRMDecoder
+        string rmOperand = destOperand;
         
-        if (mod == 3) // Direct register addressing
+        // If it's a direct register operand, we need to remove the size prefix
+        if (mod == 3)
         {
-            // Get the register name for the r/m field
-            rmOperand = GetRegister32(rm);
+            rmOperand = ModRMDecoder.GetRegisterName(rm, 32);
         }
-        else // Memory addressing
+        else if (rmOperand.StartsWith("dword ptr "))
         {
-            // Handle SIB byte if needed
-            if (mod != 3 && rm == 4) // SIB byte present
-            {
-                if (position >= Length)
-                {
-                    return false;
-                }
-                
-                byte sib = CodeBuffer[position++];
-                
-                // Extract the fields from the SIB byte
-                byte scale = (byte)((sib & 0xC0) >> 6);
-                byte index = (byte)((sib & 0x38) >> 3);
-                byte base_ = (byte)(sib & 0x07);
-                
-                // TODO: Handle SIB byte properly
-                rmOperand = $"[complex addressing]";
-            }
-            else if (mod == 0 && rm == 5) // Displacement only addressing
-            {
-                if (position + 3 >= Length)
-                {
-                    return false;
-                }
-                
-                // Read the 32-bit displacement
-                uint disp = (uint)(CodeBuffer[position] | 
-                                  (CodeBuffer[position + 1] << 8) | 
-                                  (CodeBuffer[position + 2] << 16) | 
-                                  (CodeBuffer[position + 3] << 24));
-                position += 4;
-                
-                rmOperand = $"[0x{disp:X8}]";
-            }
-            else // Simple addressing modes
-            {
-                string baseReg = GetRegister32(rm);
-                
-                if (mod == 0) // No displacement
-                {
-                    rmOperand = $"[{baseReg}]";
-                }
-                else // Displacement
-                {
-                    uint disp;
-                    
-                    if (mod == 1) // 8-bit displacement
-                    {
-                        if (position >= Length)
-                        {
-                            return false;
-                        }
-                        
-                        // Sign-extend the 8-bit displacement
-                        sbyte dispByte = (sbyte)CodeBuffer[position++];
-                        disp = (uint)(int)dispByte;
-                        
-                        // Format the displacement
-                        string dispStr = dispByte < 0 ? $"-0x{-dispByte:X2}" : $"0x{dispByte:X2}";
-                        rmOperand = $"[{baseReg}+{dispStr}]";
-                    }
-                    else // 32-bit displacement
-                    {
-                        if (position + 3 >= Length)
-                        {
-                            return false;
-                        }
-                        
-                        // Read the 32-bit displacement
-                        disp = (uint)(CodeBuffer[position] | 
-                                      (CodeBuffer[position + 1] << 8) | 
-                                      (CodeBuffer[position + 2] << 16) | 
-                                      (CodeBuffer[position + 3] << 24));
-                        position += 4;
-                        
-                        rmOperand = $"[{baseReg}+0x{disp:X8}]";
-                    }
-                }
-            }
+            // Remove the "dword ptr " prefix as we'll handle the operands differently
+            rmOperand = rmOperand.Substring(10);
         }
-        
-        // Update the decoder position
-        Decoder.SetPosition(position);
         
         // Set the operands
         instruction.Operands = $"{rmOperand}, {regName}";

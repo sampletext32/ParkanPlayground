@@ -42,7 +42,7 @@ public class SubRm32R32Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        
+
         // Extract the fields from the ModR/M byte
         var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
 
@@ -50,7 +50,7 @@ public class SubRm32R32Handler : InstructionHandler
         instruction.Mnemonic = "sub";
 
         // Get the register name
-        string regName = GetRegister32(reg);
+        string regName = ModRMDecoder.GetRegisterName(reg, 32);
 
         // For memory operands, set the operand
         if (mod != 3) // Memory operand
@@ -59,7 +59,7 @@ public class SubRm32R32Handler : InstructionHandler
         }
         else // Register operand
         {
-            string rmName = GetRegister32(rm);
+            string rmName = ModRMDecoder.GetRegisterName(rm, 32);
             instruction.Operands = $"{rmName}, {regName}";
         }
 

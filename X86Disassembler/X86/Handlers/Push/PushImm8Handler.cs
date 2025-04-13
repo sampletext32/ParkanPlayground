@@ -11,11 +11,11 @@ public class PushImm8Handler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public PushImm8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public PushImm8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -25,7 +25,7 @@ public class PushImm8Handler : InstructionHandler
     {
         return opcode == 0x6A;
     }
-    
+
     /// <summary>
     /// Decodes a PUSH imm8 instruction
     /// </summary>
@@ -36,17 +36,13 @@ public class PushImm8Handler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "push";
-        
+
         // Read the immediate value
         byte imm8 = Decoder.ReadByte();
-        if (Decoder.GetPosition() > Length)
-        {
-            return false;
-        }
-        
+
         // Set the operands
         instruction.Operands = $"0x{imm8:X2}";
-        
+
         return true;
     }
 }

@@ -38,7 +38,7 @@ public class PopRegHandler : InstructionHandler
         instruction.Mnemonic = "pop";
         
         // Register is encoded in the low 3 bits of the opcode
-        int reg = opcode & 0x07;
+        RegisterIndex reg = (RegisterIndex)(opcode & 0x07);
         string regName = ModRMDecoder.GetRegisterName(reg, 32);
         
         // Set the operands

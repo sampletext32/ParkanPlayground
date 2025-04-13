@@ -77,10 +77,6 @@ public class SubImmFromRm32Handler : InstructionHandler
         // Format the immediate value
         string immStr = $"0x{imm:X8}";
 
-        // Advance the position past the immediate value
-        position += 4;
-        Decoder.SetPosition(position);
-
         // Set the operands
         instruction.Operands = $"{destOperand}, {immStr}";
 

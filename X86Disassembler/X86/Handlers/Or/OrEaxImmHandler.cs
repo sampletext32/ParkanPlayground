@@ -42,12 +42,8 @@ public class OrEaxImmHandler : InstructionHandler
         }
 
         // Read the immediate dword (little-endian)
-        byte b0 = CodeBuffer[position++];
-        byte b1 = CodeBuffer[position++];
-        byte b2 = CodeBuffer[position++];
-        byte b3 = CodeBuffer[position++];
-        uint imm32 = (uint)(b0 | (b1 << 8) | (b2 << 16) | (b3 << 24));
-        Decoder.SetPosition(position);
+
+        uint imm32 = Decoder.ReadUInt32();
 
         // Set the mnemonic
         instruction.Mnemonic = "or";

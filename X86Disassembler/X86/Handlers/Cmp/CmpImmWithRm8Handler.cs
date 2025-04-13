@@ -25,15 +25,15 @@ public class CmpImmWithRm8Handler : InstructionHandler
     {
         if (opcode != 0x80)
             return false;
-            
+
         // Check if the reg field of the ModR/M byte is 7 (CMP)
         int position = Decoder.GetPosition();
         if (position >= Length)
             return false;
-            
+
         byte modRM = CodeBuffer[position];
-        byte reg = (byte)((modRM & 0x38) >> 3);
-        
+        byte reg = (byte) ((modRM & 0x38) >> 3);
+
         return reg == 7; // 7 = CMP
     }
 
@@ -47,39 +47,30 @@ public class CmpImmWithRm8Handler : InstructionHandler
     {
         // Save the original position for raw bytes calculation
         int startPosition = Decoder.GetPosition();
-        
+
         // Set the mnemonic
         instruction.Mnemonic = "cmp";
-        
+
         if (startPosition >= Length)
         {
             instruction.Operands = "??";
-            instruction.RawBytes = new byte[] { opcode };
+            instruction.RawBytes = new byte[] {opcode};
             return true;
         }
 
         // Read the ModR/M byte
-        byte modRM = CodeBuffer[startPosition];
-        
-        // Extract the fields from the ModR/M byte
-        byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3);
-        byte rm = (byte)(modRM & 0x07);
-        
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+
         // CMP r/m8, imm8 is encoded as 80 /7
-        if (reg != 7)
+        if (reg != RegisterIndex.Bp)
         {
             instruction.Operands = "??";
-            instruction.RawBytes = new byte[] { opcode, modRM };
             return true;
         }
-        
-        // Use ModRMDecoder to decode the ModR/M byte
-        var (_, _, _, rmOperand) = ModRMDecoder.ReadModRM(false);
-        
+
         // Get the position after decoding the ModR/M byte
         int newPosition = Decoder.GetPosition();
-        
+
         // Check if we have enough bytes for the immediate value
         if (newPosition >= Length)
         {
@@ -93,36 +84,36 @@ public class CmpImmWithRm8Handler : InstructionHandler
                     rawBytesImm[i + 1] = CodeBuffer[startPosition + i];
                 }
             }
+
             instruction.RawBytes = rawBytesImm;
             return true;
         }
-        
+
         // Read the immediate byte
-        byte imm8 = CodeBuffer[newPosition];
-        Decoder.SetPosition(newPosition + 1);
-        
+        byte imm8 = Decoder.ReadByte();
+
         // Replace the size prefix with "byte ptr"
         string operand;
-        if (rmOperand.StartsWith("qword ptr "))
+        if (destOperand.StartsWith("qword ptr "))
         {
-            operand = rmOperand.Replace("qword ptr ", "byte ptr ");
+            operand = destOperand.Replace("qword ptr ", "byte ptr ");
         }
-        else if (rmOperand.StartsWith("dword ptr "))
+        else if (destOperand.StartsWith("dword ptr "))
         {
-            operand = rmOperand.Replace("dword ptr ", "byte ptr ");
+            operand = destOperand.Replace("dword ptr ", "byte ptr ");
         }
         else if (mod != 3) // Memory operand without prefix
         {
-            operand = $"byte ptr {rmOperand}";
+            operand = $"byte ptr {destOperand}";
         }
         else // Register operand
         {
-            operand = GetRegister8(rm);
+            operand = ModRMDecoder.GetRegisterName(rm, 8);
         }
 
         // Set the operands
         instruction.Operands = $"{operand}, 0x{imm8:X2}";
-        
+
         // Set the raw bytes
         byte[] rawBytes = new byte[newPosition - startPosition + 2]; // +1 for opcode, +1 for immediate
         rawBytes[0] = opcode;
@@ -133,6 +124,7 @@ public class CmpImmWithRm8Handler : InstructionHandler
                 rawBytes[i + 1] = CodeBuffer[startPosition + i];
             }
         }
+
         rawBytes[rawBytes.Length - 1] = imm8;
         instruction.RawBytes = rawBytes;
 

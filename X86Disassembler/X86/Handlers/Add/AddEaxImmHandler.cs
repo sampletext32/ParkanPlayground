@@ -68,17 +68,7 @@ public class AddEaxImmHandler : InstructionHandler
         }
         
         // Read the 32-bit immediate value
-        uint imm32 = 0;
-        for (int i = 0; i < 4; i++)
-        {
-            if (startPosition + i < Length)
-            {
-                imm32 |= (uint)(CodeBuffer[startPosition + i] << (i * 8));
-            }
-        }
-        
-        // Advance the decoder position
-        Decoder.SetPosition(startPosition + 4);
+        uint imm32 = Decoder.ReadUInt32();
         
         // Set the operands
         instruction.Operands = $"eax, 0x{imm32:X8}";

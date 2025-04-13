@@ -42,8 +42,7 @@ public class SubAlImm8Handler : InstructionHandler
         }
 
         // Read the immediate byte
-        byte imm8 = CodeBuffer[position++];
-        Decoder.SetPosition(position);
+        byte imm8 = Decoder.ReadByte();
 
         // Set the instruction information
         instruction.Mnemonic = "sub";

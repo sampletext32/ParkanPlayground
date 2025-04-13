@@ -11,11 +11,11 @@ public class OrImmToRm32Handler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public OrImmToRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public OrImmToRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -25,18 +25,18 @@ public class OrImmToRm32Handler : InstructionHandler
     {
         if (opcode != 0x81)
             return false;
-            
+
         // Check if the reg field of the ModR/M byte is 1 (OR)
         int position = Decoder.GetPosition();
         if (position >= Length)
             return false;
-            
+
         byte modRM = CodeBuffer[position];
-        byte reg = (byte)((modRM & 0x38) >> 3);
-        
+        byte reg = (byte) ((modRM & 0x38) >> 3);
+
         return reg == 1; // 1 = OR
     }
-    
+
     /// <summary>
     /// Decodes an OR r/m32, imm32 instruction
     /// </summary>
@@ -47,38 +47,29 @@ public class OrImmToRm32Handler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "or";
-        
-        int position = Decoder.GetPosition();
-        
-        if (position >= Length)
+
+        if (Decoder.GetPosition() >= Length)
         {
             return false;
         }
-        
+
         // Read the ModR/M byte
-        byte modRM = CodeBuffer[position++];
-        Decoder.SetPosition(position);
-        
-        // Extract the fields from the ModR/M byte
-        byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 1 for OR
-        byte rm = (byte)(modRM & 0x07);
-        
-        // Decode the destination operand
-        string destOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
-        
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+
+        int position = Decoder.GetPosition();
+
         // Read the immediate value
         if (position + 3 >= Length)
         {
             return false;
         }
-        
+
         uint imm32 = BitConverter.ToUInt32(CodeBuffer, position);
         Decoder.SetPosition(position + 4);
-        
+
         // Set the operands
         instruction.Operands = $"{destOperand}, 0x{imm32:X8}";
-        
+
         return true;
     }
 }

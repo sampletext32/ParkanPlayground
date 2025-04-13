@@ -48,7 +48,7 @@ public class XorMemRegHandler : InstructionHandler
         var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
         // Get the source register
-        string srcReg = GetRegister32(reg);
+        string srcReg = ModRMDecoder.GetRegisterName(reg, 32);
         
         // Set the operands
         instruction.Operands = $"{destOperand}, {srcReg}";

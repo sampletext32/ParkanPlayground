@@ -11,11 +11,11 @@ public class TestRegMemHandler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public TestRegMemHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public TestRegMemHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -25,7 +25,7 @@ public class TestRegMemHandler : InstructionHandler
     {
         return opcode == 0x85;
     }
-    
+
     /// <summary>
     /// Decodes a TEST r/m32, r32 instruction
     /// </summary>
@@ -36,30 +36,24 @@ public class TestRegMemHandler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "test";
-        
+
         int position = Decoder.GetPosition();
-        
+
         if (position >= Length)
         {
             return false;
         }
-        
+
         // Read the ModR/M byte
-        byte modRM = CodeBuffer[position++];
-        Decoder.SetPosition(position);
-        
-        // Extract the fields from the ModR/M byte
-        byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3);
-        byte rm = (byte)(modRM & 0x07);
-        
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+
         // For direct register addressing (mod == 3), the r/m field specifies a register
         if (mod == 3)
         {
             // Get the register names
-            string rmReg = GetRegister32(rm);
-            string regReg = GetRegister32(reg);
-            
+            string rmReg = ModRMDecoder.GetRegisterName(rm, 32);
+            string regReg = ModRMDecoder.GetRegisterName(reg, 32);
+
             // Set the operands (TEST r/m32, r32)
             // In x86 assembly, the TEST instruction has the operand order r/m32, r32
             // According to Ghidra and standard x86 assembly convention, it should be TEST ECX,EAX
@@ -68,16 +62,13 @@ public class TestRegMemHandler : InstructionHandler
         }
         else
         {
-            // Decode the memory operand
-            string memOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
-            
             // Get the register name
-            string regReg = GetRegister32(reg);
-            
+            string regReg = ModRMDecoder.GetRegisterName(reg, 32);
+
             // Set the operands (TEST r/m32, r32)
-            instruction.Operands = $"{memOperand}, {regReg}";
+            instruction.Operands = $"{destOperand}, {regReg}";
         }
-        
+
         return true;
     }
 }

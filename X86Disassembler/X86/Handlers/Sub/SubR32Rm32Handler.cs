@@ -42,22 +42,22 @@ public class SubR32Rm32Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
         // Set the mnemonic
         instruction.Mnemonic = "sub";
 
         // Get the register name
-        string regName = GetRegister32(reg);
+        string regName = ModRMDecoder.GetRegisterName(reg, 32);
 
         // For memory operands, set the operand
         if (mod != 3) // Memory operand
         {
-            instruction.Operands = $"{regName}, {operand}";
+            instruction.Operands = $"{regName}, {destOperand}";
         }
         else // Register operand
         {
-            string rmName = GetRegister32(rm);
+            string rmName = ModRMDecoder.GetRegisterName(rm, 32);
             instruction.Operands = $"{regName}, {rmName}";
         }
 

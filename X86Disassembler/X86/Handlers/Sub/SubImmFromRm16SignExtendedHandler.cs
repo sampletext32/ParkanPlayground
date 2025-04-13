@@ -43,10 +43,10 @@ public class SubImmFromRm16SignExtendedHandler : InstructionHandler
         }
 
         // Extract the fields from the ModR/M byte
-        var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
         // Check if this is a SUB instruction (reg field must be 5)
-        if (reg != 5)
+        if (reg != RegisterIndex.Di)
         {
             return false;
         }
@@ -63,11 +63,8 @@ public class SubImmFromRm16SignExtendedHandler : InstructionHandler
         }
         else
         {
-            // Get the memory operand string
-            destination = ModRMDecoder.DecodeModRM(mod, rm, false);
-
             // Replace "dword" with "word" in the memory operand
-            destination = destination.Replace("dword", "word");
+            destination = destOperand.Replace("dword", "word");
         }
 
         // Get the current position after processing the ModR/M byte

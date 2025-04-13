@@ -42,31 +42,22 @@ public class CmpR32Rm32Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        byte modRM = CodeBuffer[position++];
-        Decoder.SetPosition(position);
-
-        // Extract the fields from the ModR/M byte
-        byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3);
-        byte rm = (byte)(modRM & 0x07);
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
         // Set the mnemonic
         instruction.Mnemonic = "cmp";
 
         // Get the register name
-        string regName = GetRegister32(reg);
+        string regName = ModRMDecoder.GetRegisterName(reg, 32);
 
-        // For memory operands, set the operand
-        if (mod != 3) // Memory operand
+        // For register operands, set the operand
+        if (mod == 3)
         {
-            string operand = ModRMDecoder.DecodeModRM(mod, rm, false);
-            instruction.Operands = $"{regName}, {operand}";
+            // Register operand
+            destOperand = ModRMDecoder.GetRegisterName(rm, 32);
         }
-        else // Register operand
-        {
-            string rmName = GetRegister32(rm);
-            instruction.Operands = $"{regName}, {rmName}";
-        }
+
+        instruction.Operands = $"{regName}, {destOperand}";
 
         return true;
     }

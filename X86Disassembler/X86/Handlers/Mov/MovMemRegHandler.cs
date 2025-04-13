@@ -11,11 +11,11 @@ public class MovMemRegHandler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public MovMemRegHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public MovMemRegHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -25,7 +25,7 @@ public class MovMemRegHandler : InstructionHandler
     {
         return opcode == 0x88 || opcode == 0x89;
     }
-    
+
     /// <summary>
     /// Decodes a MOV r/m32, r32 or MOV r/m8, r8 instruction
     /// </summary>
@@ -36,24 +36,24 @@ public class MovMemRegHandler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "mov";
-        
+
         int position = Decoder.GetPosition();
-        
+
         if (position >= Length)
         {
             return false;
         }
-        
+
         // Determine operand size (0 = 8-bit, 1 = 32-bit)
         bool operandSize32 = (opcode & 0x01) != 0;
         int operandSize = operandSize32 ? 32 : 8;
-        
+
         // Read the ModR/M byte
         var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
-        
+
         // Get register name based on size
         string regName = ModRMDecoder.GetRegisterName(reg, operandSize);
-        
+
         // For mod == 3, both operands are registers
         if (mod == 3)
         {
@@ -64,7 +64,7 @@ public class MovMemRegHandler : InstructionHandler
         {
             instruction.Operands = $"{memOperand}, {regName}";
         }
-        
+
         return true;
     }
 }

@@ -6,7 +6,7 @@ namespace X86Disassembler.X86.Handlers.String;
 public class StringInstructionHandler : InstructionHandler
 {
     // Dictionary mapping opcodes to their mnemonics
-    private static readonly Dictionary<byte, string> _mnemonics = new Dictionary<byte, string>
+    private static readonly Dictionary<byte, string> Mnemonics = new()
     {
         { 0xA4, "movs" }, // MOVSB
         { 0xA5, "movs" }, // MOVSD
@@ -41,7 +41,7 @@ public class StringInstructionHandler : InstructionHandler
     public override bool CanHandle(byte opcode)
     {
         // Check if the opcode is a string instruction
-        if (_mnemonics.ContainsKey(opcode))
+        if (Mnemonics.ContainsKey(opcode))
         {
             return true;
         }
@@ -53,7 +53,7 @@ public class StringInstructionHandler : InstructionHandler
             if (position < Length)
             {
                 byte nextByte = CodeBuffer[position];
-                return _mnemonics.ContainsKey(nextByte);
+                return Mnemonics.ContainsKey(nextByte);
             }
         }
         
@@ -82,18 +82,15 @@ public class StringInstructionHandler : InstructionHandler
                 return false;
             }
             
-            stringOpcode = CodeBuffer[position];
-            if (!_mnemonics.ContainsKey(stringOpcode))
+            stringOpcode = Decoder.ReadByte();
+            if (!Mnemonics.ContainsKey(stringOpcode))
             {
                 return false;
             }
-            
-            // Skip the string instruction opcode
-            Decoder.SetPosition(position + 1);
         }
         
         // Set the mnemonic
-        if (_mnemonics.TryGetValue(stringOpcode, out string? mnemonic))
+        if (Mnemonics.TryGetValue(stringOpcode, out string? mnemonic))
         {
             instruction.Mnemonic = prefixString + mnemonic;
         }

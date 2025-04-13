@@ -76,9 +76,7 @@ public class AndImmToRm32SignExtendedHandler : InstructionHandler
         }
         
         // Read and sign-extend the immediate value
-        byte imm8 = Decoder.ReadByte();
-        int signExtended = (sbyte)imm8;
-        uint imm32 = (uint)signExtended;
+        uint imm32 = (uint)(sbyte)Decoder.ReadByte();
         
         // Set operands
         if (mod == 3)

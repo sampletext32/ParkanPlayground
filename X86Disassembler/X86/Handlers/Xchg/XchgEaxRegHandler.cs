@@ -11,11 +11,11 @@ public class XchgEaxRegHandler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public XchgEaxRegHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public XchgEaxRegHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -25,7 +25,7 @@ public class XchgEaxRegHandler : InstructionHandler
     {
         return opcode >= 0x90 && opcode <= 0x97;
     }
-    
+
     /// <summary>
     /// Decodes an XCHG EAX, r32 instruction
     /// </summary>
@@ -41,17 +41,17 @@ public class XchgEaxRegHandler : InstructionHandler
             instruction.Operands = "";
             return true;
         }
-        
+
         // Set the mnemonic
         instruction.Mnemonic = "xchg";
-        
+
         // Register is encoded in the low 3 bits of the opcode
-        int reg = opcode & 0x07;
+        RegisterIndex reg = (RegisterIndex) (opcode & 0x07);
         string regName = ModRMDecoder.GetRegisterName(reg, 32);
-        
+
         // Set the operands
         instruction.Operands = $"eax, {regName}";
-        
+
         return true;
     }
 }

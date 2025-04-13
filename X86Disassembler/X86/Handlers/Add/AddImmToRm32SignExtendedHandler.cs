@@ -59,24 +59,19 @@ public class AddImmToRm32SignExtendedHandler : InstructionHandler
         }
         
         // Read the ModR/M byte
-        byte modRM = CodeBuffer[startPosition];
-        
-        // Extract the fields from the ModR/M byte
-        byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 0 for ADD
-        byte rm = (byte)(modRM & 0x07);
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
         
         // Track the bytes needed for this instruction
         int bytesNeeded = 1; // ModR/M byte
         
         // Process SIB byte if needed
         byte sib = 0;
-        if (mod != 3 && rm == 4) // SIB byte present
+        if (mod != 3 && rm == RegisterIndex.Si) // SIB byte present
         {
             if (startPosition + bytesNeeded >= Length)
             {
                 instruction.Operands = "??";
-                instruction.RawBytes = new byte[] { opcode, modRM };
+                instruction.RawBytes = new byte[] { opcode, CodeBuffer[startPosition] };
                 return true;
             }
             sib = CodeBuffer[startPosition + bytesNeeded];
@@ -85,7 +80,7 @@ public class AddImmToRm32SignExtendedHandler : InstructionHandler
         
         // Handle displacement
         int dispSize = 0;
-        if (mod == 0 && rm == 5) // 32-bit displacement
+        if (mod == 0 && rm == RegisterIndex.Di) // 32-bit displacement
         {
             dispSize = 4;
         }
@@ -102,21 +97,15 @@ public class AddImmToRm32SignExtendedHandler : InstructionHandler
         if (startPosition + bytesNeeded + dispSize >= Length)
         {
             instruction.Operands = "??";
-            instruction.RawBytes = new byte[] { opcode, modRM };
+            instruction.RawBytes = new byte[] { opcode, CodeBuffer[startPosition] };
             return true;
         }
         
         bytesNeeded += dispSize; // Add displacement bytes
         
-        // Use ModRMDecoder to decode the destination operand
-        var modRMDecoder = new ModRMDecoder(CodeBuffer, Decoder, Length);
-        
         // Set the decoder position to after the ModR/M byte
         Decoder.SetPosition(startPosition + 1);
-        
-        // Decode the destination operand
-        string destOperand = modRMDecoder.DecodeModRM(mod, rm, false);
-        
+
         // Get the position after decoding the ModR/M byte
         int newPosition = Decoder.GetPosition();
         
@@ -141,15 +130,21 @@ public class AddImmToRm32SignExtendedHandler : InstructionHandler
             return true;
         }
         
-        // Read the immediate value as a signed byte and sign-extend it
-        sbyte imm8 = (sbyte)CodeBuffer[newPosition];
-        newPosition++; // Advance past the immediate byte
+        // Read the immediate value as a signed byte and automatically sign-extend it to int
+        int signExtendedImm = (sbyte)Decoder.ReadByte();
         
-        // Set the decoder position
-        Decoder.SetPosition(newPosition);
-        
-        // Format the immediate value as a 32-bit hex value (sign-extended)
-        string immStr = $"0x{(uint)imm8:X8}";
+        // Format the immediate value as a 32-bit hex value
+        string immStr;
+        if (signExtendedImm < 0)
+        {
+            // For negative values, use the full 32-bit representation (0xFFFFFFxx)
+            immStr = $"0x{(uint)signExtendedImm:X8}";
+        }
+        else
+        {
+            // For positive values, use the regular format
+            immStr = $"0x{signExtendedImm:X8}";
+        }
         
         // Set the operands
         instruction.Operands = $"{destOperand}, {immStr}";
