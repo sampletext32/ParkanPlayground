@@ -73,12 +73,26 @@ public class SubImmFromRm32SignExtendedHandler : InstructionHandler
             return false;
         }
         
-        // Read the immediate value as a signed byte and sign-extend it
+        // Read the immediate value as a signed byte and sign-extend it to 32 bits
         sbyte imm8 = (sbyte)CodeBuffer[position++];
+        int imm32 = imm8; // Automatic sign extension from sbyte to int
         Decoder.SetPosition(position);
         
+        // Format the immediate value based on whether it's positive or negative
+        string immStr;
+        if (imm8 < 0)
+        {
+            // For negative values, show the full 32-bit representation
+            immStr = $"0x{(uint)imm32:X8}";
+        }
+        else
+        {
+            // For positive values, just show the value
+            immStr = $"0x{(byte)imm8:X2}";
+        }
+        
         // Set the operands
-        instruction.Operands = $"{destOperand}, 0x{(uint)imm8:X2}";
+        instruction.Operands = $"{destOperand}, {immStr}";
         
         return true;
     }

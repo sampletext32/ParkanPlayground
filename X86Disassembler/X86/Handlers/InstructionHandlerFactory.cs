@@ -77,6 +77,7 @@ public class InstructionHandlerFactory
         RegisterFloatingPointHandlers();
         RegisterStringHandlers();
         RegisterMovHandlers();
+        RegisterSubHandlers(); // Register SUB handlers
     }
     
     /// <summary>
@@ -365,6 +366,16 @@ public class InstructionHandlerFactory
         _handlers.Add(new AndMemRegHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new AndAlImmHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new AndEaxImmHandler(_codeBuffer, _decoder, _length));
+    }
+    
+    /// <summary>
+    /// Registers all SUB instruction handlers
+    /// </summary>
+    private void RegisterSubHandlers()
+    {
+        // Add SUB register/memory handlers
+        _handlers.Add(new Sub.SubRm32R32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new Sub.SubR32Rm32Handler(_codeBuffer, _decoder, _length));
     }
     
     /// <summary>

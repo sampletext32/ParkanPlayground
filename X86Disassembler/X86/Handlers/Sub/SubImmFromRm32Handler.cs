@@ -73,7 +73,16 @@ public class SubImmFromRm32Handler : InstructionHandler
             return false;
         }
         
-        uint imm32 = BitConverter.ToUInt32(CodeBuffer, position);
+        // Read the immediate value in little-endian format and convert to big-endian for display
+        byte b0 = CodeBuffer[position];
+        byte b1 = CodeBuffer[position + 1];
+        byte b2 = CodeBuffer[position + 2];
+        byte b3 = CodeBuffer[position + 3];
+        
+        // Convert from little-endian to big-endian for display
+        uint imm32 = (uint)((b3 << 24) | (b2 << 16) | (b1 << 8) | b0);
+        
+        // Advance the position
         Decoder.SetPosition(position + 4);
         
         // Set the operands
