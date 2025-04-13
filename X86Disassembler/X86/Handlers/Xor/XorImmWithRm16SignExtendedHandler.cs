@@ -67,10 +67,8 @@ public class XorImmWithRm16SignExtendedHandler : InstructionHandler
             return false;
         }
         
-        // Read the immediate value and sign-extend it
-        byte imm8 = Decoder.ReadByte();
-        // Sign-extend to 16 bits by converting to sbyte first
-        short imm16 = (short)((sbyte)imm8);
+        // Read the immediate value and sign-extend it to 16 bits
+        short imm16 = (sbyte)Decoder.ReadByte();
         
         // Format the immediate value
         string immStr = $"0x{(ushort)imm16:X4}";

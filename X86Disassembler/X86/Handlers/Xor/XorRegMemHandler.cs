@@ -45,17 +45,8 @@ public class XorRegMemHandler : InstructionHandler
         }
         
         // Read the ModR/M byte
-        byte modRM = CodeBuffer[position++];
-        Decoder.SetPosition(position);
-        
-        // Extract the fields from the ModR/M byte
-        byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3);
-        byte rm = (byte)(modRM & 0x07);
-        
-        // Decode the source operand
-        string srcOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
-        
+        var (mod, reg, rm, srcOperand) = ModRMDecoder.ReadModRM();
+
         // Get the destination register
         string destReg = GetRegister32(reg);
         

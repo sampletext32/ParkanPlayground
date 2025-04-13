@@ -68,8 +68,7 @@ public class XorImmWithRm8Handler : InstructionHandler
         }
         
         // Read the immediate value
-        byte imm8 = CodeBuffer[position];
-        Decoder.SetPosition(position + 1);
+        byte imm8 = Decoder.ReadByte();
         
         // Format the immediate value
         string immStr = $"0x{imm8:X2}";

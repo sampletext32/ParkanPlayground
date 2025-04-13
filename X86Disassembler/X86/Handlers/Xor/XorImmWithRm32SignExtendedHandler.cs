@@ -67,10 +67,8 @@ public class XorImmWithRm32SignExtendedHandler : InstructionHandler
             return false;
         }
         
-        // Read the immediate value and sign-extend it
-        byte imm8 = Decoder.ReadByte();
-        // Sign-extend to 32 bits by converting to sbyte first
-        int imm32 = (int)((sbyte)imm8);
+        // Read the immediate value and sign-extend it to 32 bits
+        int imm32 = (sbyte)Decoder.ReadByte();
         
         // Format the immediate value
         string immStr;
@@ -79,15 +77,10 @@ public class XorImmWithRm32SignExtendedHandler : InstructionHandler
             // For negative values, show the full sign-extended 32-bit value
             immStr = $"0x{imm32:X8}";
         }
-        else if (imm8 == 0)
-        {
-            // For zero, use the expected format
-            immStr = "0x00";
-        }
         else
         {
             // For positive values, show without leading zeros
-            immStr = $"0x{imm8:X}";
+            immStr = $"0x{imm32:X2}";
         }
         
         // Set the operands

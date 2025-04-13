@@ -281,6 +281,6 @@ public class Group1InstructionTests
         // Assert
         Assert.NotNull(instruction);
         Assert.Equal("xor", instruction.Mnemonic);
-        Assert.Equal("esi, 0x00000042", instruction.Operands);
+        Assert.Equal("esi, 0x42", instruction.Operands);
     }
 }
