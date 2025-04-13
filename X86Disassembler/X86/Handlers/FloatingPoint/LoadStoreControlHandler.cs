@@ -5,18 +5,72 @@ namespace X86Disassembler.X86.Handlers.FloatingPoint;
 /// </summary>
 public class LoadStoreControlHandler : InstructionHandler
 {
-    // D9 opcode - load, store, and control operations
-    private static readonly string[] Mnemonics =
+    // Memory operand mnemonics for D9 opcode - load, store, and control operations
+    private static readonly string[] MemoryMnemonics =
     [
-        "fld",
-        "??",
-        "fst",
-        "fstp",
-        "fldenv",
-        "fldcw",
-        "fnstenv",
-        "fnstcw"
+        "fld",     // 0
+        "??",      // 1
+        "fst",     // 2
+        "fstp",    // 3
+        "fldenv",  // 4
+        "fldcw",   // 5
+        "fnstenv", // 6
+        "fnstcw"   // 7
     ];
+    
+    // Register-register operations mapping (mod=3)
+    private static readonly Dictionary<(RegisterIndex Reg, RegisterIndex Rm), (string Mnemonic, string Operands)> RegisterOperations = new()
+    {
+        // FLD ST(i)
+        { (RegisterIndex.A, RegisterIndex.A), ("fld", "st(0)") },
+        { (RegisterIndex.A, RegisterIndex.C), ("fld", "st(1)") },
+        { (RegisterIndex.A, RegisterIndex.D), ("fld", "st(2)") },
+        { (RegisterIndex.A, RegisterIndex.B), ("fld", "st(3)") },
+        { (RegisterIndex.A, RegisterIndex.Sp), ("fld", "st(4)") },
+        { (RegisterIndex.A, RegisterIndex.Bp), ("fld", "st(5)") },
+        { (RegisterIndex.A, RegisterIndex.Si), ("fld", "st(6)") },
+        { (RegisterIndex.A, RegisterIndex.Di), ("fld", "st(7)") },
+        
+        // FXCH ST(i)
+        { (RegisterIndex.B, RegisterIndex.A), ("fxch", "st(0)") },
+        { (RegisterIndex.B, RegisterIndex.C), ("fxch", "st(1)") },
+        { (RegisterIndex.B, RegisterIndex.D), ("fxch", "st(2)") },
+        { (RegisterIndex.B, RegisterIndex.B), ("fxch", "st(3)") },
+        { (RegisterIndex.B, RegisterIndex.Sp), ("fxch", "st(4)") },
+        { (RegisterIndex.B, RegisterIndex.Bp), ("fxch", "st(5)") },
+        { (RegisterIndex.B, RegisterIndex.Si), ("fxch", "st(6)") },
+        { (RegisterIndex.B, RegisterIndex.Di), ("fxch", "st(7)") },
+        
+        // D9E0-D9EF special instructions (reg=6)
+        { (RegisterIndex.Si, RegisterIndex.A), ("fchs", "") },
+        { (RegisterIndex.Si, RegisterIndex.B), ("fabs", "") },
+        { (RegisterIndex.Si, RegisterIndex.Si), ("ftst", "") },
+        { (RegisterIndex.Si, RegisterIndex.Di), ("fxam", "") },
+        
+        // D9F0-D9FF special instructions (reg=7)
+        { (RegisterIndex.Di, RegisterIndex.A), ("f2xm1", "") },
+        { (RegisterIndex.Di, RegisterIndex.B), ("fyl2x", "") },
+        { (RegisterIndex.Di, RegisterIndex.C), ("fptan", "") },
+        { (RegisterIndex.Di, RegisterIndex.D), ("fpatan", "") },
+        { (RegisterIndex.Di, RegisterIndex.Si), ("fxtract", "") },
+        { (RegisterIndex.Di, RegisterIndex.Di), ("fprem1", "") },
+        { (RegisterIndex.Di, RegisterIndex.Sp), ("fdecstp", "") },
+        { (RegisterIndex.Di, RegisterIndex.Bp), ("fincstp", "") },
+        
+        // D9D0-D9DF special instructions (reg=5)
+        { (RegisterIndex.Sp, RegisterIndex.A), ("fprem", "") },
+        { (RegisterIndex.Sp, RegisterIndex.B), ("fyl2xp1", "") },
+        { (RegisterIndex.Sp, RegisterIndex.C), ("fsqrt", "") },
+        { (RegisterIndex.Sp, RegisterIndex.D), ("fsincos", "") },
+        { (RegisterIndex.Sp, RegisterIndex.Si), ("frndint", "") },
+        { (RegisterIndex.Sp, RegisterIndex.Di), ("fscale", "") },
+        { (RegisterIndex.Sp, RegisterIndex.Sp), ("fsin", "") },
+        { (RegisterIndex.Sp, RegisterIndex.Bp), ("fcos", "") },
+        
+        // D9C8-D9CF special instructions (reg=4)
+        { (RegisterIndex.Bp, RegisterIndex.A), ("fnop", "") },
+        { (RegisterIndex.Bp, RegisterIndex.C), ("fwait", "") }
+    };
     
     /// <summary>
     /// Initializes a new instance of the LoadStoreControlHandler class
@@ -47,165 +101,52 @@ public class LoadStoreControlHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        int position = Decoder.GetPosition();
-        
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
         
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
         
-        // Set the mnemonic based on the opcode and reg field
-        instruction.Mnemonic = Mnemonics[(int)reg];
-        
-        // For memory operands, set the operand
+        // Handle based on addressing mode
         if (mod != 3) // Memory operand
         {
+            // Set the mnemonic based on the reg field
+            instruction.Mnemonic = MemoryMnemonics[(int)reg];
+            
             // Different operand types based on the instruction
             if (reg == RegisterIndex.A || reg == RegisterIndex.C || reg == RegisterIndex.D) // fld, fst, fstp
             {
                 // Keep the dword ptr prefix from ModRMDecoder
-                instruction.Operands = destOperand;
+                instruction.Operands = memOperand;
             }
             else // fldenv, fldcw, fnstenv, fnstcw
             {
                 if (reg == RegisterIndex.Di) // fldcw - should use word ptr
                 {
-                    instruction.Operands = destOperand.Replace("dword ptr", "word ptr");
+                    instruction.Operands = memOperand.Replace("dword ptr", "word ptr");
                 }
                 else // fldenv, fnstenv, fnstcw
                 {
                     // Remove the dword ptr prefix for other control operations
-                    instruction.Operands = destOperand.Replace("dword ptr ", "");
+                    instruction.Operands = memOperand.Replace("dword ptr ", "");
                 }
             }
         }
         else // Register operand (ST(i))
         {
-            // Special handling for D9C0-D9FF (register-register operations)
-            if (reg == RegisterIndex.A) // FLD ST(i)
+            // Look up the register operation in our dictionary
+            if (RegisterOperations.TryGetValue((reg, rm), out var operation))
             {
-                instruction.Operands = $"st({(int)rm})";
+                instruction.Mnemonic = operation.Mnemonic;
+                instruction.Operands = operation.Operands;
             }
-            else if (reg == RegisterIndex.B) // FXCH ST(i)
+            else
             {
-                instruction.Mnemonic = "fxch";
-                instruction.Operands = $"st({(int)rm})";
-            }
-            else if (reg == RegisterIndex.Si)
-            {
-                // D9E0-D9EF special instructions
-                switch (rm)
-                {
-                    case RegisterIndex.A:
-                        instruction.Mnemonic = "fchs";
-                        instruction.Operands = "";
-                        break;
-                    case RegisterIndex.B:
-                        instruction.Mnemonic = "fabs";
-                        instruction.Operands = "";
-                        break;
-                    case RegisterIndex.Si:
-                        instruction.Mnemonic = "ftst";
-                        instruction.Operands = "";
-                        break;
-                    case RegisterIndex.Di:
-                        instruction.Mnemonic = "fxam";
-                        instruction.Operands = "";
-                        break;
-                    default:
-                        instruction.Mnemonic = "??";
-                        instruction.Operands = "";
-                        break;
-                }
-            }
-            else if (reg == RegisterIndex.Di)
-            {
-                // D9F0-D9FF special instructions
-                switch (rm)
-                {
-                    case RegisterIndex.A:
-                        instruction.Mnemonic = "f2xm1";
-                        instruction.Operands = "";
-                        break;
-                    case RegisterIndex.B:
-                        instruction.Mnemonic = "fyl2x";
-                        instruction.Operands = "";
-                        break;
-                    case RegisterIndex.C:
-                        instruction.Mnemonic = "fptan";
-                        instruction.Operands = "";
-                        break;
-                    case RegisterIndex.D:
-                        instruction.Mnemonic = "fpatan";
-                        instruction.Operands = "";
-                        break;
-                    case RegisterIndex.Si:
-                        instruction.Mnemonic = "fxtract";
-                        instruction.Operands = "";
-                        break;
-                    case RegisterIndex.Di:
-                        instruction.Mnemonic = "fprem1";
-                        instruction.Operands = "";
-                        break;
-                    case RegisterIndex.Sp:
-                        instruction.Mnemonic = "fdecstp";
-                        instruction.Operands = "";
-                        break;
-                    case RegisterIndex.Bp:
-                        instruction.Mnemonic = "fincstp";
-                        instruction.Operands = "";
-                        break;
-                    default:
-                        instruction.Mnemonic = "??";
-                        instruction.Operands = "";
-                        break;
-                }
-            }
-            else if (reg == RegisterIndex.Sp)
-            {
-                // D9F0-D9FF more special instructions
-                switch (rm)
-                {
-                    case RegisterIndex.A:
-                        instruction.Mnemonic = "fprem";
-                        instruction.Operands = "";
-                        break;
-                    case RegisterIndex.B:
-                        instruction.Mnemonic = "fyl2xp1";
-                        instruction.Operands = "";
-                        break;
-                    case RegisterIndex.C:
-                        instruction.Mnemonic = "fsqrt";
-                        instruction.Operands = "";
-                        break;
-                    case RegisterIndex.D:
-                        instruction.Mnemonic = "fsincos";
-                        instruction.Operands = "";
-                        break;
-                    case RegisterIndex.Si:
-                        instruction.Mnemonic = "frndint";
-                        instruction.Operands = "";
-                        break;
-                    case RegisterIndex.Di:
-                        instruction.Mnemonic = "fscale";
-                        instruction.Operands = "";
-                        break;
-                    case RegisterIndex.Sp:
-                        instruction.Mnemonic = "fsin";
-                        instruction.Operands = "";
-                        break;
-                    case RegisterIndex.Bp:
-                        instruction.Mnemonic = "fcos";
-                        instruction.Operands = "";
-                        break;
-                    default:
-                        instruction.Mnemonic = "??";
-                        instruction.Operands = "";
-                        break;
-                }
+                // Unknown instruction
+                instruction.Mnemonic = "??";
+                instruction.Operands = "";
             }
         }
         
