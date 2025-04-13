@@ -28,7 +28,7 @@ public class DataTransferInstructionTests
         // Assert
         Assert.NotNull(instruction);
         Assert.Equal("mov", instruction.Mnemonic);
-        Assert.Equal("ecx, eax", instruction.Operands);
+        Assert.Equal("eax, ecx", instruction.Operands);
     }
     
     /// <summary>
@@ -49,7 +49,7 @@ public class DataTransferInstructionTests
         // Assert
         Assert.NotNull(instruction);
         Assert.Equal("mov", instruction.Mnemonic);
-        Assert.Equal("eax, ecx", instruction.Operands);
+        Assert.Equal("ecx, eax", instruction.Operands);
     }
     
     /// <summary>
@@ -150,7 +150,7 @@ public class DataTransferInstructionTests
         // Assert
         Assert.NotNull(instruction);
         Assert.Equal("mov", instruction.Mnemonic);
-        Assert.Equal("dword ptr [ecx+0x12345678], eax", instruction.Operands);
+        Assert.Equal("eax, dword ptr [ecx+0x12345678]", instruction.Operands);
     }
     
     /// <summary>

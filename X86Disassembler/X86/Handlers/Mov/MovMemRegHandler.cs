@@ -58,11 +58,11 @@ public class MovMemRegHandler : InstructionHandler
         if (mod == 3)
         {
             string rmRegName = ModRMDecoder.GetRegisterName(rm, operandSize);
-            instruction.Operands = $"{regName}, {rmRegName}";
+            instruction.Operands = $"{rmRegName}, {regName}";
         }
         else // Memory operand
         {
-            instruction.Operands = $"{regName}, {memOperand}";
+            instruction.Operands = $"{memOperand}, {regName}";
         }
         
         return true;

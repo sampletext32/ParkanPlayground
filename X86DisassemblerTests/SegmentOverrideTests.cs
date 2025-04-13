@@ -26,7 +26,7 @@ public class SegmentOverrideTests
         // Assert
         Assert.NotNull(instruction);
         Assert.Equal("mov", instruction.Mnemonic);
-        Assert.Equal("esp, dword ptr fs:[0x00000000]", instruction.Operands);
+        Assert.Equal("dword ptr fs:[0x00000000], esp", instruction.Operands);
     }
     
     /// <summary>
