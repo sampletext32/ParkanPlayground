@@ -114,10 +114,6 @@ public class InstructionHandlerFactory
         _handlers.Add(new SbbImmFromRm32Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new SbbImmFromRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
         
-        // AND handlers
-        _handlers.Add(new AndImmWithRm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new AndImmWithRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
-        
         // SUB handlers
         _handlers.Add(new SubImmFromRm32Handler(_codeBuffer, _decoder, _length));
         _handlers.Add(new SubImmFromRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
