@@ -16,6 +16,7 @@ public class RawFromFileDisassemblyTests(ITestOutputHelper output)
     [InlineData("nop_tests.csv")]
     [InlineData("xchg_tests.csv")]
     [InlineData("sub_tests.csv")]
+    [InlineData("xor_tests.csv")]
     [InlineData("segment_override_tests.csv")]
     public void RunTests(string file)
     {

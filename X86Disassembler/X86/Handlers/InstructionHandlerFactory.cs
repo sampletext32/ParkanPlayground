@@ -176,15 +176,25 @@ public class InstructionHandlerFactory
     /// </summary>
     private void RegisterXorHandlers()
     {
-        // Add Xor handlers
-        _handlers.Add(new XorAlImmHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new XorEaxImmHandler(_codeBuffer, _decoder, _length));
+        // 32-bit handlers
         _handlers.Add(new XorMemRegHandler(_codeBuffer, _decoder, _length));
         _handlers.Add(new XorRegMemHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new XorImmWithRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new XorImmWithRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new XorEaxImmHandler(_codeBuffer, _decoder, _length));
         
-        // Add XOR immediate handlers
-        _handlers.Add(new Xor.XorImmWithRm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new Xor.XorImmWithRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+        // 16-bit handlers
+        _handlers.Add(new XorRm16R16Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new XorR16Rm16Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new XorAxImm16Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new XorImmWithRm16Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new XorImmWithRm16SignExtendedHandler(_codeBuffer, _decoder, _length));
+        
+        // 8-bit handlers
+        _handlers.Add(new XorRm8R8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new XorR8Rm8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new XorAlImmHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new XorImmWithRm8Handler(_codeBuffer, _decoder, _length));
     }
     
     /// <summary>

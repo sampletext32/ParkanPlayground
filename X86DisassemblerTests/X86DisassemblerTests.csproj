@@ -35,6 +35,7 @@
     <EmbeddedResource Include="TestData\xchg_tests.csv" />
     <EmbeddedResource Include="TestData\sub_tests.csv" />
     <EmbeddedResource Include="TestData\segment_override_tests.csv" />
+    <EmbeddedResource Include="TestData\xor_tests.csv" />
   </ItemGroup>
 
 </Project>
