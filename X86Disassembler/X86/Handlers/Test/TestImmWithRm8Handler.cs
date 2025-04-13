@@ -24,8 +24,22 @@ public class TestImmWithRm8Handler : InstructionHandler
     public override bool CanHandle(byte opcode)
     {
         // This handler only handles opcode 0xF6
-        // The reg field check (for TEST operation) will be done in the Decode method
-        return opcode == 0xF6;
+        if (opcode != 0xF6)
+        {
+            return false;
+        }
+        
+        // Check if we have enough bytes to read the ModR/M byte
+        if (!Decoder.CanReadByte())
+        {
+            return false;
+        }
+        
+        // Check if the reg field is 0 (TEST operation)
+        byte modRM = CodeBuffer[Decoder.GetPosition()];
+        byte reg = (byte)((modRM & 0x38) >> 3);
+        
+        return reg == 0; // 0 = TEST
     }
 
     /// <summary>
@@ -36,38 +50,26 @@ public class TestImmWithRm8Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        int position = Decoder.GetPosition();
-
-        if (position >= Length)
-        {
-            return false;
-        }
-
-        // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM(true);
-
-        // Check if the reg field is 0 (TEST operation)
-        if (reg != RegisterIndex.A)
-        {
-            return false; // Not a TEST instruction
-        }
-
         // Set the mnemonic
         instruction.Mnemonic = "test";
-
-        // For direct register addressing (mod == 3), the r/m field specifies a register
-        if (mod == 3)
+        
+        // Read the ModR/M byte
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        
+        // Get the destination operand based on addressing mode
+        if (mod == 3) // Register operand
         {
+            // For direct register addressing, use the correct 8-bit register name
             destOperand = ModRMDecoder.GetRegisterName(rm, 8);
         }
 
-        // Use the ModR/M decoder for memory addressing
-        // Read the immediate value
-        if (position >= Length)
+        // Check if we have enough bytes for the immediate value
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
 
+        // Read the immediate value
         byte imm8 = Decoder.ReadByte();
 
         // Set the operands

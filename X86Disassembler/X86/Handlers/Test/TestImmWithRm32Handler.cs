@@ -24,8 +24,22 @@ public class TestImmWithRm32Handler : InstructionHandler
     public override bool CanHandle(byte opcode)
     {
         // This handler only handles opcode 0xF7
-        // The reg field check (for TEST operation) will be done in the Decode method
-        return opcode == 0xF7;
+        if (opcode != 0xF7)
+        {
+            return false;
+        }
+        
+        // Check if we have enough bytes to read the ModR/M byte
+        if (!Decoder.CanReadByte())
+        {
+            return false;
+        }
+        
+        // Check if the reg field is 0 (TEST operation)
+        byte modRM = CodeBuffer[Decoder.GetPosition()];
+        byte reg = (byte)((modRM & 0x38) >> 3);
+        
+        return reg == 0; // 0 = TEST
     }
 
     /// <summary>
@@ -36,39 +50,24 @@ public class TestImmWithRm32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        int position = Decoder.GetPosition();
-
-        if (position >= Length)
-        {
-            return false;
-        }
-
-        // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
-
-        // Check if the reg field is 0 (TEST operation)
-        if (reg != 0)
-        {
-            return false; // Not a TEST instruction
-        }
-
         // Set the mnemonic
         instruction.Mnemonic = "test";
-
+        
+        // Read the ModR/M byte
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        
         // For direct register addressing (mod == 3), the r/m field specifies a register
         if (mod == 3)
         {
             destOperand = ModRMDecoder.GetRegisterName(rm, 32);
         }
 
-        position = Decoder.GetPosition();
         // Read the immediate value
-        if (position + 3 >= Length)
+        if (!Decoder.CanReadUInt())
         {
             return false;
         }
 
-        // Read the immediate value
         uint imm32 = Decoder.ReadUInt32();
 
         // Set the operands
