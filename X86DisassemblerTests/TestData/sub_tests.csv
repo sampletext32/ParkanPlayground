@@ -1,0 +1,25 @@
+# SUB instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# Register-to-register SUB
+29D8;[{ "Mnemonic": "sub", "Operands": "eax, ebx" }]
+
+# Register-to-memory SUB
+294B10;[{ "Mnemonic": "sub", "Operands": "dword ptr [ebx+0x10], ecx" }]
+
+# Memory-to-register SUB
+2BD8;[{ "Mnemonic": "sub", "Operands": "ebx, eax" }]
+2B4B10;[{ "Mnemonic": "sub", "Operands": "ecx, dword ptr [ebx+0x10]" }]
+
+# Immediate-to-register SUB (32-bit immediate)
+81E878563412;[{ "Mnemonic": "sub", "Operands": "eax, 0x12345678" }]
+
+# Immediate-to-memory SUB (32-bit immediate)
+816B1078563412;[{ "Mnemonic": "sub", "Operands": "dword ptr [ebx+0x10], 0x12345678" }]
+
+# Small immediate SUB (8-bit immediate)
+83E842;[{ "Mnemonic": "sub", "Operands": "eax, 0x42" }]
+
+# Sign-extended immediate SUB (8-bit immediate sign-extended to 32-bit)
+83E8F0;[{ "Mnemonic": "sub", "Operands": "eax, 0xFFFFFFF0" }]

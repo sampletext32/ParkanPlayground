@@ -1,0 +1,7 @@
+RawBytes;Instructions
+26FF7510;[{ "Mnemonic": "push", "Operands": "dword ptr es:[ebp+0x10]" }]
+2EFF7510;[{ "Mnemonic": "push", "Operands": "dword ptr cs:[ebp+0x10]" }]
+36FF7510;[{ "Mnemonic": "push", "Operands": "dword ptr ss:[ebp+0x10]" }]
+3EFF7510;[{ "Mnemonic": "push", "Operands": "dword ptr ds:[ebp+0x10]" }]
+64FF7510;[{ "Mnemonic": "push", "Operands": "dword ptr fs:[ebp+0x10]" }]
+65FF7510;[{ "Mnemonic": "push", "Operands": "dword ptr gs:[ebp+0x10]" }]

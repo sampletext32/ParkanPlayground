@@ -30,9 +30,11 @@
   <ItemGroup>
     <EmbeddedResource Include="TestData\popreg_tests.csv" />
     <EmbeddedResource Include="TestData\pushreg_tests.csv" />
-    <None Remove="instruction_test.json" />
-    <EmbeddedResource Include="instruction_test.json" />
-    <None Remove="PushTests\push_tests.csv" />
+    <EmbeddedResource Include="TestData\pushimm_tests.csv" />
+    <EmbeddedResource Include="TestData\nop_tests.csv" />
+    <EmbeddedResource Include="TestData\xchg_tests.csv" />
+    <EmbeddedResource Include="TestData\sub_tests.csv" />
+    <EmbeddedResource Include="TestData\segment_override_tests.csv" />
   </ItemGroup>
 
 </Project>

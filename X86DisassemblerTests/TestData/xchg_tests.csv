@@ -1,0 +1,8 @@
+RawBytes;Instructions
+91;[{ "Mnemonic": "xchg", "Operands": "eax, ecx" }]
+92;[{ "Mnemonic": "xchg", "Operands": "eax, edx" }]
+93;[{ "Mnemonic": "xchg", "Operands": "eax, ebx" }]
+94;[{ "Mnemonic": "xchg", "Operands": "eax, esp" }]
+95;[{ "Mnemonic": "xchg", "Operands": "eax, ebp" }]
+96;[{ "Mnemonic": "xchg", "Operands": "eax, esi" }]
+97;[{ "Mnemonic": "xchg", "Operands": "eax, edi" }]

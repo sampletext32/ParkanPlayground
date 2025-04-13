@@ -12,6 +12,11 @@ public class RawFromFileDisassemblyTests(ITestOutputHelper output)
     [Theory]
     [InlineData("pushreg_tests.csv")]
     [InlineData("popreg_tests.csv")]
+    [InlineData("pushimm_tests.csv")]
+    [InlineData("nop_tests.csv")]
+    [InlineData("xchg_tests.csv")]
+    [InlineData("sub_tests.csv")]
+    [InlineData("segment_override_tests.csv")]
     public void RunTests(string file)
     {
         // Load the CSV test file from embedded resources
@@ -28,7 +33,10 @@ public class RawFromFileDisassemblyTests(ITestOutputHelper output)
         {
             HasHeaderRecord = true,
             Delimiter = ";",
-            BadDataFound = null // Ignore bad data
+            BadDataFound = null, // Ignore bad data
+            AllowComments = true, // Enable comments in CSV files
+            Comment = '#', // Use # as the comment character
+            IgnoreBlankLines = true // Skip empty lines
         };
 
         using var streamReader = new StreamReader(stream);
