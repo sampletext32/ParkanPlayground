@@ -37,20 +37,21 @@ public class JmpRel32Handler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "jmp";
         
+        // Check if we have enough bytes for the offset
         int position = Decoder.GetPosition();
-        
         if (position + 4 > Length)
         {
             return false;
         }
         
-        // Read the relative offset
-        uint offset = Decoder.ReadUInt32();
+        // Read the offset and calculate target address
+        int offset = (int)Decoder.ReadUInt32();
         
-        // Calculate the target address
-        uint targetAddress = (uint)(position + offset + 4);
+        // Calculate target address (instruction address + instruction length + offset)
+        // For JMP rel32, the instruction is 5 bytes: opcode (1 byte) + offset (4 bytes)
+        uint targetAddress = (uint)(instruction.Address + 5 + offset);
         
-        // Set the operands
+        // Format the target address
         instruction.Operands = $"0x{targetAddress:X8}";
         
         return true;
