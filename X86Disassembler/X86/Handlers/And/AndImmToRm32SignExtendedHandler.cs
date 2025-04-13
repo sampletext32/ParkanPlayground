@@ -54,40 +54,49 @@ public class AndImmToRm32SignExtendedHandler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "and";
         
-        int position = Decoder.GetPosition();
-        
         // Read the ModR/M byte
         var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
         
-        // Read immediate value
+        // Get the position after decoding the ModR/M byte
+        int position = Decoder.GetPosition();
+        
+        // Check if we have enough bytes for the immediate value
         if (position >= Length)
         {
-            // Incomplete instruction
-            if (mod == 3)
-            {
-                string rmRegName = ModRMDecoder.GetRegisterName(rm, 32);
-                instruction.Operands = $"{rmRegName}, ??";
-            }
-            else
-            {
-                instruction.Operands = $"{memOperand}, ??";
-            }
-            return true;
+            return false; // Not enough bytes for the immediate value
         }
         
-        // Read and sign-extend the immediate value
-        uint imm32 = (uint)(sbyte)Decoder.ReadByte();
+        // Read the immediate value as a signed byte and automatically sign-extend it to int
+        int signExtendedImm = (sbyte)Decoder.ReadByte();
         
-        // Set operands
-        if (mod == 3)
+        // Format the destination operand based on addressing mode
+        string destOperand;
+        if (mod == 3) // Register addressing mode
         {
-            string rmRegName = ModRMDecoder.GetRegisterName(rm, 32);
-            instruction.Operands = $"{rmRegName}, 0x{imm32:X8}";
+            // Get 32-bit register name
+            destOperand = ModRMDecoder.GetRegisterName(rm, 32);
+        }
+        else // Memory addressing mode
+        {
+            // Memory operand already includes dword ptr prefix
+            destOperand = memOperand;
+        }
+        
+        // Format the immediate value
+        string immStr;
+        if (signExtendedImm < 0)
+        {
+            // For negative values, use the full 32-bit representation
+            immStr = $"0x{(uint)signExtendedImm:X8}";
         }
         else
         {
-            instruction.Operands = $"{memOperand}, 0x{imm32:X8}";
+            // For positive values, use the regular format with leading zeros
+            immStr = $"0x{signExtendedImm:X8}";
         }
+        
+        // Set the operands
+        instruction.Operands = $"{destOperand}, {immStr}";
         
         return true;
     }
