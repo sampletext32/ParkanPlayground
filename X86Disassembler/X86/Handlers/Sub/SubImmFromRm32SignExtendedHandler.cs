@@ -27,11 +27,10 @@ public class SubImmFromRm32SignExtendedHandler : InstructionHandler
             return false;
 
         // Check if the reg field of the ModR/M byte is 5 (SUB)
-        int position = Decoder.GetPosition();
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = CodeBuffer[position];
+        byte modRM = CodeBuffer[Decoder.GetPosition()];
         byte reg = (byte) ((modRM & 0x38) >> 3);
 
         return reg == 5; // 5 = SUB
@@ -48,9 +47,8 @@ public class SubImmFromRm32SignExtendedHandler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "sub";
 
-        int position = Decoder.GetPosition();
-
-        if (position >= Length)
+        // Check if we have enough bytes for the ModR/M byte
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
@@ -58,44 +56,20 @@ public class SubImmFromRm32SignExtendedHandler : InstructionHandler
         // Extract the fields from the ModR/M byte
         var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
-        // Let the ModRMDecoder handle the ModR/M byte and any additional bytes (SIB, displacement)
-        // This will update the decoder position to point after the ModR/M and any additional bytes
-
-        // Get the updated position after ModR/M decoding
-        position = Decoder.GetPosition();
-
-        // Read the immediate value
-        if (position >= Length)
+        // Check if we have enough bytes for the immediate value
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
 
-        // Read the immediate value as a signed byte and sign-extend it to 32 bits with sign extension from sbyte to int
+        // Read the immediate value as a signed byte and sign-extend it to 32 bits
         int imm32 = (sbyte) Decoder.ReadByte();
-
-        // Format the immediate value based on the operand type and value
-        string immStr;
-
-        // For memory operands, use a different format as expected by the tests
-        if (mod != 3) // Memory operand
-        {
-            // For memory operands, use the actual value as specified in the test
-            immStr = $"0x{(byte) imm32:X2}";
-        }
-        else // Register operand
-        {
-            // For register operands, format based on whether it's negative or not
-            if (imm32 < 0)
-            {
-                // For negative values, show the full 32-bit representation with 8-digit padding
-                immStr = $"0x{(uint) imm32:X8}";
-            }
-            else
-            {
-                // For positive values, just show the value with 2-digit padding for consistency
-                immStr = $"0x{(byte) imm32:X2}";
-            }
-        }
+        
+        // Format the immediate value - use a consistent approach for all operands
+        // For negative values, show the full 32-bit representation
+        string immStr = imm32 < 0 
+            ? $"0x{(uint)imm32:X8}" 
+            : $"0x{(byte)imm32:X2}";
 
         // Set the operands
         instruction.Operands = $"{destOperand}, {immStr}";
