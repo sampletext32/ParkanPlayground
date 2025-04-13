@@ -1,0 +1,9 @@
+RawBytes;Instructions
+50;[{ "Mnemonic": "push", "Operands": "eax" }]
+51;[{ "Mnemonic": "push", "Operands": "ecx" }]
+52;[{ "Mnemonic": "push", "Operands": "edx" }]
+53;[{ "Mnemonic": "push", "Operands": "ebx" }]
+54;[{ "Mnemonic": "push", "Operands": "esp" }]
+55;[{ "Mnemonic": "push", "Operands": "ebp" }]
+56;[{ "Mnemonic": "push", "Operands": "esi" }]
+57;[{ "Mnemonic": "push", "Operands": "edi" }]

@@ -1,0 +1,9 @@
+RawBytes;Instructions
+58;[{ "Mnemonic": "pop", "Operands": "eax" }]
+59;[{ "Mnemonic": "pop", "Operands": "ecx" }]
+5A;[{ "Mnemonic": "pop", "Operands": "edx" }]
+5B;[{ "Mnemonic": "pop", "Operands": "ebx" }]
+5C;[{ "Mnemonic": "pop", "Operands": "esp" }]
+5D;[{ "Mnemonic": "pop", "Operands": "ebp" }]
+5E;[{ "Mnemonic": "pop", "Operands": "esi" }]
+5F;[{ "Mnemonic": "pop", "Operands": "edi" }]

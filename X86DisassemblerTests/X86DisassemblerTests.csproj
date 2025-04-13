@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CsvHelper" Version="33.0.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
     <PackageReference Include="xunit" Version="2.4.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
@@ -27,8 +28,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="TestData\popreg_tests.csv" />
+    <EmbeddedResource Include="TestData\pushreg_tests.csv" />
     <None Remove="instruction_test.json" />
     <EmbeddedResource Include="instruction_test.json" />
+    <None Remove="PushTests\push_tests.csv" />
   </ItemGroup>
 
 </Project>
