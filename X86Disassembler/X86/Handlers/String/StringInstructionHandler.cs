@@ -5,17 +5,17 @@ namespace X86Disassembler.X86.Handlers.String;
 /// </summary>
 public class StringInstructionHandler : InstructionHandler
 {
-    // Dictionary mapping opcodes to their mnemonics
-    private static readonly Dictionary<byte, string> Mnemonics = new()
+    // Dictionary mapping opcodes to their mnemonics and operands
+    private static readonly Dictionary<byte, (string Mnemonic, string Operands)> StringInstructions = new()
     {
-        { 0xA4, "movs" }, // MOVSB
-        { 0xA5, "movs" }, // MOVSD
-        { 0xAA, "stos" }, // STOSB
-        { 0xAB, "stos" }, // STOSD
-        { 0xAC, "lods" }, // LODSB
-        { 0xAD, "lods" }, // LODSD
-        { 0xAE, "scas" }, // SCASB
-        { 0xAF, "scas" }  // SCASD
+        { 0xA4, ("movs", "byte ptr [edi], byte ptr [esi]") },  // MOVSB
+        { 0xA5, ("movs", "dword ptr [edi], dword ptr [esi]") }, // MOVSD
+        { 0xAA, ("stos", "byte ptr [edi], al") },              // STOSB
+        { 0xAB, ("stos", "dword ptr [edi], eax") },            // STOSD
+        { 0xAC, ("lods", "al, byte ptr [esi]") },              // LODSB
+        { 0xAD, ("lods", "eax, dword ptr [esi]") },            // LODSD
+        { 0xAE, ("scas", "al, byte ptr [edi]") },              // SCASB
+        { 0xAF, ("scas", "eax, dword ptr [edi]") }             // SCASD
     };
     
     // REP/REPNE prefix opcodes
@@ -41,7 +41,7 @@ public class StringInstructionHandler : InstructionHandler
     public override bool CanHandle(byte opcode)
     {
         // Check if the opcode is a string instruction
-        if (Mnemonics.ContainsKey(opcode))
+        if (StringInstructions.ContainsKey(opcode))
         {
             return true;
         }
@@ -53,7 +53,7 @@ public class StringInstructionHandler : InstructionHandler
             if (position < Length)
             {
                 byte nextByte = CodeBuffer[position];
-                return Mnemonics.ContainsKey(nextByte);
+                return StringInstructions.ContainsKey(nextByte);
             }
         }
         
@@ -70,12 +70,17 @@ public class StringInstructionHandler : InstructionHandler
     {
         // Check if this is a REP/REPNE prefix
         bool hasRepPrefix = opcode == REP_PREFIX || opcode == REPNE_PREFIX;
-        string prefixString = opcode == REP_PREFIX ? "rep " : (opcode == REPNE_PREFIX ? "repne " : "");
+        string prefixString = "";
         
         // If this is a REP/REPNE prefix, get the actual string instruction opcode
         byte stringOpcode = opcode;
+        
         if (hasRepPrefix)
         {
+            // Set the prefix string based on the prefix opcode
+            prefixString = opcode == REP_PREFIX ? "rep " : "repne ";
+            
+            // Read the next byte (the actual string instruction opcode)
             int position = Decoder.GetPosition();
             if (position >= Length)
             {
@@ -83,55 +88,25 @@ public class StringInstructionHandler : InstructionHandler
             }
             
             stringOpcode = Decoder.ReadByte();
-            if (!Mnemonics.ContainsKey(stringOpcode))
+            if (!StringInstructions.ContainsKey(stringOpcode))
             {
                 return false;
             }
         }
         
-        // Set the mnemonic
-        if (Mnemonics.TryGetValue(stringOpcode, out string? mnemonic))
+        // Get the mnemonic and operands for the string instruction
+        if (StringInstructions.TryGetValue(stringOpcode, out var instructionInfo))
         {
-            instruction.Mnemonic = prefixString + mnemonic;
-        }
-        else
-        {
-            // This shouldn't happen if CanHandle is called first
-            return false;
-        }
-        
-        // Set the operands based on the string operation
-        switch (stringOpcode)
-        {
-            case 0xA4: // MOVSB
-                instruction.Operands = "byte ptr [edi], byte ptr [esi]";
-                break;
-            case 0xA5: // MOVSD
-                instruction.Operands = "dword ptr [edi], dword ptr [esi]";
-                break;
-            case 0xAA: // STOSB
-                instruction.Operands = "byte ptr [edi], al";
-                break;
-            case 0xAB: // STOSD
-                instruction.Operands = "dword ptr [edi], eax";
-                break;
-            case 0xAC: // LODSB
-                instruction.Operands = "al, byte ptr [esi]";
-                break;
-            case 0xAD: // LODSD
-                instruction.Operands = "eax, dword ptr [esi]";
-                break;
-            case 0xAE: // SCASB
-                instruction.Operands = "al, byte ptr [edi]";
-                break;
-            case 0xAF: // SCASD
-                instruction.Operands = "eax, dword ptr [edi]";
-                break;
-            default:
-                instruction.Operands = "??";
-                break;
+            // Set the mnemonic with the prefix if present
+            instruction.Mnemonic = prefixString + instructionInfo.Mnemonic;
+            
+            // Set the operands
+            instruction.Operands = instructionInfo.Operands;
+            
+            return true;
         }
         
-        return true;
+        // This shouldn't happen if CanHandle is called first
+        return false;
     }
 }
