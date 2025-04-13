@@ -227,6 +227,33 @@ public class InstructionDecoder
     {
         return _prefixDecoder.HasOperandSizePrefix();
     }
+
+    /// <summary>
+    /// Checks if a single byte can be read from the current position
+    /// </summary>
+    /// <returns>True if there is at least one byte available to read</returns>
+    public bool CanReadByte()
+    {
+        return _position < _length;
+    }
+
+    /// <summary>
+    /// Checks if a 16-bit unsigned short (2 bytes) can be read from the current position
+    /// </summary>
+    /// <returns>True if there are at least two bytes available to read</returns>
+    public bool CanReadUShort()
+    {
+        return _position + 1 < _length;
+    }
+
+    /// <summary>
+    /// Checks if a 32-bit unsigned integer (4 bytes) can be read from the current position
+    /// </summary>
+    /// <returns>True if there are at least four bytes available to read</returns>
+    public bool CanReadUInt()
+    {
+        return _position + 3 < _length;
+    }
     
     /// <summary>
     /// Reads a byte from the buffer and advances the position
