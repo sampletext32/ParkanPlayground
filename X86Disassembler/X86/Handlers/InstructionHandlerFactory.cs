@@ -1,4 +1,5 @@
 using X86Disassembler.X86.Handlers.Add;
+using X86Disassembler.X86.Handlers.And;
 using X86Disassembler.X86.Handlers.ArithmeticImmediate;
 using X86Disassembler.X86.Handlers.ArithmeticUnary;
 using X86Disassembler.X86.Handlers.Call;
@@ -56,6 +57,7 @@ public class InstructionHandlerFactory
         // Register handlers in order of priority (most specific first)
         RegisterArithmeticImmediateHandlers(); // Group 1 instructions (including 0x83)
         RegisterAddHandlers();
+        RegisterAndHandlers();
         RegisterArithmeticUnaryHandlers();
         RegisterCmpHandlers();
         RegisterXorHandlers();
@@ -347,6 +349,24 @@ public class InstructionHandlerFactory
     {
         // Add POP handlers
         _handlers.Add(new PopRegHandler(_codeBuffer, _decoder, _length));
+    }
+    
+    /// <summary>
+    /// Registers all And instruction handlers
+    /// </summary>
+    private void RegisterAndHandlers()
+    {
+        // Add AND handlers
+        _handlers.Add(new AndImmToRm8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new AndImmToRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new AndImmToRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+
+        _handlers.Add(new AndR8Rm8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new AndRm8R8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new AndR32Rm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new AndMemRegHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new AndAlImmHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new AndEaxImmHandler(_codeBuffer, _decoder, _length));
     }
     
     /// <summary>
