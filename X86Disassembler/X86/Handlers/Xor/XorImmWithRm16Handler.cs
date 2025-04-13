@@ -27,11 +27,10 @@ public class XorImmWithRm16Handler : InstructionHandler
             return false;
             
         // Check if the reg field of the ModR/M byte is 6 (XOR)
-        int position = Decoder.GetPosition();
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
             return false;
             
-        byte modRM = CodeBuffer[position];
+        byte modRM = CodeBuffer[Decoder.GetPosition()];
         byte reg = (byte)((modRM & 0x38) >> 3);
         
         return reg == 6; // 6 = XOR
@@ -48,53 +47,40 @@ public class XorImmWithRm16Handler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "xor";
         
-        int position = Decoder.GetPosition();
-        
-        if (position >= Length)
+        // Check if we have enough bytes for the ModR/M byte
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
         
         // Read the ModR/M byte
-        var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
         
-        // For the first operand, handle based on addressing mode
-        string rmOperand;
-        if (mod == 3) // Register addressing mode
+        // For direct register addressing (mod == 3), use the correct 16-bit register name
+        if (mod == 3)
         {
-            // Get 16-bit register name for the operand
-            rmOperand = ModRMDecoder.GetRegisterName(rm, 16);
+            destOperand = ModRMDecoder.GetRegisterName(rm, 16);
         }
-        else // Memory addressing mode
+        else
         {
-            // For memory operands, replace "dword ptr" with "word ptr"
-            if (memOperand.StartsWith("dword ptr "))
-            {
-                rmOperand = memOperand.Replace("dword ptr", "word ptr");
-            }
-            else
-            {
-                rmOperand = memOperand;
-            }
+            // For memory operands, ensure we have the correct size prefix
+            destOperand = destOperand.Replace("dword ptr", "word ptr");
         }
         
-        // Get the updated position after ModR/M decoding
-        position = Decoder.GetPosition();
-        
-        // Read the immediate value
-        if (position + 1 >= Length)
+        // Check if we have enough bytes for the immediate value
+        if (!Decoder.CanReadUShort())
         {
             return false;
         }
         
-        // Read the immediate value using the decoder
+        // Read the immediate value
         ushort imm16 = Decoder.ReadUInt16();
         
         // Format the immediate value
         string immStr = $"0x{imm16:X4}";
         
         // Set the operands
-        instruction.Operands = $"{rmOperand}, {immStr}";
+        instruction.Operands = $"{destOperand}, {immStr}";
         
         return true;
     }
