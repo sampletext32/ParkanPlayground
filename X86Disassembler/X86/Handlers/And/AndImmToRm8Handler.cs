@@ -54,39 +54,39 @@ public class AndImmToRm8Handler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "and";
         
-        int position = Decoder.GetPosition();
-        
         // Read the ModR/M byte
         var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
         
-        // Read immediate value
+        // Get the position after decoding the ModR/M byte
+        int position = Decoder.GetPosition();
+        
+        // Check if we have enough bytes for the immediate value
         if (position >= Length)
         {
-            // Incomplete instruction
-            if (mod == 3)
-            {
-                string rmRegName = ModRMDecoder.GetRegisterName(rm, 8);
-                instruction.Operands = $"{rmRegName}, ??";
-            }
-            else
-            {
-                instruction.Operands = $"byte ptr {memOperand}, ??";
-            }
-            return true;
+            return false; // Not enough bytes for the immediate value
         }
         
+        // Read the immediate value
         byte imm8 = Decoder.ReadByte();
         
-        // Set operands
-        if (mod == 3)
+        // Format the destination operand based on addressing mode
+        string destOperand;
+        if (mod == 3) // Register addressing mode
         {
-            string rmRegName = ModRMDecoder.GetRegisterName(rm, 8);
-            instruction.Operands = $"{rmRegName}, 0x{imm8:X2}";
+            // Get 8-bit register name
+            destOperand = ModRMDecoder.GetRegisterName(rm, 8);
         }
-        else
+        else // Memory addressing mode
         {
-            instruction.Operands = $"byte ptr {memOperand}, 0x{imm8:X2}";
+            // Add byte ptr prefix for memory operands
+            destOperand = $"byte ptr {memOperand}";
         }
+        
+        // Format the immediate value
+        string immStr = $"0x{imm8:X2}";
+        
+        // Set the operands
+        instruction.Operands = $"{destOperand}, {immStr}";
         
         return true;
     }
