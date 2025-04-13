@@ -1,21 +1,21 @@
 namespace X86Disassembler.X86.Handlers.Xor;
 
 /// <summary>
-/// Handler for XOR AL, imm8 instruction (0x34)
+/// Handler for XOR r/m8, r8 instruction (0x30)
 /// </summary>
-public class XorAlImmHandler : InstructionHandler
+public class XorRm8R8Handler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the XorAlImmHandler class
+    /// Initializes a new instance of the XorRm8R8Handler class
     /// </summary>
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public XorAlImmHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public XorRm8R8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -23,11 +23,11 @@ public class XorAlImmHandler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        return opcode == 0x34;
+        return opcode == 0x30;
     }
-    
+
     /// <summary>
-    /// Decodes a XOR AL, imm8 instruction
+    /// Decodes a XOR r/m8, r8 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -36,20 +36,23 @@ public class XorAlImmHandler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "xor";
-        
+
         int position = Decoder.GetPosition();
-        
+
         if (position >= Length)
         {
             return false;
         }
-        
-        // Read the immediate value using the decoder
-        byte imm8 = Decoder.ReadByte();
-        
+
+        // Read the ModR/M byte
+        var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
+
+        // Get register name
+        string regName = ModRMDecoder.GetRegisterName(reg, 8);
+
         // Set the operands
-        instruction.Operands = $"al, 0x{imm8:X2}";
-        
+        instruction.Operands = $"{memOperand}, {regName}";
+
         return true;
     }
 }

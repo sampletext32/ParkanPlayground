@@ -1,0 +1,66 @@
+# XOR instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# Register-to-register XOR (32-bit)
+31D8;[{ "Mnemonic": "xor", "Operands": "eax, ebx" }]
+
+# Register-to-memory XOR (32-bit)
+314B10;[{ "Mnemonic": "xor", "Operands": "dword ptr [ebx+0x10], ecx" }]
+
+# Memory-to-register XOR (32-bit)
+33D8;[{ "Mnemonic": "xor", "Operands": "ebx, eax" }]
+334B10;[{ "Mnemonic": "xor", "Operands": "ecx, dword ptr [ebx+0x10]" }]
+
+# Immediate-to-register XOR (32-bit immediate)
+81F078563412;[{ "Mnemonic": "xor", "Operands": "eax, 0x12345678" }]
+
+# Immediate-to-memory XOR (32-bit immediate)
+81701078563412;[{ "Mnemonic": "xor", "Operands": "dword ptr [eax+0x10], 0x12345678" }]
+
+# Small immediate XOR (8-bit immediate to 32-bit register with sign extension)
+83F042;[{ "Mnemonic": "xor", "Operands": "eax, 0x42" }]
+
+# Sign-extended immediate XOR (8-bit immediate sign-extended to 32-bit)
+83F0F0;[{ "Mnemonic": "xor", "Operands": "eax, 0xFFFFFFF0" }]
+
+# XOR AL, imm8 (opcode 0x34)
+3442;[{ "Mnemonic": "xor", "Operands": "al, 0x42" }]
+
+# XOR EAX, imm32 (opcode 0x35)
+3578563412;[{ "Mnemonic": "xor", "Operands": "eax, 0x12345678" }]
+
+# XOR with SIB byte addressing (Scale-Index-Base)
+# XOR [eax+ecx*4], edx (opcode 0x31)
+311488;[{ "Mnemonic": "xor", "Operands": "dword ptr [eax+ecx*4], edx" }]
+
+# XOR edx, [eax+ecx*4] (opcode 0x33)
+331488;[{ "Mnemonic": "xor", "Operands": "edx, dword ptr [eax+ecx*4]" }]
+
+# XOR with displacement-only addressing
+# XOR [0x12345678], eax (opcode 0x31)
+310578563412;[{ "Mnemonic": "xor", "Operands": "dword ptr [0x12345678], eax" }]
+
+# XOR with segment override prefixes
+# XOR fs:[ebx+0x10], ecx (opcode 0x31 with FS override)
+64314B10;[{ "Mnemonic": "xor", "Operands": "dword ptr fs:[ebx+0x10], ecx" }]
+
+# XOR ecx, gs:[ebx+0x10] (opcode 0x33 with GS override)
+65334B10;[{ "Mnemonic": "xor", "Operands": "ecx, dword ptr gs:[ebx+0x10]" }]
+
+# XOR with complex addressing mode: base + index + scale + displacement
+# XOR [eax+ecx*4+0x12345678], edx (opcode 0x31)
+31948878563412;[{ "Mnemonic": "xor", "Operands": "dword ptr [eax+ecx*4+0x12345678], edx" }]
+
+# Edge cases for immediate values
+# XOR eax, 0x0 (opcode 0x83 /6 with zero immediate)
+83F000;[{ "Mnemonic": "xor", "Operands": "eax, 0x00" }]
+
+# XOR al, 0xFF (opcode 0x34 with max 8-bit immediate)
+34FF;[{ "Mnemonic": "xor", "Operands": "al, 0xFF" }]
+
+# XOR eax, 0xFFFFFFFF (opcode 0x81 /6 with max 32-bit immediate)
+81F0FFFFFFFF;[{ "Mnemonic": "xor", "Operands": "eax, 0xFFFFFFFF" }]
+
+# XOR with negative immediate value (sign-extended)
+83F0FF;[{ "Mnemonic": "xor", "Operands": "eax, 0xFFFFFFFF" }]

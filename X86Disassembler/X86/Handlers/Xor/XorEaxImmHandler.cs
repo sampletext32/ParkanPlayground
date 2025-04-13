@@ -44,9 +44,8 @@ public class XorEaxImmHandler : InstructionHandler
             return false;
         }
         
-        // Read the immediate value
-        uint imm32 = BitConverter.ToUInt32(CodeBuffer, position);
-        Decoder.SetPosition(position + 4);
+        // Read the immediate value using the decoder
+        uint imm32 = Decoder.ReadUInt32();
         
         // Set the operands
         instruction.Operands = $"eax, 0x{imm32:X8}";

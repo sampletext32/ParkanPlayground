@@ -56,36 +56,22 @@ public class XorImmWithRm32Handler : InstructionHandler
         }
         
         // Read the ModR/M byte
-        byte modRM = CodeBuffer[position++];
-        Decoder.SetPosition(position);
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
         
-        // Extract the fields from the ModR/M byte
-        byte mod = (byte)((modRM & 0xC0) >> 6);
-        byte reg = (byte)((modRM & 0x38) >> 3); // Should be 6 for XOR
-        byte rm = (byte)(modRM & 0x07);
-        
-        // Decode the destination operand
-        string destOperand = ModRMDecoder.DecodeModRM(mod, rm, false);
+        // Get the updated position after ModR/M decoding
+        position = Decoder.GetPosition();
         
         // Read the immediate value
         if (position + 3 >= Length)
         {
             return false;
         }
-        
-        // Read the immediate value in little-endian format
-        byte b0 = CodeBuffer[position];
-        byte b1 = CodeBuffer[position + 1];
-        byte b2 = CodeBuffer[position + 2];
-        byte b3 = CodeBuffer[position + 3];
-        
-        // Format the immediate value as expected by the tests (0x12345678)
-        // Note: The bytes are reversed to match the expected format in the tests
-        string immStr = $"0x{b3:X2}{b2:X2}{b1:X2}{b0:X2}";
-        
-        // Advance the position past the immediate value
-        position += 4;
-        Decoder.SetPosition(position);
+
+        // Read the immediate value using the decoder
+        var imm = Decoder.ReadUInt32();
+
+        // Format the immediate value
+        string immStr = $"0x{imm:X}";
         
         // Set the operands
         instruction.Operands = $"{destOperand}, {immStr}";
