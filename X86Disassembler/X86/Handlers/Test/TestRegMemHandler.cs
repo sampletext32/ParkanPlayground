@@ -37,9 +37,8 @@ public class TestRegMemHandler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "test";
 
-        int position = Decoder.GetPosition();
-
-        if (position >= Length)
+        // Check if we have enough bytes for the ModR/M byte
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
@@ -47,26 +46,19 @@ public class TestRegMemHandler : InstructionHandler
         // Read the ModR/M byte
         var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
-        // For direct register addressing (mod == 3), the r/m field specifies a register
+        // Get the register name for the reg field
+        string regOperand = ModRMDecoder.GetRegisterName(reg, 32);
+        
+        // For direct register addressing (mod == 3), get the r/m register name
         if (mod == 3)
         {
-            // Get the register names
-            string rmReg = ModRMDecoder.GetRegisterName(rm, 32);
-            string regReg = ModRMDecoder.GetRegisterName(reg, 32);
-
-            // Set the operands (TEST r/m32, r32)
-            // In x86 assembly, the TEST instruction has the operand order r/m32, r32
-            // According to Ghidra and standard x86 assembly convention, it should be TEST ECX,EAX
-            // where ECX is the r/m operand and EAX is the reg operand
-            instruction.Operands = $"{rmReg}, {regReg}";
+            string rmOperand = ModRMDecoder.GetRegisterName(rm, 32);
+            instruction.Operands = $"{rmOperand}, {regOperand}";
         }
         else
         {
-            // Get the register name
-            string regReg = ModRMDecoder.GetRegisterName(reg, 32);
-
-            // Set the operands (TEST r/m32, r32)
-            instruction.Operands = $"{destOperand}, {regReg}";
+            // For memory operands, use the decoded operand string
+            instruction.Operands = $"{destOperand}, {regOperand}";
         }
 
         return true;
