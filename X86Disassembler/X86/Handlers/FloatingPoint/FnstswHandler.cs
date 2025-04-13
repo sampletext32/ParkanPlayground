@@ -1,7 +1,7 @@
 namespace X86Disassembler.X86.Handlers.FloatingPoint;
 
 /// <summary>
-/// Handler for FNSTSW instruction (0xDFE0)
+/// Handler for FNSTSW AX instruction (0xDF 0xE0)
 /// </summary>
 public class FnstswHandler : InstructionHandler
 {
@@ -11,11 +11,11 @@ public class FnstswHandler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public FnstswHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public FnstswHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -26,8 +26,12 @@ public class FnstswHandler : InstructionHandler
         // FNSTSW is a two-byte opcode (0xDF 0xE0)
         if (opcode == 0xDF)
         {
-            int position = Decoder.GetPosition();
-            if (position < Length && CodeBuffer[position] == 0xE0)
+            if (!Decoder.CanReadByte())
+            {
+                return false;
+            }
+
+            if (CodeBuffer[Decoder.GetPosition()] == 0xE0)
             {
                 return true;
             }
@@ -44,15 +48,21 @@ public class FnstswHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        int position = Decoder.GetPosition();
+        // Check if we can read the second byte of the opcode
+        if (!Decoder.CanReadByte())
+        {
+            return false;
+        }
         
-        if (position >= Length || CodeBuffer[position] != 0xE0)
+        // Verify the second byte is 0xE0
+        byte secondByte = CodeBuffer[Decoder.GetPosition()];
+        if (secondByte != 0xE0)
         {
             return false;
         }
         
         // Skip the second byte of the opcode
-        Decoder.SetPosition(position + 1);
+        Decoder.ReadByte(); // Consume the 0xE0 byte
         
         // Set the mnemonic and operands
         instruction.Mnemonic = "fnstsw";
