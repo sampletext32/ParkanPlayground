@@ -37,25 +37,13 @@ public class OrRm8R8Handler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "or";
         
-        // Read the ModR/M byte
-        int position = Decoder.GetPosition();
-        if (position >= Length)
+        // Check if we have enough bytes for the ModR/M byte
+        if (!Decoder.CanReadByte())
         {
-            instruction.Operands = "??";
-            return true;
+            return false;
         }
-        
-        byte modRM = CodeBuffer[position];
-        
-        // Check if the next byte is a valid ModR/M byte or potentially another opcode
-        // For the specific case of 0x83, it's a different instruction (ADD r/m32, imm8)
-        if (modRM == 0x83)
-        {
-            // This is likely the start of another instruction, not a ModR/M byte
-            instruction.Operands = "??";
-            return true;
-        }
-        
+
+        // Read the ModR/M byte and decode the operands
         var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
         
         // The register operand is in the reg field (8-bit register)

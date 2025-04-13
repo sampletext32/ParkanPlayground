@@ -15,7 +15,7 @@ public class JmpRel32Handler : InstructionHandler
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -25,7 +25,7 @@ public class JmpRel32Handler : InstructionHandler
     {
         return opcode == 0xE9;
     }
-    
+
     /// <summary>
     /// Decodes a JMP rel32 instruction
     /// </summary>
@@ -37,7 +37,7 @@ public class JmpRel32Handler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "jmp";
         
-        // Check if we have enough bytes for the offset
+        // Check if we have enough bytes for the offset (4 bytes)
         int position = Decoder.GetPosition();
         if (position + 4 > Length)
         {
@@ -45,13 +45,13 @@ public class JmpRel32Handler : InstructionHandler
         }
         
         // Read the offset and calculate target address
-        int offset = (int)Decoder.ReadUInt32();
+        uint offset = Decoder.ReadUInt32();
         
         // Calculate target address (instruction address + instruction length + offset)
         // For JMP rel32, the instruction is 5 bytes: opcode (1 byte) + offset (4 bytes)
         uint targetAddress = (uint)(instruction.Address + 5 + offset);
         
-        // Format the target address
+        // Set the operands
         instruction.Operands = $"0x{targetAddress:X8}";
         
         return true;
