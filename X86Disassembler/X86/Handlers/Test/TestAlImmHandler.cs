@@ -37,9 +37,7 @@ public class TestAlImmHandler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "test";
 
-        int position = Decoder.GetPosition();
-
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
         {
             return false;
         }

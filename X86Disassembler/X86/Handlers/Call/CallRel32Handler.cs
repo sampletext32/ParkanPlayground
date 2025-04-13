@@ -11,11 +11,11 @@ public class CallRel32Handler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public CallRel32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public CallRel32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -25,7 +25,7 @@ public class CallRel32Handler : InstructionHandler
     {
         return opcode == 0xE8;
     }
-    
+
     /// <summary>
     /// Decodes a CALL rel32 instruction
     /// </summary>
@@ -36,23 +36,23 @@ public class CallRel32Handler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "call";
-        
-        int position = Decoder.GetPosition();
-        
-        if (position + 4 > Length)
+
+        if (!Decoder.CanReadUInt())
         {
             return false;
         }
-        
+
+        int position = Decoder.GetPosition();
+
         // Read the relative offset
         uint offset = Decoder.ReadUInt32();
-        
+
         // Calculate the target address
-        uint targetAddress = (uint)(position + offset + 4);
-        
+        uint targetAddress = (uint) (position + offset + 4);
+
         // Set the operands
         instruction.Operands = $"0x{targetAddress:X8}";
-        
+
         return true;
     }
 }

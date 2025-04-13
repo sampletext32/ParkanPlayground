@@ -27,11 +27,10 @@ public class SubImmFromRm8Handler : InstructionHandler
             return false;
 
         // Check if the reg field of the ModR/M byte is 5 (SUB)
-        int position = Decoder.GetPosition();
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = CodeBuffer[position];
+        byte modRM = CodeBuffer[Decoder.GetPosition()];
         byte reg = (byte) ((modRM & 0x38) >> 3);
 
         return reg == 5; // 5 = SUB
@@ -52,8 +51,7 @@ public class SubImmFromRm8Handler : InstructionHandler
         var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
         // Read the immediate byte
-        var position = Decoder.GetPosition();
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
         {
             return false;
         }

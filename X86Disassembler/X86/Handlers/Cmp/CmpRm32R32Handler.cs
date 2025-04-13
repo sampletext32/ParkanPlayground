@@ -36,11 +36,8 @@ public class CmpRm32R32Handler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "cmp";
-        
-        // Save the original position to properly handle the ModR/M byte
-        int originalPosition = Decoder.GetPosition();
-        
-        if (originalPosition >= Length)
+
+        if (!Decoder.CanReadByte())
         {
             return false;
         }

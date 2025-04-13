@@ -38,9 +38,7 @@ public class XorRm16R16Handler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "xor";
 
-        int position = Decoder.GetPosition();
-
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
         {
             return false;
         }

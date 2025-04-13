@@ -23,7 +23,7 @@ public class XchgEaxRegHandler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        return opcode >= 0x90 && opcode <= 0x97;
+        return opcode >= 0x91 && opcode <= 0x97;
     }
 
     /// <summary>
@@ -34,14 +34,6 @@ public class XchgEaxRegHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Special case for NOP (XCHG EAX, EAX)
-        if (opcode == 0x90)
-        {
-            instruction.Mnemonic = "nop";
-            instruction.Operands = "";
-            return true;
-        }
-
         // Set the mnemonic
         instruction.Mnemonic = "xchg";
 

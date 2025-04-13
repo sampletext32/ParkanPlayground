@@ -37,9 +37,8 @@ public class MovMemRegHandler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "mov";
 
-        int position = Decoder.GetPosition();
-
-        if (position >= Length)
+        // Check if we have enough bytes for the ModR/M byte
+        if (!Decoder.CanReadByte())
         {
             return false;
         }

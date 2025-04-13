@@ -28,7 +28,7 @@ public class AndImmWithRm32Handler : InstructionHandler
 
         // Check if the reg field of the ModR/M byte is 4 (AND)
         int position = Decoder.GetPosition();
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
             return false;
 
         byte modRM = CodeBuffer[position];
@@ -55,7 +55,7 @@ public class AndImmWithRm32Handler : InstructionHandler
         int position = Decoder.GetPosition();
 
         // Check if we have enough bytes for the immediate value
-        if (position + 3 >= Length)
+        if (!Decoder.CanReadUInt())
         {
             return false; // Not enough bytes for the immediate value
         }

@@ -37,9 +37,7 @@ public class SubRm8R8Handler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "sub";
 
-        int position = Decoder.GetPosition();
-
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
         {
             return false;
         }

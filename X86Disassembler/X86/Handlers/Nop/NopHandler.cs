@@ -23,6 +23,7 @@ public class NopHandler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
+        // NOP (XCHG EAX, EAX)
         return opcode == 0x90;
     }
 

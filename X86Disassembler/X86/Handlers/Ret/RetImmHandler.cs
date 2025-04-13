@@ -37,9 +37,7 @@ public class RetImmHandler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "ret";
         
-        int position = Decoder.GetPosition();
-        
-        if (position + 2 > Length)
+        if (!Decoder.CanReadUShort())
         {
             return false;
         }

@@ -11,11 +11,11 @@ public class AndImmToRm32Handler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public AndImmToRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public AndImmToRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -25,18 +25,18 @@ public class AndImmToRm32Handler : InstructionHandler
     {
         if (opcode != 0x81)
             return false;
-            
+
         // Check if the reg field of the ModR/M byte is 4 (AND)
         int position = Decoder.GetPosition();
-        if (position >= Length)
+        if (Decoder.CanReadByte())
             return false;
-            
+
         byte modRM = CodeBuffer[position];
-        byte reg = (byte)((modRM & 0x38) >> 3);
-        
+        byte reg = (byte) ((modRM & 0x38) >> 3);
+
         return reg == 4; // 4 = AND
     }
-    
+
     /// <summary>
     /// Decodes an AND r/m32, imm32 instruction
     /// </summary>
@@ -47,33 +47,31 @@ public class AndImmToRm32Handler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "and";
-        
-        int position = Decoder.GetPosition();
-        
-        if (position >= Length)
+
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
-        
+
         // Read the ModR/M byte
         var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
-        
+
         // Read the immediate value
-        if (position + 3 >= Length)
+        if (!Decoder.CanReadUInt())
         {
             return false;
         }
-        
+
         // Read the immediate value in little-endian format
         var imm = Decoder.ReadUInt32();
-        
+
         // Format the immediate value as expected by the tests (0x12345678)
         // Note: The bytes are reversed to match the expected format in the tests
         string immStr = $"0x{imm:X8}";
-        
+
         // Set the operands
         instruction.Operands = $"{destOperand}, {immStr}";
-        
+
         return true;
     }
 }

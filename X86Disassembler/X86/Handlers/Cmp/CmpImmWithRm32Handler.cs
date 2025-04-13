@@ -27,11 +27,10 @@ public class CmpImmWithRm32Handler : InstructionHandler
             return false;
 
         // Check if the reg field of the ModR/M byte is 7 (CMP)
-        int position = Decoder.GetPosition();
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = CodeBuffer[position];
+        byte modRM = CodeBuffer[Decoder.GetPosition()];
         byte reg = (byte) ((modRM & 0x38) >> 3);
 
         return reg == 7; // 7 = CMP
@@ -55,7 +54,7 @@ public class CmpImmWithRm32Handler : InstructionHandler
         int position = Decoder.GetPosition();
 
         // Check if we have enough bytes for the immediate value
-        if (position + 3 >= Length)
+        if (!Decoder.CanReadUInt())
         {
             return false; // Not enough bytes for the immediate value
         }

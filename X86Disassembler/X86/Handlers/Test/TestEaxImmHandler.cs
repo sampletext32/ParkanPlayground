@@ -37,9 +37,7 @@ public class TestEaxImmHandler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "test";
 
-        int position = Decoder.GetPosition();
-
-        if (position + 3 >= Length)
+        if (!Decoder.CanReadUInt())
         {
             return false;
         }

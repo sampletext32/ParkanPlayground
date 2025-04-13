@@ -28,7 +28,7 @@ public class AdcImmToRm32Handler : InstructionHandler
 
         // Check if the reg field of the ModR/M byte is 2 (ADC)
         int position = Decoder.GetPosition();
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
             return false;
 
         byte modRM = CodeBuffer[position];
@@ -48,9 +48,7 @@ public class AdcImmToRm32Handler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "adc";
 
-        int position = Decoder.GetPosition();
-
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
@@ -58,8 +56,7 @@ public class AdcImmToRm32Handler : InstructionHandler
         // Read the ModR/M byte
         var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
-        // Read the immediate value
-        if (position + 3 >= Length)
+        if (!Decoder.CanReadUInt())
         {
             return false;
         }

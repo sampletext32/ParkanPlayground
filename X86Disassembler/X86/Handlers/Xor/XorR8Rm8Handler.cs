@@ -37,18 +37,13 @@ public class XorR8Rm8Handler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "xor";
 
-        int position = Decoder.GetPosition();
-
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
 
         // Read the ModR/M byte
         var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
-        
-        // Advance past the ModR/M byte
-        Decoder.SetPosition(position + 1);
 
         // Get register name (8-bit)
         string regName = ModRMDecoder.GetRegisterName(reg, 8);

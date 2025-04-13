@@ -50,8 +50,12 @@ public class TestImmWithRm32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
         instruction.Mnemonic = "test";
+
+        if (!Decoder.CanReadByte())
+        {
+            return false;
+        }
         
         // Read the ModR/M byte
         var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();

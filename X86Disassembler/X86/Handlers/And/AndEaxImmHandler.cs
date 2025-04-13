@@ -36,11 +36,9 @@ public class AndEaxImmHandler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "and";
-        
-        int position = Decoder.GetPosition();
-        
+
         // Read immediate value
-        if (position + 3 >= Length)
+        if (!Decoder.CanReadUInt())
         {
             instruction.Operands = "eax, ??";
             return true;

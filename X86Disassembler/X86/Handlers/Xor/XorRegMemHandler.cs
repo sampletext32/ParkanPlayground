@@ -36,14 +36,12 @@ public class XorRegMemHandler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "xor";
-        
-        int position = Decoder.GetPosition();
-        
-        if (position >= Length)
+
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
-        
+
         // Read the ModR/M byte
         var (mod, reg, rm, srcOperand) = ModRMDecoder.ReadModRM();
 

@@ -36,11 +36,9 @@ public class AndAlImmHandler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "and";
-        
-        int position = Decoder.GetPosition();
-        
+
         // Read immediate value
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
         {
             instruction.Operands = "al, ??";
             return true;

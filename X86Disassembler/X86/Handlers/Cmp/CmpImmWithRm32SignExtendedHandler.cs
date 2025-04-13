@@ -28,7 +28,7 @@ public class CmpImmWithRm32SignExtendedHandler : InstructionHandler
 
         // Check if the reg field of the ModR/M byte is 7 (CMP)
         int position = Decoder.GetPosition();
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
             return false;
 
         byte modRM = CodeBuffer[position];
@@ -50,7 +50,7 @@ public class CmpImmWithRm32SignExtendedHandler : InstructionHandler
 
         int position = Decoder.GetPosition();
 
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
@@ -59,14 +59,13 @@ public class CmpImmWithRm32SignExtendedHandler : InstructionHandler
         var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
         // Read the immediate value
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
 
         // Read the immediate value as a signed byte and sign-extend it
         sbyte imm8 = (sbyte) Decoder.ReadByte();
-        Decoder.SetPosition(position);
 
         // Set the operands
         instruction.Operands = $"{destOperand}, 0x{(uint) imm8:X2}";

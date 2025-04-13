@@ -11,11 +11,11 @@ public class AndR32Rm32Handler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public AndR32Rm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public AndR32Rm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -25,7 +25,7 @@ public class AndR32Rm32Handler : InstructionHandler
     {
         return opcode == 0x23;
     }
-    
+
     /// <summary>
     /// Decodes an AND r32, r/m32 instruction
     /// </summary>
@@ -36,20 +36,18 @@ public class AndR32Rm32Handler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "and";
-        
-        int position = Decoder.GetPosition();
-        
-        if (position >= Length)
+
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
-        
+
         // Read the ModR/M byte
         var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
-        
+
         // Get register name
         string regName = ModRMDecoder.GetRegisterName(reg, 32);
-        
+
         // For mod == 3, both operands are registers
         if (mod == 3)
         {

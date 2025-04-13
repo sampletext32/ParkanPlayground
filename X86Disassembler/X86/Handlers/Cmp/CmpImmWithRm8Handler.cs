@@ -55,7 +55,7 @@ public class CmpImmWithRm8Handler : InstructionHandler
         int position = Decoder.GetPosition();
 
         // Check if we have enough bytes for the immediate value
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
         {
             return false; // Not enough bytes for the immediate value
         }

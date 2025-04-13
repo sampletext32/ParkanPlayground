@@ -27,11 +27,10 @@ public class OrImmToRm32Handler : InstructionHandler
             return false;
 
         // Check if the reg field of the ModR/M byte is 1 (OR)
-        int position = Decoder.GetPosition();
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = CodeBuffer[position];
+        byte modRM = CodeBuffer[Decoder.GetPosition()];
         byte reg = (byte) ((modRM & 0x38) >> 3);
 
         return reg == 1; // 1 = OR
@@ -48,7 +47,7 @@ public class OrImmToRm32Handler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "or";
 
-        if (Decoder.GetPosition() >= Length)
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
@@ -56,10 +55,7 @@ public class OrImmToRm32Handler : InstructionHandler
         // Read the ModR/M byte
         var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
-        int position = Decoder.GetPosition();
-
-        // Read the immediate value
-        if (position + 3 >= Length)
+        if (!Decoder.CanReadByte())
         {
             return false;
         }

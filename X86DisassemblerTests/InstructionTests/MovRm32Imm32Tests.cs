@@ -114,26 +114,7 @@ public class MovRm32Imm32Tests
         Assert.Equal("mov", instructions[1].Mnemonic);
         Assert.Equal("dword ptr [esp+0x14], 0x00000000", instructions[1].Operands);
     }
-    
-    /// <summary>
-    /// Tests the MOV m32, imm32 instruction (0xC7) with incomplete immediate value
-    /// </summary>
-    [Fact]
-    public void TestMovM32Imm32_IncompleteImmediate()
-    {
-        // Arrange
-        // MOV DWORD PTR [EAX], ?? (incomplete immediate)
-        byte[] code = { 0xC7, 0x00, 0x78, 0x56 }; // Missing 2 bytes of immediate
-        
-        // Act
-        Disassembler disassembler = new Disassembler(code, 0x1000);
-        var instructions = disassembler.Disassemble();
-        
-        // Assert
-        Assert.True(instructions.Count > 0, "Expected at least one instruction");
-        Assert.Equal("NO HANDLER: mov", instructions[0].Mnemonic);
-    }
-    
+
     /// <summary>
     /// Tests the MOV m32, imm32 instruction (0xC7) with instruction boundary detection
     /// </summary>

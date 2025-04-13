@@ -11,11 +11,11 @@ public class AndR8Rm8Handler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public AndR8Rm8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public AndR8Rm8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -25,7 +25,7 @@ public class AndR8Rm8Handler : InstructionHandler
     {
         return opcode == 0x22;
     }
-    
+
     /// <summary>
     /// Decodes an AND r8, r/m8 instruction
     /// </summary>
@@ -36,20 +36,18 @@ public class AndR8Rm8Handler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "and";
-        
-        int position = Decoder.GetPosition();
-        
-        if (position >= Length)
+
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
-        
+
         // Read the ModR/M byte
         var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
-        
+
         // Get register name
         string regName = ModRMDecoder.GetRegisterName(reg, 8);
-        
+
         // For mod == 3, both operands are registers
         if (mod == 3)
         {
@@ -60,7 +58,7 @@ public class AndR8Rm8Handler : InstructionHandler
         {
             instruction.Operands = $"{regName}, byte ptr {memOperand}";
         }
-        
+
         return true;
     }
 }

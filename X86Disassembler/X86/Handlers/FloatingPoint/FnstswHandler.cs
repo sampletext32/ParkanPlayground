@@ -55,14 +55,11 @@ public class FnstswHandler : InstructionHandler
         }
         
         // Verify the second byte is 0xE0
-        byte secondByte = CodeBuffer[Decoder.GetPosition()];
+        byte secondByte = Decoder.ReadByte();
         if (secondByte != 0xE0)
         {
             return false;
         }
-        
-        // Skip the second byte of the opcode
-        Decoder.ReadByte(); // Consume the 0xE0 byte
         
         // Set the mnemonic and operands
         instruction.Mnemonic = "fnstsw";

@@ -37,16 +37,13 @@ public class CmpAlImmHandler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "cmp";
 
-        int position = Decoder.GetPosition();
-
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
 
         // Read the immediate value
         byte imm8 = Decoder.ReadByte();
-        Decoder.SetPosition(position);
 
         // Set the operands
         instruction.Operands = $"al, 0x{imm8:X2}";

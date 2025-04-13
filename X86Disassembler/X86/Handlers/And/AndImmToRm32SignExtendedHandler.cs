@@ -11,11 +11,11 @@ public class AndImmToRm32SignExtendedHandler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public AndImmToRm32SignExtendedHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public AndImmToRm32SignExtendedHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -27,22 +27,22 @@ public class AndImmToRm32SignExtendedHandler : InstructionHandler
         {
             return false;
         }
-        
+
         // Check if we have enough bytes to read the ModR/M byte
         int position = Decoder.GetPosition();
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
-        
+
         // Read the ModR/M byte to check the reg field (bits 5-3)
         byte modRM = CodeBuffer[position];
         int reg = (modRM >> 3) & 0x7;
-        
+
         // reg = 4 means AND operation
         return reg == 4;
     }
-    
+
     /// <summary>
     /// Decodes an AND r/m32, imm8 (sign-extended) instruction
     /// </summary>
@@ -53,22 +53,18 @@ public class AndImmToRm32SignExtendedHandler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "and";
-        
+
         // Read the ModR/M byte
         var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
-        
-        // Get the position after decoding the ModR/M byte
-        int position = Decoder.GetPosition();
-        
-        // Check if we have enough bytes for the immediate value
-        if (position >= Length)
+
+        if (!Decoder.CanReadByte())
         {
             return false; // Not enough bytes for the immediate value
         }
-        
+
         // Read the immediate value as a signed byte and automatically sign-extend it to int
-        int signExtendedImm = (sbyte)Decoder.ReadByte();
-        
+        int imm = (sbyte) Decoder.ReadByte();
+
         // Format the destination operand based on addressing mode
         string destOperand;
         if (mod == 3) // Register addressing mode
@@ -81,23 +77,23 @@ public class AndImmToRm32SignExtendedHandler : InstructionHandler
             // Memory operand already includes dword ptr prefix
             destOperand = memOperand;
         }
-        
+
         // Format the immediate value
         string immStr;
-        if (signExtendedImm < 0)
+        if (imm < 0)
         {
             // For negative values, use the full 32-bit representation
-            immStr = $"0x{(uint)signExtendedImm:X8}";
+            immStr = $"0x{(uint) imm:X8}";
         }
         else
         {
             // For positive values, use the regular format with leading zeros
-            immStr = $"0x{signExtendedImm:X8}";
+            immStr = $"0x{imm:X8}";
         }
-        
+
         // Set the operands
         instruction.Operands = $"{destOperand}, {immStr}";
-        
+
         return true;
     }
 }

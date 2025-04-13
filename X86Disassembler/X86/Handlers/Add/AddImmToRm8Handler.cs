@@ -28,7 +28,7 @@ public class AddImmToRm8Handler : InstructionHandler
 
         // Check if the reg field of the ModR/M byte is 0 (ADD)
         int position = Decoder.GetPosition();
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
             return false;
 
         byte modRM = CodeBuffer[position];
@@ -48,9 +48,7 @@ public class AddImmToRm8Handler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "add";
 
-        int position = Decoder.GetPosition();
-
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
@@ -66,7 +64,7 @@ public class AddImmToRm8Handler : InstructionHandler
         }
 
         // Read the immediate value
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
         {
             return false;
         }

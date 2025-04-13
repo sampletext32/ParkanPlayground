@@ -11,11 +11,11 @@ public class AndImmToRm8Handler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public AndImmToRm8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public AndImmToRm8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -27,22 +27,22 @@ public class AndImmToRm8Handler : InstructionHandler
         {
             return false;
         }
-        
+
         // Check if we have enough bytes to read the ModR/M byte
-        int position = Decoder.GetPosition();
-        if (position >= Length)
+        if (Decoder.CanReadByte())
         {
             return false;
         }
-        
+
+        int position = Decoder.GetPosition();
         // Read the ModR/M byte to check the reg field (bits 5-3)
         byte modRM = CodeBuffer[position];
         int reg = (modRM >> 3) & 0x7;
-        
+
         // reg = 4 means AND operation
         return reg == 4;
     }
-    
+
     /// <summary>
     /// Decodes an AND r/m8, imm8 instruction
     /// </summary>
@@ -53,22 +53,18 @@ public class AndImmToRm8Handler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "and";
-        
+
         // Read the ModR/M byte
         var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
-        
-        // Get the position after decoding the ModR/M byte
-        int position = Decoder.GetPosition();
-        
-        // Check if we have enough bytes for the immediate value
-        if (position >= Length)
+
+        if (!Decoder.CanReadByte())
         {
             return false; // Not enough bytes for the immediate value
         }
-        
+
         // Read the immediate value
         byte imm8 = Decoder.ReadByte();
-        
+
         // Format the destination operand based on addressing mode
         string destOperand;
         if (mod == 3) // Register addressing mode
@@ -81,13 +77,13 @@ public class AndImmToRm8Handler : InstructionHandler
             // Add byte ptr prefix for memory operands
             destOperand = $"byte ptr {memOperand}";
         }
-        
+
         // Format the immediate value
         string immStr = $"0x{imm8:X2}";
-        
+
         // Set the operands
         instruction.Operands = $"{destOperand}, {immStr}";
-        
+
         return true;
     }
 }

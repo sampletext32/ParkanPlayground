@@ -38,10 +38,7 @@ public class SubAxImm16Handler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "sub";
 
-        int position = Decoder.GetPosition();
-
-        // Check if we have enough bytes for the immediate value
-        if (position + 1 >= Length)
+        if (!Decoder.CanReadUShort())
         {
             return false;
         }

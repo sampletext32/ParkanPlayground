@@ -47,17 +47,18 @@ public class StringInstructionHandler : InstructionHandler
         }
         
         // Check if the opcode is a REP/REPNE prefix followed by a string instruction
-        if (opcode == REP_PREFIX || opcode == REPNE_PREFIX)
+        if (opcode != REP_PREFIX && opcode != REPNE_PREFIX)
         {
-            int position = Decoder.GetPosition();
-            if (position < Length)
-            {
-                byte nextByte = CodeBuffer[position];
-                return StringInstructions.ContainsKey(nextByte);
-            }
+            return false;
         }
         
-        return false;
+        if (!Decoder.CanReadByte())
+        {
+            return false;
+        }
+        
+        byte nextByte = CodeBuffer[Decoder.GetPosition()];
+        return StringInstructions.ContainsKey(nextByte);
     }
     
     /// <summary>
@@ -79,33 +80,33 @@ public class StringInstructionHandler : InstructionHandler
         {
             // Set the prefix string based on the prefix opcode
             prefixString = opcode == REP_PREFIX ? "rep " : "repne ";
-            
+
             // Read the next byte (the actual string instruction opcode)
-            int position = Decoder.GetPosition();
-            if (position >= Length)
+            if (!Decoder.CanReadByte())
             {
                 return false;
             }
-            
+
             stringOpcode = Decoder.ReadByte();
+
             if (!StringInstructions.ContainsKey(stringOpcode))
             {
                 return false;
             }
         }
-        
+
         // Get the mnemonic and operands for the string instruction
         if (StringInstructions.TryGetValue(stringOpcode, out var instructionInfo))
         {
             // Set the mnemonic with the prefix if present
             instruction.Mnemonic = prefixString + instructionInfo.Mnemonic;
-            
+
             // Set the operands
             instruction.Operands = instructionInfo.Operands;
-            
+
             return true;
         }
-        
+
         // This shouldn't happen if CanHandle is called first
         return false;
     }

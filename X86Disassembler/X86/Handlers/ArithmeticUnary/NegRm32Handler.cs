@@ -11,11 +11,11 @@ public class NegRm32Handler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public NegRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public NegRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -25,18 +25,18 @@ public class NegRm32Handler : InstructionHandler
     {
         if (opcode != 0xF7)
             return false;
-            
+
         // Check if the reg field of the ModR/M byte is 3 (NEG)
         int position = Decoder.GetPosition();
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
             return false;
-            
+
         byte modRM = CodeBuffer[position];
-        byte reg = (byte)((modRM & 0x38) >> 3);
-        
+        byte reg = (byte) ((modRM & 0x38) >> 3);
+
         return reg == 3; // 3 = NEG
     }
-    
+
     /// <summary>
     /// Decodes a NEG r/m32 instruction
     /// </summary>
@@ -47,20 +47,18 @@ public class NegRm32Handler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "neg";
-        
-        int position = Decoder.GetPosition();
-        
-        if (position >= Length)
+
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
-        
+
         // Read the ModR/M byte
         var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
-        
+
         // Set the operands
         instruction.Operands = destOperand;
-        
+
         return true;
     }
 }

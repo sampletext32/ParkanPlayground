@@ -27,11 +27,10 @@ public class XorImmWithRm32Handler : InstructionHandler
             return false;
             
         // Check if the reg field of the ModR/M byte is 6 (XOR)
-        int position = Decoder.GetPosition();
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
             return false;
             
-        byte modRM = CodeBuffer[position];
+        byte modRM = CodeBuffer[Decoder.GetPosition()];
         byte reg = (byte)((modRM & 0x38) >> 3);
         
         return reg == 6; // 6 = XOR
@@ -48,9 +47,7 @@ public class XorImmWithRm32Handler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "xor";
         
-        int position = Decoder.GetPosition();
-        
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
@@ -58,16 +55,12 @@ public class XorImmWithRm32Handler : InstructionHandler
         // Read the ModR/M byte
         var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
         
-        // Get the updated position after ModR/M decoding
-        position = Decoder.GetPosition();
-        
         // Read the immediate value
-        if (position + 3 >= Length)
+        if (!Decoder.CanReadUInt())
         {
             return false;
         }
 
-        // Read the immediate value using the decoder
         var imm = Decoder.ReadUInt32();
 
         // Format the immediate value

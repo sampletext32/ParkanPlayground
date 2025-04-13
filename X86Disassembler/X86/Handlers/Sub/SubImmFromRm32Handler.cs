@@ -27,11 +27,10 @@ public class SubImmFromRm32Handler : InstructionHandler
             return false;
 
         // Check if the reg field of the ModR/M byte is 5 (SUB)
-        int position = Decoder.GetPosition();
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = CodeBuffer[position];
+        byte modRM = CodeBuffer[Decoder.GetPosition()];
         byte reg = (byte) ((modRM & 0x38) >> 3);
 
         return reg == 5; // 5 = SUB
@@ -48,25 +47,16 @@ public class SubImmFromRm32Handler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "sub";
 
-        int position = Decoder.GetPosition();
-
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
 
         // Read the ModR/M byte
-
-        // Extract the fields from the ModR/M byte
-        // Let the ModRMDecoder handle the ModR/M byte and any additional bytes (SIB, displacement)
-        // This will update the decoder position to point after the ModR/M and any additional bytes
         var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
-        // Get the updated position after ModR/M decoding
-        position = Decoder.GetPosition();
-
         // Read the immediate value
-        if (position + 3 >= Length)
+        if (!Decoder.CanReadUInt())
         {
             return false;
         }

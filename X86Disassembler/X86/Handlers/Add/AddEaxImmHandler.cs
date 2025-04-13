@@ -11,11 +11,11 @@ public class AddEaxImmHandler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public AddEaxImmHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public AddEaxImmHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -25,7 +25,7 @@ public class AddEaxImmHandler : InstructionHandler
     {
         return opcode == 0x05;
     }
-    
+
     /// <summary>
     /// Decodes an ADD EAX, imm32 instruction
     /// </summary>
@@ -36,24 +36,21 @@ public class AddEaxImmHandler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "add";
-        
-        int position = Decoder.GetPosition();
-        
-        // Check if we have enough bytes for the immediate value
-        if (position + 3 >= Length)
+
+        if (!Decoder.CanReadUInt())
         {
-            return false; // Not enough bytes for the immediate value
+            return false;
         }
-        
+
         // Read the 32-bit immediate value
         uint imm32 = Decoder.ReadUInt32();
-        
+
         // Format the immediate value
         string immStr = $"0x{imm32:X}";
-        
+
         // Set the operands
         instruction.Operands = $"eax, {immStr}";
-        
+
         return true;
     }
 }

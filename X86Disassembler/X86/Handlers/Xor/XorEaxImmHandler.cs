@@ -37,9 +37,7 @@ public class XorEaxImmHandler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "xor";
         
-        int position = Decoder.GetPosition();
-        
-        if (position + 4 > Length)
+        if (!Decoder.CanReadUInt())
         {
             return false;
         }

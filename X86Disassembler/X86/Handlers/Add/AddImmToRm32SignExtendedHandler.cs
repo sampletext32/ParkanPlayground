@@ -11,11 +11,11 @@ public class AddImmToRm32SignExtendedHandler : InstructionHandler
     /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     /// <param name="length">The length of the buffer</param>
-    public AddImmToRm32SignExtendedHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
+    public AddImmToRm32SignExtendedHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
         : base(codeBuffer, decoder, length)
     {
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
@@ -25,18 +25,18 @@ public class AddImmToRm32SignExtendedHandler : InstructionHandler
     {
         if (opcode != 0x83)
             return false;
-            
+
         // Check if the reg field of the ModR/M byte is 0 (ADD)
         int position = Decoder.GetPosition();
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
             return false;
-            
+
         byte modRM = CodeBuffer[position];
-        byte reg = (byte)((modRM & 0x38) >> 3);
-        
+        byte reg = (byte) ((modRM & 0x38) >> 3);
+
         return reg == 0; // 0 = ADD
     }
-    
+
     /// <summary>
     /// Decodes an ADD r/m32, imm8 (sign-extended) instruction
     /// </summary>
@@ -47,45 +47,40 @@ public class AddImmToRm32SignExtendedHandler : InstructionHandler
     {
         // Set the mnemonic
         instruction.Mnemonic = "add";
-        
-        int position = Decoder.GetPosition();
-        
-        if (position >= Length)
+
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
-        
+
         // Read the ModR/M byte
         var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
-        
-        // Get the position after decoding the ModR/M byte
-        position = Decoder.GetPosition();
-        
+
         // Check if we have enough bytes for the immediate value
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
-        
+
         // Read the immediate value as a signed byte and automatically sign-extend it to int
-        int signExtendedImm = (sbyte)Decoder.ReadByte();
-        
+        int imm = (sbyte) Decoder.ReadByte();
+
         // Format the immediate value
         string immStr;
-        if (signExtendedImm < 0)
+        if (imm < 0)
         {
             // For negative values, use the full 32-bit representation (0xFFFFFFxx)
-            immStr = $"0x{(uint)signExtendedImm:X8}";
+            immStr = $"0x{(uint) imm:X8}";
         }
         else
         {
             // For positive values, use the regular format with leading zeros
-            immStr = $"0x{signExtendedImm:X8}";
+            immStr = $"0x{imm:X8}";
         }
-        
+
         // Set the operands
         instruction.Operands = $"{destOperand}, {immStr}";
-        
+
         return true;
     }
 }

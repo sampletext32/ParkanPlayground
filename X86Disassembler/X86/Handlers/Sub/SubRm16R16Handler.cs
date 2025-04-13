@@ -38,9 +38,7 @@ public class SubRm16R16Handler : InstructionHandler
         // Set the mnemonic
         instruction.Mnemonic = "sub";
 
-        int position = Decoder.GetPosition();
-
-        if (position >= Length)
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
@@ -59,7 +57,6 @@ public class SubRm16R16Handler : InstructionHandler
         }
         else // Memory operand
         {
-            // Replace "dword" with "word" in the memory operand
             destOperand = destOperand.Replace("dword", "word");
 
             instruction.Operands = $"{destOperand}, {regName}";
