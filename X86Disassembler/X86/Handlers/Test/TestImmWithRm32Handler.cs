@@ -68,9 +68,8 @@ public class TestImmWithRm32Handler : InstructionHandler
             return false;
         }
 
-        // Read the immediate value using BitConverter
-        uint imm32 = BitConverter.ToUInt32(CodeBuffer, position);
-        Decoder.SetPosition(position + 4);
+        // Read the immediate value
+        uint imm32 = Decoder.ReadUInt32();
 
         // Set the operands
         instruction.Operands = $"{destOperand}, 0x{imm32:X8}";

@@ -65,18 +65,10 @@ public class AdcImmToRm32Handler : InstructionHandler
         }
 
         // Read the immediate value in little-endian format
-        var imm = Decoder.ReadUInt32();
-
-        // Format the immediate value as expected by the tests (0x12345678)
-        // Note: The bytes are reversed to match the expected format in the tests
-        string immStr = $"0x{imm:X8}";
-
-        // Advance the position past the immediate value
-        position += 4;
-        Decoder.SetPosition(position);
+        var imm32 = Decoder.ReadUInt32();
 
         // Set the operands
-        instruction.Operands = $"{destOperand}, {immStr}";
+        instruction.Operands = $"{destOperand}, 0x{imm32:X8}";
 
         return true;
     }

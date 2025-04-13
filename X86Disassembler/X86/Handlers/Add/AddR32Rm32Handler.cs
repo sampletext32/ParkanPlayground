@@ -50,17 +50,13 @@ public class AddR32Rm32Handler : InstructionHandler
         // Get the register name
         string regName = ModRMDecoder.GetRegisterName(reg, 32);
 
-        // For memory operands, set the operand
-        if (mod != 3) // Memory operand
+        if (mod == 3)
         {
-            string operand = ModRMDecoder.DecodeModRM(mod, rm, false);
-            instruction.Operands = $"{regName}, {operand}";
+            // Register operand
+            destOperand = ModRMDecoder.GetRegisterName(rm, 32);
         }
-        else // Register operand
-        {
-            string rmName = ModRMDecoder.GetRegisterName(rm, 32);
-            instruction.Operands = $"{regName}, {rmName}";
-        }
+
+        instruction.Operands = $"{regName}, {destOperand}";
 
         return true;
     }

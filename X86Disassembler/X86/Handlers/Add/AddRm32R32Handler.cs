@@ -48,19 +48,15 @@ public class AddRm32R32Handler : InstructionHandler
         instruction.Mnemonic = "add";
 
         // Get the register name
-        string regName = ModRMDecoder.GetRegisterName(reg, 32);;
+        string regName = ModRMDecoder.GetRegisterName(reg, 32);
 
-        // For memory operands, set the operand
-        if (mod != 3) // Memory operand
+        if (mod == 3)
         {
-            string operand = ModRMDecoder.DecodeModRM(mod, rm, false);
-            instruction.Operands = $"{operand}, {regName}";
+            // Register operand
+            destOperand = ModRMDecoder.GetRegisterName(rm, 32);
         }
-        else // Register operand
-        {
-            string rmName = ModRMDecoder.GetRegisterName(rm, 32);;
-            instruction.Operands = $"{rmName}, {regName}";
-        }
+
+        instruction.Operands = $"{destOperand}, {regName}";
 
         return true;
     }

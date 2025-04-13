@@ -53,14 +53,11 @@ public class AndMemRegHandler : InstructionHandler
         // For mod == 3, both operands are registers
         if (mod == 3)
         {
-            string rmRegName = ModRMDecoder.GetRegisterName(rm, 32);
-            instruction.Operands = $"{rmRegName}, {regName}";
+            memOperand = ModRMDecoder.GetRegisterName(rm, 32);
         }
-        else // Memory operand
-        {
-            instruction.Operands = $"{memOperand}, {regName}";
-        }
-        
+
+        instruction.Operands = $"{memOperand}, {regName}";
+
         return true;
     }
 }

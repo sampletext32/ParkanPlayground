@@ -53,14 +53,11 @@ public class AndR32Rm32Handler : InstructionHandler
         // For mod == 3, both operands are registers
         if (mod == 3)
         {
-            string rmRegName = ModRMDecoder.GetRegisterName(rm, 32);
-            instruction.Operands = $"{regName}, {rmRegName}";
+            memOperand = ModRMDecoder.GetRegisterName(rm, 32);
         }
-        else // Memory operand
-        {
-            instruction.Operands = $"{regName}, {memOperand}";
-        }
-        
+
+        instruction.Operands = $"{regName}, {memOperand}";
+
         return true;
     }
 }

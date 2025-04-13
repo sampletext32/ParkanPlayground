@@ -64,8 +64,7 @@ public class OrImmToRm32Handler : InstructionHandler
             return false;
         }
 
-        uint imm32 = BitConverter.ToUInt32(CodeBuffer, position);
-        Decoder.SetPosition(position + 4);
+        uint imm32 = Decoder.ReadUInt32();
 
         // Set the operands
         instruction.Operands = $"{destOperand}, 0x{imm32:X8}";

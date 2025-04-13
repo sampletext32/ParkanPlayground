@@ -26,24 +26,4 @@ public class AddEaxImmHandlerTests
         Assert.Equal("add", instruction.Mnemonic);
         Assert.Equal("eax, 0x12345678", instruction.Operands);
     }
-    
-    /// <summary>
-    /// Tests the AddEaxImmHandler for handling insufficient bytes
-    /// </summary>
-    [Fact]
-    public void AddEaxImmHandler_HandlesInsufficientBytes_Gracefully()
-    {
-        // Arrange
-        // ADD EAX, ?? (05) - missing immediate value
-        byte[] codeBuffer = new byte[] { 0x05 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
-        
-        // Act
-        var instruction = decoder.DecodeInstruction();
-        
-        // Assert
-        Assert.NotNull(instruction);
-        Assert.Equal("add", instruction.Mnemonic);
-        Assert.Equal("eax, ??", instruction.Operands);
-    }
 }

@@ -74,8 +74,7 @@ public class TwoByteConditionalJumpHandler : InstructionHandler
         }
         
         // Read the relative offset (32-bit)
-        int offset = BitConverter.ToInt32(CodeBuffer, position);
-        Decoder.SetPosition(position + 4);
+        uint offset = Decoder.ReadUInt32();
         
         // Calculate the target address
         uint targetAddress = (uint)(position + offset + 4);

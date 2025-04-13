@@ -45,8 +45,7 @@ public class RetImmHandler : InstructionHandler
         }
         
         // Read the immediate value
-        ushort imm16 = BitConverter.ToUInt16(CodeBuffer, position);
-        Decoder.SetPosition(position + 2);
+        ushort imm16 = Decoder.ReadUInt16();
         
         // Set the operands
         instruction.Operands = $"0x{imm16:X4}";

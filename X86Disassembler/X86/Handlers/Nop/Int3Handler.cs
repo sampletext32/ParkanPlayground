@@ -1,4 +1,4 @@
-namespace X86Disassembler.X86.Handlers;
+namespace X86Disassembler.X86.Handlers.Nop;
 
 /// <summary>
 /// Handler for INT3 instruction (0xCC)
