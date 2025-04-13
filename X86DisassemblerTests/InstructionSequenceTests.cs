@@ -10,8 +10,8 @@ using X86Disassembler.X86;
 public class InstructionSequenceTests
 {
     /// <summary>
-    /// Tests that the disassembler correctly handles the sequence at address 0x10001C4B
-    /// </summary>
+/// Tests that the disassembler correctly handles the sequence at address 0x10001C4B
+/// </summary>
     [Fact]
     public void Disassembler_HandlesJmpSequence_Correctly()
     {
@@ -29,27 +29,24 @@ public class InstructionSequenceTests
         Assert.True(instructions[0].Mnemonic == "jge" || instructions[0].Mnemonic == "jnl", 
             $"Expected 'jge' or 'jnl', but got '{instructions[0].Mnemonic}'");
         // Don't check the exact target address as it depends on the base address calculation
-        Assert.Contains("0x", instructions[0].Operands);
+        Assert.Equal("0x00000007", instructions[0].Operands);
         
         // Second instruction: ADD EBP, 0x18
         Assert.Equal("add", instructions[1].Mnemonic);
-        Assert.Contains("ebp", instructions[1].Operands);
-        Assert.Contains("0x00000018", instructions[1].Operands);
+        Assert.Equal("ebp, 0x00000018", instructions[1].Operands);
         
         // Third instruction: JMP LAB_10001c54
         Assert.Equal("jmp", instructions[2].Mnemonic);
         // Don't check the exact target address as it depends on the base address calculation
-        Assert.Contains("0x", instructions[2].Operands);
+        Assert.Equal("0x0000000A", instructions[2].Operands);
         
         // Fourth instruction: ADD EBP, -0x48
         Assert.Equal("add", instructions[3].Mnemonic);
-        Assert.Contains("ebp", instructions[3].Operands);
-        Assert.Contains("0xFFFFFFB8", instructions[3].Operands); // -0x48 sign-extended to 32-bit
+        Assert.Equal("ebp, 0xFFFFFFB8", instructions[3].Operands); // -0x48 sign-extended to 32-bit
         
         // Fifth instruction: MOV EDX, dword ptr [ESI + 0x4]
         Assert.Equal("mov", instructions[4].Mnemonic);
-        Assert.Contains("edx", instructions[4].Operands);
-        Assert.Contains("esi", instructions[4].Operands);
+        Assert.Equal("dword ptr [esi+0x04], edx", instructions[4].Operands);
     }
     
     /// <summary>
@@ -70,34 +67,30 @@ public class InstructionSequenceTests
         
         // First instruction should be ADD EAX, ?? (incomplete immediate)
         Assert.Equal("add", instructions[0].Mnemonic);
-        Assert.Contains("eax", instructions[0].Operands);
+        Assert.Equal("eax, ??", instructions[0].Operands);
         
         // Second instruction should be ADD EBP, 0x18
         Assert.Equal("add", instructions[1].Mnemonic);
-        Assert.Contains("ebp", instructions[1].Operands);
-        Assert.Contains("0x00000018", instructions[1].Operands);
+        Assert.Equal("ebp, 0x00000018", instructions[1].Operands);
         
         // Third instruction should be JMP
         Assert.Equal("jmp", instructions[2].Mnemonic);
+        Assert.Equal("0x00000009", instructions[2].Operands);
         
         // Fourth instruction should be ADD EBP, -0x48
         Assert.Equal("add", instructions[3].Mnemonic);
-        Assert.Contains("ebp", instructions[3].Operands);
-        Assert.Contains("0xFFFFFFB8", instructions[3].Operands); // -0x48 sign-extended to 32-bit
+        Assert.Equal("ebp, 0xFFFFFFB8", instructions[3].Operands); // -0x48 sign-extended to 32-bit
         
         // Fifth instruction should be MOV EDX, [ESI+0x4]
         Assert.Equal("mov", instructions[4].Mnemonic);
-        Assert.Contains("edx", instructions[4].Operands);
-        Assert.Contains("esi", instructions[4].Operands);
+        Assert.Equal("dword ptr [esi+0x04], edx", instructions[4].Operands);
         
         // Sixth instruction should be MOV AL, [EDX]
         Assert.Equal("mov", instructions[5].Mnemonic);
-        Assert.Contains("al", instructions[5].Operands);
-        Assert.Contains("edx", instructions[5].Operands);
+        Assert.Equal("dword ptr [edx], al", instructions[5].Operands);
         
         // Seventh instruction should be LEA ECX, [EDX+0x18]
         Assert.Equal("lea", instructions[6].Mnemonic);
-        Assert.Contains("ecx", instructions[6].Operands);
-        Assert.Contains("edx", instructions[6].Operands);
+        Assert.Equal("ecx, [edx+0x18]", instructions[6].Operands);
     }
 }

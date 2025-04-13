@@ -10,8 +10,8 @@ using X86Disassembler.X86;
 public class InstructionBoundaryTests
 {
     /// <summary>
-    /// Tests that the disassembler correctly handles instruction boundaries
-    /// </summary>
+/// Tests that the disassembler correctly handles instruction boundaries
+/// </summary>
     [Fact]
     public void Disassembler_HandlesInstructionBoundaries_Correctly()
     {
@@ -32,10 +32,7 @@ public class InstructionBoundaryTests
         
         // Second instruction should be ADD ecx, 0x04
         Assert.Equal("add", instructions[1].Mnemonic);
-        Assert.Contains("ecx", instructions[1].Operands);
-        // Accept either format for the immediate value
-        Assert.True(instructions[1].Operands.Contains("0x04") || instructions[1].Operands.Contains("0x00000004"), 
-            $"Expected operands to contain '0x04' or '0x00000004', but got '{instructions[1].Operands}'");
+        Assert.Equal("ecx, 0x00000004", instructions[1].Operands);
         
         // Third instruction should be PUSH eax
         Assert.Equal("push", instructions[2].Mnemonic);

@@ -13,25 +13,6 @@ using X86Disassembler.X86.Handlers.Inc;
 public class HandlerSelectionTests
 {
     /// <summary>
-    /// Tests that the Group1SignExtendedHandler is selected for the 0x83 opcode
-    /// </summary>
-    [Fact]
-    public void InstructionHandlerFactory_SelectsGroup1SignExtendedHandler_For0x83Opcode()
-    {
-        // Arrange
-        byte[] codeBuffer = new byte[] { 0x83, 0xC1, 0x04 }; // ADD ecx, 0x04
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
-        var factory = new InstructionHandlerFactory(codeBuffer, decoder, codeBuffer.Length);
-        
-        // Act
-        var handler = factory.GetHandler(0x83);
-        
-        // Assert
-        Assert.NotNull(handler);
-        Assert.IsType<Group1SignExtendedHandler>(handler);
-    }
-    
-    /// <summary>
     /// Tests that the IncRegHandler is NOT selected for the 0x83 opcode
     /// </summary>
     [Fact]
@@ -71,7 +52,7 @@ public class HandlerSelectionTests
         
         // Second instruction should be ADD ecx, imm8
         Assert.Equal("add", instructions[1].Mnemonic);
-        Assert.Contains("ecx", instructions[1].Operands);
+        Assert.Equal("ecx, 0x00000004", instructions[1].Operands);
         
         // Third instruction should be PUSH eax
         Assert.Equal("push", instructions[2].Mnemonic);

@@ -26,10 +26,7 @@ public class Group1SignExtendedHandlerTests
         // Assert
         Assert.NotNull(instruction);
         Assert.Equal("add", instruction.Mnemonic);
-        Assert.Contains("ecx", instruction.Operands);
-        // Accept either format for the immediate value
-        Assert.True(instruction.Operands.Contains("0x04") || instruction.Operands.Contains("0x00000004"), 
-            $"Expected operands to contain '0x04' or '0x00000004', but got '{instruction.Operands}'");
+        Assert.Equal("ecx, 0x00000004", instruction.Operands);
     }
     
     /// <summary>
@@ -55,10 +52,7 @@ public class Group1SignExtendedHandlerTests
         
         // Second instruction should be ADD ecx, 0x04
         Assert.Equal("add", instructions[1].Mnemonic);
-        Assert.Contains("ecx", instructions[1].Operands);
-        // Accept either format for the immediate value
-        Assert.True(instructions[1].Operands.Contains("0x04") || instructions[1].Operands.Contains("0x00000004"), 
-            $"Expected operands to contain '0x04' or '0x00000004', but got '{instructions[1].Operands}'");
+        Assert.Equal("ecx, 0x00000004", instructions[1].Operands);
         
         // Third instruction should be PUSH eax
         Assert.Equal("push", instructions[2].Mnemonic);

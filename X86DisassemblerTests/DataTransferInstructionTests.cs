@@ -250,11 +250,7 @@ public class DataTransferInstructionTests
         // Assert
         Assert.NotNull(instruction);
         Assert.Equal("xchg", instruction.Mnemonic);
-        
-        // XCHG is commutative, so we just check that both registers are in the operands
-        // rather than enforcing a specific order
-        Assert.Contains("eax", instruction.Operands);
-        Assert.Contains("ecx", instruction.Operands);
+        Assert.Equal("eax, ecx", instruction.Operands);
     }
     
     /// <summary>
