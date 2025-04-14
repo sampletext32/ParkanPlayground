@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Lea;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class LeaR32MHandler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the LeaR32MHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public LeaR32MHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public LeaR32MHandler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -41,7 +41,7 @@ public class LeaR32MHandler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, sourceOperand) = ModRMDecoder.ReadModRM();
 
         // LEA only works with memory operands, not registers
         if (mod == 3)
@@ -49,17 +49,21 @@ public class LeaR32MHandler : InstructionHandler
             return false;
         }
 
-        // Set the mnemonic
-        instruction.Mnemonic = "lea";
-
-        // Get the register name
-        string regName = ModRMDecoder.GetRegisterName(reg, 32);
-
-        // Remove the "dword ptr" prefix for LEA instructions
-        destOperand = destOperand.Replace("dword ptr ", "");
-
-        // Set the operands
-        instruction.Operands = $"{regName}, {destOperand}";
+        // Set the instruction type
+        instruction.Type = InstructionType.Lea;
+        
+        // Create the destination register operand
+        var destinationOperand = OperandFactory.CreateRegisterOperand((RegisterIndex)reg, 32);
+        
+        // For LEA, we don't care about the size of the memory operand
+        // as we're only interested in the effective address calculation
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
 
         return true;
     }

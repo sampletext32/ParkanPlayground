@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Xor;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class XorImmWithRm8Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the XorImmWithRm8Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public XorImmWithRm8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
-        : base(codeBuffer, decoder, length)
+    public XorImmWithRm8Handler(InstructionDecoder decoder) 
+        : base(decoder)
     {
     }
     
@@ -30,7 +30,7 @@ public class XorImmWithRm8Handler : InstructionHandler
         if (!Decoder.CanReadByte())
             return false;
             
-        byte modRM = CodeBuffer[Decoder.GetPosition()];
+        byte modRM = Decoder.PeakByte();
         byte reg = (byte)((modRM & 0x38) >> 3);
         
         return reg == 6; // 6 = XOR
@@ -44,8 +44,8 @@ public class XorImmWithRm8Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "xor";
+        // Set the instruction type
+        instruction.Type = InstructionType.Xor;
         
         if (!Decoder.CanReadByte())
         {
@@ -53,19 +53,13 @@ public class XorImmWithRm8Handler : InstructionHandler
         }
         
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        // For XOR r/m8, imm8 (0x80 /6):
+        // - The r/m field with mod specifies the destination operand (register or memory)
+        // - The immediate value is the source operand
+        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
         
-        // If mod == 3, then the r/m field specifies a register
-        if (mod == 3)
-        {
-            // Get the r/m register name (8-bit)
-            destOperand = ModRMDecoder.GetRegisterName(rm, 8);
-        }
-        else
-        {
-            // Replace "dword ptr" with "byte ptr" to indicate 8-bit operation
-            destOperand = destOperand.Replace("dword ptr", "byte ptr");
-        }
+        // Adjust the operand size to 8-bit
+        destinationOperand.Size = 8;
         
         // Read the immediate value
         if (!Decoder.CanReadByte())
@@ -76,11 +70,15 @@ public class XorImmWithRm8Handler : InstructionHandler
         // Read the immediate value
         byte imm8 = Decoder.ReadByte();
         
-        // Format the immediate value
-        string immStr = $"0x{imm8:X2}";
+        // Create the source immediate operand
+        var sourceOperand = OperandFactory.CreateImmediateOperand(imm8, 8);
         
-        // Set the operands
-        instruction.Operands = $"{destOperand}, {immStr}";
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
         
         return true;
     }

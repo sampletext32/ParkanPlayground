@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.And;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class AndMemRegHandler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the AndMemRegHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public AndMemRegHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public AndMemRegHandler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -34,8 +34,8 @@ public class AndMemRegHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "and";
+        // Set the instruction type
+        instruction.Type = InstructionType.And;
 
         if (!Decoder.CanReadByte())
         {
@@ -43,18 +43,20 @@ public class AndMemRegHandler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
+        // For AND r/m32, r32 (0x21):
+        // - The r/m field with mod specifies the destination operand (register or memory)
+        // - The reg field specifies the source register
+        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
 
-        // Get register name
-        string regName = ModRMDecoder.GetRegisterName(reg, 32);
-
-        // For mod == 3, both operands are registers
-        if (mod == 3)
-        {
-            memOperand = ModRMDecoder.GetRegisterName(rm, 32);
-        }
-
-        instruction.Operands = $"{memOperand}, {regName}";
+        // Create the source register operand
+        var sourceOperand = OperandFactory.CreateRegisterOperand(reg, 32);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
 
         return true;
     }

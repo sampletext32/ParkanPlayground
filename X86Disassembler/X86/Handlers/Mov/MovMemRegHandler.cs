@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Mov;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class MovMemRegHandler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the MovMemRegHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public MovMemRegHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public MovMemRegHandler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -34,8 +34,8 @@ public class MovMemRegHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "mov";
+        // Set the instruction type
+        instruction.Type = InstructionType.Mov;
 
         // Check if we have enough bytes for the ModR/M byte
         if (!Decoder.CanReadByte())
@@ -48,21 +48,23 @@ public class MovMemRegHandler : InstructionHandler
         int operandSize = operandSize32 ? 32 : 8;
 
         // Read the ModR/M byte
-        var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
+        // For MOV r/m32, r32 (0x89) or MOV r/m8, r8 (0x88):
+        // - The r/m field with mod specifies the destination operand (register or memory)
+        // - The reg field specifies the source register
+        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
 
-        // Get register name based on size
-        string regName = ModRMDecoder.GetRegisterName(reg, operandSize);
+        // Adjust the operand size based on the opcode
+        destinationOperand.Size = operandSize;
 
-        // For mod == 3, both operands are registers
-        if (mod == 3)
-        {
-            string rmRegName = ModRMDecoder.GetRegisterName(rm, operandSize);
-            instruction.Operands = $"{rmRegName}, {regName}";
-        }
-        else // Memory operand
-        {
-            instruction.Operands = $"{memOperand}, {regName}";
-        }
+        // Create the source register operand
+        var sourceOperand = OperandFactory.CreateRegisterOperand(reg, operandSize);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
 
         return true;
     }

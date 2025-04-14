@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Xor;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for XOR r/m32, imm32 instruction (0x81 /6)
 /// </summary>
@@ -8,11 +10,9 @@ public class XorImmWithRm32Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the XorImmWithRm32Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public XorImmWithRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
-        : base(codeBuffer, decoder, length)
+    public XorImmWithRm32Handler(InstructionDecoder decoder) 
+        : base(decoder)
     {
     }
     
@@ -30,7 +30,7 @@ public class XorImmWithRm32Handler : InstructionHandler
         if (!Decoder.CanReadByte())
             return false;
             
-        byte modRM = CodeBuffer[Decoder.GetPosition()];
+        byte modRM = Decoder.PeakByte();
         byte reg = (byte)((modRM & 0x38) >> 3);
         
         return reg == 6; // 6 = XOR
@@ -44,8 +44,8 @@ public class XorImmWithRm32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "xor";
+        // Set the instruction type
+        instruction.Type = InstructionType.Xor;
         
         if (!Decoder.CanReadByte())
         {
@@ -63,11 +63,15 @@ public class XorImmWithRm32Handler : InstructionHandler
 
         var imm = Decoder.ReadUInt32();
 
-        // Format the immediate value
-        string immStr = $"0x{imm:X}";
+        // Create the immediate operand
+        var immOperand = OperandFactory.CreateImmediateOperand(imm, 32);
         
-        // Set the operands
-        instruction.Operands = $"{destOperand}, {immStr}";
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destOperand,
+            immOperand
+        ];
         
         return true;
     }

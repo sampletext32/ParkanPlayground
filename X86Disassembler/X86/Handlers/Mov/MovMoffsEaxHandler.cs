@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Mov;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class MovMoffsEaxHandler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the MovMoffsEaxHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public MovMoffsEaxHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public MovMoffsEaxHandler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -34,23 +34,34 @@ public class MovMoffsEaxHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "mov";
+        // Set the instruction type
+        instruction.Type = InstructionType.Mov;
 
-        // Get the operand size and register name
+        // Get the operand size based on the opcode
         int operandSize = opcode == 0xA2 ? 8 : 32;
 
-        string regName = ModRMDecoder.GetRegisterName(RegisterIndex.A, operandSize);
-
         // Read the memory offset
-        uint offset = Decoder.ReadUInt32();
-        if (Decoder.GetPosition() > Length)
+        // Fixed bug: Changed from if (Decoder.CanReadUInt()) to if (!Decoder.CanReadUInt())
+        if (!Decoder.CanReadUInt())
         {
             return false;
         }
 
-        // Set the operands
-        instruction.Operands = $"[0x{offset:X}], {regName}";
+        uint offset = Decoder.ReadUInt32();
+
+        // Create the destination memory operand
+        // For MOV moffs32, EAX or MOV moffs8, AL, the memory operand is a direct memory reference
+        var destinationOperand = OperandFactory.CreateDirectMemoryOperand(offset, operandSize);
+        
+        // Create the source register operand (EAX or AL)
+        var sourceOperand = OperandFactory.CreateRegisterOperand(RegisterIndex.A, operandSize);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
 
         return true;
     }

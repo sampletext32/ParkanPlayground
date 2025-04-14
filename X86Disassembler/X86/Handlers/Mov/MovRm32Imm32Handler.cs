@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Mov;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for MOV r/m32, imm32 instruction (0xC7)
 /// </summary>
@@ -8,11 +10,9 @@ public class MovRm32Imm32Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the MovRm32Imm32Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public MovRm32Imm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public MovRm32Imm32Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -34,8 +34,8 @@ public class MovRm32Imm32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "mov";
+        // Set the instruction type
+        instruction.Type = InstructionType.Mov;
         
         // Check if we have enough bytes for the ModR/M byte
         if (!Decoder.CanReadByte())
@@ -44,7 +44,7 @@ public class MovRm32Imm32Handler : InstructionHandler
         }
 
         // Use ModRMDecoder to decode the ModR/M byte
-        var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM(false);
+        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM(false);
         
         // MOV r/m32, imm32 only uses reg=0
         if (reg != 0)
@@ -58,9 +58,18 @@ public class MovRm32Imm32Handler : InstructionHandler
             return false;
         }
         
-        // Read the immediate dword and format the operands
+        // Read the immediate dword and create the operands
         uint imm32 = Decoder.ReadUInt32();
-        instruction.Operands = $"{operand}, 0x{imm32:X8}";
+        
+        // Create the immediate operand
+        var sourceOperand = OperandFactory.CreateImmediateOperand(imm32, 32);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
         
         return true;
     }

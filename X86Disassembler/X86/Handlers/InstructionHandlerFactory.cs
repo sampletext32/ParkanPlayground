@@ -55,7 +55,7 @@ public class InstructionHandlerFactory
     private void RegisterAllHandlers()
     {
         // Register specific instruction handlers
-        _handlers.Add(new Int3Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new Int3Handler(_decoder));
 
         // Register handlers in order of priority (most specific first)
         RegisterArithmeticImmediateHandlers(); // Group 1 instructions (including 0x83)
@@ -88,22 +88,22 @@ public class InstructionHandlerFactory
     private void RegisterArithmeticUnaryHandlers()
     {
         // NOT handler
-        _handlers.Add(new NotRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new NotRm32Handler(_decoder));
 
         // NEG handler
-        _handlers.Add(new NegRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new NegRm32Handler(_decoder));
 
         // MUL handler
-        _handlers.Add(new MulRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new MulRm32Handler(_decoder));
 
         // IMUL handler
-        _handlers.Add(new ImulRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new ImulRm32Handler(_decoder));
 
         // DIV handler
-        _handlers.Add(new DivRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new DivRm32Handler(_decoder));
 
         // IDIV handler
-        _handlers.Add(new IdivRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new IdivRm32Handler(_decoder));
     }
 
     /// <summary>
@@ -112,16 +112,16 @@ public class InstructionHandlerFactory
     private void RegisterArithmeticImmediateHandlers()
     {
         // ADC handlers
-        _handlers.Add(new AdcImmToRm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new AdcImmToRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new AdcImmToRm32Handler(_decoder));
+        _handlers.Add(new AdcImmToRm32SignExtendedHandler(_decoder));
 
         // SBB handlers
-        _handlers.Add(new SbbImmFromRm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new SbbImmFromRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new SbbImmFromRm32Handler(_decoder));
+        _handlers.Add(new SbbImmFromRm32SignExtendedHandler(_decoder));
 
         // SUB handlers
-        _handlers.Add(new SubImmFromRm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new SubImmFromRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new SubImmFromRm32Handler(_decoder));
+        _handlers.Add(new SubImmFromRm32SignExtendedHandler(_decoder));
     }
 
     /// <summary>
@@ -130,8 +130,8 @@ public class InstructionHandlerFactory
     private void RegisterReturnHandlers()
     {
         // Add Return handlers
-        _handlers.Add(new RetHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new RetImmHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new RetHandler(_decoder));
+        _handlers.Add(new RetImmHandler(_decoder));
     }
 
     /// <summary>
@@ -140,8 +140,8 @@ public class InstructionHandlerFactory
     private void RegisterCallHandlers()
     {
         // Add Call handlers
-        _handlers.Add(new CallRel32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new CallRm32Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new CallRel32Handler(_decoder));
+        _handlers.Add(new CallRm32Handler(_decoder));
     }
 
     /// <summary>
@@ -150,11 +150,11 @@ public class InstructionHandlerFactory
     private void RegisterJumpHandlers()
     {
         // JMP handlers
-        _handlers.Add(new JmpRel32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new JmpRel8Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new JgeRel8Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new ConditionalJumpHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new TwoByteConditionalJumpHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new JmpRel32Handler(_decoder));
+        _handlers.Add(new JmpRel8Handler(_decoder));
+        _handlers.Add(new JgeRel8Handler(_decoder));
+        _handlers.Add(new ConditionalJumpHandler(_decoder));
+        _handlers.Add(new TwoByteConditionalJumpHandler(_decoder));
     }
 
     /// <summary>
@@ -163,12 +163,12 @@ public class InstructionHandlerFactory
     private void RegisterTestHandlers()
     {
         // TEST handlers
-        _handlers.Add(new TestImmWithRm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new TestImmWithRm8Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new TestRegMem8Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new TestRegMemHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new TestAlImmHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new TestEaxImmHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new TestImmWithRm32Handler(_decoder));
+        _handlers.Add(new TestImmWithRm8Handler(_decoder));
+        _handlers.Add(new TestRegMem8Handler(_decoder));
+        _handlers.Add(new TestRegMemHandler(_decoder));
+        _handlers.Add(new TestAlImmHandler(_decoder));
+        _handlers.Add(new TestEaxImmHandler(_decoder));
     }
 
     /// <summary>
@@ -177,27 +177,27 @@ public class InstructionHandlerFactory
     private void RegisterXorHandlers()
     {
         // 16-bit handlers
-        _handlers.Add(new XorRm16R16Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new XorR16Rm16Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new XorImmWithRm16Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new XorImmWithRm16SignExtendedHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new XorRm16R16Handler(_decoder));
+        _handlers.Add(new XorR16Rm16Handler(_decoder));
+        _handlers.Add(new XorImmWithRm16Handler(_decoder));
+        _handlers.Add(new XorImmWithRm16SignExtendedHandler(_decoder));
         
         // 32-bit handlers
-        _handlers.Add(new XorMemRegHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new XorRegMemHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new XorImmWithRm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new XorImmWithRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new XorMemRegHandler(_decoder));
+        _handlers.Add(new XorRegMemHandler(_decoder));
+        _handlers.Add(new XorImmWithRm32Handler(_decoder));
+        _handlers.Add(new XorImmWithRm32SignExtendedHandler(_decoder));
 
         // 8-bit handlers
-        _handlers.Add(new XorRm8R8Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new XorR8Rm8Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new XorAlImmHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new XorImmWithRm8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new XorRm8R8Handler(_decoder));
+        _handlers.Add(new XorR8Rm8Handler(_decoder));
+        _handlers.Add(new XorAlImmHandler(_decoder));
+        _handlers.Add(new XorImmWithRm8Handler(_decoder));
 
         // special treatment with xor-ing eax
         // precise handlers go first
-        _handlers.Add(new XorAxImm16Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new XorEaxImmHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new XorAxImm16Handler(_decoder));
+        _handlers.Add(new XorEaxImmHandler(_decoder));
     }
 
     /// <summary>
@@ -206,15 +206,15 @@ public class InstructionHandlerFactory
     private void RegisterOrHandlers()
     {
         // Add OR handlers
-        _handlers.Add(new OrImmToRm8Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new OrImmToRm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new OrImmToRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new OrImmToRm8Handler(_decoder));
+        _handlers.Add(new OrImmToRm32Handler(_decoder));
+        _handlers.Add(new OrImmToRm32SignExtendedHandler(_decoder));
 
-        _handlers.Add(new OrR8Rm8Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new OrRm8R8Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new OrR32Rm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new OrAlImmHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new OrEaxImmHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new OrR8Rm8Handler(_decoder));
+        _handlers.Add(new OrRm8R8Handler(_decoder));
+        _handlers.Add(new OrR32Rm32Handler(_decoder));
+        _handlers.Add(new OrAlImmHandler(_decoder));
+        _handlers.Add(new OrEaxImmHandler(_decoder));
     }
 
     /// <summary>
@@ -223,7 +223,7 @@ public class InstructionHandlerFactory
     private void RegisterLeaHandlers()
     {
         // Add Lea handlers
-        _handlers.Add(new LeaR32MHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new LeaR32MHandler(_decoder));
     }
 
     /// <summary>
@@ -232,14 +232,14 @@ public class InstructionHandlerFactory
     private void RegisterCmpHandlers()
     {
         // Add Cmp handlers
-        _handlers.Add(new CmpR32Rm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new CmpRm32R32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new CmpImmWithRm8Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new CmpAlImmHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new CmpR32Rm32Handler(_decoder));
+        _handlers.Add(new CmpRm32R32Handler(_decoder));
+        _handlers.Add(new CmpImmWithRm8Handler(_decoder));
+        _handlers.Add(new CmpAlImmHandler(_decoder));
 
         // Add CMP immediate handlers from ArithmeticImmediate namespace
-        _handlers.Add(new CmpImmWithRm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new CmpImmWithRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new CmpImmWithRm32Handler(_decoder));
+        _handlers.Add(new CmpImmWithRm32SignExtendedHandler(_decoder));
     }
 
     /// <summary>
@@ -248,7 +248,7 @@ public class InstructionHandlerFactory
     private void RegisterDecHandlers()
     {
         // Add Dec handlers
-        _handlers.Add(new DecRegHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new DecRegHandler(_decoder));
     }
 
     /// <summary>
@@ -257,7 +257,7 @@ public class InstructionHandlerFactory
     private void RegisterIncHandlers()
     {
         // Add Inc handlers
-        _handlers.Add(new IncRegHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new IncRegHandler(_decoder));
     }
 
     /// <summary>
@@ -266,14 +266,14 @@ public class InstructionHandlerFactory
     private void RegisterAddHandlers()
     {
         // Add ADD handlers
-        _handlers.Add(new AddR32Rm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new AddRm32R32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new AddEaxImmHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new AddR32Rm32Handler(_decoder));
+        _handlers.Add(new AddRm32R32Handler(_decoder));
+        _handlers.Add(new AddEaxImmHandler(_decoder));
 
         // Add ADD immediate handlers from ArithmeticImmediate namespace
-        _handlers.Add(new AddImmToRm8Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new AddImmToRm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new AddImmToRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new AddImmToRm8Handler(_decoder));
+        _handlers.Add(new AddImmToRm32Handler(_decoder));
+        _handlers.Add(new AddImmToRm32SignExtendedHandler(_decoder));
     }
 
     /// <summary>
@@ -282,25 +282,25 @@ public class InstructionHandlerFactory
     private void RegisterDataTransferHandlers()
     {
         // Add MOV handlers
-        _handlers.Add(new MovRegMemHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new MovMemRegHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new MovRegImm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new MovRegImm8Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new MovEaxMoffsHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new MovMoffsEaxHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new MovRm32Imm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new MovRm8Imm8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new MovRegMemHandler(_decoder));
+        _handlers.Add(new MovMemRegHandler(_decoder));
+        _handlers.Add(new MovRegImm32Handler(_decoder));
+        _handlers.Add(new MovRegImm8Handler(_decoder));
+        _handlers.Add(new MovEaxMoffsHandler(_decoder));
+        _handlers.Add(new MovMoffsEaxHandler(_decoder));
+        _handlers.Add(new MovRm32Imm32Handler(_decoder));
+        _handlers.Add(new MovRm8Imm8Handler(_decoder));
 
         // Add PUSH handlers
-        _handlers.Add(new PushRegHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new PushImm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new PushImm8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new PushRegHandler(_decoder));
+        _handlers.Add(new PushImm32Handler(_decoder));
+        _handlers.Add(new PushImm8Handler(_decoder));
 
         // Add POP handlers
-        _handlers.Add(new PopRegHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new PopRegHandler(_decoder));
 
         // Add XCHG handlers
-        _handlers.Add(new XchgEaxRegHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new XchgEaxRegHandler(_decoder));
     }
 
     /// <summary>
@@ -309,15 +309,15 @@ public class InstructionHandlerFactory
     private void RegisterFloatingPointHandlers()
     {
         // Add Floating Point handlers
-        _handlers.Add(new FnstswHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new Float32OperationHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new LoadStoreControlHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new Int32OperationHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new LoadStoreInt32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new Float64OperationHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new LoadStoreFloat64Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new Int16OperationHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new LoadStoreInt16Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new FnstswHandler(_decoder));
+        _handlers.Add(new Float32OperationHandler(_decoder));
+        _handlers.Add(new LoadStoreControlHandler(_decoder));
+        _handlers.Add(new Int32OperationHandler(_decoder));
+        _handlers.Add(new LoadStoreInt32Handler(_decoder));
+        _handlers.Add(new Float64OperationHandler(_decoder));
+        _handlers.Add(new LoadStoreFloat64Handler(_decoder));
+        _handlers.Add(new Int16OperationHandler(_decoder));
+        _handlers.Add(new LoadStoreInt16Handler(_decoder));
     }
 
     /// <summary>
@@ -326,7 +326,7 @@ public class InstructionHandlerFactory
     private void RegisterStringHandlers()
     {
         // Add String instruction handler that handles both regular and REP/REPNE prefixed string instructions
-        _handlers.Add(new StringInstructionHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new StringInstructionHandler(_decoder));
     }
 
     /// <summary>
@@ -335,14 +335,14 @@ public class InstructionHandlerFactory
     private void RegisterMovHandlers()
     {
         // Add MOV handlers
-        _handlers.Add(new MovRegMemHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new MovMemRegHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new MovRegImm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new MovRegImm8Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new MovEaxMoffsHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new MovMoffsEaxHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new MovRm32Imm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new MovRm8Imm8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new MovRegMemHandler(_decoder));
+        _handlers.Add(new MovMemRegHandler(_decoder));
+        _handlers.Add(new MovRegImm32Handler(_decoder));
+        _handlers.Add(new MovRegImm8Handler(_decoder));
+        _handlers.Add(new MovEaxMoffsHandler(_decoder));
+        _handlers.Add(new MovMoffsEaxHandler(_decoder));
+        _handlers.Add(new MovRm32Imm32Handler(_decoder));
+        _handlers.Add(new MovRm8Imm8Handler(_decoder));
     }
 
     /// <summary>
@@ -351,10 +351,10 @@ public class InstructionHandlerFactory
     private void RegisterPushHandlers()
     {
         // Add PUSH handlers
-        _handlers.Add(new PushRegHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new PushImm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new PushImm8Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new PushRm32Handler(_codeBuffer, _decoder, _length)); // Add handler for PUSH r/m32 (FF /6)
+        _handlers.Add(new PushRegHandler(_decoder));
+        _handlers.Add(new PushImm32Handler(_decoder));
+        _handlers.Add(new PushImm8Handler(_decoder));
+        _handlers.Add(new PushRm32Handler(_decoder)); // Add handler for PUSH r/m32 (FF /6)
     }
 
     /// <summary>
@@ -363,7 +363,7 @@ public class InstructionHandlerFactory
     private void RegisterPopHandlers()
     {
         // Add POP handlers
-        _handlers.Add(new PopRegHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new PopRegHandler(_decoder));
     }
 
     /// <summary>
@@ -372,17 +372,17 @@ public class InstructionHandlerFactory
     private void RegisterAndHandlers()
     {
         // Add AND handlers
-        _handlers.Add(new AndImmToRm8Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new AndImmWithRm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new AndImmToRm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new AndImmToRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new AndImmToRm8Handler(_decoder));
+        _handlers.Add(new AndImmWithRm32Handler(_decoder));
+        _handlers.Add(new AndImmToRm32Handler(_decoder));
+        _handlers.Add(new AndImmToRm32SignExtendedHandler(_decoder));
 
-        _handlers.Add(new AndR8Rm8Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new AndRm8R8Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new AndR32Rm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new AndMemRegHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new AndAlImmHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new AndEaxImmHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new AndR8Rm8Handler(_decoder));
+        _handlers.Add(new AndRm8R8Handler(_decoder));
+        _handlers.Add(new AndR32Rm32Handler(_decoder));
+        _handlers.Add(new AndMemRegHandler(_decoder));
+        _handlers.Add(new AndAlImmHandler(_decoder));
+        _handlers.Add(new AndEaxImmHandler(_decoder));
     }
 
     /// <summary>
@@ -393,23 +393,23 @@ public class InstructionHandlerFactory
         // Register SUB handlers
 
         // 32-bit handlers
-        _handlers.Add(new SubRm32R32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new SubR32Rm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new SubImmFromRm32Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new SubImmFromRm32SignExtendedHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new SubRm32R32Handler(_decoder));
+        _handlers.Add(new SubR32Rm32Handler(_decoder));
+        _handlers.Add(new SubImmFromRm32Handler(_decoder));
+        _handlers.Add(new SubImmFromRm32SignExtendedHandler(_decoder));
 
         // 16-bit handlers
-        _handlers.Add(new SubRm16R16Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new SubR16Rm16Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new SubAxImm16Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new SubImmFromRm16Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new SubImmFromRm16SignExtendedHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new SubRm16R16Handler(_decoder));
+        _handlers.Add(new SubR16Rm16Handler(_decoder));
+        _handlers.Add(new SubAxImm16Handler(_decoder));
+        _handlers.Add(new SubImmFromRm16Handler(_decoder));
+        _handlers.Add(new SubImmFromRm16SignExtendedHandler(_decoder));
 
         // 8-bit handlers
-        _handlers.Add(new SubRm8R8Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new SubR8Rm8Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new SubAlImm8Handler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new SubImmFromRm8Handler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new SubRm8R8Handler(_decoder));
+        _handlers.Add(new SubR8Rm8Handler(_decoder));
+        _handlers.Add(new SubAlImm8Handler(_decoder));
+        _handlers.Add(new SubImmFromRm8Handler(_decoder));
     }
 
     /// <summary>
@@ -418,9 +418,9 @@ public class InstructionHandlerFactory
     private void RegisterNopHandlers()
     {
         // Register NOP handlers
-        _handlers.Add(new NopHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new TwoByteNopHandler(_codeBuffer, _decoder, _length));
-        _handlers.Add(new MultiByteNopHandler(_codeBuffer, _decoder, _length));
+        _handlers.Add(new NopHandler(_decoder));
+        _handlers.Add(new TwoByteNopHandler(_decoder));
+        _handlers.Add(new MultiByteNopHandler(_decoder));
     }
 
     /// <summary>

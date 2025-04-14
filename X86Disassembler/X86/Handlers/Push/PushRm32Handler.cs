@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Push;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class PushRm32Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the PushRm32Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public PushRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public PushRm32Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -36,7 +36,7 @@ public class PushRm32Handler : InstructionHandler
         }
         
         // Peek at the ModR/M byte without advancing the position
-        byte modRM = CodeBuffer[Decoder.GetPosition()];
+        byte modRM = Decoder.PeakByte();
         
         // Extract the reg field (bits 3-5)
         byte reg = (byte)((modRM & 0x38) >> 3);
@@ -53,8 +53,8 @@ public class PushRm32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "push";
+        // Set the instruction type
+        instruction.Type = InstructionType.Push;
         
         // Check if we have enough bytes for the ModR/M byte
         if (!Decoder.CanReadByte())
@@ -63,18 +63,16 @@ public class PushRm32Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        // For PUSH r/m32 (FF /6):
+        // - The r/m field with mod specifies the operand (register or memory)
+        var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
 
-        // For memory operands, set the operand
-        if (mod != 3) // Memory operand
-        {
-            instruction.Operands = destOperand;
-        }
-        else // Register operand
-        {
-            string rmName = ModRMDecoder.GetRegisterName(rm, 32);
-            instruction.Operands = rmName;
-        }
+        // Set the structured operands
+        // PUSH has only one operand
+        instruction.StructuredOperands = 
+        [
+            operand
+        ];
 
         return true;
     }

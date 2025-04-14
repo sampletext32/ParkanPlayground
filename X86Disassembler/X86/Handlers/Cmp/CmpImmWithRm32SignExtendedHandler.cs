@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Cmp;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for CMP r/m32, imm8 (sign-extended) instruction (0x83 /7)
 /// </summary>
@@ -8,11 +10,9 @@ public class CmpImmWithRm32SignExtendedHandler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the CmpImmWithRm32SignExtendedHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public CmpImmWithRm32SignExtendedHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public CmpImmWithRm32SignExtendedHandler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -27,11 +27,10 @@ public class CmpImmWithRm32SignExtendedHandler : InstructionHandler
             return false;
 
         // Check if the reg field of the ModR/M byte is 7 (CMP)
-        int position = Decoder.GetPosition();
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = CodeBuffer[position];
+        byte modRM = Decoder.PeakByte();
         byte reg = (byte) ((modRM & 0x38) >> 3);
 
         return reg == 7; // 7 = CMP
@@ -45,8 +44,8 @@ public class CmpImmWithRm32SignExtendedHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "cmp";
+        // Set the instruction type
+        instruction.Type = InstructionType.Cmp;
 
         if (!Decoder.CanReadByte())
         {
@@ -64,9 +63,16 @@ public class CmpImmWithRm32SignExtendedHandler : InstructionHandler
 
         // Read the immediate value as a signed byte and sign-extend it
         sbyte imm8 = (sbyte) Decoder.ReadByte();
-
-        // Set the operands
-        instruction.Operands = $"{destOperand}, 0x{(uint) imm8:X2}";
+        
+        // Create the immediate operand with sign extension
+        var immOperand = OperandFactory.CreateImmediateOperand(imm8);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destOperand,
+            immOperand
+        ];
 
         return true;
     }

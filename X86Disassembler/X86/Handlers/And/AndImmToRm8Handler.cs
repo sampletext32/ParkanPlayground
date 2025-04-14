@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.And;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class AndImmToRm8Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the AndImmToRm8Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public AndImmToRm8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public AndImmToRm8Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -29,14 +29,13 @@ public class AndImmToRm8Handler : InstructionHandler
         }
 
         // Check if we have enough bytes to read the ModR/M byte
-        if (Decoder.CanReadByte())
+        if (!Decoder.CanReadByte())
         {
             return false;
         }
 
-        int position = Decoder.GetPosition();
         // Read the ModR/M byte to check the reg field (bits 5-3)
-        byte modRM = CodeBuffer[position];
+        byte modRM = Decoder.PeakByte();
         int reg = (modRM >> 3) & 0x7;
 
         // reg = 4 means AND operation
@@ -51,11 +50,17 @@ public class AndImmToRm8Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "and";
+        // Set the instruction type
+        instruction.Type = InstructionType.And;
 
         // Read the ModR/M byte
-        var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
+        // For AND r/m8, imm8 (0x80 /4):
+        // - The r/m field with mod specifies the destination operand (register or memory)
+        // - The immediate value is the source operand
+        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
+
+        // Adjust the operand size to 8-bit
+        destinationOperand.Size = 8;
 
         if (!Decoder.CanReadByte())
         {
@@ -65,24 +70,15 @@ public class AndImmToRm8Handler : InstructionHandler
         // Read the immediate value
         byte imm8 = Decoder.ReadByte();
 
-        // Format the destination operand based on addressing mode
-        string destOperand;
-        if (mod == 3) // Register addressing mode
-        {
-            // Get 8-bit register name
-            destOperand = ModRMDecoder.GetRegisterName(rm, 8);
-        }
-        else // Memory addressing mode
-        {
-            // Add byte ptr prefix for memory operands
-            destOperand = $"byte ptr {memOperand}";
-        }
-
-        // Format the immediate value
-        string immStr = $"0x{imm8:X2}";
-
-        // Set the operands
-        instruction.Operands = $"{destOperand}, {immStr}";
+        // Create the source immediate operand
+        var sourceOperand = OperandFactory.CreateImmediateOperand(imm8, 8);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
 
         return true;
     }

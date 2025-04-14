@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.ArithmeticUnary;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class ImulRm32Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the ImulRm32Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public ImulRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public ImulRm32Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -27,11 +27,10 @@ public class ImulRm32Handler : InstructionHandler
             return false;
 
         // Check if the reg field of the ModR/M byte is 5 (IMUL)
-        int position = Decoder.GetPosition();
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = CodeBuffer[position];
+        byte modRM = Decoder.PeakByte();
         byte reg = (byte) ((modRM & 0x38) >> 3);
 
         return reg == 5; // 5 = IMUL
@@ -45,8 +44,8 @@ public class ImulRm32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "imul";
+        // Set the instruction type
+        instruction.Type = InstructionType.IMul;
 
         if (!Decoder.CanReadByte())
         {
@@ -54,10 +53,13 @@ public class ImulRm32Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
-
-        // Set the operands
-        instruction.Operands = destOperand;
+        var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            operand
+        ];
 
         return true;
     }

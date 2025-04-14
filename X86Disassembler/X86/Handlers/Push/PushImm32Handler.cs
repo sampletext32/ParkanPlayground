@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Push;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for PUSH imm32 instruction (0x68)
 /// </summary>
@@ -8,11 +10,9 @@ public class PushImm32Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the PushImm32Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public PushImm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
-        : base(codeBuffer, decoder, length)
+    public PushImm32Handler(InstructionDecoder decoder) 
+        : base(decoder)
     {
     }
     
@@ -34,8 +34,8 @@ public class PushImm32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "push";
+        // Set the instruction type
+        instruction.Type = InstructionType.Push;
 
         if(!Decoder.CanReadUInt())
         {
@@ -45,8 +45,14 @@ public class PushImm32Handler : InstructionHandler
         // Read the immediate value
         uint imm32 = Decoder.ReadUInt32();
         
-        // Set the operands with 8-digit padding to match test expectations
-        instruction.Operands = $"0x{imm32:X8}";
+        // Create the immediate operand
+        var immOperand = OperandFactory.CreateImmediateOperand(imm32);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            immOperand
+        ];
 
         return true;
     }

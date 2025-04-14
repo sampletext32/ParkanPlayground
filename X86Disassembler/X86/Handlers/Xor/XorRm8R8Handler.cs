@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Xor;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class XorRm8R8Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the XorRm8R8Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public XorRm8R8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public XorRm8R8Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -34,8 +34,8 @@ public class XorRm8R8Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "xor";
+        // Set the instruction type
+        instruction.Type = InstructionType.Xor;
 
         if (!Decoder.CanReadByte())
         {
@@ -43,27 +43,23 @@ public class XorRm8R8Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        // For XOR r/m8, r8 (0x30):
+        // - The r/m field with mod specifies the destination operand (register or memory)
+        // - The reg field specifies the source register
+        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
 
-        // Get register name (8-bit)
-        string regName = ModRMDecoder.GetRegisterName(reg, 8);
+        // Adjust the operand size to 8-bit
+        destinationOperand.Size = 8;
 
-        // If mod == 3, then the r/m field specifies a register
-        if (mod == 3)
-        {
-            // Get the r/m register name (8-bit)
-            string rmRegName = ModRMDecoder.GetRegisterName(rm, 8);
-            
-            // Set the operands
-            instruction.Operands = $"{rmRegName}, {regName}";
-            return true;
-        }
+        // Create the source register operand
+        var sourceOperand = OperandFactory.CreateRegisterOperand(reg, 8);
         
-        // Replace "dword ptr" with "byte ptr" to indicate 8-bit operation
-        string byteOperand = destOperand.Replace("dword ptr", "byte ptr");
-        
-        // Set the operands
-        instruction.Operands = $"{byteOperand}, {regName}";
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
 
         return true;
     }

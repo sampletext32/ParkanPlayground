@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Sub;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class SubImmFromRm16SignExtendedHandler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the SubImmFromRm16SignExtendedHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public SubImmFromRm16SignExtendedHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public SubImmFromRm16SignExtendedHandler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -36,7 +36,7 @@ public class SubImmFromRm16SignExtendedHandler : InstructionHandler
         }
         
         // Check if the reg field is 5 (SUB)
-        byte modRM = CodeBuffer[Decoder.GetPosition()];
+        byte modRM = Decoder.PeakByte();
         byte reg = (byte)((modRM & 0x38) >> 3);
         
         return reg == 5; // 5 = SUB
@@ -50,8 +50,8 @@ public class SubImmFromRm16SignExtendedHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "sub";
+        // Set the instruction type
+        instruction.Type = InstructionType.Sub;
         
         // Check if we have enough bytes for the ModR/M byte
         if (!Decoder.CanReadByte())
@@ -59,15 +59,14 @@ public class SubImmFromRm16SignExtendedHandler : InstructionHandler
             return false;
         }
 
-        // Extract the fields from the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        // Read the ModR/M byte
+        // For SUB r/m16, imm8 (0x83 /5 with 0x66 prefix and sign extension):
+        // - The r/m field with mod specifies the destination operand (register or memory)
+        // - The immediate value is the source operand (sign-extended from 8 to 16 bits)
+        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
 
-        // For memory operands, replace "dword" with "word"
-        string destination = destOperand;
-        if (mod != 3) // Memory operand
-        {
-            destination = destOperand.Replace("dword", "word");
-        }
+        // Adjust the operand size to 16-bit
+        destinationOperand.Size = 16;
 
         // Check if we have enough bytes for the immediate value
         if (!Decoder.CanReadByte())
@@ -75,11 +74,18 @@ public class SubImmFromRm16SignExtendedHandler : InstructionHandler
             return false;
         }
 
-        // Read the immediate value (8-bit)
-        byte immediate = Decoder.ReadByte();
+        // Read the immediate value as a signed byte and automatically sign-extend it to short
+        short imm16 = (sbyte)Decoder.ReadByte();
 
-        // Set the operands
-        instruction.Operands = $"{destination}, 0x{immediate:X2}";
+        // Create the source immediate operand with the sign-extended value
+        var sourceOperand = OperandFactory.CreateImmediateOperand(imm16, 16);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
 
         return true;
     }

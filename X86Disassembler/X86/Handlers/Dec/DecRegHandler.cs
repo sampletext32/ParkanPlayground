@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Dec;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for DEC r32 instructions (0x48-0x4F)
 /// </summary>
@@ -8,11 +10,9 @@ public class DecRegHandler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the DecRegHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public DecRegHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public DecRegHandler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -38,11 +38,17 @@ public class DecRegHandler : InstructionHandler
         // Calculate the register index (0 for EAX, 1 for ECX, etc.)
         RegisterIndex reg = (RegisterIndex)(opcode - 0x48);
         
-        // Set the mnemonic
-        instruction.Mnemonic = "dec";
+        // Set the instruction type
+        instruction.Type = InstructionType.Dec;
         
-        // Set the operand (register name)
-        instruction.Operands = ModRMDecoder.GetRegisterName(reg, 32);
+        // Create the register operand
+        var regOperand = OperandFactory.CreateRegisterOperand(reg, 32);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            regOperand
+        ];
         
         return true;
     }

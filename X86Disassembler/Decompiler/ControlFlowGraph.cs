@@ -2,6 +2,7 @@ namespace X86Disassembler.Decompiler;
 
 using System.Collections.Generic;
 using X86Disassembler.X86;
+using X86Disassembler.X86.Operands;
 
 /// <summary>
 /// Represents a control flow graph for decompilation
@@ -172,7 +173,10 @@ using X86Disassembler.X86;
                 // If the instruction is a conditional jump, the next block is also a successor
                 if (IsConditionalJump(lastInst))
                 {
-                    ulong nextAddress = lastInst.Address + (ulong)lastInst.RawBytes.Length;
+                    // Assume each instruction is 1-15 bytes in length
+                    // Since we don't have RawBytes, use a constant for now
+                    const int estimatedInstructionLength = 4; // Typical x86 instruction length
+                    ulong nextAddress = lastInst.Address + (ulong)estimatedInstructionLength;
                     if (cfg._blocks.TryGetValue(nextAddress, out BasicBlock? nextBlock))
                     {
                         block.Successors.Add(nextBlock);
@@ -183,7 +187,10 @@ using X86Disassembler.X86;
             // If the last instruction is not a jump, the next block is the successor
             else
             {
-                ulong nextAddress = lastInst.Address + (ulong)lastInst.RawBytes.Length;
+                // Assume each instruction is 1-15 bytes in length
+                // Since we don't have RawBytes, use a constant for now
+                const int estimatedInstructionLength = 4; // Typical x86 instruction length
+                ulong nextAddress = lastInst.Address + (ulong)estimatedInstructionLength;
                 if (cfg._blocks.TryGetValue(nextAddress, out BasicBlock? nextBlock))
                 {
                     block.Successors.Add(nextBlock);
@@ -202,10 +209,16 @@ using X86Disassembler.X86;
     /// <returns>True if the instruction is a control transfer</returns>
     private static bool IsControlTransfer(Instruction instruction)
     {
-        string mnemonic = instruction.Mnemonic.ToLower();
-        return mnemonic.StartsWith("j") || // All jumps (jmp, je, jne, etc.)
-               mnemonic == "call" ||
-               mnemonic == "ret";
+        // Check instruction type instead of mnemonic
+        return instruction.Type == InstructionType.Jmp || 
+               instruction.Type == InstructionType.Je || 
+               instruction.Type == InstructionType.Jne || 
+               instruction.Type == InstructionType.Jb || 
+               instruction.Type == InstructionType.Jbe || 
+               instruction.Type == InstructionType.Ja || 
+               instruction.Type == InstructionType.Jae || 
+               instruction.Type == InstructionType.Call || 
+               instruction.Type == InstructionType.Ret;
     }
     
     /// <summary>
@@ -215,8 +228,13 @@ using X86Disassembler.X86;
     /// <returns>True if the instruction is a conditional jump</returns>
     private static bool IsConditionalJump(Instruction instruction)
     {
-        string mnemonic = instruction.Mnemonic.ToLower();
-        return mnemonic.StartsWith("j") && mnemonic != "jmp"; // All jumps except jmp
+        // Check for conditional jump instruction types
+        return instruction.Type == InstructionType.Je || 
+               instruction.Type == InstructionType.Jne || 
+               instruction.Type == InstructionType.Jb || 
+               instruction.Type == InstructionType.Jbe || 
+               instruction.Type == InstructionType.Ja || 
+               instruction.Type == InstructionType.Jae;
     }
     
     /// <summary>
@@ -226,21 +244,28 @@ using X86Disassembler.X86;
     /// <returns>The target address, or null if it cannot be determined</returns>
     private static ulong? GetTargetAddress(Instruction instruction)
     {
-        string operands = instruction.Operands;
-        
-        // Check if the operand is a direct address (e.g., "0x12345678")
-        if (operands.StartsWith("0x") && ulong.TryParse(operands.Substring(2), System.Globalization.NumberStyles.HexNumber, null, out ulong address))
+        // Check if we have structured operands
+        if (instruction.StructuredOperands.Count == 0)
         {
-            return address;
+            return null;
         }
         
-        // For relative jumps, calculate the target address
-        if (instruction.Mnemonic.ToLower().StartsWith("j") && int.TryParse(operands, out int offset))
+        // Get the first operand
+        var operand = instruction.StructuredOperands[0];
+        
+        // Check if the operand is a direct address (e.g., immediate value)
+        if (operand is ImmediateOperand immediateOperand)
         {
-            return instruction.Address + (ulong)instruction.RawBytes.Length + (ulong)offset;
+            return (ulong)immediateOperand.Value;
         }
         
-        // For now, we cannot determine the target for indirect jumps
+        // Check if the operand is a relative offset
+        if (operand is RelativeOffsetOperand relativeOperand)
+        {
+            return relativeOperand.TargetAddress;
+        }
+        
+        // For now, we cannot determine the target for other types of operands
         return null;
     }
 }

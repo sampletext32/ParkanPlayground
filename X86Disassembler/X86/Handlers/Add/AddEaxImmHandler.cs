@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Add;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class AddEaxImmHandler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the AddEaxImmHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public AddEaxImmHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public AddEaxImmHandler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -34,8 +34,7 @@ public class AddEaxImmHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "add";
+        instruction.Type = InstructionType.Add;
 
         if (!Decoder.CanReadUInt())
         {
@@ -45,11 +44,11 @@ public class AddEaxImmHandler : InstructionHandler
         // Read the 32-bit immediate value
         uint imm32 = Decoder.ReadUInt32();
 
-        // Format the immediate value
-        string immStr = $"0x{imm32:X}";
-
-        // Set the operands
-        instruction.Operands = $"eax, {immStr}";
+        instruction.StructuredOperands =
+        [
+            OperandFactory.CreateRegisterOperand(RegisterIndex.A, 32),
+            OperandFactory.CreateImmediateOperand(imm32, 32)
+        ];
 
         return true;
     }

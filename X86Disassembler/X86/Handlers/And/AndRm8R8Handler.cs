@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.And;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for AND r/m8, r8 instruction (0x20)
 /// </summary>
@@ -8,11 +10,9 @@ public class AndRm8R8Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the AndRm8R8Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public AndRm8R8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public AndRm8R8Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -34,8 +34,8 @@ public class AndRm8R8Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "and";
+        // Set the instruction type
+        instruction.Type = InstructionType.And;
 
         if (!Decoder.CanReadByte())
         {
@@ -43,20 +43,38 @@ public class AndRm8R8Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
-        // Get register name
-        string regName = ModRMDecoder.GetRegisterName(reg, 8);
+        // Create the source register operand
+        var srcOperand = OperandFactory.CreateRegisterOperand(reg, 8);
 
         // For mod == 3, both operands are registers
         if (mod == 3)
         {
-            string rmRegName = ModRMDecoder.GetRegisterName(rm, 8);
-            instruction.Operands = $"{rmRegName}, {regName}";
+            // Create a register operand for the r/m field
+            var rmOperand = OperandFactory.CreateRegisterOperand(rm, 8);
+            
+            // Set the structured operands
+            instruction.StructuredOperands = 
+            [
+                rmOperand,
+                srcOperand
+            ];
         }
         else // Memory operand
         {
-            instruction.Operands = $"byte ptr {memOperand}, {regName}";
+            // Ensure memory operand has the correct size (8-bit)
+            if (destOperand is MemoryOperand memOperand)
+            {
+                memOperand.Size = 8;
+            }
+            
+            // Set the structured operands
+            instruction.StructuredOperands = 
+            [
+                destOperand,
+                srcOperand
+            ];
         }
 
         return true;

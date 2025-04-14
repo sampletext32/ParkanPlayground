@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Or;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for OR r32, r/m32 instruction (0x0B)
 /// </summary>
@@ -8,11 +10,9 @@ public class OrR32Rm32Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the OrR32Rm32Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public OrR32Rm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public OrR32Rm32Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -34,6 +34,9 @@ public class OrR32Rm32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
+        // Set the instruction type
+        instruction.Type = InstructionType.Or;
+        
         if (!Decoder.CanReadByte())
         {
             return false;
@@ -42,21 +45,30 @@ public class OrR32Rm32Handler : InstructionHandler
         // Read the ModR/M byte
         var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
-        // Set the mnemonic
-        instruction.Mnemonic = "or";
-
-        // Get the register name
-        string regName = ModRMDecoder.GetRegisterName(reg, 32);
-
-        // For memory operands, set the operand
-        if (mod != 3) // Memory operand
+        // Create the register operand for the reg field
+        var regOperand = OperandFactory.CreateRegisterOperand(reg);
+        
+        // Set the structured operands based on addressing mode
+        if (mod == 3) // Direct register addressing
         {
-            instruction.Operands = $"{regName}, {destOperand}";
+            // Create the register operand for the r/m field
+            var rmOperand = OperandFactory.CreateRegisterOperand(rm);
+            
+            // Set the structured operands
+            instruction.StructuredOperands = 
+            [
+                regOperand,
+                rmOperand
+            ];
         }
-        else // Register operand
+        else // Memory addressing
         {
-            string rmName = ModRMDecoder.GetRegisterName(rm, 32);
-            instruction.Operands = $"{regName}, {rmName}";
+            // Set the structured operands
+            instruction.StructuredOperands = 
+            [
+                regOperand,
+                destOperand
+            ];
         }
 
         return true;

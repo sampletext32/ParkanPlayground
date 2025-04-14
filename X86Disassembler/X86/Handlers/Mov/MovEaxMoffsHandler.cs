@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Mov;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class MovEaxMoffsHandler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the MovEaxMoffsHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public MovEaxMoffsHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public MovEaxMoffsHandler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -34,25 +34,33 @@ public class MovEaxMoffsHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "mov";
+        // Set the instruction type
+        instruction.Type = InstructionType.Mov;
 
-        // Get the operand size and register name
-        int operandSize = (opcode == 0xA0)
-            ? 8
-            : 32;
-
-        string regName = ModRMDecoder.GetRegisterName(RegisterIndex.A, operandSize);
+        // Get the operand size based on the opcode
+        int operandSize = (opcode == 0xA0) ? 8 : 32;
 
         // Read the memory offset
-        uint offset = Decoder.ReadUInt32();
-        if (Decoder.GetPosition() > Length)
+        if (!Decoder.CanReadUInt())
         {
             return false;
         }
 
-        // Set the operands
-        instruction.Operands = $"{regName}, [0x{offset:X}]";
+        uint offset = Decoder.ReadUInt32();
+
+        // Create the destination register operand (EAX or AL)
+        var destinationOperand = OperandFactory.CreateRegisterOperand(RegisterIndex.A, operandSize);
+        
+        // Create the source memory operand
+        // For MOV EAX, moffs32 or MOV AL, moffs8, the memory operand is a direct memory reference
+        var sourceOperand = OperandFactory.CreateDirectMemoryOperand(offset, operandSize);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
 
         return true;
     }

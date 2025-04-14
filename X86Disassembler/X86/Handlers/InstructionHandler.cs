@@ -5,39 +5,29 @@ namespace X86Disassembler.X86.Handlers;
 /// </summary>
 public abstract class InstructionHandler : IInstructionHandler
 {
-    // Buffer containing the code to decode
-    protected readonly byte[] CodeBuffer;
-    
     // The instruction decoder that owns this handler
     protected readonly InstructionDecoder Decoder;
-    
-    // Length of the buffer
-    protected readonly int Length;
-    
+
     // ModRM decoder for handling addressing modes
     protected readonly ModRMDecoder ModRMDecoder;
-    
+
     /// <summary>
     /// Initializes a new instance of the InstructionHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    protected InstructionHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
+    protected InstructionHandler(InstructionDecoder decoder)
     {
-        CodeBuffer = codeBuffer;
         Decoder = decoder;
-        Length = length;
-        ModRMDecoder = new ModRMDecoder(codeBuffer, decoder, length);
+        ModRMDecoder = new ModRMDecoder(decoder);
     }
-    
+
     /// <summary>
     /// Checks if this handler can decode the given opcode
     /// </summary>
     /// <param name="opcode">The opcode to check</param>
     /// <returns>True if this handler can decode the opcode</returns>
     public abstract bool CanHandle(byte opcode);
-    
+
     /// <summary>
     /// Decodes an instruction
     /// </summary>

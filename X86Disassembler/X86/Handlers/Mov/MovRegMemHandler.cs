@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Mov;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class MovRegMemHandler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the MovRegMemHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public MovRegMemHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public MovRegMemHandler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -34,8 +34,8 @@ public class MovRegMemHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "mov";
+        // Set the instruction type
+        instruction.Type = InstructionType.Mov;
 
         // Check if we have enough bytes for the ModR/M byte
         if (!Decoder.CanReadByte())
@@ -47,14 +47,23 @@ public class MovRegMemHandler : InstructionHandler
         int operandSize = (opcode & 0x01) != 0 ? 32 : 8;
 
         // Use ModRMDecoder to decode the ModR/M byte
-        var (mod, reg, rm, rmOperand) = ModRMDecoder.ReadModRM();
+        // For MOV r32, r/m32 (0x8B) or MOV r8, r/m8 (0x8A):
+        // - The reg field specifies the destination register
+        // - The r/m field with mod specifies the source operand (register or memory)
+        var (mod, reg, rm, sourceOperand) = ModRMDecoder.ReadModRM();
 
-        // Get register name based on size
-        string regName = ModRMDecoder.GetRegisterName(reg, operandSize);
+        // Adjust the operand size based on the opcode
+        sourceOperand.Size = operandSize;
 
-        // Set the operands - register is the destination, r/m is the source (for 0x8B)
-        // This matches the correct x86 instruction format: MOV r32, r/m32
-        instruction.Operands = $"{regName}, {rmOperand}";
+        // Create the destination register operand
+        var destinationOperand = OperandFactory.CreateRegisterOperand(reg, operandSize);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
 
         return true;
     }

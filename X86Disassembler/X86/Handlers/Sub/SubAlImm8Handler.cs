@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Sub;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class SubAlImm8Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the SubAlImm8Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public SubAlImm8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public SubAlImm8Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -42,9 +42,21 @@ public class SubAlImm8Handler : InstructionHandler
         // Read the immediate byte
         byte imm8 = Decoder.ReadByte();
 
-        // Set the instruction information
-        instruction.Mnemonic = "sub";
-        instruction.Operands = $"al, 0x{imm8:X2}";
+        // Set the instruction type
+        instruction.Type = InstructionType.Sub;
+        
+        // Create the destination register operand (AL)
+        var destinationOperand = OperandFactory.CreateRegisterOperand(RegisterIndex.A, 8);
+        
+        // Create the source immediate operand
+        var sourceOperand = OperandFactory.CreateImmediateOperand(imm8, 8);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
 
         return true;
     }

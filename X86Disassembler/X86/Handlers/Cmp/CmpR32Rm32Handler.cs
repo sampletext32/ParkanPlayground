@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Cmp;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class CmpR32Rm32Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the CmpR32Rm32Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public CmpR32Rm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public CmpR32Rm32Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -39,23 +39,21 @@ public class CmpR32Rm32Handler : InstructionHandler
             return false;
         }
 
+        // Set the instruction type
+        instruction.Type = InstructionType.Cmp;
+
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
-
-        // Set the mnemonic
-        instruction.Mnemonic = "cmp";
-
-        // Get the register name
-        string regName = ModRMDecoder.GetRegisterName(reg, 32);
-
-        // For register operands, set the operand
-        if (mod == 3)
-        {
-            // Register operand
-            destOperand = ModRMDecoder.GetRegisterName(rm, 32);
-        }
-
-        instruction.Operands = $"{regName}, {destOperand}";
+        var (mod, reg, rm, sourceOperand) = ModRMDecoder.ReadModRM();
+        
+        // Create the destination register operand (32-bit)
+        var destinationOperand = OperandFactory.CreateRegisterOperand((RegisterIndex)reg, 32);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
 
         return true;
     }

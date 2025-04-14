@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Xor;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for XOR EAX, imm32 instruction (0x35)
 /// </summary>
@@ -8,11 +10,9 @@ public class XorEaxImmHandler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the XorEaxImmHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public XorEaxImmHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
-        : base(codeBuffer, decoder, length)
+    public XorEaxImmHandler(InstructionDecoder decoder) 
+        : base(decoder)
     {
     }
     
@@ -34,8 +34,8 @@ public class XorEaxImmHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "xor";
+        // Set the instruction type
+        instruction.Type = InstructionType.Xor;
         
         if (!Decoder.CanReadUInt())
         {
@@ -45,8 +45,18 @@ public class XorEaxImmHandler : InstructionHandler
         // Read the immediate value using the decoder
         uint imm32 = Decoder.ReadUInt32();
         
-        // Set the operands
-        instruction.Operands = $"eax, 0x{imm32:X8}";
+        // Create the register operand for EAX
+        var eaxOperand = OperandFactory.CreateRegisterOperand(RegisterIndex.A);
+        
+        // Create the immediate operand
+        var immOperand = OperandFactory.CreateImmediateOperand(imm32);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            eaxOperand,
+            immOperand
+        ];
         
         return true;
     }

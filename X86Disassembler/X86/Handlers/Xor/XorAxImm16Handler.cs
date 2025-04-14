@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Xor;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for XOR AX, imm16 instruction (0x35 with 0x66 prefix)
 /// </summary>
@@ -8,11 +10,9 @@ public class XorAxImm16Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the XorAxImm16Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public XorAxImm16Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
-        : base(codeBuffer, decoder, length)
+    public XorAxImm16Handler(InstructionDecoder decoder) 
+        : base(decoder)
     {
     }
     
@@ -35,8 +35,8 @@ public class XorAxImm16Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "xor";
+        // Set the instruction type
+        instruction.Type = InstructionType.Xor;
 
         if (!Decoder.CanReadUShort())
         {
@@ -46,11 +46,18 @@ public class XorAxImm16Handler : InstructionHandler
         // Read the immediate value using the decoder
         ushort imm16 = Decoder.ReadUInt16();
         
-        // Format the immediate value
-        string immStr = $"0x{imm16:X4}";
+        // Create the register operand for AX
+        var axOperand = OperandFactory.CreateRegisterOperand(RegisterIndex.A, 16);
         
-        // Set the operands
-        instruction.Operands = $"ax, {immStr}";
+        // Create the immediate operand
+        var immOperand = OperandFactory.CreateImmediateOperand(imm16, 16);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            axOperand,
+            immOperand
+        ];
         
         return true;
     }

@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.FloatingPoint;
 
 /// <summary>
@@ -18,14 +20,25 @@ public class Float32OperationHandler : InstructionHandler
         "fdivr"
     ];
 
+    // Corresponding instruction types for each mnemonic
+    private static readonly InstructionType[] InstructionTypes =
+    [
+        InstructionType.Fadd,
+        InstructionType.Fmul,
+        InstructionType.Fcom,
+        InstructionType.Fcomp,
+        InstructionType.Fsub,
+        InstructionType.Fsubr,
+        InstructionType.Fdiv,
+        InstructionType.Fdivr
+    ];
+
     /// <summary>
     /// Initializes a new instance of the Float32OperationHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public Float32OperationHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public Float32OperationHandler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -53,20 +66,35 @@ public class Float32OperationHandler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
 
-        // Set the mnemonic based on the opcode and reg field
-        instruction.Mnemonic = Mnemonics[(int)reg];
+        // Set the instruction type based on the reg field
+        instruction.Type = InstructionTypes[(int)reg];
 
         // For memory operands, set the operand
         if (mod != 3) // Memory operand
         {
-            instruction.Operands = destOperand;
+            // Ensure the memory operand has the correct size (32-bit float)
+            operand.Size = 32;
+            
+            // Set the structured operands
+            instruction.StructuredOperands = 
+            [
+                operand
+            ];
         }
         else // Register operand (ST(i))
         {
             // For register operands, we need to handle the stack registers
-            instruction.Operands = $"st(0), st({(int)rm})";
+            var st0Operand = OperandFactory.CreateFPURegisterOperand(FpuRegisterIndex.ST0); // ST(0)
+            var stiOperand = OperandFactory.CreateFPURegisterOperand((FpuRegisterIndex)rm); // ST(i)
+            
+            // Set the structured operands
+            instruction.StructuredOperands = 
+            [
+                st0Operand,
+                stiOperand
+            ];
         }
 
         return true;

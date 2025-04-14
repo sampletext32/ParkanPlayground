@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Or;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for OR EAX, imm32 instruction (0x0D)
 /// </summary>
@@ -8,11 +10,9 @@ public class OrEaxImmHandler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the OrEaxImmHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public OrEaxImmHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public OrEaxImmHandler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -34,20 +34,29 @@ public class OrEaxImmHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        if (!Decoder.CanReadByte())
+        // Set the instruction type
+        instruction.Type = InstructionType.Or;
+        
+        if (!Decoder.CanReadUInt())
         {
             return false;
         }
 
         // Read the immediate dword (little-endian)
-
         uint imm32 = Decoder.ReadUInt32();
 
-        // Set the mnemonic
-        instruction.Mnemonic = "or";
-
-        // Set the operands
-        instruction.Operands = $"eax, 0x{imm32:X8}";
+        // Create the register operand for EAX
+        var eaxOperand = OperandFactory.CreateRegisterOperand(RegisterIndex.A);
+        
+        // Create the immediate operand
+        var immOperand = OperandFactory.CreateImmediateOperand(imm32);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            eaxOperand,
+            immOperand
+        ];
 
         return true;
     }

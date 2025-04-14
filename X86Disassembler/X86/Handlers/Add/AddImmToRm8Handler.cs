@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Add;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for ADD r/m8, imm8 instruction (0x80 /0)
 /// </summary>
@@ -8,11 +10,9 @@ public class AddImmToRm8Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the AddImmToRm8Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public AddImmToRm8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public AddImmToRm8Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -26,12 +26,10 @@ public class AddImmToRm8Handler : InstructionHandler
         if (opcode != 0x80)
             return false;
 
-        // Check if the reg field of the ModR/M byte is 0 (ADD)
-        int position = Decoder.GetPosition();
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = CodeBuffer[position];
+        byte modRM = Decoder.PeakByte();
         byte reg = (byte) ((modRM & 0x38) >> 3);
 
         return reg == 0; // 0 = ADD
@@ -45,8 +43,8 @@ public class AddImmToRm8Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "add";
+        // Set the instruction type and mnemonic
+        instruction.Type = InstructionType.Add;
 
         if (!Decoder.CanReadByte())
         {
@@ -56,12 +54,8 @@ public class AddImmToRm8Handler : InstructionHandler
         // Read the ModR/M byte
         var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
-        // For direct register addressing (mod == 3), use 8-bit register names
-        if (mod == 3)
-        {
-            // Use 8-bit register names for direct register addressing
-            destOperand = ModRMDecoder.GetRegisterName(rm, 8);
-        }
+        // Adjust the operand size to 8-bit
+        destOperand.Size = 8;
 
         // Read the immediate value
         if (!Decoder.CanReadByte())
@@ -71,8 +65,15 @@ public class AddImmToRm8Handler : InstructionHandler
 
         byte imm8 = Decoder.ReadByte();
 
-        // Set the operands
-        instruction.Operands = $"{destOperand}, 0x{imm8:X2}";
+        // Create the immediate operand
+        var sourceOperand = OperandFactory.CreateImmediateOperand(imm8, 8);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destOperand,
+            sourceOperand
+        ];
 
         return true;
     }

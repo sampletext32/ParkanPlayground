@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.ArithmeticUnary;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class NotRm32Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the NotRm32Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public NotRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public NotRm32Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -28,11 +28,10 @@ public class NotRm32Handler : InstructionHandler
             return false;
 
         // Check if the reg field of the ModR/M byte is 2 (NOT)
-        int position = Decoder.GetPosition();
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = CodeBuffer[position];
+        byte modRM = Decoder.PeakByte();
         byte reg = (byte) ((modRM & 0x38) >> 3);
 
         return reg == 2; // 2 = NOT
@@ -46,13 +45,18 @@ public class NotRm32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
+        // Set the instruction type
+        instruction.Type = InstructionType.Not;
+
         if (!Decoder.CanReadByte())
         {
             return false;
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        // For NOT r/m32 (0xF7 /2):
+        // - The r/m field with mod specifies the operand (register or memory)
+        var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
 
         // Verify this is a NOT instruction
         if (reg != RegisterIndex.C)
@@ -60,17 +64,12 @@ public class NotRm32Handler : InstructionHandler
             return false;
         }
 
-        // Set the mnemonic
-        instruction.Mnemonic = "not";
-
-        // For direct register addressing (mod == 3), the r/m field specifies a register
-        if (mod == 3)
-        {
-            destOperand = ModRMDecoder.GetRegisterName(rm, 32);
-        }
-
-        // Set the operands
-        instruction.Operands = destOperand;
+        // Set the structured operands
+        // NOT has only one operand
+        instruction.StructuredOperands = 
+        [
+            operand
+        ];
 
         return true;
     }

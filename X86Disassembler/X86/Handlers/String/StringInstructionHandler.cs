@@ -1,35 +1,59 @@
 namespace X86Disassembler.X86.Handlers.String;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for string instructions (MOVS, STOS, LODS, SCAS) with and without REP/REPNE prefixes
 /// </summary>
 public class StringInstructionHandler : InstructionHandler
 {
-    // Dictionary mapping opcodes to their mnemonics and operands
-    private static readonly Dictionary<byte, (string Mnemonic, string Operands)> StringInstructions = new()
+    // Dictionary mapping opcodes to their instruction types and operand factories
+    private static readonly Dictionary<byte, (InstructionType Type, Func<Operand[]> CreateOperands)> StringInstructions = new()
     {
-        { 0xA4, ("movs", "byte ptr [edi], byte ptr [esi]") },  // MOVSB
-        { 0xA5, ("movs", "dword ptr [edi], dword ptr [esi]") }, // MOVSD
-        { 0xAA, ("stos", "byte ptr [edi], al") },              // STOSB
-        { 0xAB, ("stos", "dword ptr [edi], eax") },            // STOSD
-        { 0xAC, ("lods", "al, byte ptr [esi]") },              // LODSB
-        { 0xAD, ("lods", "eax, dword ptr [esi]") },            // LODSD
-        { 0xAE, ("scas", "al, byte ptr [edi]") },              // SCASB
-        { 0xAF, ("scas", "eax, dword ptr [edi]") }             // SCASD
+        { 0xA4, (InstructionType.MovsB, () => new Operand[] {
+            OperandFactory.CreateDirectMemoryOperand(0, 8, "edi"),
+            OperandFactory.CreateDirectMemoryOperand(0, 8, "esi")
+        }) },  // MOVSB
+        { 0xA5, (InstructionType.MovsD, () => new Operand[] {
+            OperandFactory.CreateDirectMemoryOperand(0, 32, "edi"),
+            OperandFactory.CreateDirectMemoryOperand(0, 32, "esi")
+        }) }, // MOVSD
+        { 0xAA, (InstructionType.StosB, () => new Operand[] {
+            OperandFactory.CreateDirectMemoryOperand(0, 8, "edi"),
+            OperandFactory.CreateRegisterOperand(RegisterIndex.A, 8)
+        }) },  // STOSB
+        { 0xAB, (InstructionType.StosD, () => new Operand[] {
+            OperandFactory.CreateDirectMemoryOperand(0, 32, "edi"),
+            OperandFactory.CreateRegisterOperand(RegisterIndex.A, 32)
+        }) },  // STOSD
+        { 0xAC, (InstructionType.LodsB, () => new Operand[] {
+            OperandFactory.CreateRegisterOperand(RegisterIndex.A, 8),
+            OperandFactory.CreateDirectMemoryOperand(0, 8, "esi")
+        }) },  // LODSB
+        { 0xAD, (InstructionType.LodsD, () => new Operand[] {
+            OperandFactory.CreateRegisterOperand(RegisterIndex.A, 32),
+            OperandFactory.CreateDirectMemoryOperand(0, 32, "esi")
+        }) },  // LODSD
+        { 0xAE, (InstructionType.ScasB, () => new Operand[] {
+            OperandFactory.CreateRegisterOperand(RegisterIndex.A, 8),
+            OperandFactory.CreateDirectMemoryOperand(0, 8, "edi")
+        }) },  // SCASB
+        { 0xAF, (InstructionType.ScasD, () => new Operand[] {
+            OperandFactory.CreateRegisterOperand(RegisterIndex.A, 32),
+            OperandFactory.CreateDirectMemoryOperand(0, 32, "edi")
+        }) }   // SCASD
     };
     
     // REP/REPNE prefix opcodes
     private const byte REP_PREFIX = 0xF3;
     private const byte REPNE_PREFIX = 0xF2;
-    
+
     /// <summary>
     /// Initializes a new instance of the StringInstructionHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public StringInstructionHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
-        : base(codeBuffer, decoder, length)
+    public StringInstructionHandler(InstructionDecoder decoder) 
+        : base(decoder)
     {
     }
     
@@ -57,7 +81,7 @@ public class StringInstructionHandler : InstructionHandler
             return false;
         }
         
-        byte nextByte = CodeBuffer[Decoder.GetPosition()];
+        byte nextByte = Decoder.PeakByte();
         return StringInstructions.ContainsKey(nextByte);
     }
     
@@ -71,16 +95,12 @@ public class StringInstructionHandler : InstructionHandler
     {
         // Check if this is a REP/REPNE prefix
         bool hasRepPrefix = opcode == REP_PREFIX || opcode == REPNE_PREFIX;
-        string prefixString = "";
         
         // If this is a REP/REPNE prefix, get the actual string instruction opcode
         byte stringOpcode = opcode;
         
         if (hasRepPrefix)
         {
-            // Set the prefix string based on the prefix opcode
-            prefixString = opcode == REP_PREFIX ? "rep " : "repne ";
-
             // Read the next byte (the actual string instruction opcode)
             if (!Decoder.CanReadByte())
             {
@@ -95,14 +115,14 @@ public class StringInstructionHandler : InstructionHandler
             }
         }
 
-        // Get the mnemonic and operands for the string instruction
+        // Get the instruction type and operands for the string instruction
         if (StringInstructions.TryGetValue(stringOpcode, out var instructionInfo))
         {
-            // Set the mnemonic with the prefix if present
-            instruction.Mnemonic = prefixString + instructionInfo.Mnemonic;
+            // Set the instruction type
+            instruction.Type = instructionInfo.Type;
 
-            // Set the operands
-            instruction.Operands = instructionInfo.Operands;
+            // Create and set the structured operands
+            instruction.StructuredOperands = instructionInfo.CreateOperands().ToList();
 
             return true;
         }

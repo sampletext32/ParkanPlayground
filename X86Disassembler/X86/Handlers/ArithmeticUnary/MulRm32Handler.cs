@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.ArithmeticUnary;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class MulRm32Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the MulRm32Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public MulRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public MulRm32Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -27,11 +27,10 @@ public class MulRm32Handler : InstructionHandler
             return false;
 
         // Check if the reg field of the ModR/M byte is 4 (MUL)
-        int position = Decoder.GetPosition();
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = CodeBuffer[position];
+        byte modRM = Decoder.PeakByte();
         byte reg = (byte) ((modRM & 0x38) >> 3);
 
         return reg == 4; // 4 = MUL
@@ -45,8 +44,8 @@ public class MulRm32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "mul";
+        // Set the instruction type
+        instruction.Type = InstructionType.Mul;
 
         if (!Decoder.CanReadByte())
         {
@@ -54,10 +53,16 @@ public class MulRm32Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        // For MUL r/m32 (0xF7 /4):
+        // - The r/m field with mod specifies the operand (register or memory)
+        var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
 
-        // Set the operands
-        instruction.Operands = destOperand;
+        // Set the structured operands
+        // MUL has only one operand
+        instruction.StructuredOperands = 
+        [
+            operand
+        ];
 
         return true;
     }

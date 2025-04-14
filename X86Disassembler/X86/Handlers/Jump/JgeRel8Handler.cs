@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Jump;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for JGE rel8 instruction (0x7D)
 /// </summary>
@@ -8,11 +10,9 @@ public class JgeRel8Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the JgeRel8Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public JgeRel8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public JgeRel8Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
     
@@ -34,14 +34,13 @@ public class JgeRel8Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "jge";
+        // Set the instruction type
+        instruction.Type = InstructionType.Jge;
         
         // Check if we can read the offset byte
         if (!Decoder.CanReadByte())
         {
-            instruction.Operands = "??";
-            return true;
+            return false;
         }
 
         sbyte offset = (sbyte)Decoder.ReadByte();
@@ -49,8 +48,14 @@ public class JgeRel8Handler : InstructionHandler
         // Calculate target address (instruction address + instruction length + offset)
         ulong targetAddress = instruction.Address + 2UL + (uint)offset;
         
-        // Format the target address
-        instruction.Operands = $"0x{targetAddress:X8}";
+        // Create the relative offset operand
+        var targetOperand = OperandFactory.CreateRelativeOffsetOperand(targetAddress, 8);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            targetOperand
+        ];
         
         return true;
     }

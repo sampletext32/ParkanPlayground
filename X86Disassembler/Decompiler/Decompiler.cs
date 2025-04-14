@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using X86Disassembler.X86;
+using X86Disassembler.X86.Operands;
 
 /// <summary>
 /// Main decompiler class that translates assembly code into higher-level code
@@ -160,7 +161,9 @@ public class Decompiler
             ControlFlowGraph.BasicBlock? fallthroughBlock = null;
             ControlFlowGraph.BasicBlock? jumpTargetBlock = null;
             
-            ulong nextAddress = lastInstruction.Address + (ulong)lastInstruction.RawBytes.Length;
+            // Use a constant estimated instruction length since RawBytes is not available
+            const int estimatedInstructionLength = 4; // Typical x86 instruction length
+            ulong nextAddress = lastInstruction.Address + (ulong)estimatedInstructionLength;
             foreach (var successor in block.Successors)
             {
                 if (successor.StartAddress == nextAddress)
@@ -210,8 +213,14 @@ public class Decompiler
     private string TranslateInstruction(Instruction instruction, int indentLevel)
     {
         string indent = new string(' ', indentLevel * 4);
-        string mnemonic = instruction.Mnemonic.ToLower();
-        string operands = instruction.Operands;
+        string mnemonic = instruction.Type.ToString().ToLower();
+        string operands = "";
+        
+        // Format operands if available
+        if (instruction.StructuredOperands != null && instruction.StructuredOperands.Count > 0)
+        {
+            operands = string.Join(", ", instruction.StructuredOperands.Select(op => op.ToString()));
+        }
         
         // Skip jumps (handled by control flow)
         if (mnemonic.StartsWith("j"))
@@ -262,7 +271,7 @@ public class Decompiler
     /// <returns>The translated code statement</returns>
     private string TranslateMovInstruction(Instruction instruction, string indent)
     {
-        string[] operandParts = instruction.Operands.Split(',');
+        string[] operandParts = instruction.StructuredOperands.Select(op => op.ToString()).ToArray();
         if (operandParts.Length != 2)
         {
             return $"{indent}// {instruction}";
@@ -301,7 +310,7 @@ public class Decompiler
     /// <returns>The translated code statement</returns>
     private string TranslateArithmeticInstruction(Instruction instruction, string indent)
     {
-        string[] operandParts = instruction.Operands.Split(',');
+        string[] operandParts = instruction.StructuredOperands.Select(op => op.ToString()).ToArray();
         if (operandParts.Length != 2)
         {
             return $"{indent}// {instruction}";
@@ -309,7 +318,7 @@ public class Decompiler
         
         string destination = operandParts[0].Trim();
         string source = operandParts[1].Trim();
-        string operatorSymbol = GetOperatorForMnemonic(instruction.Mnemonic.ToLower());
+        string operatorSymbol = GetOperatorForMnemonic(instruction.Type.ToString().ToLower());
         
         // Skip register-to-register operations for registers we don't track
         if (IsRegister(destination) && IsRegister(source))
@@ -329,7 +338,7 @@ public class Decompiler
     /// <returns>The translated code statement</returns>
     private string TranslateCallInstruction(Instruction instruction, string indent)
     {
-        string target = instruction.Operands.Trim();
+        string target = instruction.StructuredOperands.FirstOrDefault()?.ToString() ?? "";
         
         // Try to get a function name from the target
         string functionName = GetFunctionNameFromTarget(target);
@@ -365,7 +374,7 @@ public class Decompiler
     /// <returns>The condition expression</returns>
     private string GetConditionFromJump(Instruction instruction)
     {
-        string mnemonic = instruction.Mnemonic.ToLower();
+        string mnemonic = instruction.Type.ToString().ToLower();
         
         // Map jump mnemonics to conditions
         return mnemonic switch

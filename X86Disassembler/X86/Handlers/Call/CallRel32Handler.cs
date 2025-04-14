@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Call;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for CALL rel32 instruction (0xE8)
 /// </summary>
@@ -8,11 +10,9 @@ public class CallRel32Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the CallRel32Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public CallRel32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public CallRel32Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -34,8 +34,8 @@ public class CallRel32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "call";
+        // Set the instruction type
+        instruction.Type = InstructionType.Call;
 
         if (!Decoder.CanReadUInt())
         {
@@ -50,8 +50,14 @@ public class CallRel32Handler : InstructionHandler
         // Calculate the target address
         uint targetAddress = (uint) (position + offset + 4);
 
-        // Set the operands
-        instruction.Operands = $"0x{targetAddress:X8}";
+        // Create the target address operand
+        var targetOperand = OperandFactory.CreateRelativeOffsetOperand(targetAddress);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            targetOperand
+        ];
 
         return true;
     }

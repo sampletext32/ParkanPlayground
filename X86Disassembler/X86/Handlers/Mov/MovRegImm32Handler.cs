@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Mov;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class MovRegImm32Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the MovRegImm32Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public MovRegImm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public MovRegImm32Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -34,22 +34,32 @@ public class MovRegImm32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "mov";
+        // Set the instruction type
+        instruction.Type = InstructionType.Mov;
 
         // Register is encoded in the low 3 bits of the opcode
-        RegisterIndex reg = (RegisterIndex) (opcode & 0x07);
-        string regName = ModRMDecoder.GetRegisterName(reg, 32);
+        RegisterIndex reg = (RegisterIndex)(opcode & 0x07);
 
         // Read the immediate value
-        uint imm32 = Decoder.ReadUInt32();
-        if (Decoder.GetPosition() > Length)
+        if (!Decoder.CanReadUInt())
         {
             return false;
         }
 
-        // Set the operands
-        instruction.Operands = $"{regName}, 0x{imm32:X}";
+        uint imm32 = Decoder.ReadUInt32();
+
+        // Create the destination register operand
+        var destinationOperand = OperandFactory.CreateRegisterOperand(reg, 32);
+        
+        // Create the source immediate operand
+        var sourceOperand = OperandFactory.CreateImmediateOperand(imm32, 32);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
 
         return true;
     }

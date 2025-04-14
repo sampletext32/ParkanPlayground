@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Sub;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class SubR8Rm8Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the SubR8Rm8Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public SubR8Rm8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public SubR8Rm8Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -34,8 +34,8 @@ public class SubR8Rm8Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "sub";
+        // Set the instruction type
+        instruction.Type = InstructionType.Sub;
 
         if (!Decoder.CanReadByte())
         {
@@ -43,21 +43,20 @@ public class SubR8Rm8Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
-
-        // Get register name
-        string regName = ModRMDecoder.GetRegisterName(reg, 8);
-
-        // For mod == 3, both operands are registers
-        if (mod == 3)
-        {
-            string rmRegName = ModRMDecoder.GetRegisterName(rm, 8);
-            instruction.Operands = $"{regName}, {rmRegName}";
-        }
-        else // Memory operand
-        {
-            instruction.Operands = $"{regName}, byte ptr {destOperand}";
-        }
+        var (mod, reg, rm, sourceOperand) = ModRMDecoder.ReadModRM();
+        
+        // Ensure the source operand has the correct size (8-bit)
+        sourceOperand.Size = 8;
+        
+        // Create the destination register operand
+        var destinationOperand = OperandFactory.CreateRegisterOperand((RegisterIndex)reg, 8);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
 
         return true;
     }

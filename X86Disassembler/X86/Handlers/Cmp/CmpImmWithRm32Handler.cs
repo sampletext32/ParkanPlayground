@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Cmp;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class CmpImmWithRm32Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the CmpImmWithRm32Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public CmpImmWithRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public CmpImmWithRm32Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -30,7 +30,7 @@ public class CmpImmWithRm32Handler : InstructionHandler
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = CodeBuffer[Decoder.GetPosition()];
+        byte modRM = Decoder.PeakByte();
         byte reg = (byte) ((modRM & 0x38) >> 3);
 
         return reg == 7; // 7 = CMP
@@ -44,11 +44,11 @@ public class CmpImmWithRm32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "cmp";
+        // Set the instruction type
+        instruction.Type = InstructionType.Cmp;
 
         // Read the ModR/M byte
-        var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
 
         // Read the immediate value
         if (!Decoder.CanReadUInt())
@@ -57,19 +57,16 @@ public class CmpImmWithRm32Handler : InstructionHandler
         }
 
         uint imm32 = Decoder.ReadUInt32();
-
-        // Format the destination operand based on addressing mode
-        if (mod == 3) // Register addressing mode
-        {
-            // Get 32-bit register name
-            memOperand = ModRMDecoder.GetRegisterName(rm, 32);
-        }
         
-        // Format the immediate value
-        string immStr = $"0x{imm32:X8}";
-
-        // Set the operands
-        instruction.Operands = $"{memOperand}, {immStr}";
+        // Create the source immediate operand
+        var sourceOperand = OperandFactory.CreateImmediateOperand(imm32, 32);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
 
         return true;
     }

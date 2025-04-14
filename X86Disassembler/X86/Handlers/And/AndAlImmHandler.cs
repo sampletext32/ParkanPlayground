@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.And;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class AndAlImmHandler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the AndAlImmHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public AndAlImmHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
-        : base(codeBuffer, decoder, length)
+    public AndAlImmHandler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
     
@@ -34,21 +34,30 @@ public class AndAlImmHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "and";
+        // Set the instruction type
+        instruction.Type = InstructionType.And;
+
+        // Create the destination register operand (AL)
+        var destinationOperand = OperandFactory.CreateRegisterOperand(RegisterIndex.A, 8);
 
         // Read immediate value
         if (!Decoder.CanReadByte())
         {
-            instruction.Operands = "al, ??";
-            return true;
+            return false;
         }
         
         // Read immediate value
         byte imm8 = Decoder.ReadByte();
         
-        // Set operands
-        instruction.Operands = $"al, 0x{imm8:X2}";
+        // Create the source immediate operand
+        var sourceOperand = OperandFactory.CreateImmediateOperand(imm8, 8);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
         
         return true;
     }

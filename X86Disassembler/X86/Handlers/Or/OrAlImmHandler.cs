@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Or;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for OR AL, imm8 instruction (0x0C)
 /// </summary>
@@ -8,11 +10,9 @@ public class OrAlImmHandler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the OrAlImmHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public OrAlImmHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public OrAlImmHandler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -34,6 +34,9 @@ public class OrAlImmHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
+        // Set the instruction type
+        instruction.Type = InstructionType.Or;
+        
         if (!Decoder.CanReadByte())
         {
             return false;
@@ -42,11 +45,18 @@ public class OrAlImmHandler : InstructionHandler
         // Read the immediate byte
         byte imm8 = Decoder.ReadByte();
 
-        // Set the mnemonic
-        instruction.Mnemonic = "or";
-
-        // Set the operands
-        instruction.Operands = $"al, 0x{imm8:X2}";
+        // Create the register operand for AL
+        var alOperand = OperandFactory.CreateRegisterOperand(RegisterIndex.A, 8);
+        
+        // Create the immediate operand
+        var immOperand = OperandFactory.CreateImmediateOperand(imm8, 8);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            alOperand,
+            immOperand
+        ];
 
         return true;
     }

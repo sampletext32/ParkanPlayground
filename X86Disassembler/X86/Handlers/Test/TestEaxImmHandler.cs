@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Test;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for TEST EAX, imm32 instruction (0xA9)
 /// </summary>
@@ -8,11 +10,9 @@ public class TestEaxImmHandler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the TestEaxImmHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public TestEaxImmHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public TestEaxImmHandler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -34,8 +34,8 @@ public class TestEaxImmHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "test";
+        // Set the instruction type
+        instruction.Type = InstructionType.Test;
 
         if (!Decoder.CanReadUInt())
         {
@@ -45,8 +45,18 @@ public class TestEaxImmHandler : InstructionHandler
         // Read the immediate value - x86 is little-endian, so we need to read the bytes in the correct order
         var imm32 = Decoder.ReadUInt32();
 
-        // Set the operands
-        instruction.Operands = $"eax, 0x{imm32:X8}";
+        // Create the register operand for EAX
+        var eaxOperand = OperandFactory.CreateRegisterOperand(RegisterIndex.A);
+        
+        // Create the immediate operand
+        var immOperand = OperandFactory.CreateImmediateOperand(imm32);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            eaxOperand,
+            immOperand
+        ];
 
         return true;
     }

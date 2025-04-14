@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Sbb;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for SBB r/m32, imm32 instruction (0x81 /3)
 /// </summary>
@@ -8,11 +10,9 @@ public class SbbImmFromRm32Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the SbbImmFromRm32Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public SbbImmFromRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public SbbImmFromRm32Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -30,7 +30,7 @@ public class SbbImmFromRm32Handler : InstructionHandler
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = CodeBuffer[Decoder.GetPosition()];
+        byte modRM = Decoder.PeakByte();
         byte reg = (byte) ((modRM & 0x38) >> 3);
 
         return reg == 3; // 3 = SBB
@@ -44,8 +44,8 @@ public class SbbImmFromRm32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "sbb";
+        // Set the instruction type
+        instruction.Type = InstructionType.Sbb;
 
         if (!Decoder.CanReadByte())
         {
@@ -63,13 +63,16 @@ public class SbbImmFromRm32Handler : InstructionHandler
 
         // Read the immediate value in little-endian format
         var imm32 = Decoder.ReadUInt32();
-
-        // Format the immediate value as expected by the tests (0x12345678)
-        // Note: The bytes are reversed to match the expected format in the tests
-        string immStr = $"0x{imm32:X8}";
-
-        // Set the operands
-        instruction.Operands = $"{destOperand}, {immStr}";
+        
+        // Create the immediate operand
+        var immOperand = OperandFactory.CreateImmediateOperand(imm32);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destOperand,
+            immOperand
+        ];
 
         return true;
     }

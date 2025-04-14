@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Add;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class AddImmToRm32Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the AddImmToRm32Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public AddImmToRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public AddImmToRm32Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -27,11 +27,10 @@ public class AddImmToRm32Handler : InstructionHandler
             return false;
 
         // Check if the reg field of the ModR/M byte is 0 (ADD)
-        int position = Decoder.GetPosition();
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = CodeBuffer[position];
+        byte modRM = Decoder.PeakByte();
         byte reg = (byte) ((modRM & 0x38) >> 3);
 
         return reg == 0; // 0 = ADD
@@ -46,7 +45,7 @@ public class AddImmToRm32Handler : InstructionHandler
     public override bool Decode(byte opcode, Instruction instruction)
     {
         // Set the mnemonic
-        instruction.Mnemonic = "add";
+        instruction.Type = InstructionType.Add;
 
         if (!Decoder.CanReadByte())
         {
@@ -65,12 +64,10 @@ public class AddImmToRm32Handler : InstructionHandler
         // Read the immediate value in little-endian format
         var imm = Decoder.ReadUInt32();
 
-        // Format the immediate value as expected by the tests (0x12345678)
-        // Note: The bytes are reversed to match the expected format in the tests
-        string immStr = $"0x{imm:X8}";
-
-        // Set the operands
-        instruction.Operands = $"{destOperand}, {immStr}";
+        instruction.StructuredOperands = [
+            destOperand, 
+            OperandFactory.CreateImmediateOperand(imm, 32)
+        ];
 
         return true;
     }

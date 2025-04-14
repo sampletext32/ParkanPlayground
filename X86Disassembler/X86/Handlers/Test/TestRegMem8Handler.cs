@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Test;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for TEST r/m8, r8 instruction (0x84)
 /// </summary>
@@ -8,11 +10,9 @@ public class TestRegMem8Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the TestRegMem8Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public TestRegMem8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public TestRegMem8Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -34,8 +34,8 @@ public class TestRegMem8Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "test";
+        // Set the instruction type
+        instruction.Type = InstructionType.Test;
 
         // Check if we have enough bytes for the ModR/M byte
         if (!Decoder.CanReadByte())
@@ -46,19 +46,30 @@ public class TestRegMem8Handler : InstructionHandler
         // Read the ModR/M byte
         var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
-        // Get the register name for the reg field
-        string regOperand = ModRMDecoder.GetRegisterName(reg, 8);
+        // Create the register operand for the reg field (8-bit)
+        var regOperand = OperandFactory.CreateRegisterOperand(reg, 8);
         
-        // For direct register addressing (mod == 3), get the r/m register name
-        if (mod == 3)
+        // Set the structured operands based on addressing mode
+        if (mod == 3) // Direct register addressing
         {
-            string rmOperand = ModRMDecoder.GetRegisterName(rm, 8);
-            instruction.Operands = $"{rmOperand}, {regOperand}";
+            // Create the register operand for the r/m field (8-bit)
+            var rmOperand = OperandFactory.CreateRegisterOperand(rm, 8);
+            
+            // Set the structured operands
+            instruction.StructuredOperands = 
+            [
+                rmOperand,
+                regOperand
+            ];
         }
-        else
+        else // Memory addressing
         {
-            // For memory operands, use the decoded operand string
-            instruction.Operands = $"{destOperand}, {regOperand}";
+            // Set the structured operands
+            instruction.StructuredOperands = 
+            [
+                destOperand,
+                regOperand
+            ];
         }
 
         return true;

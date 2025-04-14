@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Test;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class TestImmWithRm8Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the TestImmWithRm8Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public TestImmWithRm8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public TestImmWithRm8Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -36,7 +36,7 @@ public class TestImmWithRm8Handler : InstructionHandler
         }
         
         // Check if the reg field is 0 (TEST operation)
-        byte modRM = CodeBuffer[Decoder.GetPosition()];
+        byte modRM = Decoder.PeakByte();
         byte reg = (byte)((modRM & 0x38) >> 3);
         
         return reg == 0; // 0 = TEST
@@ -50,18 +50,14 @@ public class TestImmWithRm8Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "test";
+        // Set the instruction type
+        instruction.Type = InstructionType.Test;
         
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
         
-        // Get the destination operand based on addressing mode
-        if (mod == 3) // Register operand
-        {
-            // For direct register addressing, use the correct 8-bit register name
-            destOperand = ModRMDecoder.GetRegisterName(rm, 8);
-        }
+        // Ensure the destination operand has the correct size (8-bit)
+        destinationOperand.Size = 8;
 
         // Check if we have enough bytes for the immediate value
         if (!Decoder.CanReadByte())
@@ -71,9 +67,16 @@ public class TestImmWithRm8Handler : InstructionHandler
 
         // Read the immediate value
         byte imm8 = Decoder.ReadByte();
-
-        // Set the operands
-        instruction.Operands = $"{destOperand}, 0x{imm8:X2}";
+        
+        // Create the source immediate operand
+        var sourceOperand = OperandFactory.CreateImmediateOperand(imm8, 8);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
 
         return true;
     }

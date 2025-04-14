@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Ret;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for RET instruction with immediate operand (0xC2)
 /// </summary>
@@ -8,11 +10,9 @@ public class RetImmHandler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the RetImmHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public RetImmHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
-        : base(codeBuffer, decoder, length)
+    public RetImmHandler(InstructionDecoder decoder) 
+        : base(decoder)
     {
     }
     
@@ -34,8 +34,8 @@ public class RetImmHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "ret";
+        // Set the instruction type
+        instruction.Type = InstructionType.Ret;
         
         if (!Decoder.CanReadUShort())
         {
@@ -45,8 +45,14 @@ public class RetImmHandler : InstructionHandler
         // Read the immediate value
         ushort imm16 = Decoder.ReadUInt16();
         
-        // Set the operands
-        instruction.Operands = $"0x{imm16:X4}";
+        // Create the immediate operand
+        var immOperand = OperandFactory.CreateImmediateOperand(imm16, 16);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            immOperand
+        ];
         
         return true;
     }

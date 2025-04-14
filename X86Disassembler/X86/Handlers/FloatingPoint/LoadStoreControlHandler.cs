@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.FloatingPoint;
 
 /// <summary>
@@ -5,81 +7,79 @@ namespace X86Disassembler.X86.Handlers.FloatingPoint;
 /// </summary>
 public class LoadStoreControlHandler : InstructionHandler
 {
-    // Memory operand mnemonics for D9 opcode - load, store, and control operations
-    private static readonly string[] MemoryMnemonics =
+    // Memory operand instruction types for D9 opcode - load, store, and control operations
+    private static readonly InstructionType[] MemoryInstructionTypes =
     [
-        "fld",     // 0
-        "??",      // 1
-        "fst",     // 2
-        "fstp",    // 3
-        "fldenv",  // 4
-        "fldcw",   // 5
-        "fnstenv", // 6
-        "fnstcw"   // 7
+        InstructionType.Fld,     // 0
+        InstructionType.Unknown, // 1
+        InstructionType.Fst,     // 2
+        InstructionType.Fstp,    // 3
+        InstructionType.Unknown, // 4 - fldenv not in enum
+        InstructionType.Fldcw,   // 5
+        InstructionType.Unknown, // 6 - fnstenv not in enum
+        InstructionType.Fnstcw   // 7
     ];
     
     // Register-register operations mapping (mod=3)
-    private static readonly Dictionary<(RegisterIndex Reg, RegisterIndex Rm), (string Mnemonic, string Operands)> RegisterOperations = new()
+    private static readonly Dictionary<(RegisterIndex Reg, RegisterIndex Rm), (InstructionType Type, FpuRegisterIndex? OperandIndex)> RegisterOperations = new()
     {
         // FLD ST(i)
-        { (RegisterIndex.A, RegisterIndex.A), ("fld", "st(0)") },
-        { (RegisterIndex.A, RegisterIndex.C), ("fld", "st(1)") },
-        { (RegisterIndex.A, RegisterIndex.D), ("fld", "st(2)") },
-        { (RegisterIndex.A, RegisterIndex.B), ("fld", "st(3)") },
-        { (RegisterIndex.A, RegisterIndex.Sp), ("fld", "st(4)") },
-        { (RegisterIndex.A, RegisterIndex.Bp), ("fld", "st(5)") },
-        { (RegisterIndex.A, RegisterIndex.Si), ("fld", "st(6)") },
-        { (RegisterIndex.A, RegisterIndex.Di), ("fld", "st(7)") },
+        { (RegisterIndex.A, RegisterIndex.A), (InstructionType.Fld, FpuRegisterIndex.ST0) },
+        { (RegisterIndex.A, RegisterIndex.C), (InstructionType.Fld, FpuRegisterIndex.ST1) },
+        { (RegisterIndex.A, RegisterIndex.D), (InstructionType.Fld, FpuRegisterIndex.ST2) },
+        { (RegisterIndex.A, RegisterIndex.B), (InstructionType.Fld, FpuRegisterIndex.ST3) },
+        { (RegisterIndex.A, RegisterIndex.Sp), (InstructionType.Fld, FpuRegisterIndex.ST4) },
+        { (RegisterIndex.A, RegisterIndex.Bp), (InstructionType.Fld, FpuRegisterIndex.ST5) },
+        { (RegisterIndex.A, RegisterIndex.Si), (InstructionType.Fld, FpuRegisterIndex.ST6) },
+        { (RegisterIndex.A, RegisterIndex.Di), (InstructionType.Fld, FpuRegisterIndex.ST7) },
         
         // FXCH ST(i)
-        { (RegisterIndex.B, RegisterIndex.A), ("fxch", "st(0)") },
-        { (RegisterIndex.B, RegisterIndex.C), ("fxch", "st(1)") },
-        { (RegisterIndex.B, RegisterIndex.D), ("fxch", "st(2)") },
-        { (RegisterIndex.B, RegisterIndex.B), ("fxch", "st(3)") },
-        { (RegisterIndex.B, RegisterIndex.Sp), ("fxch", "st(4)") },
-        { (RegisterIndex.B, RegisterIndex.Bp), ("fxch", "st(5)") },
-        { (RegisterIndex.B, RegisterIndex.Si), ("fxch", "st(6)") },
-        { (RegisterIndex.B, RegisterIndex.Di), ("fxch", "st(7)") },
+        { (RegisterIndex.B, RegisterIndex.A), (InstructionType.Fxch, FpuRegisterIndex.ST0) },
+        { (RegisterIndex.B, RegisterIndex.C), (InstructionType.Fxch, FpuRegisterIndex.ST1) },
+        { (RegisterIndex.B, RegisterIndex.D), (InstructionType.Fxch, FpuRegisterIndex.ST2) },
+        { (RegisterIndex.B, RegisterIndex.B), (InstructionType.Fxch, FpuRegisterIndex.ST3) },
+        { (RegisterIndex.B, RegisterIndex.Sp), (InstructionType.Fxch, FpuRegisterIndex.ST4) },
+        { (RegisterIndex.B, RegisterIndex.Bp), (InstructionType.Fxch, FpuRegisterIndex.ST5) },
+        { (RegisterIndex.B, RegisterIndex.Si), (InstructionType.Fxch, FpuRegisterIndex.ST6) },
+        { (RegisterIndex.B, RegisterIndex.Di), (InstructionType.Fxch, FpuRegisterIndex.ST7) },
         
         // D9E0-D9EF special instructions (reg=6)
-        { (RegisterIndex.Si, RegisterIndex.A), ("fchs", "") },
-        { (RegisterIndex.Si, RegisterIndex.B), ("fabs", "") },
-        { (RegisterIndex.Si, RegisterIndex.Si), ("ftst", "") },
-        { (RegisterIndex.Si, RegisterIndex.Di), ("fxam", "") },
+        { (RegisterIndex.Si, RegisterIndex.A), (InstructionType.Fchs, null) },
+        { (RegisterIndex.Si, RegisterIndex.B), (InstructionType.Fabs, null) },
+        { (RegisterIndex.Si, RegisterIndex.Si), (InstructionType.Ftst, null) },
+        { (RegisterIndex.Si, RegisterIndex.Di), (InstructionType.Fxam, null) },
         
         // D9F0-D9FF special instructions (reg=7)
-        { (RegisterIndex.Di, RegisterIndex.A), ("f2xm1", "") },
-        { (RegisterIndex.Di, RegisterIndex.B), ("fyl2x", "") },
-        { (RegisterIndex.Di, RegisterIndex.C), ("fptan", "") },
-        { (RegisterIndex.Di, RegisterIndex.D), ("fpatan", "") },
-        { (RegisterIndex.Di, RegisterIndex.Si), ("fxtract", "") },
-        { (RegisterIndex.Di, RegisterIndex.Di), ("fprem1", "") },
-        { (RegisterIndex.Di, RegisterIndex.Sp), ("fdecstp", "") },
-        { (RegisterIndex.Di, RegisterIndex.Bp), ("fincstp", "") },
+        { (RegisterIndex.Di, RegisterIndex.A), (InstructionType.Unknown, null) }, // f2xm1 not in enum
+        { (RegisterIndex.Di, RegisterIndex.B), (InstructionType.Unknown, null) }, // fyl2x not in enum
+        { (RegisterIndex.Di, RegisterIndex.C), (InstructionType.Unknown, null) }, // fptan not in enum
+        { (RegisterIndex.Di, RegisterIndex.D), (InstructionType.Unknown, null) }, // fpatan not in enum
+        { (RegisterIndex.Di, RegisterIndex.Si), (InstructionType.Unknown, null) }, // fxtract not in enum
+        { (RegisterIndex.Di, RegisterIndex.Di), (InstructionType.Unknown, null) }, // fprem1 not in enum
+        { (RegisterIndex.Di, RegisterIndex.Sp), (InstructionType.Unknown, null) }, // fdecstp not in enum
+        { (RegisterIndex.Di, RegisterIndex.Bp), (InstructionType.Unknown, null) }, // fincstp not in enum
         
         // D9D0-D9DF special instructions (reg=5)
-        { (RegisterIndex.Sp, RegisterIndex.A), ("fprem", "") },
-        { (RegisterIndex.Sp, RegisterIndex.B), ("fyl2xp1", "") },
-        { (RegisterIndex.Sp, RegisterIndex.C), ("fsqrt", "") },
-        { (RegisterIndex.Sp, RegisterIndex.D), ("fsincos", "") },
-        { (RegisterIndex.Sp, RegisterIndex.Si), ("frndint", "") },
-        { (RegisterIndex.Sp, RegisterIndex.Di), ("fscale", "") },
-        { (RegisterIndex.Sp, RegisterIndex.Sp), ("fsin", "") },
-        { (RegisterIndex.Sp, RegisterIndex.Bp), ("fcos", "") },
+        { (RegisterIndex.Sp, RegisterIndex.A), (InstructionType.Unknown, null) }, // fprem not in enum
+        { (RegisterIndex.Sp, RegisterIndex.B), (InstructionType.Unknown, null) }, // fyl2xp1 not in enum
+        { (RegisterIndex.Sp, RegisterIndex.C), (InstructionType.Unknown, null) }, // fsqrt not in enum
+        { (RegisterIndex.Sp, RegisterIndex.D), (InstructionType.Unknown, null) }, // fsincos not in enum
+        { (RegisterIndex.Sp, RegisterIndex.Si), (InstructionType.Unknown, null) }, // frndint not in enum
+        { (RegisterIndex.Sp, RegisterIndex.Di), (InstructionType.Unknown, null) }, // fscale not in enum
+        { (RegisterIndex.Sp, RegisterIndex.Sp), (InstructionType.Unknown, null) }, // fsin not in enum
+        { (RegisterIndex.Sp, RegisterIndex.Bp), (InstructionType.Unknown, null) }, // fcos not in enum
         
         // D9C8-D9CF special instructions (reg=4)
-        { (RegisterIndex.Bp, RegisterIndex.A), ("fnop", "") },
-        { (RegisterIndex.Bp, RegisterIndex.C), ("fwait", "") }
+        { (RegisterIndex.Bp, RegisterIndex.A), (InstructionType.Unknown, null) }, // fnop not in enum
+        { (RegisterIndex.Bp, RegisterIndex.C), (InstructionType.Unknown, null) }  // fwait not in enum
     };
-    
+
     /// <summary>
     /// Initializes a new instance of the LoadStoreControlHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public LoadStoreControlHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
-        : base(codeBuffer, decoder, length)
+    public LoadStoreControlHandler(InstructionDecoder decoder) 
+        : base(decoder)
     {
     }
     
@@ -107,46 +107,59 @@ public class LoadStoreControlHandler : InstructionHandler
         }
         
         // Read the ModR/M byte
-        var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, memoryOperand) = ModRMDecoder.ReadModRM();
         
         // Handle based on addressing mode
         if (mod != 3) // Memory operand
         {
-            // Set the mnemonic based on the reg field
-            instruction.Mnemonic = MemoryMnemonics[(int)reg];
+            // Set the instruction type based on the reg field
+            instruction.Type = MemoryInstructionTypes[(int)reg];
             
-            // Different operand types based on the instruction
+            // Set the size based on the operation
             if (reg == RegisterIndex.A || reg == RegisterIndex.C || reg == RegisterIndex.D) // fld, fst, fstp
             {
-                // Keep the dword ptr prefix from ModRMDecoder
-                instruction.Operands = memOperand;
+                // Keep the default 32-bit size for floating point operations
+                memoryOperand.Size = 32;
             }
-            else // fldenv, fldcw, fnstenv, fnstcw
+            else if (reg == RegisterIndex.Di || reg == RegisterIndex.Bp) // fldcw, fnstcw
             {
-                if (reg == RegisterIndex.Di) // fldcw - should use word ptr
-                {
-                    instruction.Operands = memOperand.Replace("dword ptr", "word ptr");
-                }
-                else // fldenv, fnstenv, fnstcw
-                {
-                    // Remove the dword ptr prefix for other control operations
-                    instruction.Operands = memOperand.Replace("dword ptr ", "");
-                }
+                // Set to 16-bit for control word operations
+                memoryOperand.Size = 16;
             }
+            
+            // Set the structured operands
+            instruction.StructuredOperands = 
+            [
+                memoryOperand
+            ];
         }
         else // Register operand (ST(i))
         {
-            // Look up the register operation in our dictionary
+            // Look up the instruction type in the register operations dictionary
             if (RegisterOperations.TryGetValue((reg, rm), out var operation))
             {
-                instruction.Mnemonic = operation.Mnemonic;
-                instruction.Operands = operation.Operands;
+                instruction.Type = operation.Type;
+                
+                // Set the structured operands
+                if (operation.OperandIndex.HasValue)
+                {
+                    var operand = OperandFactory.CreateFPURegisterOperand(operation.OperandIndex.Value);
+                    instruction.StructuredOperands = 
+                    [
+                        operand
+                    ];
+                }
+                else
+                {
+                    // No operands for instructions like fchs, fabs, etc.
+                    instruction.StructuredOperands = [];
+                }
             }
             else
             {
                 // Unknown instruction
-                instruction.Mnemonic = "??";
-                instruction.Operands = "";
+                instruction.Type = InstructionType.Unknown;
+                instruction.StructuredOperands = [];
             }
         }
         

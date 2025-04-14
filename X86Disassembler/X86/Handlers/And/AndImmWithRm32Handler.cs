@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.And;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class AndImmWithRm32Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the AndImmWithRm32Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public AndImmWithRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public AndImmWithRm32Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -27,11 +27,10 @@ public class AndImmWithRm32Handler : InstructionHandler
             return false;
 
         // Check if the reg field of the ModR/M byte is 4 (AND)
-        int position = Decoder.GetPosition();
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = CodeBuffer[position];
+        byte modRM = Decoder.PeakByte();
         byte reg = (byte) ((modRM & 0x38) >> 3);
 
         return reg == 4; // 4 = AND
@@ -45,15 +44,15 @@ public class AndImmWithRm32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "and";
+        // Set the instruction type
+        instruction.Type = InstructionType.And;
 
         // Read the ModR/M byte
-        var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
+        // For AND r/m32, imm32 (0x81 /4):
+        // - The r/m field with mod specifies the destination operand (register or memory)
+        // - The immediate value is the source operand
+        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
         
-        // Get the position after decoding the ModR/M byte
-        int position = Decoder.GetPosition();
-
         // Check if we have enough bytes for the immediate value
         if (!Decoder.CanReadUInt())
         {
@@ -63,24 +62,15 @@ public class AndImmWithRm32Handler : InstructionHandler
         // Read the immediate value
         uint imm32 = Decoder.ReadUInt32();
 
-        // Format the destination operand based on addressing mode
-        string destOperand;
-        if (mod == 3) // Register addressing mode
-        {
-            // Get 32-bit register name
-            destOperand = ModRMDecoder.GetRegisterName(rm, 32);
-        }
-        else // Memory addressing mode
-        {
-            // Memory operand already includes dword ptr prefix
-            destOperand = memOperand;
-        }
+        // Create the source immediate operand
+        var sourceOperand = OperandFactory.CreateImmediateOperand(imm32, 32);
         
-        // Format the immediate value
-        string immStr = $"0x{imm32:X8}";
-
-        // Set the operands
-        instruction.Operands = $"{destOperand}, {immStr}";
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
 
         return true;
     }

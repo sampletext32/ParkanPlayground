@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Sub;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class SubImmFromRm8Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the SubImmFromRm8Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public SubImmFromRm8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public SubImmFromRm8Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -30,7 +30,7 @@ public class SubImmFromRm8Handler : InstructionHandler
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = CodeBuffer[Decoder.GetPosition()];
+        byte modRM = Decoder.PeakByte();
         byte reg = (byte) ((modRM & 0x38) >> 3);
 
         return reg == 5; // 5 = SUB
@@ -44,11 +44,14 @@ public class SubImmFromRm8Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "sub";
+        // Set the instruction type
+        instruction.Type = InstructionType.Sub;
 
         // Extract the fields from the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
+        
+        // Ensure the destination operand has the correct size (8-bit)
+        destinationOperand.Size = 8;
 
         // Read the immediate byte
         if (!Decoder.CanReadByte())
@@ -57,19 +60,16 @@ public class SubImmFromRm8Handler : InstructionHandler
         }
 
         byte imm8 = Decoder.ReadByte();
-
-        // Set the instruction information
-        // For mod == 3, the operand is a register
-        if (mod == 3)
-        {
-            string rmRegName = ModRMDecoder.GetRegisterName(rm, 8);
-            instruction.Operands = $"{rmRegName}, 0x{imm8:X2}";
-        }
-        else // Memory operand
-        {
-            // Get the memory operand string
-            instruction.Operands = $"byte ptr {destOperand}, 0x{imm8:X2}";
-        }
+        
+        // Create the source immediate operand
+        var sourceOperand = OperandFactory.CreateImmediateOperand(imm8, 8);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
 
         return true;
     }

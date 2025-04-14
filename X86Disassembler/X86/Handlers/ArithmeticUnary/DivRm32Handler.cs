@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.ArithmeticUnary;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class DivRm32Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the DivRm32Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public DivRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public DivRm32Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -27,11 +27,10 @@ public class DivRm32Handler : InstructionHandler
             return false;
 
         // Check if the reg field of the ModR/M byte is 6 (DIV)
-        int position = Decoder.GetPosition();
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = CodeBuffer[position];
+        byte modRM = Decoder.PeakByte();
         byte reg = (byte) ((modRM & 0x38) >> 3);
 
         return reg == 6; // 6 = DIV
@@ -45,8 +44,8 @@ public class DivRm32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "div";
+        // Set the instruction type
+        instruction.Type = InstructionType.Div;
 
         if (!Decoder.CanReadByte())
         {
@@ -54,10 +53,16 @@ public class DivRm32Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        // For DIV r/m32 (0xF7 /6):
+        // - The r/m field with mod specifies the operand (register or memory)
+        var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
 
-        // Set the operands
-        instruction.Operands = destOperand;
+        // Set the structured operands
+        // DIV has only one operand
+        instruction.StructuredOperands = 
+        [
+            operand
+        ];
 
         return true;
     }

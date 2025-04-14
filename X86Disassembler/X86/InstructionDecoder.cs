@@ -1,8 +1,10 @@
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 
 namespace X86Disassembler.X86;
 
 using Handlers;
+using X86Disassembler.X86.Operands;
 
 /// <summary>
 /// Decodes x86 instructions from a byte buffer
@@ -38,7 +40,7 @@ public class InstructionDecoder
 
         // Create specialized decoders
         _prefixDecoder = new PrefixDecoder();
-        _modRMDecoder = new ModRMDecoder(codeBuffer, this, length);
+        _modRMDecoder = new ModRMDecoder(this);
 
         // Create the instruction handler factory
         _handlerFactory = new InstructionHandlerFactory(_codeBuffer, this, _length);
@@ -82,23 +84,24 @@ public class InstructionDecoder
             }
         }
         
-        if (!CanReadByte())
+        // If only prefixes were found, return a prefix-only instruction
+        if (_position > startPosition && !CanReadByte())
         {
-            // If we reached the end of the buffer while processing prefixes,
-            // create an instruction with just the prefix information
-            if (_prefixDecoder.HasSegmentOverridePrefix())
+            // Set the instruction type to Unknown
+            instruction.Type = InstructionType.Unknown;
+            
+            // Add segment override prefix as an operand if present
+            string segmentOverride = _prefixDecoder.GetSegmentOverride();
+            if (!string.IsNullOrEmpty(segmentOverride))
             {
-                instruction.Mnemonic = _prefixDecoder.GetSegmentOverride();
-                instruction.Operands = "";
-
-                // Set the raw bytes
-                int length = _position - startPosition;
-                instruction.RawBytes = new byte[length];
-                Array.Copy(_codeBuffer, startPosition, instruction.RawBytes, 0, length);
-                
-                return instruction;
+                // Could create a special operand for segment overrides if needed
             }
 
+            return instruction;
+        }
+
+        if (!CanReadByte())
+        {
             return null;
         }
 
@@ -122,33 +125,40 @@ public class InstructionDecoder
             // Decode the instruction
             handlerSuccess = handler.Decode(opcode, instruction);
 
-            // Apply segment override prefix to the operands if needed
+            // Apply segment override prefix to the structured operands if needed
             if (handlerSuccess && hasSegmentOverride)
             {
-                instruction.Operands = _prefixDecoder.ApplySegmentOverride(instruction.Operands);
+                // Apply segment override to memory operands
+                foreach (var operand in instruction.StructuredOperands)
+                {
+                    if (operand is Operands.MemoryOperand memoryOperand)
+                    {
+                        memoryOperand.SegmentOverride = segmentOverride;
+                    }
+                }
             }
         }
         else
         {
-            instruction.Mnemonic = "Handler Not Found For opcode: " + opcode;
-            instruction.Operands = "??";
+            instruction.Type = InstructionType.Unknown;
+            instruction.StructuredOperands = [];
             handlerSuccess = true;
         }
 
         // If no handler is found or decoding fails, create a default instruction
         if (!handlerSuccess)
         {
-            instruction.Mnemonic = $"Handler {handler?.GetType().Name} failed for opcode. " + OpcodeMap.GetMnemonic(opcode);
-            instruction.Operands = "??";
+            instruction.Type = InstructionType.Unknown;
+            instruction.StructuredOperands = [];
         }
 
-        // Apply REP/REPNE prefix to the mnemonic if needed
-        instruction.Mnemonic = _prefixDecoder.ApplyRepPrefix(instruction.Mnemonic);
-
-        // Set the raw bytes
-        int bytesLength = _position - startPosition;
-        instruction.RawBytes = new byte[bytesLength];
-        Array.Copy(_codeBuffer, startPosition, instruction.RawBytes, 0, bytesLength);
+        // Apply REP/REPNE prefix to the instruction type if needed
+        if (_prefixDecoder.HasRepPrefix())
+        {
+            // For now, we'll keep the original instruction type
+            // In a more complete implementation, we could map instruction types with REP prefix
+            // to specific REP-prefixed instruction types if needed
+        }
         
         return instruction;
     }
@@ -157,6 +167,7 @@ public class InstructionDecoder
     /// Gets the current position in the buffer
     /// </summary>
     /// <returns>The current position</returns>
+    [Pure]
     public int GetPosition()
     {
         return _position;
@@ -262,6 +273,20 @@ public class InstructionDecoder
     }
 
     /// <summary>
+    /// Peaks a byte from the buffer without adjusting position
+    /// </summary>
+    /// <returns>The byte peaked</returns>
+    public byte PeakByte()
+    {
+        if (_position >= _length)
+        {
+            return 0;
+        }
+
+        return _codeBuffer[_position];
+    }
+
+    /// <summary>
     /// Reads a byte from the buffer and advances the position
     /// </summary>
     /// <returns>The byte read</returns>
@@ -308,5 +333,10 @@ public class InstructionDecoder
                              (_codeBuffer[_position + 3] << 24));
         _position += 4;
         return value;
+    }
+
+    public bool CanRead(int expectedBytes)
+    {
+        return _position + expectedBytes - 1 < _length;
     }
 }

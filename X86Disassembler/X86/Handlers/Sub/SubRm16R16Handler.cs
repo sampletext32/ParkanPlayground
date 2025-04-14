@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Sub;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class SubRm16R16Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the SubRm16R16Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public SubRm16R16Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public SubRm16R16Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -35,8 +35,8 @@ public class SubRm16R16Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "sub";
+        // Set the instruction type
+        instruction.Type = InstructionType.Sub;
 
         if (!Decoder.CanReadByte())
         {
@@ -44,23 +44,20 @@ public class SubRm16R16Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
-
-        // Get register name (16-bit)
-        string regName = ModRMDecoder.GetRegisterName(reg, 16);
-
-        // For mod == 3, both operands are registers
-        if (mod == 3)
-        {
-            string rmRegName = ModRMDecoder.GetRegisterName(rm, 16);
-            instruction.Operands = $"{rmRegName}, {regName}";
-        }
-        else // Memory operand
-        {
-            destOperand = destOperand.Replace("dword", "word");
-
-            instruction.Operands = $"{destOperand}, {regName}";
-        }
+        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
+        
+        // Ensure the destination operand has the correct size (16-bit)
+        destinationOperand.Size = 16;
+        
+        // Create the source register operand (16-bit)
+        var sourceOperand = OperandFactory.CreateRegisterOperand((RegisterIndex)reg, 16);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
 
         return true;
     }

@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Sub;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class SubImmFromRm32Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the SubImmFromRm32Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public SubImmFromRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public SubImmFromRm32Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -30,7 +30,7 @@ public class SubImmFromRm32Handler : InstructionHandler
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = CodeBuffer[Decoder.GetPosition()];
+        byte modRM = Decoder.PeakByte();
         byte reg = (byte) ((modRM & 0x38) >> 3);
 
         return reg == 5; // 5 = SUB
@@ -44,8 +44,8 @@ public class SubImmFromRm32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "sub";
+        // Set the instruction type
+        instruction.Type = InstructionType.Sub;
 
         if (!Decoder.CanReadByte())
         {
@@ -53,7 +53,7 @@ public class SubImmFromRm32Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
 
         // Read the immediate value
         if (!Decoder.CanReadUInt())
@@ -63,12 +63,16 @@ public class SubImmFromRm32Handler : InstructionHandler
 
         // Read the immediate value in little-endian format
         var imm = Decoder.ReadUInt32();
-
-        // Format the immediate value
-        string immStr = $"0x{imm:X8}";
-
-        // Set the operands
-        instruction.Operands = $"{destOperand}, {immStr}";
+        
+        // Create the source immediate operand
+        var sourceOperand = OperandFactory.CreateImmediateOperand(imm, 32);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
 
         return true;
     }

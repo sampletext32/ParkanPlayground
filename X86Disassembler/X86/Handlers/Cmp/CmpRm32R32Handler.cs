@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Cmp;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class CmpRm32R32Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the CmpRm32R32Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public CmpRm32R32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
-        : base(codeBuffer, decoder, length)
+    public CmpRm32R32Handler(InstructionDecoder decoder) 
+        : base(decoder)
     {
     }
     
@@ -34,8 +34,8 @@ public class CmpRm32R32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "cmp";
+        // Set the instruction type
+        instruction.Type = InstructionType.Cmp;
 
         if (!Decoder.CanReadByte())
         {
@@ -43,27 +43,20 @@ public class CmpRm32R32Handler : InstructionHandler
         }
         
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        // For CMP r/m32, r32 (0x39):
+        // - The r/m field with mod specifies the destination operand (register or memory)
+        // - The reg field specifies the source register
+        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
         
-        // Get the register name for the reg field
-        string regName = ModRMDecoder.GetRegisterName(reg, 32);
+        // Create the source register operand
+        var sourceOperand = OperandFactory.CreateRegisterOperand(reg, 32);
         
-        // Use the destOperand directly from ModRMDecoder
-        string rmOperand = destOperand;
-        
-        // If it's a direct register operand, we need to remove the size prefix
-        if (mod == 3)
-        {
-            rmOperand = ModRMDecoder.GetRegisterName(rm, 32);
-        }
-        else if (rmOperand.StartsWith("dword ptr "))
-        {
-            // Remove the "dword ptr " prefix as we'll handle the operands differently
-            rmOperand = rmOperand.Substring(10);
-        }
-        
-        // Set the operands
-        instruction.Operands = $"{rmOperand}, {regName}";
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
         
         return true;
     }

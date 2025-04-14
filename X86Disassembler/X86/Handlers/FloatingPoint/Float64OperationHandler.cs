@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.FloatingPoint;
 
 /// <summary>
@@ -18,14 +20,25 @@ public class Float64OperationHandler : InstructionHandler
         "fdivr"
     ];
 
+    // Corresponding instruction types for each mnemonic
+    private static readonly InstructionType[] InstructionTypes =
+    [
+        InstructionType.Fadd,
+        InstructionType.Fmul,
+        InstructionType.Fcom,
+        InstructionType.Fcomp,
+        InstructionType.Fsub,
+        InstructionType.Fsubr,
+        InstructionType.Fdiv,
+        InstructionType.Fdivr
+    ];
+
     /// <summary>
     /// Initializes a new instance of the Float64OperationHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public Float64OperationHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
-        : base(codeBuffer, decoder, length)
+    public Float64OperationHandler(InstructionDecoder decoder) 
+        : base(decoder)
     {
     }
     
@@ -53,20 +66,35 @@ public class Float64OperationHandler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM(true); // true for 64-bit operand
+        var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM(true); // true for 64-bit operand
         
-        // Set the mnemonic based on the opcode and reg field
-        instruction.Mnemonic = Mnemonics[(int)reg];
+        // Set the instruction type based on the reg field
+        instruction.Type = InstructionTypes[(int)reg];
         
         // For memory operands, set the operand
         if (mod != 3) // Memory operand
         {
-            instruction.Operands = destOperand;
+            // Ensure the memory operand has the correct size (64-bit float)
+            operand.Size = 64;
+            
+            // Set the structured operands
+            instruction.StructuredOperands = 
+            [
+                operand
+            ];
         }
         else // Register operand (ST(i))
         {
             // For DC C0-DC FF, the operands are reversed: ST(i), ST(0)
-            instruction.Operands = $"st({(int)rm}), st(0)";
+            var stiOperand = OperandFactory.CreateFPURegisterOperand((FpuRegisterIndex)rm); // ST(i)
+            var st0Operand = OperandFactory.CreateFPURegisterOperand(FpuRegisterIndex.ST0); // ST(0)
+            
+            // Set the structured operands
+            instruction.StructuredOperands = 
+            [
+                stiOperand,
+                st0Operand
+            ];
         }
         
         return true;

@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Inc;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for INC r32 instructions (0x40-0x47)
 /// </summary>
@@ -8,11 +10,9 @@ public class IncRegHandler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the IncRegHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public IncRegHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public IncRegHandler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -38,11 +38,17 @@ public class IncRegHandler : InstructionHandler
         // Calculate the register index (0 for EAX, 1 for ECX, etc.)
         RegisterIndex reg = (RegisterIndex)(byte)(opcode - 0x40);
         
-        // Set the mnemonic
-        instruction.Mnemonic = "inc";
+        // Set the instruction type
+        instruction.Type = InstructionType.Inc;
         
-        // Set the operand (register name)
-        instruction.Operands = ModRMDecoder.GetRegisterName(reg, 32);
+        // Create the register operand
+        var regOperand = OperandFactory.CreateRegisterOperand(reg, 32);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            regOperand
+        ];
         
         return true;
     }

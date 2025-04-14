@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Sub;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class SubAxImm16Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the SubAxImm16Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public SubAxImm16Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public SubAxImm16Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -35,8 +35,8 @@ public class SubAxImm16Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "sub";
+        // Set the instruction type
+        instruction.Type = InstructionType.Sub;
 
         if (!Decoder.CanReadUShort())
         {
@@ -45,9 +45,19 @@ public class SubAxImm16Handler : InstructionHandler
 
         // Read the immediate value (16-bit)
         var immediate = Decoder.ReadUInt16();
-
-        // Set the operands (note: we use "eax" instead of "ax" to match the disassembler's output)
-        instruction.Operands = $"eax, 0x{immediate:X4}";
+        
+        // Create the destination register operand (AX)
+        var destinationOperand = OperandFactory.CreateRegisterOperand(RegisterIndex.A, 16);
+        
+        // Create the source immediate operand
+        var sourceOperand = OperandFactory.CreateImmediateOperand(immediate, 16);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
 
         return true;
     }

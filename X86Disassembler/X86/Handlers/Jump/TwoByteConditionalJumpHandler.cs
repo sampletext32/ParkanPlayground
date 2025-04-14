@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Jump;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for two-byte conditional jump instructions (0x0F 0x80-0x8F)
 /// </summary>
@@ -12,14 +14,21 @@ public class TwoByteConditionalJumpHandler : InstructionHandler
         "js", "jns", "jp", "jnp", "jl", "jnl", "jle", "jnle"
     ];
     
+    // Instruction types for conditional jumps
+    private static readonly InstructionType[] InstructionTypes =
+    [
+        InstructionType.Jo, InstructionType.Jno, InstructionType.Jb, InstructionType.Jae, 
+        InstructionType.Jz, InstructionType.Jnz, InstructionType.Jbe, InstructionType.Ja,
+        InstructionType.Js, InstructionType.Jns, InstructionType.Unknown, InstructionType.Unknown, 
+        InstructionType.Jl, InstructionType.Jge, InstructionType.Jle, InstructionType.Jg
+    ];
+
     /// <summary>
     /// Initializes a new instance of the TwoByteConditionalJumpHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public TwoByteConditionalJumpHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
-        : base(codeBuffer, decoder, length)
+    public TwoByteConditionalJumpHandler(InstructionDecoder decoder) 
+        : base(decoder)
     {
     }
     
@@ -42,7 +51,7 @@ public class TwoByteConditionalJumpHandler : InstructionHandler
             return false;
         }
             
-        byte secondByte = CodeBuffer[position];
+        byte secondByte = Decoder.PeakByte();
         // Second byte must be in the range 0x80-0x8F
         return secondByte >= 0x80 && secondByte <= 0x8F;
     }
@@ -64,9 +73,9 @@ public class TwoByteConditionalJumpHandler : InstructionHandler
         // Read the second byte of the opcode
         byte secondByte = Decoder.ReadByte();
         
-        // Get the mnemonic from the table
+        // Get the instruction type from the table
         int index = secondByte - 0x80;
-        instruction.Mnemonic = ConditionalJumpMnemonics[index];
+        instruction.Type = InstructionTypes[index];
         
         // Check if we have enough bytes for the offset
         if (!Decoder.CanReadUInt())
@@ -81,8 +90,14 @@ public class TwoByteConditionalJumpHandler : InstructionHandler
         // For two-byte conditional jumps, the instruction is 6 bytes: first opcode (1) + second opcode (1) + offset (4)
         uint targetAddress = (uint)(instruction.Address + 6 + offset);
         
-        // Format the target address
-        instruction.Operands = $"0x{targetAddress:X8}";
+        // Create the relative offset operand
+        var targetOperand = OperandFactory.CreateRelativeOffsetOperand(targetAddress);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            targetOperand
+        ];
         
         return true;
     }

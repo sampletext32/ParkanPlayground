@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Jump;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for JMP rel8 instruction (0xEB)
 /// </summary>
@@ -8,11 +10,9 @@ public class JmpRel8Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the JmpRel8Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public JmpRel8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public JmpRel8Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
     
@@ -34,8 +34,8 @@ public class JmpRel8Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "jmp";
+        // Set the instruction type
+        instruction.Type = InstructionType.Jmp;
         
         // Check if we can read the offset byte
         if (!Decoder.CanReadByte())
@@ -48,8 +48,14 @@ public class JmpRel8Handler : InstructionHandler
         // Calculate target address (instruction address + instruction length + offset)
         ulong targetAddress = instruction.Address + 2UL + (uint)offset;
         
-        // Format the target address
-        instruction.Operands = $"0x{targetAddress:X8}";
+        // Create the target address operand
+        var targetOperand = OperandFactory.CreateRelativeOffsetOperand(targetAddress, 8);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            targetOperand
+        ];
         
         return true;
     }

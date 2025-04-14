@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Or;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class OrRm8R8Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the OrRm8R8Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public OrRm8R8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
-        : base(codeBuffer, decoder, length)
+    public OrRm8R8Handler(InstructionDecoder decoder) 
+        : base(decoder)
     {
     }
     
@@ -34,8 +34,8 @@ public class OrRm8R8Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "or";
+        // Set the instruction type
+        instruction.Type = InstructionType.Or;
         
         // Check if we have enough bytes for the ModR/M byte
         if (!Decoder.CanReadByte())
@@ -43,28 +43,24 @@ public class OrRm8R8Handler : InstructionHandler
             return false;
         }
 
-        // Read the ModR/M byte and decode the operands
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        // Read the ModR/M byte
+        // For OR r/m8, r8 (0x08):
+        // - The r/m field with mod specifies the destination operand (register or memory)
+        // - The reg field specifies the source register
+        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
         
-        // The register operand is in the reg field (8-bit register)
-        string regOperand = ModRMDecoder.GetRegisterName(reg, 8);
+        // Adjust the operand size to 8-bit
+        destinationOperand.Size = 8;
         
-        // Handle the r/m operand based on mod field
-        string rmOperand;
+        // Create the source register operand
+        var sourceOperand = OperandFactory.CreateRegisterOperand(reg, 8);
         
-        if (mod == 3) // Register-to-register
-        {
-            // Direct register addressing
-            rmOperand = ModRMDecoder.GetRegisterName(rm, 8);
-        }
-        else // Memory addressing
-        {
-            // Replace "dword ptr" with "byte ptr" for 8-bit operands
-            rmOperand = destOperand.Replace("dword ptr", "byte ptr");
-        }
-        
-        // Set the operands (r/m8, r8 format)
-        instruction.Operands = $"{rmOperand}, {regOperand}";
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
         
         return true;
     }

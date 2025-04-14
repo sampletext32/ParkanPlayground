@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Test;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class TestImmWithRm32Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the TestImmWithRm32Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public TestImmWithRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public TestImmWithRm32Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -36,7 +36,7 @@ public class TestImmWithRm32Handler : InstructionHandler
         }
         
         // Check if the reg field is 0 (TEST operation)
-        byte modRM = CodeBuffer[Decoder.GetPosition()];
+        byte modRM = Decoder.PeakByte();
         byte reg = (byte)((modRM & 0x38) >> 3);
         
         return reg == 0; // 0 = TEST
@@ -50,7 +50,8 @@ public class TestImmWithRm32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        instruction.Mnemonic = "test";
+        // Set the instruction type
+        instruction.Type = InstructionType.Test;
 
         if (!Decoder.CanReadByte())
         {
@@ -58,13 +59,7 @@ public class TestImmWithRm32Handler : InstructionHandler
         }
         
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
-        
-        // For direct register addressing (mod == 3), the r/m field specifies a register
-        if (mod == 3)
-        {
-            destOperand = ModRMDecoder.GetRegisterName(rm, 32);
-        }
+        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
 
         // Read the immediate value
         if (!Decoder.CanReadUInt())
@@ -73,9 +68,16 @@ public class TestImmWithRm32Handler : InstructionHandler
         }
 
         uint imm32 = Decoder.ReadUInt32();
-
-        // Set the operands
-        instruction.Operands = $"{destOperand}, 0x{imm32:X8}";
+        
+        // Create the source immediate operand
+        var sourceOperand = OperandFactory.CreateImmediateOperand(imm32, 32);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
 
         return true;
     }

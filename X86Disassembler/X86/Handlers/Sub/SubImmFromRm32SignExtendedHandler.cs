@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Sub;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class SubImmFromRm32SignExtendedHandler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the SubImmFromRm32SignExtendedHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public SubImmFromRm32SignExtendedHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public SubImmFromRm32SignExtendedHandler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -30,7 +30,7 @@ public class SubImmFromRm32SignExtendedHandler : InstructionHandler
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = CodeBuffer[Decoder.GetPosition()];
+        byte modRM = Decoder.PeakByte();
         byte reg = (byte) ((modRM & 0x38) >> 3);
 
         return reg == 5; // 5 = SUB
@@ -44,8 +44,8 @@ public class SubImmFromRm32SignExtendedHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "sub";
+        // Set the instruction type
+        instruction.Type = InstructionType.Sub;
 
         // Check if we have enough bytes for the ModR/M byte
         if (!Decoder.CanReadByte())
@@ -54,7 +54,7 @@ public class SubImmFromRm32SignExtendedHandler : InstructionHandler
         }
 
         // Extract the fields from the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
 
         // Check if we have enough bytes for the immediate value
         if (!Decoder.CanReadByte())
@@ -65,14 +65,15 @@ public class SubImmFromRm32SignExtendedHandler : InstructionHandler
         // Read the immediate value as a signed byte and sign-extend it to 32 bits
         int imm32 = (sbyte) Decoder.ReadByte();
         
-        // Format the immediate value - use a consistent approach for all operands
-        // For negative values, show the full 32-bit representation
-        string immStr = imm32 < 0 
-            ? $"0x{(uint)imm32:X8}" 
-            : $"0x{(byte)imm32:X2}";
-
-        // Set the operands
-        instruction.Operands = $"{destOperand}, {immStr}";
+        // Create the source immediate operand with the sign-extended value
+        var sourceOperand = OperandFactory.CreateImmediateOperand(imm32, 32);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
 
         return true;
     }

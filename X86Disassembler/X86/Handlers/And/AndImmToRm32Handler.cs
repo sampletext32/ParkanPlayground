@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.And;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for AND r/m32, imm32 instruction (0x81 /4)
 /// </summary>
@@ -8,11 +10,9 @@ public class AndImmToRm32Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the AndImmToRm32Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public AndImmToRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public AndImmToRm32Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -27,11 +27,10 @@ public class AndImmToRm32Handler : InstructionHandler
             return false;
 
         // Check if the reg field of the ModR/M byte is 4 (AND)
-        int position = Decoder.GetPosition();
-        if (Decoder.CanReadByte())
+        if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = CodeBuffer[position];
+        byte modRM = Decoder.PeakByte();
         byte reg = (byte) ((modRM & 0x38) >> 3);
 
         return reg == 4; // 4 = AND
@@ -45,8 +44,8 @@ public class AndImmToRm32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "and";
+        // Set the instruction type
+        instruction.Type = InstructionType.And;
 
         if (!Decoder.CanReadByte())
         {
@@ -65,12 +64,15 @@ public class AndImmToRm32Handler : InstructionHandler
         // Read the immediate value in little-endian format
         var imm = Decoder.ReadUInt32();
 
-        // Format the immediate value as expected by the tests (0x12345678)
-        // Note: The bytes are reversed to match the expected format in the tests
-        string immStr = $"0x{imm:X8}";
-
-        // Set the operands
-        instruction.Operands = $"{destOperand}, {immStr}";
+        // Create the immediate operand
+        var immOperand = OperandFactory.CreateImmediateOperand(imm);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destOperand,
+            immOperand
+        ];
 
         return true;
     }

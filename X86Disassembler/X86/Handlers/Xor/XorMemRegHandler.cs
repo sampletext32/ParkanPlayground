@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Xor;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for XOR r/m32, r32 instruction (0x31)
 /// </summary>
@@ -8,11 +10,9 @@ public class XorMemRegHandler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the XorMemRegHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public XorMemRegHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
-        : base(codeBuffer, decoder, length)
+    public XorMemRegHandler(InstructionDecoder decoder) 
+        : base(decoder)
     {
     }
     
@@ -34,8 +34,8 @@ public class XorMemRegHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "xor";
+        // Set the instruction type
+        instruction.Type = InstructionType.Xor;
         
         if (!Decoder.CanReadByte())
         {
@@ -45,11 +45,15 @@ public class XorMemRegHandler : InstructionHandler
         // Read the ModR/M byte
         var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
-        // Get the source register
-        string srcReg = ModRMDecoder.GetRegisterName(reg, 32);
+        // Create the source register operand
+        var srcOperand = OperandFactory.CreateRegisterOperand(reg, 32);
         
-        // Set the operands
-        instruction.Operands = $"{destOperand}, {srcReg}";
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destOperand,
+            srcOperand
+        ];
         
         return true;
     }

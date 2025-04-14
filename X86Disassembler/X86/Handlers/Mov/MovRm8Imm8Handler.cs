@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Mov;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class MovRm8Imm8Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the MovRm8Imm8Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public MovRm8Imm8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public MovRm8Imm8Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -34,8 +34,8 @@ public class MovRm8Imm8Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "mov";
+        // Set the instruction type
+        instruction.Type = InstructionType.Mov;
         
         // Check if we have enough bytes for the ModR/M byte
         if (!Decoder.CanReadByte())
@@ -44,7 +44,10 @@ public class MovRm8Imm8Handler : InstructionHandler
         }
         
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        // For MOV r/m8, imm8 (0xC6):
+        // - The r/m field with mod specifies the destination operand (register or memory)
+        // - The immediate value is the source operand
+        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
         
         // MOV r/m8, imm8 only uses reg=0
         if (reg != 0)
@@ -52,17 +55,8 @@ public class MovRm8Imm8Handler : InstructionHandler
             return false;
         }
         
-        // For direct register addressing (mod == 3), use 8-bit register names
-        if (mod == 3)
-        {
-            // Use 8-bit register names for direct register addressing
-            destOperand = ModRMDecoder.GetRegisterName(rm, 8);
-        }
-        else
-        {
-            // Replace the size prefix with "byte ptr" for memory operands
-            destOperand = destOperand.Replace("dword ptr", "byte ptr");
-        }
+        // Adjust the operand size to 8-bit
+        destinationOperand.Size = 8;
         
         // Read the immediate value
         if (!Decoder.CanReadByte())
@@ -72,8 +66,15 @@ public class MovRm8Imm8Handler : InstructionHandler
         
         byte imm8 = Decoder.ReadByte();
         
-        // Set the operands
-        instruction.Operands = $"{destOperand}, 0x{imm8:X2}";
+        // Create the source immediate operand
+        var sourceOperand = OperandFactory.CreateImmediateOperand(imm8, 8);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
         
         return true;
     }

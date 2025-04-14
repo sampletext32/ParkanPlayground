@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Jump;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for conditional jump instructions (0x70-0x7F)
 /// </summary>
@@ -11,15 +13,22 @@ public class ConditionalJumpHandler : InstructionHandler
         "jo", "jno", "jb", "jnb", "jz", "jnz", "jbe", "jnbe",
         "js", "jns", "jp", "jnp", "jl", "jnl", "jle", "jnle"
     ];
-    
+
+    // Instruction types for conditional jumps
+    private static readonly InstructionType[] InstructionTypes =
+    [
+        InstructionType.Jo, InstructionType.Jno, InstructionType.Jb, InstructionType.Jae, 
+        InstructionType.Jz, InstructionType.Jnz, InstructionType.Jbe, InstructionType.Ja,
+        InstructionType.Js, InstructionType.Jns, InstructionType.Unknown, InstructionType.Unknown, 
+        InstructionType.Jl, InstructionType.Jge, InstructionType.Jle, InstructionType.Jg
+    ];
+
     /// <summary>
     /// Initializes a new instance of the ConditionalJumpHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public ConditionalJumpHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
-        : base(codeBuffer, decoder, length)
+    public ConditionalJumpHandler(InstructionDecoder decoder) 
+        : base(decoder)
     {
     }
     
@@ -42,9 +51,11 @@ public class ConditionalJumpHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Get the mnemonic from the table
+        // Get the index from the opcode
         int index = opcode - 0x70;
-        instruction.Mnemonic = Mnemonics[index];
+        
+        // Set the instruction type
+        instruction.Type = InstructionTypes[index];
         
         // Check if we can read the offset byte
         if (!Decoder.CanReadByte())
@@ -57,8 +68,14 @@ public class ConditionalJumpHandler : InstructionHandler
         sbyte offset = (sbyte)Decoder.ReadByte();
         int targetAddress = position + 1 + offset;
         
-        // Format the target address as a hexadecimal value
-        instruction.Operands = $"0x{targetAddress:X8}";
+        // Create the target address operand
+        var targetOperand = OperandFactory.CreateRelativeOffsetOperand((ulong)targetAddress, 8);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            targetOperand
+        ];
         
         return true;
     }

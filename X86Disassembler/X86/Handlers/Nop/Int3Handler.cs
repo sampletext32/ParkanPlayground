@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Nop;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for INT3 instruction (0xCC)
 /// </summary>
@@ -8,11 +10,9 @@ public class Int3Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the Int3Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public Int3Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
-        : base(codeBuffer, decoder, length)
+    public Int3Handler(InstructionDecoder decoder) 
+        : base(decoder)
     {
     }
     
@@ -34,11 +34,11 @@ public class Int3Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "int3";
+        // Set the instruction type
+        instruction.Type = InstructionType.Int;
         
-        // Set the operands
-        instruction.Operands = "";
+        // INT3 has no operands
+        instruction.StructuredOperands = [];
         
         return true;
     }

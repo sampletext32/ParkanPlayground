@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Xor;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class XorR16Rm16Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the XorR16Rm16Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public XorR16Rm16Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public XorR16Rm16Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -35,8 +35,8 @@ public class XorR16Rm16Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "xor";
+        // Set the instruction type
+        instruction.Type = InstructionType.Xor;
 
         if (!Decoder.CanReadByte())
         {
@@ -44,33 +44,23 @@ public class XorR16Rm16Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, memOperand) = ModRMDecoder.ReadModRM();
+        // For XOR r16, r/m16 (0x33 with 0x66 prefix):
+        // - The reg field specifies the destination register
+        // - The r/m field with mod specifies the source operand (register or memory)
+        var (mod, reg, rm, sourceOperand) = ModRMDecoder.ReadModRM();
 
-        // Get register name for the first operand (16-bit)
-        string regName = ModRMDecoder.GetRegisterName(reg, 16);
+        // Adjust the operand size to 16-bit
+        sourceOperand.Size = 16;
+
+        // Create the destination register operand
+        var destinationOperand = OperandFactory.CreateRegisterOperand(reg, 16);
         
-        // For the second operand, handle based on addressing mode
-        string rmOperand;
-        if (mod == 3) // Register addressing mode
-        {
-            // Get 16-bit register name for the second operand
-            rmOperand = ModRMDecoder.GetRegisterName(rm, 16);
-        }
-        else // Memory addressing mode
-        {
-            // For memory operands, replace "dword ptr" with "word ptr"
-            if (memOperand.StartsWith("dword ptr "))
-            {
-                rmOperand = memOperand.Replace("dword ptr", "word ptr");
-            }
-            else
-            {
-                rmOperand = memOperand;
-            }
-        }
-
-        // Set the operands
-        instruction.Operands = $"{regName}, {rmOperand}";
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
 
         return true;
     }

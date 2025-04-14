@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Xor;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class XorImmWithRm16Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the XorImmWithRm16Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public XorImmWithRm16Handler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
-        : base(codeBuffer, decoder, length)
+    public XorImmWithRm16Handler(InstructionDecoder decoder) 
+        : base(decoder)
     {
     }
     
@@ -30,7 +30,7 @@ public class XorImmWithRm16Handler : InstructionHandler
         if (!Decoder.CanReadByte())
             return false;
             
-        byte modRM = CodeBuffer[Decoder.GetPosition()];
+        byte modRM = Decoder.PeakByte();
         byte reg = (byte)((modRM & 0x38) >> 3);
         
         return reg == 6; // 6 = XOR
@@ -44,8 +44,8 @@ public class XorImmWithRm16Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "xor";
+        // Set the instruction type
+        instruction.Type = InstructionType.Xor;
         
         // Check if we have enough bytes for the ModR/M byte
         if (!Decoder.CanReadByte())
@@ -54,18 +54,10 @@ public class XorImmWithRm16Handler : InstructionHandler
         }
         
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
         
-        // For direct register addressing (mod == 3), use the correct 16-bit register name
-        if (mod == 3)
-        {
-            destOperand = ModRMDecoder.GetRegisterName(rm, 16);
-        }
-        else
-        {
-            // For memory operands, ensure we have the correct size prefix
-            destOperand = destOperand.Replace("dword ptr", "word ptr");
-        }
+        // Ensure the destination operand has the correct size (16-bit)
+        destinationOperand.Size = 16;
         
         // Check if we have enough bytes for the immediate value
         if (!Decoder.CanReadUShort())
@@ -76,11 +68,15 @@ public class XorImmWithRm16Handler : InstructionHandler
         // Read the immediate value
         ushort imm16 = Decoder.ReadUInt16();
         
-        // Format the immediate value
-        string immStr = $"0x{imm16:X4}";
+        // Create the source immediate operand
+        var sourceOperand = OperandFactory.CreateImmediateOperand(imm16, 16);
         
-        // Set the operands
-        instruction.Operands = $"{destOperand}, {immStr}";
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destinationOperand,
+            sourceOperand
+        ];
         
         return true;
     }

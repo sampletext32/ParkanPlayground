@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.FloatingPoint;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for FNSTSW AX instruction (0xDF 0xE0)
 /// </summary>
@@ -8,11 +10,9 @@ public class FnstswHandler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the FnstswHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public FnstswHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public FnstswHandler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -24,20 +24,18 @@ public class FnstswHandler : InstructionHandler
     public override bool CanHandle(byte opcode)
     {
         // FNSTSW is a two-byte opcode (0xDF 0xE0)
-        if (opcode == 0xDF)
-        {
-            if (!Decoder.CanReadByte())
-            {
-                return false;
-            }
+        if (opcode != 0xDF) return false;
 
-            if (CodeBuffer[Decoder.GetPosition()] == 0xE0)
-            {
-                return true;
-            }
+        if (!Decoder.CanReadByte())
+        {
+            return false;
         }
+
+        if (Decoder.PeakByte() != 0xE0) 
+            return false;
         
-        return false;
+        return true;
+
     }
     
     /// <summary>
@@ -61,9 +59,17 @@ public class FnstswHandler : InstructionHandler
             return false;
         }
         
-        // Set the mnemonic and operands
-        instruction.Mnemonic = "fnstsw";
-        instruction.Operands = "ax";
+        // Set the instruction type
+        instruction.Type = InstructionType.Fnstsw;
+        
+        // Create the AX register operand
+        var axOperand = OperandFactory.CreateRegisterOperand(RegisterIndex.A, 16);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            axOperand
+        ];
         
         return true;
     }

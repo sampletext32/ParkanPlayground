@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Pop;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for POP r32 instruction (0x58-0x5F)
 /// </summary>
@@ -8,11 +10,9 @@ public class PopRegHandler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the PopRegHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public PopRegHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
-        : base(codeBuffer, decoder, length)
+    public PopRegHandler(InstructionDecoder decoder) 
+        : base(decoder)
     {
     }
     
@@ -34,15 +34,20 @@ public class PopRegHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "pop";
+        // Set the instruction type
+        instruction.Type = InstructionType.Pop;
         
         // Register is encoded in the low 3 bits of the opcode
         RegisterIndex reg = (RegisterIndex)(opcode & 0x07);
-        string regName = ModRMDecoder.GetRegisterName(reg, 32);
         
-        // Set the operands
-        instruction.Operands = regName;
+        // Create the register operand
+        var regOperand = OperandFactory.CreateRegisterOperand(reg);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            regOperand
+        ];
         
         return true;
     }

@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Add;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class AddImmToRm32SignExtendedHandler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the AddImmToRm32SignExtendedHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public AddImmToRm32SignExtendedHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public AddImmToRm32SignExtendedHandler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -27,11 +27,10 @@ public class AddImmToRm32SignExtendedHandler : InstructionHandler
             return false;
 
         // Check if the reg field of the ModR/M byte is 0 (ADD)
-        int position = Decoder.GetPosition();
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = CodeBuffer[position];
+        byte modRM = Decoder.PeakByte();
         byte reg = (byte) ((modRM & 0x38) >> 3);
 
         return reg == 0; // 0 = ADD
@@ -45,8 +44,7 @@ public class AddImmToRm32SignExtendedHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "add";
+        instruction.Type = InstructionType.Add;
 
         if (!Decoder.CanReadByte())
         {
@@ -65,21 +63,10 @@ public class AddImmToRm32SignExtendedHandler : InstructionHandler
         // Read the immediate value as a signed byte and automatically sign-extend it to int
         int imm = (sbyte) Decoder.ReadByte();
 
-        // Format the immediate value
-        string immStr;
-        if (imm < 0)
-        {
-            // For negative values, use the full 32-bit representation (0xFFFFFFxx)
-            immStr = $"0x{(uint) imm:X8}";
-        }
-        else
-        {
-            // For positive values, use the regular format with leading zeros
-            immStr = $"0x{imm:X8}";
-        }
-
-        // Set the operands
-        instruction.Operands = $"{destOperand}, {immStr}";
+        instruction.StructuredOperands = [
+            destOperand,
+            OperandFactory.CreateImmediateOperand(imm, 32), 
+        ];
 
         return true;
     }

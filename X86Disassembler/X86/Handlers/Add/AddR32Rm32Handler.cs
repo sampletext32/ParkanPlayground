@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Add;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class AddR32Rm32Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the AddR32Rm32Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public AddR32Rm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public AddR32Rm32Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -34,27 +34,30 @@ public class AddR32Rm32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
+        // Set the instruction type
+        instruction.Type = InstructionType.Add;
+
         if (!Decoder.CanReadByte())
         {
             return false;
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        // For ADD r32, r/m32 (0x03):
+        // - The reg field specifies the destination register
+        // - The r/m field with mod specifies the source operand (register or memory)
+        // The sourceOperand is already created by ModRMDecoder based on mod and rm fields
+        var (mod, reg, rm, sourceOperand) = ModRMDecoder.ReadModRM();
 
-        // Set the mnemonic
-        instruction.Mnemonic = "add";
+        // Create the destination register operand from the reg field
+        var destinationOperand = OperandFactory.CreateRegisterOperand(reg, 32);
 
-        // Get the register name
-        string regName = ModRMDecoder.GetRegisterName(reg, 32);
-
-        if (mod == 3)
-        {
-            // Register operand
-            destOperand = ModRMDecoder.GetRegisterName(rm, 32);
-        }
-
-        instruction.Operands = $"{regName}, {destOperand}";
+        // Set the structured operands
+        instruction.StructuredOperands =
+        [
+            destinationOperand,
+            sourceOperand
+        ];
 
         return true;
     }

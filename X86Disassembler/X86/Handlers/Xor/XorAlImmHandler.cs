@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Xor;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for XOR AL, imm8 instruction (0x34)
 /// </summary>
@@ -8,11 +10,9 @@ public class XorAlImmHandler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the XorAlImmHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public XorAlImmHandler(byte[] codeBuffer, InstructionDecoder decoder, int length) 
-        : base(codeBuffer, decoder, length)
+    public XorAlImmHandler(InstructionDecoder decoder) 
+        : base(decoder)
     {
     }
     
@@ -34,8 +34,8 @@ public class XorAlImmHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "xor";
+        // Set the instruction type
+        instruction.Type = InstructionType.Xor;
         
         if (!Decoder.CanReadByte())
         {
@@ -45,8 +45,18 @@ public class XorAlImmHandler : InstructionHandler
         // Read the immediate value using the decoder
         byte imm8 = Decoder.ReadByte();
         
-        // Set the operands
-        instruction.Operands = $"al, 0x{imm8:X2}";
+        // Create the register operand for AL
+        var alOperand = OperandFactory.CreateRegisterOperand(RegisterIndex.A, 8);
+        
+        // Create the immediate operand
+        var immOperand = OperandFactory.CreateImmediateOperand(imm8, 8);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            alOperand,
+            immOperand
+        ];
         
         return true;
     }

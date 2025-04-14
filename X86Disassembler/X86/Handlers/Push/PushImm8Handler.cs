@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Push;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for PUSH imm8 instruction (0x6A)
 /// </summary>
@@ -8,11 +10,9 @@ public class PushImm8Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the PushImm8Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public PushImm8Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public PushImm8Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -34,8 +34,8 @@ public class PushImm8Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "push";
+        // Set the instruction type
+        instruction.Type = InstructionType.Push;
 
         if(!Decoder.CanReadByte())
         {
@@ -45,8 +45,15 @@ public class PushImm8Handler : InstructionHandler
         // Read the immediate value
         byte imm8 = Decoder.ReadByte();
 
-        // Set the operands
-        instruction.Operands = $"0x{imm8:X2}";
+        // Create the immediate operand
+        // Sign-extend the 8-bit value to 32-bit for proper stack alignment
+        var immOperand = OperandFactory.CreateImmediateOperand((sbyte)imm8);
+
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            immOperand
+        ];
 
         return true;
     }

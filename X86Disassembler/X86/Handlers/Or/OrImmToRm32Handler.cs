@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Or;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for OR r/m32, imm32 instruction (0x81 /1)
 /// </summary>
@@ -8,11 +10,9 @@ public class OrImmToRm32Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the OrImmToRm32Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public OrImmToRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public OrImmToRm32Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -30,7 +30,7 @@ public class OrImmToRm32Handler : InstructionHandler
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = CodeBuffer[Decoder.GetPosition()];
+        byte modRM = Decoder.PeakByte();
         byte reg = (byte) ((modRM & 0x38) >> 3);
 
         return reg == 1; // 1 = OR
@@ -44,8 +44,8 @@ public class OrImmToRm32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "or";
+        // Set the instruction type
+        instruction.Type = InstructionType.Or;
 
         if (!Decoder.CanReadByte())
         {
@@ -55,15 +55,24 @@ public class OrImmToRm32Handler : InstructionHandler
         // Read the ModR/M byte
         var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
 
-        if (!Decoder.CanReadByte())
+        // Check if we can read the immediate value
+        if (!Decoder.CanReadUInt())
         {
             return false;
         }
 
+        // Read the immediate value
         uint imm32 = Decoder.ReadUInt32();
-
-        // Set the operands
-        instruction.Operands = $"{destOperand}, 0x{imm32:X8}";
+        
+        // Create the immediate operand
+        var immOperand = OperandFactory.CreateImmediateOperand(imm32);
+        
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destOperand,
+            immOperand
+        ];
 
         return true;
     }

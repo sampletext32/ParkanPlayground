@@ -1,3 +1,5 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Call;
 
 /// <summary>
@@ -8,11 +10,9 @@ public class CallRm32Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the CallRm32Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public CallRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public CallRm32Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -36,7 +36,7 @@ public class CallRm32Handler : InstructionHandler
         }
         
         // Peek at the ModR/M byte without advancing the position
-        byte modRM = CodeBuffer[Decoder.GetPosition()];
+        byte modRM = Decoder.PeakByte();
         
         // Extract the reg field (bits 3-5)
         byte reg = (byte)((modRM & 0x38) >> 3);
@@ -53,6 +53,9 @@ public class CallRm32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
+        // Set the instruction type
+        instruction.Type = InstructionType.Call;
+
         // Check if we have enough bytes for the ModR/M byte
         if (!Decoder.CanReadByte())
         {
@@ -60,19 +63,16 @@ public class CallRm32Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        // For CALL r/m32 (FF /2):
+        // - The r/m field with mod specifies the operand (register or memory)
+        var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
 
-        // Set the mnemonic
-        instruction.Mnemonic = "call";
-
-        // For register operands, set the operand
-        if (mod == 3)
-        {
-            // Register operand
-            destOperand = ModRMDecoder.GetRegisterName(rm, 32);
-        }
-
-        instruction.Operands = destOperand;
+        // Set the structured operands
+        // CALL has only one operand
+        instruction.StructuredOperands = 
+        [
+            operand
+        ];
 
         return true;
     }

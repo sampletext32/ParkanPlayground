@@ -1,5 +1,7 @@
 namespace X86Disassembler.X86.Handlers.Adc;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for ADC r/m32, imm32 instruction (0x81 /2)
 /// </summary>
@@ -8,11 +10,9 @@ public class AdcImmToRm32Handler : InstructionHandler
     /// <summary>
     /// Initializes a new instance of the AdcImmToRm32Handler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public AdcImmToRm32Handler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public AdcImmToRm32Handler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -27,11 +27,10 @@ public class AdcImmToRm32Handler : InstructionHandler
             return false;
 
         // Check if the reg field of the ModR/M byte is 2 (ADC)
-        int position = Decoder.GetPosition();
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = CodeBuffer[position];
+        byte modRM = Decoder.PeakByte();
         byte reg = (byte) ((modRM & 0x38) >> 3);
 
         return reg == 2; // 2 = ADC
@@ -45,8 +44,8 @@ public class AdcImmToRm32Handler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "adc";
+        // Set the instruction type
+        instruction.Type = InstructionType.Adc;
 
         if (!Decoder.CanReadByte())
         {
@@ -64,8 +63,15 @@ public class AdcImmToRm32Handler : InstructionHandler
         // Read the immediate value in little-endian format
         var imm32 = Decoder.ReadUInt32();
 
-        // Set the operands
-        instruction.Operands = $"{destOperand}, 0x{imm32:X8}";
+        // Create the immediate operand
+        var immOperand = OperandFactory.CreateImmediateOperand(imm32, 32);
+
+        // Set the structured operands
+        instruction.StructuredOperands = 
+        [
+            destOperand,
+            immOperand
+        ];
 
         return true;
     }

@@ -1,41 +1,41 @@
 namespace X86Disassembler.X86.Handlers.Nop;
 
+using X86Disassembler.X86.Operands;
+
 /// <summary>
 /// Handler for multi-byte NOP instructions (0x0F 0x1F ...)
 /// These are used for alignment and are encoded as NOP operations with specific memory operands
 /// </summary>
 public class MultiByteNopHandler : InstructionHandler
 {
-    // NOP variant information (ModR/M byte, memory operand, and expected bytes pattern)
-    private static readonly (byte ModRm, string MemOperand, byte[] ExpectedBytes)[] NopVariants =
+    // NOP variant information (ModR/M byte, expected bytes pattern, and operand creation info)
+    private static readonly (byte ModRm, byte[] ExpectedBytes, RegisterIndex BaseReg, RegisterIndex? IndexReg, int Scale)[] NopVariants =
     {
         // 8-byte NOP: 0F 1F 84 00 00 00 00 00 (check longest patterns first)
-        (0x84, "[eax+eax*1]", new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00 }),
+        (0x84, new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00 }, RegisterIndex.A, RegisterIndex.A, 1),
         
         // 7-byte NOP: 0F 1F 80 00 00 00 00
-        (0x80, "[eax]", new byte[] { 0x00, 0x00, 0x00, 0x00 }),
+        (0x80, new byte[] { 0x00, 0x00, 0x00, 0x00 }, RegisterIndex.A, null, 0),
         
         // 6-byte NOP: 0F 1F 44 00 00 00
-        (0x44, "[eax+eax*1]", new byte[] { 0x00, 0x00, 0x00 }),
+        (0x44, new byte[] { 0x00, 0x00, 0x00 }, RegisterIndex.A, RegisterIndex.A, 1),
         
         // 5-byte NOP: 0F 1F 44 00 00
-        (0x44, "[eax+eax*1]", new byte[] { 0x00, 0x00 }),
+        (0x44, new byte[] { 0x00, 0x00 }, RegisterIndex.A, RegisterIndex.A, 1),
         
         // 4-byte NOP: 0F 1F 40 00
-        (0x40, "[eax]", new byte[] { 0x00 }),
+        (0x40, new byte[] { 0x00 }, RegisterIndex.A, null, 0),
         
         // 3-byte NOP: 0F 1F 00
-        (0x00, "[eax]", Array.Empty<byte>())
+        (0x00, Array.Empty<byte>(), RegisterIndex.A, null, 0)
     };
 
     /// <summary>
     /// Initializes a new instance of the MultiByteNopHandler class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    /// <param name="length">The length of the buffer</param>
-    public MultiByteNopHandler(byte[] codeBuffer, InstructionDecoder decoder, int length)
-        : base(codeBuffer, decoder, length)
+    public MultiByteNopHandler(InstructionDecoder decoder)
+        : base(decoder)
     {
     }
 
@@ -59,7 +59,7 @@ public class MultiByteNopHandler : InstructionHandler
         }
 
         // Check if the second byte is 0x1F (part of the multi-byte NOP encoding)
-        byte secondByte = CodeBuffer[Decoder.GetPosition()];
+        byte secondByte = Decoder.PeakByte();
         return secondByte == 0x1F;
     }
 
@@ -71,8 +71,8 @@ public class MultiByteNopHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Set the mnemonic
-        instruction.Mnemonic = "nop";
+        // Set the instruction type
+        instruction.Type = InstructionType.Nop;
 
         // Skip the second byte (0x1F)
         Decoder.ReadByte();
@@ -87,27 +87,28 @@ public class MultiByteNopHandler : InstructionHandler
         bool hasOperandSizePrefix = Decoder.HasOperandSizeOverridePrefix();
         
         // Determine the size of the operand
-        string ptrType = hasOperandSizePrefix ? "word ptr" : "dword ptr";
+        int operandSize = hasOperandSizePrefix ? 16 : 32;
         
         // Read the ModR/M byte but don't advance the position yet
-        int position = Decoder.GetPosition();
-        byte modRm = CodeBuffer[position];
+        byte modRm = Decoder.PeakByte();
         
-        // Default memory operand if no specific variant is matched
-        string memOperand = "[eax]";
+        // Default memory operand parameters
+        RegisterIndex baseReg = RegisterIndex.A;
+        RegisterIndex? indexReg = null;
+        int scale = 0;
         int bytesToSkip = 1; // Skip at least the ModR/M byte
         
         // Try to find a matching NOP variant (we check longest patterns first)
-        foreach (var (variantModRm, operand, expectedBytes) in NopVariants)
+        foreach (var (variantModRm, expectedBytes, variantBaseReg, variantIndexReg, variantScale) in NopVariants)
         {
             // Skip if ModR/M doesn't match
             if (variantModRm != modRm)
             {
                 continue;
             }
-            
+
             // Check if we have enough bytes for this pattern
-            if (position + expectedBytes.Length >= Length)
+            if (!Decoder.CanRead(expectedBytes.Length + 1)) // +1 for ModR/M byte
             {
                 continue;
             }
@@ -116,7 +117,9 @@ public class MultiByteNopHandler : InstructionHandler
             bool isMatch = true;
             for (int i = 0; i < expectedBytes.Length; i++)
             {
-                if (position + i + 1 >= Length || CodeBuffer[position + i + 1] != expectedBytes[i])
+                // Check the byte at position
+                byte actualByte = Decoder.PeakByte();
+                if (actualByte != expectedBytes[i])
                 {
                     isMatch = false;
                     break;
@@ -126,17 +129,41 @@ public class MultiByteNopHandler : InstructionHandler
             // If we found a match, use it and stop checking
             if (isMatch)
             {
-                memOperand = operand;
+                baseReg = variantBaseReg;
+                indexReg = variantIndexReg;
+                scale = variantScale;
                 bytesToSkip = 1 + expectedBytes.Length; // ModR/M byte + additional bytes
                 break;
             }
         }
         
         // Skip the bytes we've processed
-        Decoder.SetPosition(position + bytesToSkip);
+        Decoder.SetPosition(Decoder.GetPosition() + bytesToSkip);
         
-        // Set the operands with the appropriate size prefix
-        instruction.Operands = $"{ptrType} {memOperand}";
+        // Create the appropriate structured operand based on the NOP variant
+        if (indexReg.HasValue && scale > 0)
+        {
+            // Create a scaled index memory operand (e.g., [eax+eax*1])
+            instruction.StructuredOperands = 
+            [
+                OperandFactory.CreateScaledIndexMemoryOperand(
+                    indexReg.Value, 
+                    scale, 
+                    baseReg, 
+                    0, 
+                    operandSize)
+            ];
+        }
+        else
+        {
+            // Create a simple base register memory operand (e.g., [eax])
+            instruction.StructuredOperands = 
+            [
+                OperandFactory.CreateBaseRegisterMemoryOperand(
+                    baseReg, 
+                    operandSize)
+            ];
+        }
         
         return true;
     }
