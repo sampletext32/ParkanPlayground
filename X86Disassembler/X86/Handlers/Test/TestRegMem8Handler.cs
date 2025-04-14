@@ -36,15 +36,18 @@ public class TestRegMem8Handler : InstructionHandler
     {
         // Set the instruction type
         instruction.Type = InstructionType.Test;
-
+        
         // Check if we have enough bytes for the ModR/M byte
         if (!Decoder.CanReadByte())
         {
             return false;
         }
 
-        // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        // Read the ModR/M byte, specifying that we're dealing with 8-bit operands
+        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM8();
+        
+        // Ensure the destination operand has the correct size (8-bit)
+        destOperand.Size = 8;
 
         // Create the register operand for the reg field (8-bit)
         var regOperand = OperandFactory.CreateRegisterOperand(reg, 8);

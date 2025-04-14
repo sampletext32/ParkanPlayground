@@ -228,7 +228,7 @@ public class PushPopInstructionTests
         // Second instruction: MOV EBP, ESP
         var movInstruction = instructions[1];
         Assert.NotNull(movInstruction);
-        Assert.Equal(InstructionType.Move, movInstruction.Type);
+        Assert.Equal(InstructionType.Mov, movInstruction.Type);
         
         // Check that we have two operands
         Assert.Equal(2, movInstruction.StructuredOperands.Count);

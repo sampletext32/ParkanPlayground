@@ -10,61 +10,61 @@ public class Int32OperationHandler : InstructionHandler
     // Memory operand instruction types for DA opcode - operations on int32
     private static readonly InstructionType[] MemoryInstructionTypes =
     [
-        InstructionType.Unknown, // fiadd - not in enum
-        InstructionType.Unknown, // fimul - not in enum
-        InstructionType.Unknown, // ficom - not in enum
-        InstructionType.Unknown, // ficomp - not in enum
-        InstructionType.Unknown, // fisub - not in enum
-        InstructionType.Unknown, // fisubr - not in enum
-        InstructionType.Unknown, // fidiv - not in enum
-        InstructionType.Unknown  // fidivr - not in enum
+        InstructionType.Fiadd,  // fiadd dword ptr [r/m]
+        InstructionType.Fimul,  // fimul dword ptr [r/m]
+        InstructionType.Ficom,  // ficom dword ptr [r/m]
+        InstructionType.Ficomp, // ficomp dword ptr [r/m]
+        InstructionType.Fisub,  // fisub dword ptr [r/m]
+        InstructionType.Fisubr, // fisubr dword ptr [r/m]
+        InstructionType.Fidiv,  // fidiv dword ptr [r/m]
+        InstructionType.Fidivr  // fidivr dword ptr [r/m]
     ];
     
     // Register-register operations mapping (mod=3)
     private static readonly Dictionary<(RegisterIndex Reg, RegisterIndex Rm), (InstructionType Type, FpuRegisterIndex DestIndex, FpuRegisterIndex SrcIndex)> RegisterOperations = new()
     {
         // FCMOVB st(0), st(i)
-        { (RegisterIndex.A, RegisterIndex.A), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST0) },
-        { (RegisterIndex.A, RegisterIndex.C), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST1) },
-        { (RegisterIndex.A, RegisterIndex.D), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST2) },
-        { (RegisterIndex.A, RegisterIndex.B), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST3) },
-        { (RegisterIndex.A, RegisterIndex.Sp), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST4) },
-        { (RegisterIndex.A, RegisterIndex.Bp), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST5) },
-        { (RegisterIndex.A, RegisterIndex.Si), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST6) },
-        { (RegisterIndex.A, RegisterIndex.Di), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST7) },
+        { (RegisterIndex.A, RegisterIndex.A), (InstructionType.Fcmovb, FpuRegisterIndex.ST0, FpuRegisterIndex.ST0) },
+        { (RegisterIndex.A, RegisterIndex.C), (InstructionType.Fcmovb, FpuRegisterIndex.ST0, FpuRegisterIndex.ST1) },
+        { (RegisterIndex.A, RegisterIndex.D), (InstructionType.Fcmovb, FpuRegisterIndex.ST0, FpuRegisterIndex.ST2) },
+        { (RegisterIndex.A, RegisterIndex.B), (InstructionType.Fcmovb, FpuRegisterIndex.ST0, FpuRegisterIndex.ST3) },
+        { (RegisterIndex.A, RegisterIndex.Sp), (InstructionType.Fcmovb, FpuRegisterIndex.ST0, FpuRegisterIndex.ST4) },
+        { (RegisterIndex.A, RegisterIndex.Bp), (InstructionType.Fcmovb, FpuRegisterIndex.ST0, FpuRegisterIndex.ST5) },
+        { (RegisterIndex.A, RegisterIndex.Si), (InstructionType.Fcmovb, FpuRegisterIndex.ST0, FpuRegisterIndex.ST6) },
+        { (RegisterIndex.A, RegisterIndex.Di), (InstructionType.Fcmovb, FpuRegisterIndex.ST0, FpuRegisterIndex.ST7) },
         
         // FCMOVE st(0), st(i)
-        { (RegisterIndex.B, RegisterIndex.A), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST0) },
-        { (RegisterIndex.B, RegisterIndex.C), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST1) },
-        { (RegisterIndex.B, RegisterIndex.D), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST2) },
-        { (RegisterIndex.B, RegisterIndex.B), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST3) },
-        { (RegisterIndex.B, RegisterIndex.Sp), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST4) },
-        { (RegisterIndex.B, RegisterIndex.Bp), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST5) },
-        { (RegisterIndex.B, RegisterIndex.Si), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST6) },
-        { (RegisterIndex.B, RegisterIndex.Di), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST7) },
+        { (RegisterIndex.B, RegisterIndex.A), (InstructionType.Fcmove, FpuRegisterIndex.ST0, FpuRegisterIndex.ST0) },
+        { (RegisterIndex.B, RegisterIndex.C), (InstructionType.Fcmove, FpuRegisterIndex.ST0, FpuRegisterIndex.ST1) },
+        { (RegisterIndex.B, RegisterIndex.D), (InstructionType.Fcmove, FpuRegisterIndex.ST0, FpuRegisterIndex.ST2) },
+        { (RegisterIndex.B, RegisterIndex.B), (InstructionType.Fcmove, FpuRegisterIndex.ST0, FpuRegisterIndex.ST3) },
+        { (RegisterIndex.B, RegisterIndex.Sp), (InstructionType.Fcmove, FpuRegisterIndex.ST0, FpuRegisterIndex.ST4) },
+        { (RegisterIndex.B, RegisterIndex.Bp), (InstructionType.Fcmove, FpuRegisterIndex.ST0, FpuRegisterIndex.ST5) },
+        { (RegisterIndex.B, RegisterIndex.Si), (InstructionType.Fcmove, FpuRegisterIndex.ST0, FpuRegisterIndex.ST6) },
+        { (RegisterIndex.B, RegisterIndex.Di), (InstructionType.Fcmove, FpuRegisterIndex.ST0, FpuRegisterIndex.ST7) },
         
         // FCMOVBE st(0), st(i)
-        { (RegisterIndex.C, RegisterIndex.A), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST0) },
-        { (RegisterIndex.C, RegisterIndex.C), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST1) },
-        { (RegisterIndex.C, RegisterIndex.D), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST2) },
-        { (RegisterIndex.C, RegisterIndex.B), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST3) },
-        { (RegisterIndex.C, RegisterIndex.Sp), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST4) },
-        { (RegisterIndex.C, RegisterIndex.Bp), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST5) },
-        { (RegisterIndex.C, RegisterIndex.Si), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST6) },
-        { (RegisterIndex.C, RegisterIndex.Di), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST7) },
+        { (RegisterIndex.C, RegisterIndex.A), (InstructionType.Fcmovbe, FpuRegisterIndex.ST0, FpuRegisterIndex.ST0) },
+        { (RegisterIndex.C, RegisterIndex.C), (InstructionType.Fcmovbe, FpuRegisterIndex.ST0, FpuRegisterIndex.ST1) },
+        { (RegisterIndex.C, RegisterIndex.D), (InstructionType.Fcmovbe, FpuRegisterIndex.ST0, FpuRegisterIndex.ST2) },
+        { (RegisterIndex.C, RegisterIndex.B), (InstructionType.Fcmovbe, FpuRegisterIndex.ST0, FpuRegisterIndex.ST3) },
+        { (RegisterIndex.C, RegisterIndex.Sp), (InstructionType.Fcmovbe, FpuRegisterIndex.ST0, FpuRegisterIndex.ST4) },
+        { (RegisterIndex.C, RegisterIndex.Bp), (InstructionType.Fcmovbe, FpuRegisterIndex.ST0, FpuRegisterIndex.ST5) },
+        { (RegisterIndex.C, RegisterIndex.Si), (InstructionType.Fcmovbe, FpuRegisterIndex.ST0, FpuRegisterIndex.ST6) },
+        { (RegisterIndex.C, RegisterIndex.Di), (InstructionType.Fcmovbe, FpuRegisterIndex.ST0, FpuRegisterIndex.ST7) },
         
         // FCMOVU st(0), st(i)
-        { (RegisterIndex.D, RegisterIndex.A), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST0) },
-        { (RegisterIndex.D, RegisterIndex.C), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST1) },
-        { (RegisterIndex.D, RegisterIndex.D), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST2) },
-        { (RegisterIndex.D, RegisterIndex.B), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST3) },
-        { (RegisterIndex.D, RegisterIndex.Sp), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST4) },
-        { (RegisterIndex.D, RegisterIndex.Bp), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST5) },
-        { (RegisterIndex.D, RegisterIndex.Si), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST6) },
-        { (RegisterIndex.D, RegisterIndex.Di), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST7) },
+        { (RegisterIndex.D, RegisterIndex.A), (InstructionType.Fcmovu, FpuRegisterIndex.ST0, FpuRegisterIndex.ST0) },
+        { (RegisterIndex.D, RegisterIndex.C), (InstructionType.Fcmovu, FpuRegisterIndex.ST0, FpuRegisterIndex.ST1) },
+        { (RegisterIndex.D, RegisterIndex.D), (InstructionType.Fcmovu, FpuRegisterIndex.ST0, FpuRegisterIndex.ST2) },
+        { (RegisterIndex.D, RegisterIndex.B), (InstructionType.Fcmovu, FpuRegisterIndex.ST0, FpuRegisterIndex.ST3) },
+        { (RegisterIndex.D, RegisterIndex.Sp), (InstructionType.Fcmovu, FpuRegisterIndex.ST0, FpuRegisterIndex.ST4) },
+        { (RegisterIndex.D, RegisterIndex.Bp), (InstructionType.Fcmovu, FpuRegisterIndex.ST0, FpuRegisterIndex.ST5) },
+        { (RegisterIndex.D, RegisterIndex.Si), (InstructionType.Fcmovu, FpuRegisterIndex.ST0, FpuRegisterIndex.ST6) },
+        { (RegisterIndex.D, RegisterIndex.Di), (InstructionType.Fcmovu, FpuRegisterIndex.ST0, FpuRegisterIndex.ST7) },
         
         // Special case
-        { (RegisterIndex.Di, RegisterIndex.B), (InstructionType.Unknown, FpuRegisterIndex.ST0, FpuRegisterIndex.ST0) }
+        { (RegisterIndex.Di, RegisterIndex.B), (InstructionType.Fcmovu, FpuRegisterIndex.ST0, FpuRegisterIndex.ST0) }
     };
 
     /// <summary>

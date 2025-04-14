@@ -45,8 +45,8 @@ public class PushImm32Handler : InstructionHandler
         // Read the immediate value
         uint imm32 = Decoder.ReadUInt32();
         
-        // Create the immediate operand
-        var immOperand = OperandFactory.CreateImmediateOperand(imm32);
+        // Create an immediate operand
+        var immOperand = new ImmediateOperand(imm32);
         
         // Set the structured operands
         instruction.StructuredOperands = 

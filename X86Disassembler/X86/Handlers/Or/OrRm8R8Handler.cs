@@ -23,7 +23,17 @@ public class OrRm8R8Handler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        return opcode == 0x08;
+        if (opcode != 0x08)
+            return false;
+            
+        // Check if we can read the ModR/M byte
+        if (!Decoder.CanReadByte())
+            return false;
+            
+        // Peek at the ModR/M byte to verify this is the correct instruction
+        byte modRM = Decoder.PeakByte();
+        
+        return true;
     }
     
     /// <summary>
@@ -43,16 +53,13 @@ public class OrRm8R8Handler : InstructionHandler
             return false;
         }
 
-        // Read the ModR/M byte
-        // For OR r/m8, r8 (0x08):
-        // - The r/m field with mod specifies the destination operand (register or memory)
-        // - The reg field specifies the source register
-        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
+        // Read the ModR/M byte, specifying that we're dealing with 8-bit operands
+        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM8();
         
         // Adjust the operand size to 8-bit
         destinationOperand.Size = 8;
         
-        // Create the source register operand
+        // Create the source register operand (8-bit)
         var sourceOperand = OperandFactory.CreateRegisterOperand(reg, 8);
         
         // Set the structured operands

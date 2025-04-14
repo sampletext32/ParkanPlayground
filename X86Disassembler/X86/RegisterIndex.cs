@@ -10,24 +10,24 @@ public enum RegisterIndex
     /// <summary>A register (EAX/AX/AL depending on operand size)</summary>
     A = 0,
     
-    /// <summary>B register (EBX/BX/BL depending on operand size)</summary>
-    B = 1,
-    
     /// <summary>C register (ECX/CX/CL depending on operand size)</summary>
-    C = 2,
+    C = 1,
     
     /// <summary>D register (EDX/DX/DL depending on operand size)</summary>
-    D = 3,
+    D = 2,
     
-    /// <summary>Source Index register (ESI/SI)</summary>
-    Si = 4,
-    
-    /// <summary>Destination Index register (EDI/DI)</summary>
-    Di = 5,
+    /// <summary>B register (EBX/BX/BL depending on operand size)</summary>
+    B = 3,
     
     /// <summary>Stack Pointer register (ESP/SP)</summary>
-    Sp = 6,
+    Sp = 4,
     
     /// <summary>Base Pointer register (EBP/BP)</summary>
-    Bp = 7,
+    Bp = 5,
+    
+    /// <summary>Source Index register (ESI/SI)</summary>
+    Si = 6,
+    
+    /// <summary>Destination Index register (EDI/DI)</summary>
+    Di = 7,
 }

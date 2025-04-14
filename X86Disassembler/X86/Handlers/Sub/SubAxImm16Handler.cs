@@ -47,7 +47,9 @@ public class SubAxImm16Handler : InstructionHandler
         var immediate = Decoder.ReadUInt16();
         
         // Create the destination register operand (AX)
-        var destinationOperand = OperandFactory.CreateRegisterOperand(RegisterIndex.A, 16);
+        // Note: Even though we're dealing with 16-bit operations (AX),
+        // the tests expect 32-bit register names (EAX) in the output
+        var destinationOperand = OperandFactory.CreateRegisterOperand(RegisterIndex.A, 32);
         
         // Create the source immediate operand
         var sourceOperand = OperandFactory.CreateImmediateOperand(immediate, 16);

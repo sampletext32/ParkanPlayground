@@ -37,6 +37,12 @@ public class DisplacementMemoryOperand : MemoryOperand
     {
         string sign = Displacement >= 0 ? "+" : "";
         var registerName = ModRMDecoder.GetRegisterName(BaseRegister, 32);
-        return $"{GetSegmentPrefix()}[{registerName}{sign}0x{Math.Abs(Displacement):X}]";
+        
+        // Format small displacements (< 256) with at least 2 digits
+        string formattedDisplacement = Math.Abs(Displacement) < 256 
+            ? $"0x{Math.Abs(Displacement):X2}" 
+            : $"0x{Math.Abs(Displacement):X}";
+        
+        return $"{GetSegmentPrefix()}{GetSizePrefix()}[{registerName}{sign}{formattedDisplacement}]";
     }
 }

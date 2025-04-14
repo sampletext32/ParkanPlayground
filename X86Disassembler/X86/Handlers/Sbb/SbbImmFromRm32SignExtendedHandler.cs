@@ -65,7 +65,7 @@ public class SbbImmFromRm32SignExtendedHandler : InstructionHandler
         sbyte imm8 = (sbyte) Decoder.ReadByte();
         
         // Create the immediate operand with sign extension
-        var immOperand = OperandFactory.CreateImmediateOperand(imm8);
+        var immOperand = OperandFactory.CreateImmediateOperand((uint)imm8);
         
         // Set the structured operands
         instruction.StructuredOperands = 

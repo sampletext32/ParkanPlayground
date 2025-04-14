@@ -49,12 +49,9 @@ public class XorRm16R16Handler : InstructionHandler
         // Create the source register operand (16-bit)
         var sourceOperand = OperandFactory.CreateRegisterOperand(reg, 16);
         
-        // For memory operands, we need to adjust the size to 16-bit
-        if (mod != 3) // Memory addressing mode
-        {
-            // Adjust memory operand size to 16-bit
-            destinationOperand.Size = 16;
-        }
+        // For all operands, we need to adjust the size to 16-bit
+        // This ensures register operands also get the correct size
+        destinationOperand.Size = 16;
         
         // Set the structured operands
         instruction.StructuredOperands = 

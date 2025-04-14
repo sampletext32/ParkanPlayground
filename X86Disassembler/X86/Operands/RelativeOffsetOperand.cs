@@ -8,14 +8,14 @@ public class RelativeOffsetOperand : Operand
     /// <summary>
     /// Gets or sets the target address
     /// </summary>
-    public ulong TargetAddress { get; set; }
+    public uint TargetAddress { get; set; }
     
     /// <summary>
     /// Initializes a new instance of the RelativeOffsetOperand class
     /// </summary>
     /// <param name="targetAddress">The target address</param>
     /// <param name="size">The size of the offset in bits (8 or 32)</param>
-    public RelativeOffsetOperand(ulong targetAddress, int size = 32)
+    public RelativeOffsetOperand(uint targetAddress, int size = 32)
     {
         Type = OperandType.RelativeOffset;
         TargetAddress = targetAddress;

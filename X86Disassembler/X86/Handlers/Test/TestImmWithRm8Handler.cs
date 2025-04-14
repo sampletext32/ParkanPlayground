@@ -53,11 +53,8 @@ public class TestImmWithRm8Handler : InstructionHandler
         // Set the instruction type
         instruction.Type = InstructionType.Test;
         
-        // Read the ModR/M byte
-        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
-        
-        // Ensure the destination operand has the correct size (8-bit)
-        destinationOperand.Size = 8;
+        // Read the ModR/M byte, specifying that we're dealing with 8-bit operands
+        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM8();
 
         // Check if we have enough bytes for the immediate value
         if (!Decoder.CanReadByte())

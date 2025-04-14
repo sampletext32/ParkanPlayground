@@ -120,7 +120,7 @@ public class DataTransferInstructionTests
         var immOperand = instruction.StructuredOperands[1];
         Assert.IsType<ImmediateOperand>(immOperand);
         var immImmediateOperand = (ImmediateOperand)immOperand;
-        Assert.Equal(0x12345678, immImmediateOperand.Value);
+        Assert.Equal(0x12345678U, immImmediateOperand.Value);
     }
     
     /// <summary>
@@ -157,7 +157,7 @@ public class DataTransferInstructionTests
         var immOperand = instruction.StructuredOperands[1];
         Assert.IsType<ImmediateOperand>(immOperand);
         var immImmediateOperand = (ImmediateOperand)immOperand;
-        Assert.Equal(0x42, immImmediateOperand.Value);
+        Assert.Equal(0x42U, immImmediateOperand.Value);
     }
     
     /// <summary>
@@ -331,7 +331,7 @@ public class DataTransferInstructionTests
         var immOperand = instruction.StructuredOperands[0];
         Assert.IsType<ImmediateOperand>(immOperand);
         var immImmediateOperand = (ImmediateOperand)immOperand;
-        Assert.Equal(0x12345678, immImmediateOperand.Value);
+        Assert.Equal(0x12345678U, immImmediateOperand.Value);
     }
     
     /// <summary>
@@ -361,7 +361,7 @@ public class DataTransferInstructionTests
         var immOperand = instruction.StructuredOperands[0];
         Assert.IsType<ImmediateOperand>(immOperand);
         var immImmediateOperand = (ImmediateOperand)immOperand;
-        Assert.Equal(0x42, immImmediateOperand.Value);
+        Assert.Equal(0x42U, immImmediateOperand.Value);
     }
     
     /// <summary>

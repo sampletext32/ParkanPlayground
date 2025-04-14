@@ -1,3 +1,3 @@
 RawBytes;Instructions
-6810000000;[{ "Mnemonic": "push", "Operands": "0x00000010" }]
+6878563412;[{ "Mnemonic": "push", "Operands": "0x12345678" }]
 6A10;[{ "Mnemonic": "push", "Operands": "0x10" }]

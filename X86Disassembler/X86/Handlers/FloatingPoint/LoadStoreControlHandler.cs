@@ -10,14 +10,14 @@ public class LoadStoreControlHandler : InstructionHandler
     // Memory operand instruction types for D9 opcode - load, store, and control operations
     private static readonly InstructionType[] MemoryInstructionTypes =
     [
-        InstructionType.Fld,     // 0
-        InstructionType.Unknown, // 1
-        InstructionType.Fst,     // 2
-        InstructionType.Fstp,    // 3
-        InstructionType.Unknown, // 4 - fldenv not in enum
-        InstructionType.Fldcw,   // 5
-        InstructionType.Unknown, // 6 - fnstenv not in enum
-        InstructionType.Fnstcw   // 7
+        InstructionType.Fld,     // 0 - fld dword ptr [r/m]
+        InstructionType.Unknown, // 1 - (reserved)
+        InstructionType.Fst,     // 2 - fst dword ptr [r/m]
+        InstructionType.Fstp,    // 3 - fstp dword ptr [r/m]
+        InstructionType.Fldenv,  // 4 - fldenv [r/m]
+        InstructionType.Fldcw,   // 5 - fldcw [r/m]
+        InstructionType.Fnstenv, // 6 - fnstenv [r/m]
+        InstructionType.Fnstcw   // 7 - fnstcw [r/m]
     ];
     
     // Register-register operations mapping (mod=3)
@@ -50,28 +50,28 @@ public class LoadStoreControlHandler : InstructionHandler
         { (RegisterIndex.Si, RegisterIndex.Di), (InstructionType.Fxam, null) },
         
         // D9F0-D9FF special instructions (reg=7)
-        { (RegisterIndex.Di, RegisterIndex.A), (InstructionType.Unknown, null) }, // f2xm1 not in enum
-        { (RegisterIndex.Di, RegisterIndex.B), (InstructionType.Unknown, null) }, // fyl2x not in enum
-        { (RegisterIndex.Di, RegisterIndex.C), (InstructionType.Unknown, null) }, // fptan not in enum
-        { (RegisterIndex.Di, RegisterIndex.D), (InstructionType.Unknown, null) }, // fpatan not in enum
-        { (RegisterIndex.Di, RegisterIndex.Si), (InstructionType.Unknown, null) }, // fxtract not in enum
-        { (RegisterIndex.Di, RegisterIndex.Di), (InstructionType.Unknown, null) }, // fprem1 not in enum
-        { (RegisterIndex.Di, RegisterIndex.Sp), (InstructionType.Unknown, null) }, // fdecstp not in enum
-        { (RegisterIndex.Di, RegisterIndex.Bp), (InstructionType.Unknown, null) }, // fincstp not in enum
+        { (RegisterIndex.Di, RegisterIndex.A), (InstructionType.F2xm1, null) }, 
+        { (RegisterIndex.Di, RegisterIndex.B), (InstructionType.Fyl2x, null) }, 
+        { (RegisterIndex.Di, RegisterIndex.C), (InstructionType.Fptan, null) }, 
+        { (RegisterIndex.Di, RegisterIndex.D), (InstructionType.Fpatan, null) }, 
+        { (RegisterIndex.Di, RegisterIndex.Si), (InstructionType.Fxtract, null) }, 
+        { (RegisterIndex.Di, RegisterIndex.Di), (InstructionType.Fprem1, null) }, 
+        { (RegisterIndex.Di, RegisterIndex.Sp), (InstructionType.Fdecstp, null) }, 
+        { (RegisterIndex.Di, RegisterIndex.Bp), (InstructionType.Fincstp, null) },
         
         // D9D0-D9DF special instructions (reg=5)
-        { (RegisterIndex.Sp, RegisterIndex.A), (InstructionType.Unknown, null) }, // fprem not in enum
-        { (RegisterIndex.Sp, RegisterIndex.B), (InstructionType.Unknown, null) }, // fyl2xp1 not in enum
-        { (RegisterIndex.Sp, RegisterIndex.C), (InstructionType.Unknown, null) }, // fsqrt not in enum
-        { (RegisterIndex.Sp, RegisterIndex.D), (InstructionType.Unknown, null) }, // fsincos not in enum
-        { (RegisterIndex.Sp, RegisterIndex.Si), (InstructionType.Unknown, null) }, // frndint not in enum
-        { (RegisterIndex.Sp, RegisterIndex.Di), (InstructionType.Unknown, null) }, // fscale not in enum
-        { (RegisterIndex.Sp, RegisterIndex.Sp), (InstructionType.Unknown, null) }, // fsin not in enum
-        { (RegisterIndex.Sp, RegisterIndex.Bp), (InstructionType.Unknown, null) }, // fcos not in enum
+        { (RegisterIndex.Sp, RegisterIndex.A), (InstructionType.Fprem, null) }, 
+        { (RegisterIndex.Sp, RegisterIndex.B), (InstructionType.Fyl2xp1, null) }, 
+        { (RegisterIndex.Sp, RegisterIndex.C), (InstructionType.Fsqrt, null) }, 
+        { (RegisterIndex.Sp, RegisterIndex.D), (InstructionType.Fsincos, null) }, 
+        { (RegisterIndex.Sp, RegisterIndex.Si), (InstructionType.Frndint, null) }, 
+        { (RegisterIndex.Sp, RegisterIndex.Di), (InstructionType.Fscale, null) }, 
+        { (RegisterIndex.Sp, RegisterIndex.Sp), (InstructionType.Fsin, null) }, 
+        { (RegisterIndex.Sp, RegisterIndex.Bp), (InstructionType.Fcos, null) },
         
         // D9C8-D9CF special instructions (reg=4)
-        { (RegisterIndex.Bp, RegisterIndex.A), (InstructionType.Unknown, null) }, // fnop not in enum
-        { (RegisterIndex.Bp, RegisterIndex.C), (InstructionType.Unknown, null) }  // fwait not in enum
+        { (RegisterIndex.Bp, RegisterIndex.A), (InstructionType.Fnop, null) }, 
+        { (RegisterIndex.Bp, RegisterIndex.C), (InstructionType.Fwait, null) }  
     };
 
     /// <summary>

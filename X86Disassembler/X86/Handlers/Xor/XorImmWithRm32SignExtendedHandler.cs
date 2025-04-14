@@ -65,7 +65,7 @@ public class XorImmWithRm32SignExtendedHandler : InstructionHandler
         int imm32 = (sbyte)Decoder.ReadByte();
         
         // Create the immediate operand with sign extension
-        var immOperand = OperandFactory.CreateImmediateOperand(imm32);
+        var immOperand = OperandFactory.CreateImmediateOperand((uint)imm32);
         
         // Set the structured operands
         instruction.StructuredOperands = 

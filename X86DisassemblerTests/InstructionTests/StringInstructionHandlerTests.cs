@@ -64,7 +64,7 @@ public class StringInstructionHandlerTests
         Assert.Single(instructions);
         var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal(InstructionType.RepNE, instruction.Type);
+        Assert.Equal(InstructionType.RepneScasD, instruction.Type);
         
         // Check that we have two operands
         Assert.Equal(2, instruction.StructuredOperands.Count);

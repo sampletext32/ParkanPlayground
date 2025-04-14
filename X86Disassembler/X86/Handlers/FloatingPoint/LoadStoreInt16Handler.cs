@@ -11,13 +11,13 @@ public class LoadStoreInt16Handler : InstructionHandler
     private static readonly InstructionType[] MemoryInstructionTypes =
     [
         InstructionType.Fild,   // fild word ptr [r/m]
-        InstructionType.Unknown, // fistt word ptr [r/m] (not implemented)
-        InstructionType.Fst,    // fist word ptr [r/m]
-        InstructionType.Fstp,   // fistp word ptr [r/m]
-        InstructionType.Fld,    // fbld packed BCD [r/m]
+        InstructionType.Fisttp, // fistt word ptr [r/m]
+        InstructionType.Fist,   // fist word ptr [r/m]
+        InstructionType.Fistp,  // fistp word ptr [r/m]
+        InstructionType.Fbld,   // fbld packed BCD [r/m]
         InstructionType.Fild,   // fild qword ptr [r/m] (64-bit integer)
-        InstructionType.Fst,    // fbstp packed BCD [r/m]
-        InstructionType.Fstp    // fistp qword ptr [r/m] (64-bit integer)
+        InstructionType.Fbstp,  // fbstp packed BCD [r/m]
+        InstructionType.Fistp   // fistp qword ptr [r/m] (64-bit integer)
     ];
     
     // Register-register operations mapping (mod=3)
@@ -93,13 +93,6 @@ public class LoadStoreInt16Handler : InstructionHandler
 
         // Read the ModR/M byte
         var (mod, reg, rm, memoryOperand) = ModRMDecoder.ReadModRM();
-
-        // Check for FNSTSW AX (DF E0)
-        if (mod == 3 && reg == RegisterIndex.Bp && rm == RegisterIndex.A)
-        {
-            // This is handled by the FnstswHandler, so we should not handle it here
-            return false;
-        }
 
         // Handle based on addressing mode
         if (mod != 3) // Memory operand

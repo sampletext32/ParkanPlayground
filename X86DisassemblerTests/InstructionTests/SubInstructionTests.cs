@@ -117,7 +117,7 @@ public class SubInstructionTests
         var immOperand = instruction.StructuredOperands[1];
         Assert.IsType<ImmediateOperand>(immOperand);
         var immediateOperand = (ImmediateOperand)immOperand;
-        Assert.Equal(0x42, immediateOperand.Value);
+        Assert.Equal(0x42U, immediateOperand.Value);
     }
     
     /// <summary>
@@ -192,7 +192,7 @@ public class SubInstructionTests
         var immOperand = instruction.StructuredOperands[1];
         Assert.IsType<ImmediateOperand>(immOperand);
         var immediateOperand = (ImmediateOperand)immOperand;
-        Assert.Equal(0x42, immediateOperand.Value);
+        Assert.Equal(0x42U, immediateOperand.Value);
     }
     
     /// <summary>
@@ -231,7 +231,7 @@ public class SubInstructionTests
         var immOperand = instruction.StructuredOperands[1];
         Assert.IsType<ImmediateOperand>(immOperand);
         var immediateOperand = (ImmediateOperand)immOperand;
-        Assert.Equal(0x10, immediateOperand.Value);
+        Assert.Equal(0x10U, immediateOperand.Value);
     }
     
     /// <summary>
@@ -426,7 +426,7 @@ public class SubInstructionTests
         var immOperand = instruction1.StructuredOperands[1];
         Assert.IsType<ImmediateOperand>(immOperand);
         var immediateOperand = (ImmediateOperand)immOperand;
-        Assert.Equal(0x10, immediateOperand.Value);
+        Assert.Equal(0x10U, immediateOperand.Value);
         
         // Second instruction: SUB EAX, EBX
         var instruction2 = instructions[1];

@@ -71,7 +71,7 @@ public class XorImmWithRm16SignExtendedHandler : InstructionHandler
         short imm16 = (sbyte)Decoder.ReadByte();
         
         // Create the source immediate operand with the sign-extended value
-        var sourceOperand = OperandFactory.CreateImmediateOperand(imm16, 16);
+        var sourceOperand = OperandFactory.CreateImmediateOperand((ushort)imm16, 16);
         
         // Set the structured operands
         instruction.StructuredOperands = 

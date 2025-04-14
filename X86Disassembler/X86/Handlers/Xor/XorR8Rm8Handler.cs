@@ -36,19 +36,11 @@ public class XorR8Rm8Handler : InstructionHandler
     {
         // Set the instruction type
         instruction.Type = InstructionType.Xor;
+        
+        // Read the ModR/M byte, specifying that we're dealing with 8-bit operands
+        var (mod, reg, rm, sourceOperand) = ModRMDecoder.ReadModRM8();
 
-        if (!Decoder.CanReadByte())
-        {
-            return false;
-        }
-
-        // Read the ModR/M byte
-        // For XOR r8, r/m8 (0x32):
-        // - The reg field specifies the destination register
-        // - The r/m field with mod specifies the source operand (register or memory)
-        var (mod, reg, rm, sourceOperand) = ModRMDecoder.ReadModRM();
-
-        // Adjust the operand size to 8-bit
+        // Ensure the source operand has the correct size (8-bit)
         sourceOperand.Size = 8;
 
         // Create the destination register operand

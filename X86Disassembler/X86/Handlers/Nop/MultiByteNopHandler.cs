@@ -74,7 +74,7 @@ public class MultiByteNopHandler : InstructionHandler
         // Set the instruction type
         instruction.Type = InstructionType.Nop;
 
-        // Skip the second byte (0x1F)
+        // Read the second byte (0x1F)
         Decoder.ReadByte();
 
         // Check if we have enough bytes to read the ModR/M byte
@@ -89,14 +89,13 @@ public class MultiByteNopHandler : InstructionHandler
         // Determine the size of the operand
         int operandSize = hasOperandSizePrefix ? 16 : 32;
         
-        // Read the ModR/M byte but don't advance the position yet
-        byte modRm = Decoder.PeakByte();
+        // Read the ModR/M byte
+        byte modRm = Decoder.ReadByte();
         
         // Default memory operand parameters
         RegisterIndex baseReg = RegisterIndex.A;
         RegisterIndex? indexReg = null;
         int scale = 0;
-        int bytesToSkip = 1; // Skip at least the ModR/M byte
         
         // Try to find a matching NOP variant (we check longest patterns first)
         foreach (var (variantModRm, expectedBytes, variantBaseReg, variantIndexReg, variantScale) in NopVariants)
@@ -108,18 +107,29 @@ public class MultiByteNopHandler : InstructionHandler
             }
 
             // Check if we have enough bytes for this pattern
-            if (!Decoder.CanRead(expectedBytes.Length + 1)) // +1 for ModR/M byte
+            if (!Decoder.CanRead(expectedBytes.Length))
             {
                 continue;
+            }
+            
+            // Create a buffer to read the expected bytes
+            byte[] buffer = new byte[expectedBytes.Length];
+            
+            // Read the bytes into the buffer without advancing the decoder position
+            for (int i = 0; i < expectedBytes.Length; i++)
+            {
+                if (!Decoder.CanReadByte())
+                {
+                    break;
+                }
+                buffer[i] = Decoder.PeakByte(i);
             }
             
             // Check if the expected bytes match
             bool isMatch = true;
             for (int i = 0; i < expectedBytes.Length; i++)
             {
-                // Check the byte at position
-                byte actualByte = Decoder.PeakByte();
-                if (actualByte != expectedBytes[i])
+                if (buffer[i] != expectedBytes[i])
                 {
                     isMatch = false;
                     break;
@@ -132,13 +142,16 @@ public class MultiByteNopHandler : InstructionHandler
                 baseReg = variantBaseReg;
                 indexReg = variantIndexReg;
                 scale = variantScale;
-                bytesToSkip = 1 + expectedBytes.Length; // ModR/M byte + additional bytes
+                
+                // Consume the expected bytes
+                for (int i = 0; i < expectedBytes.Length; i++)
+                {
+                    Decoder.ReadByte();
+                }
+                
                 break;
             }
         }
-        
-        // Skip the bytes we've processed
-        Decoder.SetPosition(Decoder.GetPosition() + bytesToSkip);
         
         // Create the appropriate structured operand based on the NOP variant
         if (indexReg.HasValue && scale > 0)

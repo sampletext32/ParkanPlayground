@@ -23,28 +23,28 @@ public class LoadStoreFloat64Handler : InstructionHandler
     // Memory operand instruction types for DD opcode
     private static readonly InstructionType[] MemoryInstructionTypes =
     [
-        InstructionType.Fld,     // 0
-        InstructionType.Unknown, // 1
-        InstructionType.Fst,     // 2
-        InstructionType.Fstp,    // 3
-        InstructionType.Unknown, // 4 - frstor not in enum
-        InstructionType.Unknown, // 5
-        InstructionType.Unknown, // 6 - fnsave not in enum
-        InstructionType.Fnstsw   // 7
+        InstructionType.Fld,     // 0 - fld qword ptr [r/m]
+        InstructionType.Unknown, // 1 - (reserved)
+        InstructionType.Fst,     // 2 - fst qword ptr [r/m]
+        InstructionType.Fstp,    // 3 - fstp qword ptr [r/m]
+        InstructionType.Frstor,  // 4 - frstor [r/m]
+        InstructionType.Unknown, // 5 - (reserved)
+        InstructionType.Fnsave,  // 6 - fnsave [r/m]
+        InstructionType.Fnstsw   // 7 - fnstsw [r/m]
     ];
     
     // Register-register operations mapping (mod=3)
     private static readonly Dictionary<(RegisterIndex Reg, RegisterIndex Rm), (InstructionType Type, FpuRegisterIndex OperandIndex)> RegisterOperations = new()
     {
         // FFREE ST(i)
-        { (RegisterIndex.A, RegisterIndex.A), (InstructionType.Unknown, FpuRegisterIndex.ST0) },
-        { (RegisterIndex.A, RegisterIndex.C), (InstructionType.Unknown, FpuRegisterIndex.ST1) },
-        { (RegisterIndex.A, RegisterIndex.D), (InstructionType.Unknown, FpuRegisterIndex.ST2) },
-        { (RegisterIndex.A, RegisterIndex.B), (InstructionType.Unknown, FpuRegisterIndex.ST3) },
-        { (RegisterIndex.A, RegisterIndex.Sp), (InstructionType.Unknown, FpuRegisterIndex.ST4) },
-        { (RegisterIndex.A, RegisterIndex.Bp), (InstructionType.Unknown, FpuRegisterIndex.ST5) },
-        { (RegisterIndex.A, RegisterIndex.Si), (InstructionType.Unknown, FpuRegisterIndex.ST6) },
-        { (RegisterIndex.A, RegisterIndex.Di), (InstructionType.Unknown, FpuRegisterIndex.ST7) },
+        { (RegisterIndex.A, RegisterIndex.A), (InstructionType.Ffree, FpuRegisterIndex.ST0) },
+        { (RegisterIndex.A, RegisterIndex.C), (InstructionType.Ffree, FpuRegisterIndex.ST1) },
+        { (RegisterIndex.A, RegisterIndex.D), (InstructionType.Ffree, FpuRegisterIndex.ST2) },
+        { (RegisterIndex.A, RegisterIndex.B), (InstructionType.Ffree, FpuRegisterIndex.ST3) },
+        { (RegisterIndex.A, RegisterIndex.Sp), (InstructionType.Ffree, FpuRegisterIndex.ST4) },
+        { (RegisterIndex.A, RegisterIndex.Bp), (InstructionType.Ffree, FpuRegisterIndex.ST5) },
+        { (RegisterIndex.A, RegisterIndex.Si), (InstructionType.Ffree, FpuRegisterIndex.ST6) },
+        { (RegisterIndex.A, RegisterIndex.Di), (InstructionType.Ffree, FpuRegisterIndex.ST7) },
         
         // FST ST(i)
         { (RegisterIndex.C, RegisterIndex.A), (InstructionType.Fst, FpuRegisterIndex.ST0) },
@@ -67,24 +67,24 @@ public class LoadStoreFloat64Handler : InstructionHandler
         { (RegisterIndex.D, RegisterIndex.Di), (InstructionType.Fstp, FpuRegisterIndex.ST7) },
         
         // FUCOM ST(i)
-        { (RegisterIndex.Si, RegisterIndex.A), (InstructionType.Unknown, FpuRegisterIndex.ST0) },
-        { (RegisterIndex.Si, RegisterIndex.C), (InstructionType.Unknown, FpuRegisterIndex.ST1) },
-        { (RegisterIndex.Si, RegisterIndex.D), (InstructionType.Unknown, FpuRegisterIndex.ST2) },
-        { (RegisterIndex.Si, RegisterIndex.B), (InstructionType.Unknown, FpuRegisterIndex.ST3) },
-        { (RegisterIndex.Si, RegisterIndex.Sp), (InstructionType.Unknown, FpuRegisterIndex.ST4) },
-        { (RegisterIndex.Si, RegisterIndex.Bp), (InstructionType.Unknown, FpuRegisterIndex.ST5) },
-        { (RegisterIndex.Si, RegisterIndex.Si), (InstructionType.Unknown, FpuRegisterIndex.ST6) },
-        { (RegisterIndex.Si, RegisterIndex.Di), (InstructionType.Unknown, FpuRegisterIndex.ST7) },
+        { (RegisterIndex.Si, RegisterIndex.A), (InstructionType.Fucom, FpuRegisterIndex.ST0) },
+        { (RegisterIndex.Si, RegisterIndex.C), (InstructionType.Fucom, FpuRegisterIndex.ST1) },
+        { (RegisterIndex.Si, RegisterIndex.D), (InstructionType.Fucom, FpuRegisterIndex.ST2) },
+        { (RegisterIndex.Si, RegisterIndex.B), (InstructionType.Fucom, FpuRegisterIndex.ST3) },
+        { (RegisterIndex.Si, RegisterIndex.Sp), (InstructionType.Fucom, FpuRegisterIndex.ST4) },
+        { (RegisterIndex.Si, RegisterIndex.Bp), (InstructionType.Fucom, FpuRegisterIndex.ST5) },
+        { (RegisterIndex.Si, RegisterIndex.Si), (InstructionType.Fucom, FpuRegisterIndex.ST6) },
+        { (RegisterIndex.Si, RegisterIndex.Di), (InstructionType.Fucom, FpuRegisterIndex.ST7) },
         
         // FUCOMP ST(i)
-        { (RegisterIndex.Di, RegisterIndex.A), (InstructionType.Unknown, FpuRegisterIndex.ST0) },
-        { (RegisterIndex.Di, RegisterIndex.C), (InstructionType.Unknown, FpuRegisterIndex.ST1) },
-        { (RegisterIndex.Di, RegisterIndex.D), (InstructionType.Unknown, FpuRegisterIndex.ST2) },
-        { (RegisterIndex.Di, RegisterIndex.B), (InstructionType.Unknown, FpuRegisterIndex.ST3) },
-        { (RegisterIndex.Di, RegisterIndex.Sp), (InstructionType.Unknown, FpuRegisterIndex.ST4) },
-        { (RegisterIndex.Di, RegisterIndex.Bp), (InstructionType.Unknown, FpuRegisterIndex.ST5) },
-        { (RegisterIndex.Di, RegisterIndex.Si), (InstructionType.Unknown, FpuRegisterIndex.ST6) },
-        { (RegisterIndex.Di, RegisterIndex.Di), (InstructionType.Unknown, FpuRegisterIndex.ST7) }
+        { (RegisterIndex.Di, RegisterIndex.A), (InstructionType.Fucomp, FpuRegisterIndex.ST0) },
+        { (RegisterIndex.Di, RegisterIndex.C), (InstructionType.Fucomp, FpuRegisterIndex.ST1) },
+        { (RegisterIndex.Di, RegisterIndex.D), (InstructionType.Fucomp, FpuRegisterIndex.ST2) },
+        { (RegisterIndex.Di, RegisterIndex.B), (InstructionType.Fucomp, FpuRegisterIndex.ST3) },
+        { (RegisterIndex.Di, RegisterIndex.Sp), (InstructionType.Fucomp, FpuRegisterIndex.ST4) },
+        { (RegisterIndex.Di, RegisterIndex.Bp), (InstructionType.Fucomp, FpuRegisterIndex.ST5) },
+        { (RegisterIndex.Di, RegisterIndex.Si), (InstructionType.Fucomp, FpuRegisterIndex.ST6) },
+        { (RegisterIndex.Di, RegisterIndex.Di), (InstructionType.Fucomp, FpuRegisterIndex.ST7) }
     };
 
     /// <summary>

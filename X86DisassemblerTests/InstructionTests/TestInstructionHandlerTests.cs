@@ -229,7 +229,7 @@ public class TestInstructionHandlerTests
         var ediOperand = instruction.StructuredOperands[0];
         Assert.IsType<RegisterOperand>(ediOperand);
         var registerOperand = (RegisterOperand)ediOperand;
-        Assert.Equal(RegisterIndex.D, registerOperand.Register);
+        Assert.Equal(RegisterIndex.Di, registerOperand.Register);
         Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EDI)
         
         // Check the second operand (immediate value)

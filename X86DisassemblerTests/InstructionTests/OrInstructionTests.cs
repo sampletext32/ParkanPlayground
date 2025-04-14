@@ -184,7 +184,7 @@ public class OrInstructionTests
         var immOperand = instruction.StructuredOperands[1];
         Assert.IsType<ImmediateOperand>(immOperand);
         var immediateOperand = (ImmediateOperand)immOperand;
-        Assert.Equal(0x42, immediateOperand.Value);
+        Assert.Equal(0x42U, immediateOperand.Value);
     }
     
     /// <summary>
@@ -219,7 +219,7 @@ public class OrInstructionTests
         var immOperand = instruction.StructuredOperands[1];
         Assert.IsType<ImmediateOperand>(immOperand);
         var immediateOperand = (ImmediateOperand)immOperand;
-        Assert.Equal(0x12345678, immediateOperand.Value);
+        Assert.Equal(0x12345678U, immediateOperand.Value);
     }
     
     /// <summary>
@@ -254,7 +254,7 @@ public class OrInstructionTests
         var immOperand = instruction.StructuredOperands[1];
         Assert.IsType<ImmediateOperand>(immOperand);
         var immediateOperand = (ImmediateOperand)immOperand;
-        Assert.Equal(0x12345678, immediateOperand.Value);
+        Assert.Equal(0x12345678U, immediateOperand.Value);
     }
     
     /// <summary>
@@ -289,6 +289,6 @@ public class OrInstructionTests
         var immOperand = instruction.StructuredOperands[1];
         Assert.IsType<ImmediateOperand>(immOperand);
         var immediateOperand = (ImmediateOperand)immOperand;
-        Assert.Equal(0x00000042, immediateOperand.Value);
+        Assert.Equal(0x00000042U, immediateOperand.Value);
     }
 }

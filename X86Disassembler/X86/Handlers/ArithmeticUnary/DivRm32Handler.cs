@@ -56,6 +56,13 @@ public class DivRm32Handler : InstructionHandler
         // For DIV r/m32 (0xF7 /6):
         // - The r/m field with mod specifies the operand (register or memory)
         var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
+        
+        // Verify this is a DIV instruction
+        // The reg field should be 6 (DIV), which maps to RegisterIndex.Si in our enum
+        if (reg != RegisterIndex.Si)
+        {
+            return false;
+        }
 
         // Set the structured operands
         // DIV has only one operand

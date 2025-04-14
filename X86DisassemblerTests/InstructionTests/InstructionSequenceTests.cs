@@ -28,9 +28,9 @@ public class InstructionSequenceTests
         Assert.True(instructions[0].Type == InstructionType.Jge, 
             $"Expected 'Jge', but got '{instructions[0].Type}'");
         
-        // Check the operand (immediate value for jump target)
+        // Check the operand (relative offset for jump target)
         var jgeOperand = instructions[0].StructuredOperands[0];
-        Assert.IsType<ImmediateOperand>(jgeOperand);
+        Assert.IsType<RelativeOffsetOperand>(jgeOperand);
         
         // Second instruction: ADD EBP, 0x18
         Assert.Equal(InstructionType.Add, instructions[1].Type);
@@ -54,9 +54,9 @@ public class InstructionSequenceTests
         // Third instruction: JMP LAB_10001c54
         Assert.Equal(InstructionType.Jmp, instructions[2].Type);
         
-        // Check the operand (immediate value for jump target)
+        // Check the operand (relative offset for jump target)
         var jmpOperand = instructions[2].StructuredOperands[0];
-        Assert.IsType<ImmediateOperand>(jmpOperand);
+        Assert.IsType<RelativeOffsetOperand>(jmpOperand);
         
         // Fourth instruction: ADD EBP, -0x48
         Assert.Equal(InstructionType.Add, instructions[3].Type);
@@ -75,7 +75,7 @@ public class InstructionSequenceTests
         immOperand = instructions[3].StructuredOperands[1];
         Assert.IsType<ImmediateOperand>(immOperand);
         immediateOperand = (ImmediateOperand)immOperand;
-        Assert.Equal(0xFFFFFFB8U, immediateOperand.Value); // -0x48 sign-extended to 32-bit
+        Assert.Equal(0xFFFFFFB8UL, immediateOperand.Value); // -0x48 sign-extended to 32-bit
         
         // Fifth instruction: MOV EDX, dword ptr [ESI + 0x4]
         Assert.Equal(InstructionType.Mov, instructions[4].Type);
@@ -118,9 +118,9 @@ public class InstructionSequenceTests
         // First instruction should be JGE with relative offset
         Assert.Equal(InstructionType.Jge, instructions[0].Type);
         
-        // Check the operand (immediate value for jump target)
+        // Check the operand (relative offset for jump target)
         var jgeOperand = instructions[0].StructuredOperands[0];
-        Assert.IsType<ImmediateOperand>(jgeOperand);
+        Assert.IsType<RelativeOffsetOperand>(jgeOperand);
         
         // Second instruction should be ADD EBP, 0x18
         Assert.Equal(InstructionType.Add, instructions[1].Type);
@@ -144,9 +144,9 @@ public class InstructionSequenceTests
         // Third instruction should be JMP
         Assert.Equal(InstructionType.Jmp, instructions[2].Type);
         
-        // Check the operand (immediate value for jump target)
+        // Check the operand (relative offset for jump target)
         var jmpOperand = instructions[2].StructuredOperands[0];
-        Assert.IsType<ImmediateOperand>(jmpOperand);
+        Assert.IsType<RelativeOffsetOperand>(jmpOperand);
         
         // Fourth instruction should be ADD EBP, -0x48
         Assert.Equal(InstructionType.Add, instructions[3].Type);

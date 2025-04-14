@@ -22,7 +22,7 @@ public static class OperandFactory
     /// <param name="value">The immediate value</param>
     /// <param name="size">The size of the value in bits</param>
     /// <returns>An immediate value operand</returns>
-    public static ImmediateOperand CreateImmediateOperand(long value, int size = 32)
+    public static ImmediateOperand CreateImmediateOperand(uint value, int size = 32)
     {
         return new ImmediateOperand(value, size);
     }
@@ -86,7 +86,7 @@ public static class OperandFactory
     /// <param name="targetAddress">The target address</param>
     /// <param name="size">The size of the offset in bits (8 or 32)</param>
     /// <returns>A relative offset operand</returns>
-    public static RelativeOffsetOperand CreateRelativeOffsetOperand(ulong targetAddress, int size = 32)
+    public static RelativeOffsetOperand CreateRelativeOffsetOperand(uint targetAddress, int size = 32)
     {
         return new RelativeOffsetOperand(targetAddress, size);
     }

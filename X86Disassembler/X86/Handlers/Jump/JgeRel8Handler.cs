@@ -43,13 +43,14 @@ public class JgeRel8Handler : InstructionHandler
             return false;
         }
 
+        // Read the offset byte
         sbyte offset = (sbyte)Decoder.ReadByte();
         
-        // Calculate target address (instruction address + instruction length + offset)
-        ulong targetAddress = instruction.Address + 2UL + (uint)offset;
+        // The instruction.Address already includes the base address from the disassembler
+        ulong targetAddress = instruction.Address + 2UL + (ulong) offset;
         
-        // Create the relative offset operand
-        var targetOperand = OperandFactory.CreateRelativeOffsetOperand(targetAddress, 8);
+        // Create the relative offset operand with the absolute target address
+        var targetOperand = OperandFactory.CreateRelativeOffsetOperand((uint)targetAddress, 8);
         
         // Set the structured operands
         instruction.StructuredOperands = 

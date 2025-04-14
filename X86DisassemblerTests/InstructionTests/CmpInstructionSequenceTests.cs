@@ -215,7 +215,7 @@ public class CmpInstructionSequenceTests
         
         // The immediate value 0xB8 is sign-extended to 32-bit as a negative value (-72 decimal)
         // This is because 0xB8 with the high bit set is treated as a negative number in two's complement
-        Assert.Equal(-72L, (long)immediateOperand3.Value);
+        Assert.Equal(0xFFFFFFB8U, (long)immediateOperand3.Value);
         
         // Sixth instruction: MOV EDX, DWORD PTR [ESI+0x4]
         var movInstruction = instructions[5];

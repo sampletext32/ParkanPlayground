@@ -40,7 +40,7 @@ public class InstructionDecoderTests
         var immOperand = instruction.StructuredOperands[1];
         Assert.IsType<ImmediateOperand>(immOperand);
         var immediateOperand = (ImmediateOperand)immOperand;
-        Assert.Equal(0x01, immediateOperand.Value);
+        Assert.Equal(0x01U, immediateOperand.Value);
     }
     
     /// <summary>
@@ -147,7 +147,7 @@ public class InstructionDecoderTests
         var immOperand = instruction.StructuredOperands[1];
         Assert.IsType<ImmediateOperand>(immOperand);
         var immediateOperand = (ImmediateOperand)immOperand;
-        Assert.Equal(0x42, immediateOperand.Value);
+        Assert.Equal(0x42U, immediateOperand.Value);
         Assert.Equal(8, immediateOperand.Size); // Validate that it's an 8-bit immediate
     }
     
@@ -183,7 +183,7 @@ public class InstructionDecoderTests
         var immOperand = instruction.StructuredOperands[1];
         Assert.IsType<ImmediateOperand>(immOperand);
         var immediateOperand = (ImmediateOperand)immOperand;
-        Assert.Equal(0x12345678, immediateOperand.Value);
+        Assert.Equal(0x12345678U, immediateOperand.Value);
         Assert.Equal(32, immediateOperand.Size); // Validate that it's a 32-bit immediate
     }
     
@@ -219,7 +219,7 @@ public class InstructionDecoderTests
         var immOperand = instruction.StructuredOperands[1];
         Assert.IsType<ImmediateOperand>(immOperand);
         var immediateOperand = (ImmediateOperand)immOperand;
-        Assert.Equal(0x12345678, immediateOperand.Value);
+        Assert.Equal(0x12345678U, immediateOperand.Value);
         Assert.Equal(32, immediateOperand.Size); // Validate that it's a 32-bit immediate
     }
     
@@ -256,7 +256,7 @@ public class InstructionDecoderTests
         var immOperand = instruction1.StructuredOperands[1];
         Assert.IsType<ImmediateOperand>(immOperand);
         var immediateOperand = (ImmediateOperand)immOperand;
-        Assert.Equal(0x01, immediateOperand.Value);
+        Assert.Equal(0x01U, immediateOperand.Value);
         
         // Act - Second instruction
         var instruction2 = decoder.DecodeInstruction();

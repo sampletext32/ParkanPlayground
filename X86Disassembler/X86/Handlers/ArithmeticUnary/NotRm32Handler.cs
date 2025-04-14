@@ -59,7 +59,8 @@ public class NotRm32Handler : InstructionHandler
         var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
 
         // Verify this is a NOT instruction
-        if (reg != RegisterIndex.C)
+        // The reg field should be 2 (NOT), which maps to RegisterIndex.D in our enum
+        if (reg != RegisterIndex.D)
         {
             return false;
         }

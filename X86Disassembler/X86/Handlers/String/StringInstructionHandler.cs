@@ -10,43 +10,71 @@ public class StringInstructionHandler : InstructionHandler
     // Dictionary mapping opcodes to their instruction types and operand factories
     private static readonly Dictionary<byte, (InstructionType Type, Func<Operand[]> CreateOperands)> StringInstructions = new()
     {
-        { 0xA4, (InstructionType.MovsB, () => new Operand[] {
-            OperandFactory.CreateDirectMemoryOperand(0, 8, "edi"),
-            OperandFactory.CreateDirectMemoryOperand(0, 8, "esi")
-        }) },  // MOVSB
-        { 0xA5, (InstructionType.MovsD, () => new Operand[] {
-            OperandFactory.CreateDirectMemoryOperand(0, 32, "edi"),
-            OperandFactory.CreateDirectMemoryOperand(0, 32, "esi")
-        }) }, // MOVSD
-        { 0xAA, (InstructionType.StosB, () => new Operand[] {
-            OperandFactory.CreateDirectMemoryOperand(0, 8, "edi"),
+        { 0xA4, (InstructionType.MovsB, () =>
+        [
+            OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Di, 8, "es"),
+            OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Si, 8, "ds")
+        ]) },  // MOVSB
+        { 0xA5, (InstructionType.MovsD, () =>
+        [
+            OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Di, 32, "es"),
+            OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Si, 32, "ds")
+        ]) }, // MOVSD
+        { 0xAA, (InstructionType.StosB, () =>
+        [
+            OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Di, 8, "es"),
             OperandFactory.CreateRegisterOperand(RegisterIndex.A, 8)
-        }) },  // STOSB
-        { 0xAB, (InstructionType.StosD, () => new Operand[] {
-            OperandFactory.CreateDirectMemoryOperand(0, 32, "edi"),
+        ]) },  // STOSB
+        { 0xAB, (InstructionType.StosD, () =>
+        [
+            OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Di, 32, "es"),
             OperandFactory.CreateRegisterOperand(RegisterIndex.A, 32)
-        }) },  // STOSD
-        { 0xAC, (InstructionType.LodsB, () => new Operand[] {
+        ]) },  // STOSD
+        { 0xAC, (InstructionType.LodsB, () =>
+        [
             OperandFactory.CreateRegisterOperand(RegisterIndex.A, 8),
-            OperandFactory.CreateDirectMemoryOperand(0, 8, "esi")
-        }) },  // LODSB
-        { 0xAD, (InstructionType.LodsD, () => new Operand[] {
+            OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Si, 8, "ds")
+        ]) },  // LODSB
+        { 0xAD, (InstructionType.LodsD, () =>
+        [
             OperandFactory.CreateRegisterOperand(RegisterIndex.A, 32),
-            OperandFactory.CreateDirectMemoryOperand(0, 32, "esi")
-        }) },  // LODSD
-        { 0xAE, (InstructionType.ScasB, () => new Operand[] {
+            OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Si, 32, "ds")
+        ]) },  // LODSD
+        { 0xAE, (InstructionType.ScasB, () =>
+        [
             OperandFactory.CreateRegisterOperand(RegisterIndex.A, 8),
-            OperandFactory.CreateDirectMemoryOperand(0, 8, "edi")
-        }) },  // SCASB
-        { 0xAF, (InstructionType.ScasD, () => new Operand[] {
+            OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Di, 8, "es")
+        ]) },  // SCASB
+        { 0xAF, (InstructionType.ScasD, () =>
+        [
             OperandFactory.CreateRegisterOperand(RegisterIndex.A, 32),
-            OperandFactory.CreateDirectMemoryOperand(0, 32, "edi")
-        }) }   // SCASD
+            OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Di, 32, "es")
+        ]) }   // SCASD
     };
     
     // REP/REPNE prefix opcodes
     private const byte REP_PREFIX = 0xF3;
     private const byte REPNE_PREFIX = 0xF2;
+
+    // Dictionary mapping base instruction types to their REP-prefixed versions
+    private static readonly Dictionary<InstructionType, InstructionType> RepPrefixMap = new()
+    {
+        { InstructionType.MovsB, InstructionType.RepMovsB },
+        { InstructionType.MovsD, InstructionType.RepMovsD },
+        { InstructionType.StosB, InstructionType.RepStosB },
+        { InstructionType.StosD, InstructionType.RepStosD },
+        { InstructionType.LodsB, InstructionType.RepLodsB },
+        { InstructionType.LodsD, InstructionType.RepLodsD },
+        { InstructionType.ScasB, InstructionType.RepScasB },
+        { InstructionType.ScasD, InstructionType.RepScasD }
+    };
+
+    // Dictionary mapping base instruction types to their REPNE-prefixed versions
+    private static readonly Dictionary<InstructionType, InstructionType> RepnePrefixMap = new()
+    {
+        { InstructionType.ScasB, InstructionType.RepneScasB },
+        { InstructionType.ScasD, InstructionType.RepneScasD }
+    };
 
     /// <summary>
     /// Initializes a new instance of the StringInstructionHandler class
@@ -76,11 +104,13 @@ public class StringInstructionHandler : InstructionHandler
             return false;
         }
         
+        // Check if we can read the next byte
         if (!Decoder.CanReadByte())
         {
             return false;
         }
         
+        // Check if the next byte is a string instruction
         byte nextByte = Decoder.PeakByte();
         return StringInstructions.ContainsKey(nextByte);
     }
@@ -118,8 +148,30 @@ public class StringInstructionHandler : InstructionHandler
         // Get the instruction type and operands for the string instruction
         if (StringInstructions.TryGetValue(stringOpcode, out var instructionInfo))
         {
-            // Set the instruction type
-            instruction.Type = instructionInfo.Type;
+            // Set the instruction type based on whether there's a REP/REPNE prefix
+            if (hasRepPrefix)
+            {
+                // Determine the appropriate prefixed instruction type based on the prefix
+                if (opcode == REP_PREFIX)
+                {
+                    // Use the REP prefix map to get the prefixed instruction type
+                    instruction.Type = RepPrefixMap.TryGetValue(instructionInfo.Type, out var repType) 
+                        ? repType 
+                        : instructionInfo.Type;
+                }
+                else // REPNE prefix
+                {
+                    // Use the REPNE prefix map to get the prefixed instruction type
+                    instruction.Type = RepnePrefixMap.TryGetValue(instructionInfo.Type, out var repneType) 
+                        ? repneType 
+                        : instructionInfo.Type;
+                }
+            }
+            else
+            {
+                // No prefix, use the original instruction type
+                instruction.Type = instructionInfo.Type;
+            }
 
             // Create and set the structured operands
             instruction.StructuredOperands = instructionInfo.CreateOperands().ToList();

@@ -61,13 +61,13 @@ public class AdcImmToRm32SignExtendedHandler : InstructionHandler
         }
 
         // Read the immediate value (sign-extended from 8 to 32 bits)
-        int imm32 = (sbyte) Decoder.ReadByte();
+        sbyte imm32 = (sbyte) Decoder.ReadByte();
 
         // Set the structured operands
         instruction.StructuredOperands = 
         [
             destOperand,
-            OperandFactory.CreateImmediateOperand(imm32, 32)
+            OperandFactory.CreateImmediateOperand((uint)imm32)
         ];
 
         return true;

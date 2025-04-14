@@ -50,8 +50,8 @@ public class ScaledIndexMemoryOperand : MemoryOperand
     /// </summary>
     public override string ToString()
     {
-        string baseRegPart = BaseRegister != null ? $"{BaseRegister}+" : "";
-        string indexPart = $"{IndexRegister}*{Scale}";
+        string baseRegPart = BaseRegister != null ? $"{ModRMDecoder.GetRegisterName(BaseRegister.Value, 32)}+" : "";
+        string indexPart = $"{ModRMDecoder.GetRegisterName(IndexRegister, 32)}*{Scale}";
         string dispPart = "";
         
         if (Displacement != 0)
@@ -60,6 +60,6 @@ public class ScaledIndexMemoryOperand : MemoryOperand
             dispPart = $"{sign}0x{Math.Abs(Displacement):X}";
         }
         
-        return $"{GetSegmentPrefix()}[{baseRegPart}{indexPart}{dispPart}]";
+        return $"{GetSegmentPrefix()}{GetSizePrefix()}[{baseRegPart}{indexPart}{dispPart}]";
     }
 }

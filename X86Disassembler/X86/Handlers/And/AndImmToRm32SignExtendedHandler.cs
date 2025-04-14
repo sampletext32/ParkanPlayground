@@ -65,10 +65,10 @@ public class AndImmToRm32SignExtendedHandler : InstructionHandler
         }
 
         // Read the immediate value as a signed byte and automatically sign-extend it to int
-        int imm = (sbyte)Decoder.ReadByte();
+        sbyte imm = (sbyte)Decoder.ReadByte();
 
         // Create the source immediate operand with the sign-extended value
-        var sourceOperand = OperandFactory.CreateImmediateOperand(imm, 32);
+        var sourceOperand = OperandFactory.CreateImmediateOperand((uint)imm);
         
         // Set the structured operands
         instruction.StructuredOperands = 

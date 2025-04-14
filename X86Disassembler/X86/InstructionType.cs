@@ -6,8 +6,7 @@ namespace X86Disassembler.X86;
 public enum InstructionType
 {
     // Data movement
-    Move,
-    Mov = Move,  // Alias for Move to match the mnemonic used in handlers
+    Mov,
     Push,
     Pop,
     Xchg,
@@ -76,35 +75,38 @@ public enum InstructionType
     Iret,       // Interrupt return
     
     // String operations
-    MovsB,
-    MovsW,
-    MovsD,
-    Movs = MovsD, // Alias for MovsD
-    CmpsB,
-    CmpsW,
-    CmpsD,
-    StosB,
-    StosW,
-    StosD,
-    Stos = StosB, // Alias for StosB
+    MovsB,      // Move string byte
+    MovsW,      // Move string word
+    MovsD,      // Move string dword
+    // Movs = MovsD, // Alias for MovsD - removed alias to avoid switch expression issues
+    CmpsB,      // Compare string byte
+    CmpsW,      // Compare string word
+    CmpsD,      // Compare string dword
+    StosB,      // Store string byte
+    StosW,      // Store string word
+    StosD,      // Store string dword
+    // Stos = StosB, // Alias for StosB - removed alias to avoid switch expression issues
     ScasB,      // Scan string byte
     ScasW,      // Scan string word
     ScasD,      // Scan string dword
-    Scas = ScasB, // Alias for ScasB
+    // Scas = ScasB, // Alias for ScasB - removed alias to avoid switch expression issues
     LodsB,      // Load string byte
     LodsW,      // Load string word
     LodsD,      // Load string dword
-    Lods = LodsD, // Alias for LodsD
+    // Lods = LodsD, // Alias for LodsD - removed alias to avoid switch expression issues
     
     // REP prefixed instructions
     Rep,        // REP prefix
     RepE,       // REPE/REPZ prefix
     RepNE,      // REPNE/REPNZ prefix
-    RepneScas = RepNE, // Alias for RepNE
+    // RepneScas = RepNE, // Alias for RepNE - removed alias to avoid switch expression issues
     RepMovsB,   // REP MOVSB
     RepMovsW,   // REP MOVSW
     RepMovsD,   // REP MOVSD
-    RepMovs = RepMovsD, // Alias for RepMovsD
+    // RepMovs = RepMovsD, // Alias for RepMovsD - removed alias to avoid switch expression issues
+    RepStosB,   // REP STOSB
+    RepStosW,   // REP STOSW
+    RepStosD,   // REP STOSD
     RepeCmpsB,  // REPE CMPSB
     RepeCmpsW,  // REPE CMPSW
     RepeCmpsD,  // REPE CMPSD
@@ -114,6 +116,9 @@ public enum InstructionType
     RepScasB,   // REP SCASB
     RepScasW,   // REP SCASW
     RepScasD,   // REP SCASD
+    RepneScasB, // REPNE SCASB
+    RepneScasW, // REPNE SCASW
+    RepneScasD, // REPNE SCASD
     RepLodsB,   // REP LODSB
     RepLodsW,   // REP LODSW
     RepLodsD,   // REP LODSD
@@ -125,25 +130,76 @@ public enum InstructionType
     Fadd,       // Add floating point
     Fiadd,      // Add integer to floating point
     Fild,       // Load integer to floating point
+    Fist,       // Store integer
+    Fistp,      // Store integer and pop
     Fsub,       // Subtract floating point
+    Fisub,      // Subtract integer from floating point
     Fsubr,      // Subtract floating point reversed
+    Fisubr,     // Subtract floating point from integer (reversed)
     Fmul,       // Multiply floating point
+    Fimul,      // Multiply integer with floating point
     Fdiv,       // Divide floating point
+    Fidiv,      // Divide integer by floating point
     Fdivr,      // Divide floating point reversed
+    Fidivr,     // Divide floating point by integer (reversed)
     Fcom,       // Compare floating point
+    Ficom,      // Compare integer with floating point
     Fcomp,      // Compare floating point and pop
+    Ficomp,     // Compare integer with floating point and pop
     Fcompp,     // Compare floating point and pop twice
     Fcomip,     // Compare floating point and pop, set EFLAGS
+    Fcomi,      // Compare floating point, set EFLAGS
+    Fucom,      // Unordered compare floating point
+    Fucomp,     // Unordered compare floating point and pop
     Fucomip,    // Unordered compare floating point and pop, set EFLAGS
+    Fucomi,     // Unordered compare floating point, set EFLAGS
     Ffreep,     // Free floating point register and pop
+    Ffree,      // Free floating point register
+    Fisttp,     // Store integer with truncation and pop
+    Fbld,       // Load BCD
+    Fbstp,      // Store BCD and pop
     Fnstsw,     // Store FPU status word
     Fnstcw,     // Store FPU control word
     Fldcw,      // Load FPU control word
+    Fclex,      // Clear floating-point exceptions
+    Finit,      // Initialize floating-point unit
+    Fldenv,     // Load FPU environment
+    Fnstenv,    // Store FPU environment
+    Frstor,     // Restore FPU state
+    Fnsave,     // Save FPU state
     Fxch,       // Exchange floating point registers
     Fchs,       // Change sign of floating point value
     Fabs,       // Absolute value of floating point
     Ftst,       // Test floating point
     Fxam,       // Examine floating point
+    F2xm1,      // 2^x - 1
+    Fyl2x,      // y * log2(x)
+    Fptan,      // Partial tangent
+    Fpatan,     // Partial arctangent
+    Fxtract,    // Extract exponent and significand
+    Fprem1,     // Partial remainder (IEEE)
+    Fdecstp,    // Decrement stack pointer
+    Fincstp,    // Increment stack pointer
+    Fprem,      // Partial remainder
+    Fyl2xp1,    // y * log2(x+1)
+    Fsqrt,      // Square root
+    Fsincos,    // Sine and cosine
+    Frndint,    // Round to integer
+    Fscale,     // Scale by power of 2
+    Fsin,       // Sine
+    Fcos,       // Cosine
+    Fnop,       // No operation
+    Fwait,      // Wait for FPU
+    
+    // Floating point conditional moves
+    Fcmovb,     // FP conditional move if below
+    Fcmove,     // FP conditional move if equal
+    Fcmovbe,    // FP conditional move if below or equal
+    Fcmovu,     // FP conditional move if unordered
+    Fcmovnb,    // FP conditional move if not below
+    Fcmovne,    // FP conditional move if not equal
+    Fcmovnbe,   // FP conditional move if not below or equal
+    Fcmovnu,    // FP conditional move if not unordered
     
     // System instructions
     Hlt,        // Halt

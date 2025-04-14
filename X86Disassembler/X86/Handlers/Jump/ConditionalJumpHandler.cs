@@ -69,7 +69,7 @@ public class ConditionalJumpHandler : InstructionHandler
         int targetAddress = position + 1 + offset;
         
         // Create the target address operand
-        var targetOperand = OperandFactory.CreateRelativeOffsetOperand((ulong)targetAddress, 8);
+        var targetOperand = OperandFactory.CreateRelativeOffsetOperand((uint)targetAddress, 8);
         
         // Set the structured operands
         instruction.StructuredOperands = 

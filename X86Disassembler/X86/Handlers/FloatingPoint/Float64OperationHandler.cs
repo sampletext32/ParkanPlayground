@@ -66,8 +66,8 @@ public class Float64OperationHandler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM(true); // true for 64-bit operand
-        
+        var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM64(); // Use the 64-bit version
+
         // Set the instruction type based on the reg field
         instruction.Type = InstructionTypes[(int)reg];
         

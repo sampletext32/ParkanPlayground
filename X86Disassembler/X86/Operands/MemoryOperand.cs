@@ -27,6 +27,31 @@ public abstract class MemoryOperand : Operand
     /// <returns>The segment prefix string</returns>
     protected string GetSegmentPrefix()
     {
-        return SegmentOverride != null ? $"{SegmentOverride}:" : "";
+        // Format changed to match expected test output: "dword ptr es:[ebp+0x10]" instead of "es:dword ptr [ebp+0x10]"
+        return "";
+    }
+    
+    /// <summary>
+    /// Gets the size prefix string for display (e.g., "byte ptr", "word ptr", "dword ptr")
+    /// </summary>
+    /// <returns>The size prefix string</returns>
+    protected string GetSizePrefix()
+    {
+        string sizePrefix = Size switch
+        {
+            8 => "byte ptr ",
+            16 => "word ptr ",
+            32 => "dword ptr ",
+            64 => "qword ptr ",
+            _ => ""
+        };
+        
+        // If we have a segment override, include it in the format "dword ptr es:[reg]"
+        if (SegmentOverride != null)
+        {
+            return $"{sizePrefix}{SegmentOverride}:";
+        }
+        
+        return sizePrefix;
     }
 }

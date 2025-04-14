@@ -65,6 +65,24 @@ public class ModRMDecoder
     }
 
     /// <summary>
+    /// Maps the register index from the ModR/M byte to the RegisterIndex enum value for 8-bit high registers
+    /// </summary>
+    /// <param name="modRMRegIndex">The register index from the ModR/M byte (0-7)</param>
+    /// <returns>The corresponding RegisterIndex enum value for 8-bit high registers</returns>
+    private RegisterIndex MapModRMToHighRegister8Index(int modRMRegIndex)
+    {
+        // For 8-bit high registers (AH, CH, DH, BH), the mapping is different
+        return modRMRegIndex switch
+        {
+            4 => RegisterIndex.A,  // AH
+            5 => RegisterIndex.C,  // CH
+            6 => RegisterIndex.D,  // DH
+            7 => RegisterIndex.B,  // BH
+            _ => MapModRMToRegisterIndex(modRMRegIndex) // Fall back to normal mapping for other indices
+        };
+    }
+
+    /// <summary>
     /// Decodes a ModR/M byte to get the operand
     /// </summary>
     /// <param name="mod">The mod field (2 bits)</param>
@@ -79,7 +97,7 @@ public class ModRMDecoder
         {
             case 0: // [reg] or disp32
                 // Special case: [EBP] is encoded as disp32 with no base register
-                if (rmIndex == RegisterIndex.Di) // disp32 (was EBP/BP)
+                if (rmIndex == RegisterIndex.Bp) // disp32 (was EBP/BP)
                 {
                     if (_decoder.CanReadUInt())
                     {
@@ -234,15 +252,43 @@ public class ModRMDecoder
     }
 
     /// <summary>
-    /// Reads and decodes a ModR/M byte
+    /// Reads and decodes a ModR/M byte for standard 32-bit operands
+    /// </summary>
+    /// <returns>A tuple containing the mod, reg, rm fields and the decoded operand</returns>
+    public (byte mod, RegisterIndex reg, RegisterIndex rm, Operand operand) ReadModRM()
+    {
+        return ReadModRMInternal(false, false);
+    }
+
+    /// <summary>
+    /// Reads and decodes a ModR/M byte for 64-bit operands
+    /// </summary>
+    /// <returns>A tuple containing the mod, reg, rm fields and the decoded operand</returns>
+    public (byte mod, RegisterIndex reg, RegisterIndex rm, Operand operand) ReadModRM64()
+    {
+        return ReadModRMInternal(true, false);
+    }
+
+    /// <summary>
+    /// Reads and decodes a ModR/M byte for 8-bit operands
+    /// </summary>
+    /// <returns>A tuple containing the mod, reg, rm fields and the decoded operand</returns>
+    public (byte mod, RegisterIndex reg, RegisterIndex rm, Operand operand) ReadModRM8()
+    {
+        return ReadModRMInternal(false, true);
+    }
+
+    /// <summary>
+    /// Internal implementation for reading and decoding a ModR/M byte
     /// </summary>
     /// <param name="is64Bit">True if the operand is 64-bit</param>
+    /// <param name="is8Bit">True if the operand is 8-bit</param>
     /// <returns>A tuple containing the mod, reg, rm fields and the decoded operand</returns>
-    public (byte mod, RegisterIndex reg, RegisterIndex rm, Operand operand) ReadModRM(bool is64Bit = false)
+    private (byte mod, RegisterIndex reg, RegisterIndex rm, Operand operand) ReadModRMInternal(bool is64Bit, bool is8Bit)
     {
         if (!_decoder.CanReadByte())
         {
-            return (0, RegisterIndex.A, RegisterIndex.A, OperandFactory.CreateRegisterOperand(RegisterIndex.A, is64Bit ? 64 : 32));
+            return (0, RegisterIndex.A, RegisterIndex.A, OperandFactory.CreateRegisterOperand(RegisterIndex.A, is64Bit ? 64 : (is8Bit ? 8 : 32)));
         }
 
         byte modRM = _decoder.ReadByte();
@@ -252,11 +298,22 @@ public class ModRMDecoder
         byte regIndex = (byte)((modRM & REG_MASK) >> 3);
         byte rmIndex = (byte)(modRM & RM_MASK);
         
+        // For 8-bit registers with mod=3, we need to check if they are high registers
+        bool isRmHighRegister = is8Bit && mod == 3 && rmIndex >= 4;
+        bool isRegHighRegister = is8Bit && regIndex >= 4;
+        
         // Map the ModR/M register indices to RegisterIndex enum values
-        RegisterIndex reg = MapModRMToRegisterIndex(regIndex);
-        RegisterIndex rm = MapModRMToRegisterIndex(rmIndex);
+        RegisterIndex reg = isRegHighRegister ? MapModRMToHighRegister8Index(regIndex) : MapModRMToRegisterIndex(regIndex);
+        RegisterIndex rm = isRmHighRegister ? MapModRMToHighRegister8Index(rmIndex) : MapModRMToRegisterIndex(rmIndex);
 
+        // Create the operand based on the mod and rm fields
         Operand operand = DecodeModRM(mod, rm, is64Bit);
+        
+        // For 8-bit operands, set the size to 8
+        if (is8Bit)
+        {
+            operand.Size = 8;
+        }
 
         return (mod, reg, rm, operand);
     }
@@ -290,11 +347,24 @@ public class ModRMDecoder
                 if (_decoder.CanReadUInt())
                 {
                     uint disp32 = _decoder.ReadUInt32();
-                    return OperandFactory.CreateDirectMemoryOperand(disp32, operandSize);
+                    int scaleValue = 1 << scale; // 1, 2, 4, or 8
+                    
+                    // Create a scaled index memory operand with displacement but no base register
+                    return OperandFactory.CreateScaledIndexMemoryOperand(
+                        index,
+                        scaleValue,
+                        null,
+                        (int)disp32,
+                        operandSize);
                 }
 
                 // Fallback for incomplete data
-                return OperandFactory.CreateDirectMemoryOperand(0, operandSize);
+                return OperandFactory.CreateScaledIndexMemoryOperand(
+                    index,
+                    1 << scale,
+                    null,
+                    0,
+                    operandSize);
             }
 
             // Base register only with displacement
@@ -304,6 +374,32 @@ public class ModRMDecoder
             }
 
             return OperandFactory.CreateDisplacementMemoryOperand(@base, (int)displacement, operandSize);
+        }
+
+        // Special case: EBP/BP (5) in base field with no displacement means disp32 only
+        if (@base == RegisterIndex.Bp && displacement == 0)
+        {
+            if (_decoder.CanReadUInt())
+            {
+                uint disp32 = _decoder.ReadUInt32();
+                int scaleValue = 1 << scale; // 1, 2, 4, or 8
+                
+                // Create a scaled index memory operand with displacement but no base register
+                return OperandFactory.CreateScaledIndexMemoryOperand(
+                    index,
+                    scaleValue,
+                    null,
+                    (int)disp32,
+                    operandSize);
+            }
+
+            // Fallback for incomplete data
+            return OperandFactory.CreateScaledIndexMemoryOperand(
+                index,
+                1 << scale,
+                null,
+                0,
+                operandSize);
         }
 
         // Normal case with base and index registers

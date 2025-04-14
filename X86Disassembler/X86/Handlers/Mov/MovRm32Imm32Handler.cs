@@ -37,14 +37,8 @@ public class MovRm32Imm32Handler : InstructionHandler
         // Set the instruction type
         instruction.Type = InstructionType.Mov;
         
-        // Check if we have enough bytes for the ModR/M byte
-        if (!Decoder.CanReadByte())
-        {
-            return false;
-        }
-
-        // Use ModRMDecoder to decode the ModR/M byte
-        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM(false);
+        // Read the ModR/M byte
+        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
         
         // MOV r/m32, imm32 only uses reg=0
         if (reg != 0)

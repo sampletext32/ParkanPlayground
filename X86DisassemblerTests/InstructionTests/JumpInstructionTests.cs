@@ -186,7 +186,7 @@ public class JumpInstructionTests
         
         // Check the target address
         var relativeOffsetOperand = (RelativeOffsetOperand)operand;
-        Assert.Equal(0xFFFFFFFDUL, relativeOffsetOperand.TargetAddress); // 0 + 2 - 5 = 0xFFFFFFFD (sign-extended)
+        Assert.Equal(0xFFFFFFFDU, relativeOffsetOperand.TargetAddress); // 0 + 2 - 5 = 0xFFFFFFFD (sign-extended)
     }
     
     /// <summary>
@@ -278,6 +278,6 @@ public class JumpInstructionTests
         immediateOperand = (ImmediateOperand)secondOperand;
         Assert.Equal(RegisterIndex.Bp, registerOperand.Register);
         Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EBP)
-        Assert.Equal(0xFFFFFFB8L, immediateOperand.Value);
+        Assert.Equal(0xFFFFFFB8U, immediateOperand.Value);
     }
 }

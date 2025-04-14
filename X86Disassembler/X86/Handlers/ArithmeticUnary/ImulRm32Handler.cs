@@ -53,9 +53,19 @@ public class ImulRm32Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
+        // For IMUL r/m32 (0xF7 /5):
+        // - The r/m field with mod specifies the operand (register or memory)
         var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
         
+        // Verify this is an IMUL instruction
+        // The reg field should be 5 (IMUL), which maps to RegisterIndex.Bp in our enum
+        if (reg != RegisterIndex.Bp)
+        {
+            return false;
+        }
+        
         // Set the structured operands
+        // IMUL has only one operand
         instruction.StructuredOperands = 
         [
             operand

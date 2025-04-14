@@ -56,6 +56,13 @@ public class NegRm32Handler : InstructionHandler
         // For NEG r/m32 (0xF7 /3):
         // - The r/m field with mod specifies the operand (register or memory)
         var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
+        
+        // Verify this is a NEG instruction
+        // The reg field should be 3 (NEG), which maps to RegisterIndex.B in our enum
+        if (reg != RegisterIndex.B)
+        {
+            return false;
+        }
 
         // Set the structured operands
         // NEG has only one operand

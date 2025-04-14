@@ -56,6 +56,13 @@ public class MulRm32Handler : InstructionHandler
         // For MUL r/m32 (0xF7 /4):
         // - The r/m field with mod specifies the operand (register or memory)
         var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
+        
+        // Verify this is a MUL instruction
+        // The reg field should be 4 (MUL), which maps to RegisterIndex.Sp in our enum
+        if (reg != RegisterIndex.Sp)
+        {
+            return false;
+        }
 
         // Set the structured operands
         // MUL has only one operand

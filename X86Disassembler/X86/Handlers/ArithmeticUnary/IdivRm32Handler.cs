@@ -56,6 +56,13 @@ public class IdivRm32Handler : InstructionHandler
         // For IDIV r/m32 (0xF7 /7):
         // - The r/m field with mod specifies the operand (register or memory)
         var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
+        
+        // Verify this is an IDIV instruction
+        // The reg field should be 7 (IDIV)
+        if (reg != RegisterIndex.Di)
+        {
+            return false;
+        }
 
         // Set the structured operands
         // IDIV has only one operand

@@ -43,12 +43,11 @@ public class PushImm8Handler : InstructionHandler
         }
 
         // Read the immediate value
-        byte imm8 = Decoder.ReadByte();
+        sbyte imm8 = (sbyte)Decoder.ReadByte();
 
-        // Create the immediate operand
-        // Sign-extend the 8-bit value to 32-bit for proper stack alignment
-        var immOperand = OperandFactory.CreateImmediateOperand((sbyte)imm8);
-
+        // Create an 8-bit immediate operand to ensure it's displayed without leading zeros
+        var immOperand = new ImmediateOperand(imm8, 8);
+        
         // Set the structured operands
         instruction.StructuredOperands = 
         [

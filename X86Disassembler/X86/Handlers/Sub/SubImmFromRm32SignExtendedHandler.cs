@@ -66,7 +66,7 @@ public class SubImmFromRm32SignExtendedHandler : InstructionHandler
         int imm32 = (sbyte) Decoder.ReadByte();
         
         // Create the source immediate operand with the sign-extended value
-        var sourceOperand = OperandFactory.CreateImmediateOperand(imm32, 32);
+        var sourceOperand = OperandFactory.CreateImmediateOperand((uint)imm32, 32);
         
         // Set the structured operands
         instruction.StructuredOperands = 
