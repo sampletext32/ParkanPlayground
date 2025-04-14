@@ -1,4 +1,5 @@
 using X86Disassembler.X86;
+using X86Disassembler.X86.Operands;
 
 namespace X86DisassemblerTests.InstructionTests;
 
@@ -23,8 +24,10 @@ public class XchgInstructionTests
         
         // Assert
         Assert.NotNull(instruction);
-        Assert.Equal("nop", instruction.Mnemonic);
-        Assert.Equal("", instruction.Operands);
+        Assert.Equal(InstructionType.Nop, instruction.Type);
+        
+        // Check that we have no operands for NOP
+        Assert.Empty(instruction.StructuredOperands);
     }
     
     /// <summary>
@@ -43,8 +46,24 @@ public class XchgInstructionTests
         
         // Assert
         Assert.NotNull(instruction);
-        Assert.Equal("xchg", instruction.Mnemonic);
-        Assert.Equal("eax, ecx", instruction.Operands);
+        Assert.Equal(InstructionType.Xchg, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand1 = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand1.Register);
+        Assert.Equal(32, registerOperand1.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (ECX)
+        var ecxOperand = instruction.StructuredOperands[1];
+        Assert.IsType<RegisterOperand>(ecxOperand);
+        var registerOperand2 = (RegisterOperand)ecxOperand;
+        Assert.Equal(RegisterIndex.C, registerOperand2.Register);
+        Assert.Equal(32, registerOperand2.Size); // Validate that it's a 32-bit register (ECX)
     }
     
     /// <summary>
@@ -63,8 +82,24 @@ public class XchgInstructionTests
         
         // Assert
         Assert.NotNull(instruction);
-        Assert.Equal("xchg", instruction.Mnemonic);
-        Assert.Equal("eax, edx", instruction.Operands);
+        Assert.Equal(InstructionType.Xchg, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand1 = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand1.Register);
+        Assert.Equal(32, registerOperand1.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (EDX)
+        var edxOperand = instruction.StructuredOperands[1];
+        Assert.IsType<RegisterOperand>(edxOperand);
+        var registerOperand2 = (RegisterOperand)edxOperand;
+        Assert.Equal(RegisterIndex.D, registerOperand2.Register);
+        Assert.Equal(32, registerOperand2.Size); // Validate that it's a 32-bit register (EDX)
     }
     
     /// <summary>
@@ -83,8 +118,24 @@ public class XchgInstructionTests
         
         // Assert
         Assert.NotNull(instruction);
-        Assert.Equal("xchg", instruction.Mnemonic);
-        Assert.Equal("eax, ebx", instruction.Operands);
+        Assert.Equal(InstructionType.Xchg, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand1 = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand1.Register);
+        Assert.Equal(32, registerOperand1.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (EBX)
+        var ebxOperand = instruction.StructuredOperands[1];
+        Assert.IsType<RegisterOperand>(ebxOperand);
+        var registerOperand2 = (RegisterOperand)ebxOperand;
+        Assert.Equal(RegisterIndex.B, registerOperand2.Register);
+        Assert.Equal(32, registerOperand2.Size); // Validate that it's a 32-bit register (EBX)
     }
     
     /// <summary>
@@ -103,8 +154,24 @@ public class XchgInstructionTests
         
         // Assert
         Assert.NotNull(instruction);
-        Assert.Equal("xchg", instruction.Mnemonic);
-        Assert.Equal("eax, esp", instruction.Operands);
+        Assert.Equal(InstructionType.Xchg, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand1 = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand1.Register);
+        Assert.Equal(32, registerOperand1.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (ESP)
+        var espOperand = instruction.StructuredOperands[1];
+        Assert.IsType<RegisterOperand>(espOperand);
+        var registerOperand2 = (RegisterOperand)espOperand;
+        Assert.Equal(RegisterIndex.Sp, registerOperand2.Register);
+        Assert.Equal(32, registerOperand2.Size); // Validate that it's a 32-bit register (ESP)
     }
     
     /// <summary>
@@ -123,8 +190,24 @@ public class XchgInstructionTests
         
         // Assert
         Assert.NotNull(instruction);
-        Assert.Equal("xchg", instruction.Mnemonic);
-        Assert.Equal("eax, ebp", instruction.Operands);
+        Assert.Equal(InstructionType.Xchg, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand1 = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand1.Register);
+        Assert.Equal(32, registerOperand1.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (EBP)
+        var ebpOperand = instruction.StructuredOperands[1];
+        Assert.IsType<RegisterOperand>(ebpOperand);
+        var registerOperand2 = (RegisterOperand)ebpOperand;
+        Assert.Equal(RegisterIndex.Bp, registerOperand2.Register);
+        Assert.Equal(32, registerOperand2.Size); // Validate that it's a 32-bit register (EBP)
     }
     
     /// <summary>
@@ -143,8 +226,24 @@ public class XchgInstructionTests
         
         // Assert
         Assert.NotNull(instruction);
-        Assert.Equal("xchg", instruction.Mnemonic);
-        Assert.Equal("eax, esi", instruction.Operands);
+        Assert.Equal(InstructionType.Xchg, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand1 = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand1.Register);
+        Assert.Equal(32, registerOperand1.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (ESI)
+        var esiOperand = instruction.StructuredOperands[1];
+        Assert.IsType<RegisterOperand>(esiOperand);
+        var registerOperand2 = (RegisterOperand)esiOperand;
+        Assert.Equal(RegisterIndex.Si, registerOperand2.Register);
+        Assert.Equal(32, registerOperand2.Size); // Validate that it's a 32-bit register (ESI)
     }
     
     /// <summary>
@@ -163,8 +262,24 @@ public class XchgInstructionTests
         
         // Assert
         Assert.NotNull(instruction);
-        Assert.Equal("xchg", instruction.Mnemonic);
-        Assert.Equal("eax, edi", instruction.Operands);
+        Assert.Equal(InstructionType.Xchg, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand1 = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand1.Register);
+        Assert.Equal(32, registerOperand1.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (EDI)
+        var ediOperand = instruction.StructuredOperands[1];
+        Assert.IsType<RegisterOperand>(ediOperand);
+        var registerOperand2 = (RegisterOperand)ediOperand;
+        Assert.Equal(RegisterIndex.Di, registerOperand2.Register);
+        Assert.Equal(32, registerOperand2.Size); // Validate that it's a 32-bit register (EDI)
     }
     
     /// <summary>
@@ -187,12 +302,28 @@ public class XchgInstructionTests
         // First three instructions should be NOPs
         for (int i = 0; i < 3; i++)
         {
-            Assert.Equal("nop", instructions[i].Mnemonic);
-            Assert.Equal("", instructions[i].Operands);
+            Assert.Equal(InstructionType.Nop, instructions[i].Type);
+            Assert.Empty(instructions[i].StructuredOperands);
         }
         
         // Last instruction should be XCHG EAX, ECX
-        Assert.Equal("xchg", instructions[3].Mnemonic);
-        Assert.Equal("eax, ecx", instructions[3].Operands);
+        Assert.Equal(InstructionType.Xchg, instructions[3].Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instructions[3].StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instructions[3].StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand1 = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand1.Register);
+        Assert.Equal(32, registerOperand1.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (ECX)
+        var ecxOperand = instructions[3].StructuredOperands[1];
+        Assert.IsType<RegisterOperand>(ecxOperand);
+        var registerOperand2 = (RegisterOperand)ecxOperand;
+        Assert.Equal(RegisterIndex.C, registerOperand2.Register);
+        Assert.Equal(32, registerOperand2.Size); // Validate that it's a 32-bit register (ECX)
     }
 }

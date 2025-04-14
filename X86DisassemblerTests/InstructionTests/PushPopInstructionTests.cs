@@ -1,4 +1,5 @@
 using X86Disassembler.X86;
+using X86Disassembler.X86.Operands;
 
 namespace X86DisassemblerTests.InstructionTests;
 
@@ -16,15 +17,26 @@ public class PushPopInstructionTests
         // Arrange
         // PUSH EAX (50) - Push EAX onto the stack
         byte[] codeBuffer = new byte[] { 0x50 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("push", instruction.Mnemonic);
-        Assert.Equal("eax", instruction.Operands);
+        Assert.Equal(InstructionType.Push, instruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(instruction.StructuredOperands);
+        
+        // Check the operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EAX)
     }
     
     /// <summary>
@@ -36,15 +48,26 @@ public class PushPopInstructionTests
         // Arrange
         // PUSH EBP (55) - Push EBP onto the stack
         byte[] codeBuffer = new byte[] { 0x55 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("push", instruction.Mnemonic);
-        Assert.Equal("ebp", instruction.Operands);
+        Assert.Equal(InstructionType.Push, instruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(instruction.StructuredOperands);
+        
+        // Check the operand (EBP)
+        var ebpOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ebpOperand);
+        var registerOperand = (RegisterOperand)ebpOperand;
+        Assert.Equal(RegisterIndex.Bp, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EBP)
     }
     
     /// <summary>
@@ -54,17 +77,27 @@ public class PushPopInstructionTests
     public void PushImm8Handler_DecodesPushImm8_Correctly()
     {
         // Arrange
-        // PUSH 0x42 (6A 42) - Push 8-bit immediate value onto the stack
+        // PUSH 0x42 (6A 42) - Push immediate byte value 0x42 onto the stack
         byte[] codeBuffer = new byte[] { 0x6A, 0x42 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("push", instruction.Mnemonic);
-        Assert.Equal("0x42", instruction.Operands);
+        Assert.Equal(InstructionType.Push, instruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(instruction.StructuredOperands);
+        
+        // Check the operand (immediate value)
+        var immOperand = instruction.StructuredOperands[0];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x42U, immediateOperand.Value);
     }
     
     /// <summary>
@@ -74,17 +107,27 @@ public class PushPopInstructionTests
     public void PushImm32Handler_DecodesPushImm32_Correctly()
     {
         // Arrange
-        // PUSH 0x12345678 (68 78 56 34 12) - Push 32-bit immediate value onto the stack
+        // PUSH 0x12345678 (68 78 56 34 12) - Push immediate dword value 0x12345678 onto the stack
         byte[] codeBuffer = new byte[] { 0x68, 0x78, 0x56, 0x34, 0x12 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("push", instruction.Mnemonic);
-        Assert.Equal("0x12345678", instruction.Operands);
+        Assert.Equal(InstructionType.Push, instruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(instruction.StructuredOperands);
+        
+        // Check the operand (immediate value)
+        var immOperand = instruction.StructuredOperands[0];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x12345678U, immediateOperand.Value);
     }
     
     /// <summary>
@@ -94,17 +137,28 @@ public class PushPopInstructionTests
     public void PopRegHandler_DecodesPopReg_Correctly()
     {
         // Arrange
-        // POP EAX (58) - Pop value from stack into EAX
+        // POP EAX (58) - Pop a value from the stack into EAX
         byte[] codeBuffer = new byte[] { 0x58 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("pop", instruction.Mnemonic);
-        Assert.Equal("eax", instruction.Operands);
+        Assert.Equal(InstructionType.Pop, instruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(instruction.StructuredOperands);
+        
+        // Check the operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EAX)
     }
     
     /// <summary>
@@ -114,17 +168,28 @@ public class PushPopInstructionTests
     public void PopRegHandler_DecodesPopEbp_Correctly()
     {
         // Arrange
-        // POP EBP (5D) - Pop value from stack into EBP
+        // POP EBP (5D) - Pop a value from the stack into EBP
         byte[] codeBuffer = new byte[] { 0x5D };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("pop", instruction.Mnemonic);
-        Assert.Equal("ebp", instruction.Operands);
+        Assert.Equal(InstructionType.Pop, instruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(instruction.StructuredOperands);
+        
+        // Check the operand (EBP)
+        var ebpOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ebpOperand);
+        var registerOperand = (RegisterOperand)ebpOperand;
+        Assert.Equal(RegisterIndex.Bp, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EBP)
     }
     
     /// <summary>
@@ -146,12 +211,40 @@ public class PushPopInstructionTests
         Assert.Equal(2, instructions.Count);
         
         // First instruction: PUSH EBP
-        Assert.Equal("push", instructions[0].Mnemonic);
-        Assert.Equal("ebp", instructions[0].Operands);
+        var pushInstruction = instructions[0];
+        Assert.NotNull(pushInstruction);
+        Assert.Equal(InstructionType.Push, pushInstruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(pushInstruction.StructuredOperands);
+        
+        // Check the operand (EBP)
+        var ebpOperand = pushInstruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ebpOperand);
+        var registerOperand = (RegisterOperand)ebpOperand;
+        Assert.Equal(RegisterIndex.Bp, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EBP)
         
         // Second instruction: MOV EBP, ESP
-        Assert.Equal("mov", instructions[1].Mnemonic);
-        Assert.Equal("ebp, esp", instructions[1].Operands);
+        var movInstruction = instructions[1];
+        Assert.NotNull(movInstruction);
+        Assert.Equal(InstructionType.Move, movInstruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, movInstruction.StructuredOperands.Count);
+        
+        // Check the operands (EBP and ESP)
+        var ebpDestOperand = movInstruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ebpDestOperand);
+        var ebpDestRegisterOperand = (RegisterOperand)ebpDestOperand;
+        Assert.Equal(RegisterIndex.Bp, ebpDestRegisterOperand.Register);
+        Assert.Equal(32, ebpDestRegisterOperand.Size); // Validate that it's a 32-bit register (EBP)
+        
+        var espSrcOperand = movInstruction.StructuredOperands[1];
+        Assert.IsType<RegisterOperand>(espSrcOperand);
+        var espSrcRegisterOperand = (RegisterOperand)espSrcOperand;
+        Assert.Equal(RegisterIndex.Sp, espSrcRegisterOperand.Register);
+        Assert.Equal(32, espSrcRegisterOperand.Size); // Validate that it's a 32-bit register (ESP)
     }
     
     /// <summary>
@@ -173,11 +266,26 @@ public class PushPopInstructionTests
         Assert.Equal(2, instructions.Count);
         
         // First instruction: POP EBP
-        Assert.Equal("pop", instructions[0].Mnemonic);
-        Assert.Equal("ebp", instructions[0].Operands);
+        var popInstruction = instructions[0];
+        Assert.NotNull(popInstruction);
+        Assert.Equal(InstructionType.Pop, popInstruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(popInstruction.StructuredOperands);
+        
+        // Check the operand (EBP)
+        var ebpOperand = popInstruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ebpOperand);
+        var registerOperand = (RegisterOperand)ebpOperand;
+        Assert.Equal(RegisterIndex.Bp, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EBP)
         
         // Second instruction: RET
-        Assert.Equal("ret", instructions[1].Mnemonic);
-        Assert.Equal("", instructions[1].Operands);
+        var retInstruction = instructions[1];
+        Assert.NotNull(retInstruction);
+        Assert.Equal(InstructionType.Ret, retInstruction.Type);
+        
+        // Check that we have no operands
+        Assert.Empty(retInstruction.StructuredOperands);
     }
 }

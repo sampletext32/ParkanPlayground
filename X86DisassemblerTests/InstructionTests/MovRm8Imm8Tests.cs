@@ -1,4 +1,5 @@
 using X86Disassembler.X86;
+using X86Disassembler.X86.Operands;
 
 namespace X86DisassemblerTests.InstructionTests;
 
@@ -22,8 +23,25 @@ public class MovRm8Imm8Tests
         
         // Assert
         Assert.Single(instructions);
-        Assert.Equal("mov", instructions[0].Mnemonic);
-        Assert.Equal("al, 0x42", instructions[0].Operands);
+        var instruction = instructions[0];
+        Assert.Equal(InstructionType.Mov, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (AL)
+        var alOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(alOperand);
+        var registerOperand = (RegisterOperand)alOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.Equal(8, registerOperand.Size); // Validate that it's an 8-bit register (AL)
+        
+        // Check the second operand (immediate value)
+        var immOperand = instruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x42U, immediateOperand.Value);
+        Assert.Equal(8, immediateOperand.Size); // Validate that it's an 8-bit immediate
     }
     
     /// <summary>
@@ -41,7 +59,24 @@ public class MovRm8Imm8Tests
         
         // Assert
         Assert.Single(instructions);
-        Assert.Equal("mov", instructions[0].Mnemonic);
-        Assert.Equal("byte ptr [ecx], 0x01", instructions[0].Operands);
+        var instruction = instructions[0];
+        Assert.Equal(InstructionType.Mov, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (memory operand)
+        var memOperand = instruction.StructuredOperands[0];
+        Assert.IsType<BaseRegisterMemoryOperand>(memOperand);
+        var memoryOperand = (BaseRegisterMemoryOperand)memOperand;
+        Assert.Equal(RegisterIndex.C, memoryOperand.BaseRegister);
+        Assert.Equal(8, memoryOperand.Size); // Validate that it's an 8-bit memory reference
+        
+        // Check the second operand (immediate value)
+        var immOperand = instruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x01U, immediateOperand.Value);
+        Assert.Equal(8, immediateOperand.Size); // Validate that it's an 8-bit immediate
     }
 }

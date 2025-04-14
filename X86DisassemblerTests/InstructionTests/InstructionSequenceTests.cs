@@ -1,4 +1,5 @@
 using X86Disassembler.X86;
+using X86Disassembler.X86.Operands;
 
 namespace X86DisassemblerTests.InstructionTests;
 
@@ -8,8 +9,8 @@ namespace X86DisassemblerTests.InstructionTests;
 public class InstructionSequenceTests
 {
     /// <summary>
-/// Tests that the disassembler correctly handles the sequence at address 0x10001C4B
-/// </summary>
+    /// Tests that the disassembler correctly handles the sequence at address 0x10001C4B
+    /// </summary>
     [Fact]
     public void Disassembler_HandlesJmpSequence_Correctly()
     {
@@ -24,27 +25,78 @@ public class InstructionSequenceTests
         Assert.True(instructions.Count >= 5, $"Expected at least 5 instructions, but got {instructions.Count}");
         
         // First instruction: JGE LAB_10001c51 (JNL is an alternative mnemonic for JGE)
-        Assert.True(instructions[0].Mnemonic == "jge" || instructions[0].Mnemonic == "jnl", 
-            $"Expected 'jge' or 'jnl', but got '{instructions[0].Mnemonic}'");
-        // Don't check the exact target address as it depends on the base address calculation
-        Assert.Equal("0x00000007", instructions[0].Operands);
+        Assert.True(instructions[0].Type == InstructionType.Jge, 
+            $"Expected 'Jge', but got '{instructions[0].Type}'");
+        
+        // Check the operand (immediate value for jump target)
+        var jgeOperand = instructions[0].StructuredOperands[0];
+        Assert.IsType<ImmediateOperand>(jgeOperand);
         
         // Second instruction: ADD EBP, 0x18
-        Assert.Equal("add", instructions[1].Mnemonic);
-        Assert.Equal("ebp, 0x00000018", instructions[1].Operands);
+        Assert.Equal(InstructionType.Add, instructions[1].Type);
+        
+        // Check the operands
+        Assert.Equal(2, instructions[1].StructuredOperands.Count);
+        
+        // Check the first operand (EBP)
+        var ebpOperand = instructions[1].StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ebpOperand);
+        var registerOperand = (RegisterOperand)ebpOperand;
+        Assert.Equal(RegisterIndex.Bp, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EBP)
+        
+        // Check the second operand (immediate value)
+        var immOperand = instructions[1].StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x18U, immediateOperand.Value);
         
         // Third instruction: JMP LAB_10001c54
-        Assert.Equal("jmp", instructions[2].Mnemonic);
-        // Don't check the exact target address as it depends on the base address calculation
-        Assert.Equal("0x0000000A", instructions[2].Operands);
+        Assert.Equal(InstructionType.Jmp, instructions[2].Type);
+        
+        // Check the operand (immediate value for jump target)
+        var jmpOperand = instructions[2].StructuredOperands[0];
+        Assert.IsType<ImmediateOperand>(jmpOperand);
         
         // Fourth instruction: ADD EBP, -0x48
-        Assert.Equal("add", instructions[3].Mnemonic);
-        Assert.Equal("ebp, 0xFFFFFFB8", instructions[3].Operands); // -0x48 sign-extended to 32-bit
+        Assert.Equal(InstructionType.Add, instructions[3].Type);
+        
+        // Check the operands
+        Assert.Equal(2, instructions[3].StructuredOperands.Count);
+        
+        // Check the first operand (EBP)
+        ebpOperand = instructions[3].StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ebpOperand);
+        registerOperand = (RegisterOperand)ebpOperand;
+        Assert.Equal(RegisterIndex.Bp, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EBP)
+        
+        // Check the second operand (immediate value)
+        immOperand = instructions[3].StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0xFFFFFFB8U, immediateOperand.Value); // -0x48 sign-extended to 32-bit
         
         // Fifth instruction: MOV EDX, dword ptr [ESI + 0x4]
-        Assert.Equal("mov", instructions[4].Mnemonic);
-        Assert.Equal("edx, dword ptr [esi+0x04]", instructions[4].Operands);
+        Assert.Equal(InstructionType.Mov, instructions[4].Type);
+        
+        // Check the operands
+        Assert.Equal(2, instructions[4].StructuredOperands.Count);
+        
+        // Check the first operand (EDX)
+        var edxOperand = instructions[4].StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(edxOperand);
+        registerOperand = (RegisterOperand)edxOperand;
+        Assert.Equal(RegisterIndex.D, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EDX)
+        
+        // Check the second operand (memory operand)
+        var memOperand = instructions[4].StructuredOperands[1];
+        Assert.IsType<DisplacementMemoryOperand>(memOperand);
+        var displacementMemoryOperand = (DisplacementMemoryOperand)memOperand;
+        Assert.Equal(RegisterIndex.Si, displacementMemoryOperand.BaseRegister);
+        Assert.Equal(4, displacementMemoryOperand.Displacement);
+        Assert.Equal(32, displacementMemoryOperand.Size); // Validate that it's a 32-bit memory reference
     }
     
     /// <summary>
@@ -64,31 +116,117 @@ public class InstructionSequenceTests
         Assert.True(instructions.Count >= 7, $"Expected at least 7 instructions, but got {instructions.Count}");
         
         // First instruction should be JGE with relative offset
-        Assert.Equal("jge", instructions[0].Mnemonic);
-        Assert.Equal("0x00000007", instructions[0].Operands);
+        Assert.Equal(InstructionType.Jge, instructions[0].Type);
+        
+        // Check the operand (immediate value for jump target)
+        var jgeOperand = instructions[0].StructuredOperands[0];
+        Assert.IsType<ImmediateOperand>(jgeOperand);
         
         // Second instruction should be ADD EBP, 0x18
-        Assert.Equal("add", instructions[1].Mnemonic);
-        Assert.Equal("ebp, 0x00000018", instructions[1].Operands);
+        Assert.Equal(InstructionType.Add, instructions[1].Type);
+        
+        // Check the operands
+        Assert.Equal(2, instructions[1].StructuredOperands.Count);
+        
+        // Check the first operand (EBP)
+        var ebpOperand = instructions[1].StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ebpOperand);
+        var registerOperand = (RegisterOperand)ebpOperand;
+        Assert.Equal(RegisterIndex.Bp, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EBP)
+        
+        // Check the second operand (immediate value)
+        var immOperand = instructions[1].StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x18U, immediateOperand.Value);
         
         // Third instruction should be JMP
-        Assert.Equal("jmp", instructions[2].Mnemonic);
-        Assert.Equal("0x0000000A", instructions[2].Operands);
+        Assert.Equal(InstructionType.Jmp, instructions[2].Type);
+        
+        // Check the operand (immediate value for jump target)
+        var jmpOperand = instructions[2].StructuredOperands[0];
+        Assert.IsType<ImmediateOperand>(jmpOperand);
         
         // Fourth instruction should be ADD EBP, -0x48
-        Assert.Equal("add", instructions[3].Mnemonic);
-        Assert.Equal("ebp, 0xFFFFFFB8", instructions[3].Operands); // -0x48 sign-extended to 32-bit
+        Assert.Equal(InstructionType.Add, instructions[3].Type);
+        
+        // Check the operands
+        Assert.Equal(2, instructions[3].StructuredOperands.Count);
+        
+        // Check the first operand (EBP)
+        ebpOperand = instructions[3].StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ebpOperand);
+        registerOperand = (RegisterOperand)ebpOperand;
+        Assert.Equal(RegisterIndex.Bp, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EBP)
+        
+        // Check the second operand (immediate value)
+        immOperand = instructions[3].StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0xFFFFFFB8U, immediateOperand.Value); // -0x48 sign-extended to 32-bit
         
         // Fifth instruction should be MOV EDX, dword ptr [ESI+0x4]
-        Assert.Equal("mov", instructions[4].Mnemonic);
-        Assert.Equal("edx, dword ptr [esi+0x04]", instructions[4].Operands);
+        Assert.Equal(InstructionType.Mov, instructions[4].Type);
+        
+        // Check the operands
+        Assert.Equal(2, instructions[4].StructuredOperands.Count);
+        
+        // Check the first operand (EDX)
+        var edxOperand = instructions[4].StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(edxOperand);
+        registerOperand = (RegisterOperand)edxOperand;
+        Assert.Equal(RegisterIndex.D, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EDX)
+        
+        // Check the second operand (memory operand)
+        var memOperand = instructions[4].StructuredOperands[1];
+        Assert.IsType<DisplacementMemoryOperand>(memOperand);
+        var displacementMemoryOperand = (DisplacementMemoryOperand)memOperand;
+        Assert.Equal(RegisterIndex.Si, displacementMemoryOperand.BaseRegister);
+        Assert.Equal(4, displacementMemoryOperand.Displacement);
+        Assert.Equal(32, displacementMemoryOperand.Size); // Validate that it's a 32-bit memory reference
         
         // Sixth instruction should be MOV AL, byte ptr [EDX]
-        Assert.Equal("mov", instructions[5].Mnemonic);
-        Assert.Equal("al, dword ptr [edx]", instructions[5].Operands);
+        Assert.Equal(InstructionType.Mov, instructions[5].Type);
+        
+        // Check the operands
+        Assert.Equal(2, instructions[5].StructuredOperands.Count);
+        
+        // Check the first operand (AL)
+        var alOperand = instructions[5].StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(alOperand);
+        registerOperand = (RegisterOperand)alOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.Equal(8, registerOperand.Size); // Validate that it's an 8-bit register (AL)
+        
+        // Check the second operand (memory operand)
+        memOperand = instructions[5].StructuredOperands[1];
+        Assert.IsType<BaseRegisterMemoryOperand>(memOperand);
+        var baseRegisterMemoryOperand = (BaseRegisterMemoryOperand)memOperand;
+        Assert.Equal(RegisterIndex.D, baseRegisterMemoryOperand.BaseRegister);
+        Assert.Equal(8, baseRegisterMemoryOperand.Size); // Validate that it's an 8-bit memory reference
         
         // Seventh instruction should be LEA ECX, [EDX+0x18]
-        Assert.Equal("lea", instructions[6].Mnemonic);
-        Assert.Equal("ecx, [edx+0x18]", instructions[6].Operands);
+        Assert.Equal(InstructionType.Lea, instructions[6].Type);
+        
+        // Check the operands
+        Assert.Equal(2, instructions[6].StructuredOperands.Count);
+        
+        // Check the first operand (ECX)
+        var ecxOperand = instructions[6].StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ecxOperand);
+        registerOperand = (RegisterOperand)ecxOperand;
+        Assert.Equal(RegisterIndex.C, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (ECX)
+        
+        // Check the second operand (memory operand)
+        memOperand = instructions[6].StructuredOperands[1];
+        Assert.IsType<DisplacementMemoryOperand>(memOperand);
+        displacementMemoryOperand = (DisplacementMemoryOperand)memOperand;
+        Assert.Equal(RegisterIndex.D, displacementMemoryOperand.BaseRegister);
+        Assert.Equal(0x18, displacementMemoryOperand.Displacement);
+        Assert.Equal(32, displacementMemoryOperand.Size); // Validate that it's a 32-bit memory reference
     }
 }

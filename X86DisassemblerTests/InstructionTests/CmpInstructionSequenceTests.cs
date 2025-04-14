@@ -1,4 +1,5 @@
 using X86Disassembler.X86;
+using X86Disassembler.X86.Operands;
 
 namespace X86DisassemblerTests.InstructionTests;
 
@@ -23,8 +24,25 @@ public class CmpInstructionSequenceTests
         
         // Assert
         Assert.Single(instructions);
-        Assert.Equal("cmp", instructions[0].Mnemonic);
-        Assert.Equal("byte ptr [ebp], 0x03", instructions[0].Operands);
+        var instruction = instructions[0];
+        Assert.Equal(InstructionType.Cmp, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (memory operand)
+        var memoryOperand = instruction.StructuredOperands[0];
+        Assert.IsType<DisplacementMemoryOperand>(memoryOperand);
+        var memory = (DisplacementMemoryOperand)memoryOperand;
+        Assert.Equal(RegisterIndex.Bp, memory.BaseRegister); // Base register is EBP
+        Assert.Equal(0, memory.Displacement); // Displacement is 0
+        Assert.Equal(8, memory.Size); // Memory size is 8 bits (BYTE)
+        
+        // Check the second operand (immediate value)
+        var immOperand = instruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x03U, immediateOperand.Value);
     }
     
     /// <summary>
@@ -46,12 +64,38 @@ public class CmpInstructionSequenceTests
         Assert.Equal(2, instructions.Count);
         
         // First instruction: CMP BYTE PTR [EBP], 0x03
-        Assert.Equal("cmp", instructions[0].Mnemonic);
-        Assert.Equal("byte ptr [ebp], 0x03", instructions[0].Operands);
+        var cmpInstruction = instructions[0];
+        Assert.Equal(InstructionType.Cmp, cmpInstruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, cmpInstruction.StructuredOperands.Count);
+        
+        // Check the first operand (memory operand)
+        var memoryOperand = cmpInstruction.StructuredOperands[0];
+        Assert.IsType<DisplacementMemoryOperand>(memoryOperand);
+        var memory = (DisplacementMemoryOperand)memoryOperand;
+        Assert.Equal(RegisterIndex.Bp, memory.BaseRegister); // Base register is EBP
+        Assert.Equal(0, memory.Displacement); // Displacement is 0
+        Assert.Equal(8, memory.Size); // Memory size is 8 bits (BYTE)
+        
+        // Check the second operand (immediate value)
+        var immOperand = cmpInstruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x03U, immediateOperand.Value);
         
         // Second instruction: JGE +5
-        Assert.Equal("jge", instructions[1].Mnemonic);
-        Assert.Equal("0x0000000B", instructions[1].Operands); // Base address is ignored, only relative offset matters
+        var jgeInstruction = instructions[1];
+        Assert.Equal(InstructionType.Jge, jgeInstruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(jgeInstruction.StructuredOperands);
+        
+        // Check the operand (relative offset)
+        var relativeOffsetOperand = jgeInstruction.StructuredOperands[0];
+        Assert.IsType<RelativeOffsetOperand>(relativeOffsetOperand);
+        var offsetOperand = (RelativeOffsetOperand)relativeOffsetOperand;
+        Assert.Equal(0x1C51UL, offsetOperand.TargetAddress); // Target address is 0x1C46 + 6 + 5 = 0x1C51
     }
     
     /// <summary>
@@ -80,27 +124,110 @@ public class CmpInstructionSequenceTests
         Assert.True(instructions.Count >= 5, $"Expected at least 5 instructions, but got {instructions.Count}");
         
         // First instruction: CMP BYTE PTR [EBP], 0x03
-        Assert.Equal("cmp", instructions[0].Mnemonic);
-        Assert.Equal("byte ptr [ebp], 0x03", instructions[0].Operands);
+        var cmpInstruction = instructions[0];
+        Assert.Equal(InstructionType.Cmp, cmpInstruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, cmpInstruction.StructuredOperands.Count);
+        
+        // Check the first operand (memory operand)
+        var memoryOperand = cmpInstruction.StructuredOperands[0];
+        Assert.IsType<DisplacementMemoryOperand>(memoryOperand);
+        var memory = (DisplacementMemoryOperand)memoryOperand;
+        Assert.Equal(RegisterIndex.Bp, memory.BaseRegister); // Base register is EBP
+        Assert.Equal(0, memory.Displacement); // Displacement is 0
+        Assert.Equal(8, memory.Size); // Memory size is 8 bits (BYTE)
+        
+        // Check the second operand (immediate value)
+        var immOperand = cmpInstruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x03U, immediateOperand.Value);
         
         // Second instruction: JGE +5
-        Assert.Equal("jge", instructions[1].Mnemonic);
-        Assert.Equal("0x0000000B", instructions[1].Operands); // Base address is ignored, only relative offset matters
+        var jgeInstruction = instructions[1];
+        Assert.Equal(InstructionType.Jge, jgeInstruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(jgeInstruction.StructuredOperands);
+        
+        // Check the operand (relative offset)
+        var relativeOffsetOperand = jgeInstruction.StructuredOperands[0];
+        Assert.IsType<RelativeOffsetOperand>(relativeOffsetOperand);
+        var offsetOperand = (RelativeOffsetOperand)relativeOffsetOperand;
+        Assert.Equal(0x1C51UL, offsetOperand.TargetAddress); // Target address is 0x1C46 + 6 + 5 = 0x1C51
         
         // Third instruction: ADD EBP, 0x18
-        Assert.Equal("add", instructions[2].Mnemonic);
-        Assert.Equal("ebp, 0x00000018", instructions[2].Operands);
+        var addInstruction = instructions[2];
+        Assert.Equal(InstructionType.Add, addInstruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, addInstruction.StructuredOperands.Count);
+        
+        // Check the first operand (register operand)
+        var registerOperand = addInstruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(registerOperand);
+        var register = (RegisterOperand)registerOperand;
+        Assert.Equal(RegisterIndex.Bp, register.Register); // Register is EBP
+        
+        // Check the second operand (immediate value)
+        var immOperand2 = addInstruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand2);
+        var immediateOperand2 = (ImmediateOperand)immOperand2;
+        Assert.Equal(0x18U, immediateOperand2.Value);
         
         // Fourth instruction: JMP +3
-        Assert.Equal("jmp", instructions[3].Mnemonic);
-        Assert.Equal("0x0000000E", instructions[3].Operands); // Base address is ignored, only relative offset matters
+        var jmpInstruction = instructions[3];
+        Assert.Equal(InstructionType.Jmp, jmpInstruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(jmpInstruction.StructuredOperands);
+        
+        // Check the operand (relative offset)
+        var relativeOffsetOperand2 = jmpInstruction.StructuredOperands[0];
+        Assert.IsType<RelativeOffsetOperand>(relativeOffsetOperand2);
+        var offsetOperand2 = (RelativeOffsetOperand)relativeOffsetOperand2;
+        Assert.Equal(0x1C4FUL, offsetOperand2.TargetAddress); // Target address is 0x1C46 + 6 + 5 + 2 = 0x1C4F
         
         // Fifth instruction: ADD EBP, -0x48 (0xB8 sign-extended to 32-bit is 0xFFFFFFB8)
-        Assert.Equal("add", instructions[4].Mnemonic);
-        Assert.Equal("ebp, 0xFFFFFFB8", instructions[4].Operands);
+        var addInstruction2 = instructions[4];
+        Assert.Equal(InstructionType.Add, addInstruction2.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, addInstruction2.StructuredOperands.Count);
+        
+        // Check the first operand (register operand)
+        var registerOperand2 = addInstruction2.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(registerOperand2);
+        var register2 = (RegisterOperand)registerOperand2;
+        Assert.Equal(RegisterIndex.Bp, register2.Register); // Register is EBP
+        
+        // Check the second operand (immediate value)
+        var immOperand3 = addInstruction2.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand3);
+        var immediateOperand3 = (ImmediateOperand)immOperand3;
+        Assert.Equal(0xFFFFFFB8U, immediateOperand3.Value);
         
         // Sixth instruction: MOV EDX, DWORD PTR [ESI+0x4]
-        Assert.Equal("mov", instructions[5].Mnemonic);
-        Assert.Equal("edx, dword ptr [esi+0x04]", instructions[5].Operands);
+        var movInstruction = instructions[5];
+        Assert.Equal(InstructionType.Mov, movInstruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, movInstruction.StructuredOperands.Count);
+        
+        // Check the first operand (register operand)
+        var registerOperand3 = movInstruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(registerOperand3);
+        var register3 = (RegisterOperand)registerOperand3;
+        Assert.Equal(RegisterIndex.D, register3.Register); // Register is EDX
+        Assert.Equal(32, register3.Size); // Validate that it's a 32-bit register (EDX)
+        
+        // Check the second operand (memory operand)
+        var memoryOperand2 = movInstruction.StructuredOperands[1];
+        Assert.IsType<DisplacementMemoryOperand>(memoryOperand2);
+        var memory2 = (DisplacementMemoryOperand)memoryOperand2;
+        Assert.Equal(RegisterIndex.Si, memory2.BaseRegister); // Base register is ESI
+        Assert.Equal(4, memory2.Displacement); // Displacement is 4
+        Assert.Equal(32, memory2.Size); // Memory size is 32 bits (DWORD)
     }
 }

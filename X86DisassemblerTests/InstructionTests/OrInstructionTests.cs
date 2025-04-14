@@ -1,4 +1,5 @@
 using X86Disassembler.X86;
+using X86Disassembler.X86.Operands;
 
 namespace X86DisassemblerTests.InstructionTests;
 
@@ -22,8 +23,25 @@ public class OrInstructionTests
         
         // Assert
         Assert.Single(instructions);
-        Assert.Equal("or", instructions[0].Mnemonic);
-        Assert.Equal("cl, al", instructions[0].Operands);
+        var instruction = instructions[0];
+        Assert.Equal(InstructionType.Or, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (CL)
+        var clOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(clOperand);
+        var registerOperand1 = (RegisterOperand)clOperand;
+        Assert.Equal(RegisterIndex.C, registerOperand1.Register);
+        Assert.Equal(8, registerOperand1.Size); // Validate that it's an 8-bit register (CL)
+        
+        // Check the second operand (AL)
+        var alOperand = instruction.StructuredOperands[1];
+        Assert.IsType<RegisterOperand>(alOperand);
+        var registerOperand2 = (RegisterOperand)alOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand2.Register);
+        Assert.Equal(8, registerOperand2.Size); // Validate that it's an 8-bit register (AL)
     }
     
     /// <summary>
@@ -41,8 +59,25 @@ public class OrInstructionTests
         
         // Assert
         Assert.Single(instructions);
-        Assert.Equal("or", instructions[0].Mnemonic);
-        Assert.Equal("al, byte ptr [eax]", instructions[0].Operands);
+        var instruction = instructions[0];
+        Assert.Equal(InstructionType.Or, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (AL)
+        var alOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(alOperand);
+        var registerOperand = (RegisterOperand)alOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.Equal(8, registerOperand.Size); // Validate that it's an 8-bit register (AL)
+        
+        // Check the second operand (memory operand)
+        var memOperand = instruction.StructuredOperands[1];
+        Assert.IsType<BaseRegisterMemoryOperand>(memOperand);
+        var memoryOperand = (BaseRegisterMemoryOperand)memOperand;
+        Assert.Equal(8, memoryOperand.Size); // Validate that it's an 8-bit memory reference
+        Assert.Equal(RegisterIndex.A, memoryOperand.BaseRegister);
     }
     
     /// <summary>
@@ -60,8 +95,25 @@ public class OrInstructionTests
         
         // Assert
         Assert.Single(instructions);
-        Assert.Equal("or", instructions[0].Mnemonic);
-        Assert.Equal("ecx, eax", instructions[0].Operands);
+        var instruction = instructions[0];
+        Assert.Equal(InstructionType.Or, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (ECX)
+        var ecxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ecxOperand);
+        var registerOperand1 = (RegisterOperand)ecxOperand;
+        Assert.Equal(RegisterIndex.C, registerOperand1.Register);
+        Assert.Equal(32, registerOperand1.Size); // Validate that it's a 32-bit register (ECX)
+        
+        // Check the second operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[1];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand2 = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand2.Register);
+        Assert.Equal(32, registerOperand2.Size); // Validate that it's a 32-bit register (EAX)
     }
     
     /// <summary>
@@ -79,8 +131,25 @@ public class OrInstructionTests
         
         // Assert
         Assert.Single(instructions);
-        Assert.Equal("or", instructions[0].Mnemonic);
-        Assert.Equal("eax, dword ptr [eax]", instructions[0].Operands);
+        var instruction = instructions[0];
+        Assert.Equal(InstructionType.Or, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (memory operand)
+        var memOperand = instruction.StructuredOperands[1];
+        Assert.IsType<BaseRegisterMemoryOperand>(memOperand);
+        var memoryOperand = (BaseRegisterMemoryOperand)memOperand;
+        Assert.Equal(32, memoryOperand.Size); // Validate that it's a 32-bit memory reference
+        Assert.Equal(RegisterIndex.A, memoryOperand.BaseRegister);
     }
     
     /// <summary>
@@ -98,8 +167,24 @@ public class OrInstructionTests
         
         // Assert
         Assert.Single(instructions);
-        Assert.Equal("or", instructions[0].Mnemonic);
-        Assert.Equal("al, 0x42", instructions[0].Operands);
+        var instruction = instructions[0];
+        Assert.Equal(InstructionType.Or, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (AL)
+        var alOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(alOperand);
+        var registerOperand = (RegisterOperand)alOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.Equal(8, registerOperand.Size); // Validate that it's an 8-bit register (AL)
+        
+        // Check the second operand (immediate)
+        var immOperand = instruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x42, immediateOperand.Value);
     }
     
     /// <summary>
@@ -117,8 +202,24 @@ public class OrInstructionTests
         
         // Assert
         Assert.Single(instructions);
-        Assert.Equal("or", instructions[0].Mnemonic);
-        Assert.Equal("eax, 0x12345678", instructions[0].Operands);
+        var instruction = instructions[0];
+        Assert.Equal(InstructionType.Or, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (immediate)
+        var immOperand = instruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x12345678, immediateOperand.Value);
     }
     
     /// <summary>
@@ -136,8 +237,24 @@ public class OrInstructionTests
         
         // Assert
         Assert.Single(instructions);
-        Assert.Equal("or", instructions[0].Mnemonic);
-        Assert.Equal("eax, 0x12345678", instructions[0].Operands);
+        var instruction = instructions[0];
+        Assert.Equal(InstructionType.Or, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (immediate)
+        var immOperand = instruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x12345678, immediateOperand.Value);
     }
     
     /// <summary>
@@ -155,7 +272,23 @@ public class OrInstructionTests
         
         // Assert
         Assert.Single(instructions);
-        Assert.Equal("or", instructions[0].Mnemonic);
-        Assert.Equal("eax, 0x00000042", instructions[0].Operands);
+        var instruction = instructions[0];
+        Assert.Equal(InstructionType.Or, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (immediate)
+        var immOperand = instruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x00000042, immediateOperand.Value);
     }
 }

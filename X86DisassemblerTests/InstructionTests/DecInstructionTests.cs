@@ -1,4 +1,5 @@
 using X86Disassembler.X86;
+using X86Disassembler.X86.Operands;
 
 namespace X86DisassemblerTests.InstructionTests;
 
@@ -22,8 +23,18 @@ public class DecInstructionTests
         
         // Assert
         Assert.Single(instructions);
-        Assert.Equal("dec", instructions[0].Mnemonic);
-        Assert.Equal("eax", instructions[0].Operands);
+        var instruction = instructions[0];
+        Assert.Equal(InstructionType.Dec, instruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(instruction.StructuredOperands);
+        
+        // Check the operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EAX)
     }
     
     /// <summary>
@@ -41,8 +52,18 @@ public class DecInstructionTests
         
         // Assert
         Assert.Single(instructions);
-        Assert.Equal("dec", instructions[0].Mnemonic);
-        Assert.Equal("ecx", instructions[0].Operands);
+        var instruction = instructions[0];
+        Assert.Equal(InstructionType.Dec, instruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(instruction.StructuredOperands);
+        
+        // Check the operand (ECX)
+        var ecxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ecxOperand);
+        var registerOperand = (RegisterOperand)ecxOperand;
+        Assert.Equal(RegisterIndex.C, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (ECX)
     }
     
     /// <summary>
@@ -60,7 +81,17 @@ public class DecInstructionTests
         
         // Assert
         Assert.Single(instructions);
-        Assert.Equal("dec", instructions[0].Mnemonic);
-        Assert.Equal("edi", instructions[0].Operands);
+        var instruction = instructions[0];
+        Assert.Equal(InstructionType.Dec, instruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(instruction.StructuredOperands);
+        
+        // Check the operand (EDI)
+        var ediOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ediOperand);
+        var registerOperand = (RegisterOperand)ediOperand;
+        Assert.Equal(RegisterIndex.Di, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EDI)
     }
 }

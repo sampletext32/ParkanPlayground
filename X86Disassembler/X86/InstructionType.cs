@@ -79,26 +79,32 @@ public enum InstructionType
     MovsB,
     MovsW,
     MovsD,
+    Movs = MovsD, // Alias for MovsD
     CmpsB,
     CmpsW,
     CmpsD,
     StosB,
     StosW,
     StosD,
+    Stos = StosB, // Alias for StosB
     ScasB,      // Scan string byte
     ScasW,      // Scan string word
     ScasD,      // Scan string dword
+    Scas = ScasB, // Alias for ScasB
     LodsB,      // Load string byte
     LodsW,      // Load string word
     LodsD,      // Load string dword
+    Lods = LodsD, // Alias for LodsD
     
     // REP prefixed instructions
     Rep,        // REP prefix
     RepE,       // REPE/REPZ prefix
     RepNE,      // REPNE/REPNZ prefix
+    RepneScas = RepNE, // Alias for RepNE
     RepMovsB,   // REP MOVSB
     RepMovsW,   // REP MOVSW
     RepMovsD,   // REP MOVSD
+    RepMovs = RepMovsD, // Alias for RepMovsD
     RepeCmpsB,  // REPE CMPSB
     RepeCmpsW,  // REPE CMPSW
     RepeCmpsD,  // REPE CMPSD
@@ -117,6 +123,8 @@ public enum InstructionType
     Fst,        // Store floating point value
     Fstp,       // Store floating point value and pop
     Fadd,       // Add floating point
+    Fiadd,      // Add integer to floating point
+    Fild,       // Load integer to floating point
     Fsub,       // Subtract floating point
     Fsubr,      // Subtract floating point reversed
     Fmul,       // Multiply floating point

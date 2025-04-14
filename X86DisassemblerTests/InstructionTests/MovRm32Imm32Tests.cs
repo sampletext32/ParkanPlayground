@@ -1,4 +1,5 @@
 using X86Disassembler.X86;
+using X86Disassembler.X86.Operands;
 
 namespace X86DisassemblerTests.InstructionTests;
 
@@ -22,8 +23,25 @@ public class MovRm32Imm32Tests
         
         // Assert
         Assert.Single(instructions);
-        Assert.Equal("mov", instructions[0].Mnemonic);
-        Assert.Equal("eax, 0x12345678", instructions[0].Operands);
+        var instruction = instructions[0];
+        Assert.Equal(InstructionType.Mov, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (immediate value)
+        var immOperand = instruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x12345678U, immediateOperand.Value);
+        Assert.Equal(32, immediateOperand.Size); // Validate that it's a 32-bit immediate
     }
     
     /// <summary>
@@ -41,8 +59,25 @@ public class MovRm32Imm32Tests
         
         // Assert
         Assert.Single(instructions);
-        Assert.Equal("mov", instructions[0].Mnemonic);
-        Assert.Equal("dword ptr [eax], 0x12345678", instructions[0].Operands);
+        var instruction = instructions[0];
+        Assert.Equal(InstructionType.Mov, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (memory operand)
+        var memOperand = instruction.StructuredOperands[0];
+        Assert.IsType<BaseRegisterMemoryOperand>(memOperand);
+        var memoryOperand = (BaseRegisterMemoryOperand)memOperand;
+        Assert.Equal(RegisterIndex.A, memoryOperand.BaseRegister);
+        Assert.Equal(32, memoryOperand.Size); // Validate that it's a 32-bit memory reference
+        
+        // Check the second operand (immediate value)
+        var immOperand = instruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x12345678U, immediateOperand.Value);
+        Assert.Equal(32, immediateOperand.Size); // Validate that it's a 32-bit immediate
     }
     
     /// <summary>
@@ -61,8 +96,26 @@ public class MovRm32Imm32Tests
         
         // Assert
         Assert.Single(instructions);
-        Assert.Equal("mov", instructions[0].Mnemonic);
-        Assert.Equal("dword ptr [esp+0x10], 0x00000000", instructions[0].Operands);
+        var instruction = instructions[0];
+        Assert.Equal(InstructionType.Mov, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (memory operand with SIB)
+        var memOperand = instruction.StructuredOperands[0];
+        Assert.IsType<DisplacementMemoryOperand>(memOperand);
+        var displacementMemoryOperand = (DisplacementMemoryOperand)memOperand;
+        Assert.Equal(RegisterIndex.Sp, displacementMemoryOperand.BaseRegister);
+        Assert.Equal(32, displacementMemoryOperand.Size); // Validate that it's a 32-bit memory reference
+        Assert.Equal(0x10, displacementMemoryOperand.Displacement);
+        
+        // Check the second operand (immediate value)
+        var immOperand = instruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x00000000U, immediateOperand.Value);
+        Assert.Equal(32, immediateOperand.Size); // Validate that it's a 32-bit immediate
     }
     
     /// <summary>
@@ -81,8 +134,28 @@ public class MovRm32Imm32Tests
         
         // Assert
         Assert.Single(instructions);
-        Assert.Equal("mov", instructions[0].Mnemonic);
-        Assert.Equal("dword ptr [eax+ecx*4+0x12345678], 0xAABBCCDD", instructions[0].Operands);
+        var instruction = instructions[0];
+        Assert.Equal(InstructionType.Mov, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (memory operand with SIB)
+        var memOperand = instruction.StructuredOperands[0];
+        Assert.IsType<ScaledIndexMemoryOperand>(memOperand);
+        var sibMemoryOperand = (ScaledIndexMemoryOperand)memOperand;
+        Assert.Equal(RegisterIndex.A, sibMemoryOperand.BaseRegister);
+        Assert.Equal(RegisterIndex.C, sibMemoryOperand.IndexRegister);
+        Assert.Equal(4, sibMemoryOperand.Scale);
+        Assert.Equal(32, sibMemoryOperand.Size); // Validate that it's a 32-bit memory reference
+        Assert.Equal(0x12345678, sibMemoryOperand.Displacement);
+        
+        // Check the second operand (immediate value)
+        var immOperand = instruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0xAABBCCDDU, immediateOperand.Value);
+        Assert.Equal(32, immediateOperand.Size); // Validate that it's a 32-bit immediate
     }
     
     /// <summary>
@@ -107,14 +180,50 @@ public class MovRm32Imm32Tests
         Assert.Equal(2, instructions.Count);
         
         // First instruction
-        Assert.Equal("mov", instructions[0].Mnemonic);
-        Assert.Equal("dword ptr [esp+0x10], 0x00000000", instructions[0].Operands);
+        var firstInstruction = instructions[0];
+        Assert.Equal(InstructionType.Mov, firstInstruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, firstInstruction.StructuredOperands.Count);
+        
+        // Check the first operand (memory operand with SIB)
+        var memOperand = firstInstruction.StructuredOperands[0];
+        Assert.IsType<DisplacementMemoryOperand>(memOperand);
+        var displacementMemoryOperand = (DisplacementMemoryOperand)memOperand;
+        Assert.Equal(RegisterIndex.Sp, displacementMemoryOperand.BaseRegister);
+        Assert.Equal(32, displacementMemoryOperand.Size); // Validate that it's a 32-bit memory reference
+        Assert.Equal(0x10, displacementMemoryOperand.Displacement);
+        
+        // Check the second operand (immediate value)
+        var immOperand = firstInstruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x00000000U, immediateOperand.Value);
+        Assert.Equal(32, immediateOperand.Size); // Validate that it's a 32-bit immediate
         
         // Second instruction
-        Assert.Equal("mov", instructions[1].Mnemonic);
-        Assert.Equal("dword ptr [esp+0x14], 0x00000000", instructions[1].Operands);
+        var secondInstruction = instructions[1];
+        Assert.Equal(InstructionType.Mov, secondInstruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, secondInstruction.StructuredOperands.Count);
+        
+        // Check the first operand (memory operand with SIB)
+        memOperand = secondInstruction.StructuredOperands[0];
+        Assert.IsType<DisplacementMemoryOperand>(memOperand);
+        displacementMemoryOperand = (DisplacementMemoryOperand)memOperand;
+        Assert.Equal(RegisterIndex.Sp, displacementMemoryOperand.BaseRegister);
+        Assert.Equal(32, displacementMemoryOperand.Size); // Validate that it's a 32-bit memory reference
+        Assert.Equal(0x14, displacementMemoryOperand.Displacement);
+        
+        // Check the second operand (immediate value)
+        immOperand = secondInstruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x00000000U, immediateOperand.Value);
+        Assert.Equal(32, immediateOperand.Size); // Validate that it's a 32-bit immediate
     }
-
+    
     /// <summary>
     /// Tests the MOV m32, imm32 instruction (0xC7) with instruction boundary detection
     /// </summary>
@@ -138,11 +247,47 @@ public class MovRm32Imm32Tests
         Assert.Equal(2, instructions.Count);
         
         // First instruction
-        Assert.Equal("mov", instructions[0].Mnemonic);
-        Assert.Equal("dword ptr [esp+0x10], 0x00000000", instructions[0].Operands);
+        var firstInstruction = instructions[0];
+        Assert.Equal(InstructionType.Mov, firstInstruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, firstInstruction.StructuredOperands.Count);
+        
+        // Check the first operand (memory operand with SIB)
+        var memOperand = firstInstruction.StructuredOperands[0];
+        Assert.IsType<DisplacementMemoryOperand>(memOperand);
+        var displacementMemoryOperand = (DisplacementMemoryOperand)memOperand;
+        Assert.Equal(RegisterIndex.Sp, displacementMemoryOperand.BaseRegister);
+        Assert.Equal(32, displacementMemoryOperand.Size); // Validate that it's a 32-bit memory reference
+        Assert.Equal(0x10, displacementMemoryOperand.Displacement);
+        
+        // Check the second operand (immediate value)
+        var immOperand = firstInstruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x00000000U, immediateOperand.Value);
+        Assert.Equal(32, immediateOperand.Size); // Validate that it's a 32-bit immediate
         
         // Second instruction
-        Assert.Equal("mov", instructions[1].Mnemonic);
-        Assert.Equal("dword ptr [esp+0x14], 0x00000000", instructions[1].Operands);
+        var secondInstruction = instructions[1];
+        Assert.Equal(InstructionType.Mov, secondInstruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, secondInstruction.StructuredOperands.Count);
+        
+        // Check the first operand (memory operand with SIB)
+        memOperand = secondInstruction.StructuredOperands[0];
+        Assert.IsType<DisplacementMemoryOperand>(memOperand);
+        displacementMemoryOperand = (DisplacementMemoryOperand)memOperand;
+        Assert.Equal(RegisterIndex.Sp, displacementMemoryOperand.BaseRegister);
+        Assert.Equal(32, displacementMemoryOperand.Size); // Validate that it's a 32-bit memory reference
+        Assert.Equal(0x14, displacementMemoryOperand.Displacement);
+        
+        // Check the second operand (immediate value)
+        immOperand = secondInstruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x00000000U, immediateOperand.Value);
+        Assert.Equal(32, immediateOperand.Size); // Validate that it's a 32-bit immediate
     }
 }

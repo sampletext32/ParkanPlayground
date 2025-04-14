@@ -1,4 +1,5 @@
 using X86Disassembler.X86;
+using X86Disassembler.X86.Operands;
 
 namespace X86DisassemblerTests.InstructionTests;
 
@@ -23,7 +24,9 @@ public class Int3InstructionTests
         
         // Assert
         Assert.NotNull(instruction);
-        Assert.Equal("int3", instruction.Mnemonic);
-        Assert.Equal("", instruction.Operands);
+        Assert.Equal(InstructionType.Int, instruction.Type);
+        
+        // Check that we have no operands
+        Assert.Empty(instruction.StructuredOperands);
     }
 }

@@ -1,4 +1,5 @@
 using X86Disassembler.X86;
+using X86Disassembler.X86.Operands;
 
 namespace X86DisassemblerTests.InstructionTests;
 
@@ -23,7 +24,17 @@ public class CallInstructionTests
         
         // Assert
         Assert.NotNull(instruction);
-        Assert.Equal("call", instruction.Mnemonic);
-        Assert.Equal("0x1234567D", instruction.Operands); // Current position (5) + offset (0x12345678) = 0x1234567D
+        Assert.Equal(InstructionType.Call, instruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(instruction.StructuredOperands);
+        
+        // Check that the operand is a relative offset operand
+        var operand = instruction.StructuredOperands[0];
+        Assert.IsType<RelativeOffsetOperand>(operand);
+        
+        // Check the target address
+        var relativeOffsetOperand = (RelativeOffsetOperand)operand;
+        Assert.Equal(0x1234567DUL, relativeOffsetOperand.TargetAddress); // Current position (5) + offset (0x12345678) = 0x1234567D
     }
 }

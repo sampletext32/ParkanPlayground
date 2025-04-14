@@ -1,4 +1,5 @@
 using X86Disassembler.X86;
+using X86Disassembler.X86.Operands;
 
 namespace X86DisassemblerTests.InstructionTests;
 
@@ -16,15 +17,32 @@ public class Group1SignExtendedHandlerTests
         // Arrange
         // ADD ecx, 0x04 (83 C1 04)
         byte[] codeBuffer = new byte[] { 0x83, 0xC1, 0x04 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("add", instruction.Mnemonic);
-        Assert.Equal("ecx, 0x00000004", instruction.Operands);
+        Assert.Equal(InstructionType.Add, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (ECX)
+        var ecxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ecxOperand);
+        var registerOperand = (RegisterOperand)ecxOperand;
+        Assert.Equal(RegisterIndex.C, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (ECX)
+        
+        // Check the second operand (immediate value)
+        var immOperand = instruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x04U, immediateOperand.Value);
     }
     
     /// <summary>
@@ -46,11 +64,23 @@ public class Group1SignExtendedHandlerTests
         Assert.True(instructions.Count >= 3, $"Expected at least 3 instructions, but got {instructions.Count}");
         
         // First instruction should be ADD ecx, 0x04
-        Assert.Equal("add", instructions[0].Mnemonic);
-        Assert.Equal("ecx, 0x00000004", instructions[0].Operands);
+        var firstInstruction = instructions[0];
+        Assert.Equal(InstructionType.Add, firstInstruction.Type);
         
-        // Second instruction should be PUSH eax
-        Assert.Equal("push", instructions[1].Mnemonic);
-        Assert.Equal("eax", instructions[1].Operands);
+        // Check that we have two operands
+        Assert.Equal(2, firstInstruction.StructuredOperands.Count);
+        
+        // Check the first operand (ECX)
+        var ecxOperand = firstInstruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ecxOperand);
+        var registerOperand = (RegisterOperand)ecxOperand;
+        Assert.Equal(RegisterIndex.C, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (ECX)
+        
+        // Check the second operand (immediate value)
+        var immOperand = firstInstruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x04U, immediateOperand.Value);
     }
 }

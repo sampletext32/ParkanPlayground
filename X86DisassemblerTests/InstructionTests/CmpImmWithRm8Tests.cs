@@ -1,4 +1,5 @@
 using X86Disassembler.X86;
+using X86Disassembler.X86.Operands;
 
 namespace X86DisassemblerTests.InstructionTests;
 
@@ -22,8 +23,23 @@ public class CmpImmWithRm8Tests
         
         // Assert
         Assert.Single(instructions);
-        Assert.Equal("cmp", instructions[0].Mnemonic);
-        Assert.Equal("cl, 0x02", instructions[0].Operands);
+        Assert.Equal(InstructionType.Cmp, instructions[0].Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instructions[0].StructuredOperands.Count);
+        
+        // Check the first operand (CL)
+        var clOperand = instructions[0].StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(clOperand);
+        var registerOperand = (RegisterOperand)clOperand;
+        Assert.Equal(RegisterIndex.C, registerOperand.Register);
+        Assert.Equal(8, registerOperand.Size); // Validate that it's an 8-bit register (CL)
+        
+        // Check the second operand (immediate value)
+        var immOperand = instructions[0].StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x02U, immediateOperand.Value);
     }
     
     /// <summary>
@@ -41,7 +57,22 @@ public class CmpImmWithRm8Tests
         
         // Assert
         Assert.Single(instructions);
-        Assert.Equal("cmp", instructions[0].Mnemonic);
-        Assert.Equal("byte ptr [ecx], 0x05", instructions[0].Operands);
+        Assert.Equal(InstructionType.Cmp, instructions[0].Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instructions[0].StructuredOperands.Count);
+        
+        // Check the first operand (memory operand)
+        var memoryOperand = instructions[0].StructuredOperands[0];
+        Assert.IsType<BaseRegisterMemoryOperand>(memoryOperand);
+        var memory = (BaseRegisterMemoryOperand)memoryOperand;
+        Assert.Equal(RegisterIndex.C, memory.BaseRegister); // Base register is ECX
+        Assert.Equal(8, memory.Size); // Memory size is 8 bits (BYTE)
+        
+        // Check the second operand (immediate value)
+        var immOperand = instructions[0].StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x05U, immediateOperand.Value);
     }
 }

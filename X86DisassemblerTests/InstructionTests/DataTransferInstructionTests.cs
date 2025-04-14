@@ -1,4 +1,5 @@
 using X86Disassembler.X86;
+using X86Disassembler.X86.Operands;
 
 namespace X86DisassemblerTests.InstructionTests;
 
@@ -17,15 +18,33 @@ public class DataTransferInstructionTests
         // MOV EAX, ECX (8B C1) - ModR/M byte C1 = 11 000 001 (mod=3, reg=0, rm=1)
         // mod=3 means direct register addressing, reg=0 is EAX, rm=1 is ECX
         byte[] codeBuffer = new byte[] { 0x8B, 0xC1 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("mov", instruction.Mnemonic);
-        Assert.Equal("eax, ecx", instruction.Operands);
+        Assert.Equal(InstructionType.Mov, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var eaxRegisterOperand = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, eaxRegisterOperand.Register);
+        Assert.Equal(32, eaxRegisterOperand.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (ECX)
+        var ecxOperand = instruction.StructuredOperands[1];
+        Assert.IsType<RegisterOperand>(ecxOperand);
+        var ecxRegisterOperand = (RegisterOperand)ecxOperand;
+        Assert.Equal(RegisterIndex.C, ecxRegisterOperand.Register);
+        Assert.Equal(32, ecxRegisterOperand.Size); // Validate that it's a 32-bit register (ECX)
     }
     
     /// <summary>
@@ -38,15 +57,33 @@ public class DataTransferInstructionTests
         // MOV ECX, EAX (89 C1) - ModR/M byte C1 = 11 000 001 (mod=3, reg=0, rm=1)
         // mod=3 means direct register addressing, reg=0 is EAX, rm=1 is ECX
         byte[] codeBuffer = new byte[] { 0x89, 0xC1 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("mov", instruction.Mnemonic);
-        Assert.Equal("ecx, eax", instruction.Operands);
+        Assert.Equal(InstructionType.Mov, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (ECX)
+        var ecxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ecxOperand);
+        var ecxRegisterOperand = (RegisterOperand)ecxOperand;
+        Assert.Equal(RegisterIndex.C, ecxRegisterOperand.Register);
+        Assert.Equal(32, ecxRegisterOperand.Size); // Validate that it's a 32-bit register (ECX)
+        
+        // Check the second operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[1];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var eaxRegisterOperand = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, eaxRegisterOperand.Register);
+        Assert.Equal(32, eaxRegisterOperand.Size); // Validate that it's a 32-bit register (EAX)
     }
     
     /// <summary>
@@ -58,15 +95,32 @@ public class DataTransferInstructionTests
         // Arrange
         // MOV EAX, 0x12345678 (B8 78 56 34 12)
         byte[] codeBuffer = new byte[] { 0xB8, 0x78, 0x56, 0x34, 0x12 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("mov", instruction.Mnemonic);
-        Assert.Equal("eax, 0x12345678", instruction.Operands);
+        Assert.Equal(InstructionType.Mov, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var eaxRegisterOperand = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, eaxRegisterOperand.Register);
+        Assert.Equal(32, eaxRegisterOperand.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (Immediate)
+        var immOperand = instruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immImmediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x12345678, immImmediateOperand.Value);
     }
     
     /// <summary>
@@ -78,15 +132,32 @@ public class DataTransferInstructionTests
         // Arrange
         // MOV AL, 0x42 (B0 42) - Register is encoded in the low 3 bits of the opcode
         byte[] codeBuffer = new byte[] { 0xB0, 0x42 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("mov", instruction.Mnemonic);
-        Assert.Equal("al, 0x42", instruction.Operands);
+        Assert.Equal(InstructionType.Mov, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (AL)
+        var alOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(alOperand);
+        var alRegisterOperand = (RegisterOperand)alOperand;
+        Assert.Equal(RegisterIndex.A, alRegisterOperand.Register);
+        Assert.Equal(8, alRegisterOperand.Size); // Validate that it's an 8-bit register (AL)
+        
+        // Check the second operand (Immediate)
+        var immOperand = instruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immImmediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x42, immImmediateOperand.Value);
     }
     
     /// <summary>
@@ -98,15 +169,32 @@ public class DataTransferInstructionTests
         // Arrange
         // MOV EAX, [0x12345678] (A1 78 56 34 12)
         byte[] codeBuffer = new byte[] { 0xA1, 0x78, 0x56, 0x34, 0x12 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("mov", instruction.Mnemonic);
-        Assert.Equal("eax, [0x12345678]", instruction.Operands);
+        Assert.Equal(InstructionType.Mov, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var eaxRegisterOperand = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, eaxRegisterOperand.Register);
+        Assert.Equal(32, eaxRegisterOperand.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (Memory)
+        var memOperand = instruction.StructuredOperands[1];
+        Assert.IsType<DirectMemoryOperand>(memOperand);
+        var directMemoryOperand = (DirectMemoryOperand)memOperand;
+        Assert.Equal(0x12345678, directMemoryOperand.Address);
     }
     
     /// <summary>
@@ -118,15 +206,32 @@ public class DataTransferInstructionTests
         // Arrange
         // MOV [0x12345678], EAX (A3 78 56 34 12)
         byte[] codeBuffer = new byte[] { 0xA3, 0x78, 0x56, 0x34, 0x12 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("mov", instruction.Mnemonic);
-        Assert.Equal("[0x12345678], eax", instruction.Operands);
+        Assert.Equal(InstructionType.Mov, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (Memory)
+        var memOperand = instruction.StructuredOperands[0];
+        Assert.IsType<DirectMemoryOperand>(memOperand);
+        var directMemoryOperand = (DirectMemoryOperand)memOperand;
+        Assert.Equal(0x12345678, directMemoryOperand.Address);
+        
+        // Check the second operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[1];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var eaxRegisterOperand = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, eaxRegisterOperand.Register);
+        Assert.Equal(32, eaxRegisterOperand.Size); // Validate that it's a 32-bit register (EAX)
     }
     
     /// <summary>
@@ -139,15 +244,33 @@ public class DataTransferInstructionTests
         // MOV EAX, [ECX+0x12345678] (8B 81 78 56 34 12) - ModR/M byte 81 = 10 000 001 (mod=2, reg=0, rm=1)
         // mod=2 means memory addressing with 32-bit displacement, reg=0 is EAX, rm=1 is ECX
         byte[] codeBuffer = new byte[] { 0x8B, 0x81, 0x78, 0x56, 0x34, 0x12 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("mov", instruction.Mnemonic);
-        Assert.Equal("eax, dword ptr [ecx+0x12345678]", instruction.Operands);
+        Assert.Equal(InstructionType.Mov, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var eaxRegisterOperand = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, eaxRegisterOperand.Register);
+        Assert.Equal(32, eaxRegisterOperand.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (Memory)
+        var memOperand = instruction.StructuredOperands[1];
+        Assert.IsType<DisplacementMemoryOperand>(memOperand);
+        var displacementMemoryOperand = (DisplacementMemoryOperand)memOperand;
+        Assert.Equal(0x12345678, displacementMemoryOperand.Displacement);
+        Assert.Equal(RegisterIndex.C, displacementMemoryOperand.BaseRegister);
     }
     
     /// <summary>
@@ -159,15 +282,26 @@ public class DataTransferInstructionTests
         // Arrange
         // PUSH EAX (50)
         byte[] codeBuffer = new byte[] { 0x50 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("push", instruction.Mnemonic);
-        Assert.Equal("eax", instruction.Operands);
+        Assert.Equal(InstructionType.Push, instruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(instruction.StructuredOperands);
+        
+        // Check the operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var eaxRegisterOperand = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, eaxRegisterOperand.Register);
+        Assert.Equal(32, eaxRegisterOperand.Size); // Validate that it's a 32-bit register (EAX)
     }
     
     /// <summary>
@@ -179,15 +313,25 @@ public class DataTransferInstructionTests
         // Arrange
         // PUSH 0x12345678 (68 78 56 34 12)
         byte[] codeBuffer = new byte[] { 0x68, 0x78, 0x56, 0x34, 0x12 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("push", instruction.Mnemonic);
-        Assert.Equal("0x12345678", instruction.Operands);
+        Assert.Equal(InstructionType.Push, instruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(instruction.StructuredOperands);
+        
+        // Check the operand (Immediate)
+        var immOperand = instruction.StructuredOperands[0];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immImmediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x12345678, immImmediateOperand.Value);
     }
     
     /// <summary>
@@ -199,15 +343,25 @@ public class DataTransferInstructionTests
         // Arrange
         // PUSH 0x42 (6A 42)
         byte[] codeBuffer = new byte[] { 0x6A, 0x42 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("push", instruction.Mnemonic);
-        Assert.Equal("0x42", instruction.Operands);
+        Assert.Equal(InstructionType.Push, instruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(instruction.StructuredOperands);
+        
+        // Check the operand (Immediate)
+        var immOperand = instruction.StructuredOperands[0];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immImmediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x42, immImmediateOperand.Value);
     }
     
     /// <summary>
@@ -219,15 +373,26 @@ public class DataTransferInstructionTests
         // Arrange
         // POP ECX (59)
         byte[] codeBuffer = new byte[] { 0x59 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("pop", instruction.Mnemonic);
-        Assert.Equal("ecx", instruction.Operands);
+        Assert.Equal(InstructionType.Pop, instruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(instruction.StructuredOperands);
+        
+        // Check the operand (ECX)
+        var ecxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ecxOperand);
+        var ecxRegisterOperand = (RegisterOperand)ecxOperand;
+        Assert.Equal(RegisterIndex.C, ecxRegisterOperand.Register);
+        Assert.Equal(32, ecxRegisterOperand.Size); // Validate that it's a 32-bit register (ECX)
     }
     
     /// <summary>
@@ -239,15 +404,33 @@ public class DataTransferInstructionTests
         // Arrange
         // XCHG EAX, ECX (91) - Register is encoded in the low 3 bits of the opcode
         byte[] codeBuffer = new byte[] { 0x91 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("xchg", instruction.Mnemonic);
-        Assert.Equal("eax, ecx", instruction.Operands);
+        Assert.Equal(InstructionType.Xchg, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var eaxRegisterOperand = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, eaxRegisterOperand.Register);
+        Assert.Equal(32, eaxRegisterOperand.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (ECX)
+        var ecxOperand = instruction.StructuredOperands[1];
+        Assert.IsType<RegisterOperand>(ecxOperand);
+        var ecxRegisterOperand = (RegisterOperand)ecxOperand;
+        Assert.Equal(RegisterIndex.C, ecxRegisterOperand.Register);
+        Assert.Equal(32, ecxRegisterOperand.Size); // Validate that it's a 32-bit register (ECX)
     }
     
     /// <summary>
@@ -259,14 +442,18 @@ public class DataTransferInstructionTests
         // Arrange
         // NOP (90) - This is actually XCHG EAX, EAX which is treated as NOP
         byte[] codeBuffer = new byte[] { 0x90 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("nop", instruction.Mnemonic);
-        Assert.Equal("", instruction.Operands);
+        Assert.Equal(InstructionType.Nop, instruction.Type);
+        
+        // Check that we have no operands
+        Assert.Empty(instruction.StructuredOperands);
     }
 }

@@ -1,4 +1,5 @@
 using X86Disassembler.X86;
+using X86Disassembler.X86.Operands;
 
 namespace X86DisassemblerTests.InstructionTests;
 
@@ -24,8 +25,17 @@ public class ArithmeticUnaryTests
         
         // Assert
         Assert.NotNull(instruction);
-        Assert.Equal("div", instruction.Mnemonic);
-        Assert.Equal("ecx", instruction.Operands);
+        Assert.Equal(InstructionType.Div, instruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(instruction.StructuredOperands);
+        
+        // Check the operand (ECX)
+        var ecxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ecxOperand);
+        var registerOperand = (RegisterOperand)ecxOperand;
+        Assert.Equal(RegisterIndex.C, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (ECX)
     }
     
     /// <summary>
@@ -45,8 +55,17 @@ public class ArithmeticUnaryTests
         
         // Assert
         Assert.NotNull(instruction);
-        Assert.Equal("idiv", instruction.Mnemonic);
-        Assert.Equal("ecx", instruction.Operands);
+        Assert.Equal(InstructionType.IDiv, instruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(instruction.StructuredOperands);
+        
+        // Check the operand (ECX)
+        var ecxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ecxOperand);
+        var registerOperand = (RegisterOperand)ecxOperand;
+        Assert.Equal(RegisterIndex.C, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (ECX)
     }
     
     /// <summary>
@@ -66,8 +85,17 @@ public class ArithmeticUnaryTests
         
         // Assert
         Assert.NotNull(instruction);
-        Assert.Equal("mul", instruction.Mnemonic);
-        Assert.Equal("ecx", instruction.Operands);
+        Assert.Equal(InstructionType.Mul, instruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(instruction.StructuredOperands);
+        
+        // Check the operand (ECX)
+        var ecxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ecxOperand);
+        var registerOperand = (RegisterOperand)ecxOperand;
+        Assert.Equal(RegisterIndex.C, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (ECX)
     }
     
     /// <summary>
@@ -87,8 +115,17 @@ public class ArithmeticUnaryTests
         
         // Assert
         Assert.NotNull(instruction);
-        Assert.Equal("imul", instruction.Mnemonic);
-        Assert.Equal("ecx", instruction.Operands);
+        Assert.Equal(InstructionType.IMul, instruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(instruction.StructuredOperands);
+        
+        // Check the operand (ECX)
+        var ecxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ecxOperand);
+        var registerOperand = (RegisterOperand)ecxOperand;
+        Assert.Equal(RegisterIndex.C, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (ECX)
     }
     
     /// <summary>
@@ -108,8 +145,17 @@ public class ArithmeticUnaryTests
         
         // Assert
         Assert.NotNull(instruction);
-        Assert.Equal("neg", instruction.Mnemonic);
-        Assert.Equal("ecx", instruction.Operands);
+        Assert.Equal(InstructionType.Neg, instruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(instruction.StructuredOperands);
+        
+        // Check the operand (ECX)
+        var ecxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ecxOperand);
+        var registerOperand = (RegisterOperand)ecxOperand;
+        Assert.Equal(RegisterIndex.C, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (ECX)
     }
     
     /// <summary>
@@ -129,7 +175,16 @@ public class ArithmeticUnaryTests
         
         // Assert
         Assert.NotNull(instruction);
-        Assert.Equal("not", instruction.Mnemonic);
-        Assert.Equal("ecx", instruction.Operands);
+        Assert.Equal(InstructionType.Not, instruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(instruction.StructuredOperands);
+        
+        // Check the operand (ECX)
+        var ecxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ecxOperand);
+        var registerOperand = (RegisterOperand)ecxOperand;
+        Assert.Equal(RegisterIndex.C, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (ECX)
     }
 }

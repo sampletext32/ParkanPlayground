@@ -1,4 +1,5 @@
 using X86Disassembler.X86;
+using X86Disassembler.X86.Operands;
 
 namespace X86DisassemblerTests.InstructionTests;
 
@@ -17,15 +18,33 @@ public class TestInstructionHandlerTests
         // TEST ECX, EAX (85 C1) - ModR/M byte C1 = 11 000 001 (mod=3, reg=0, rm=1)
         // mod=3 means direct register addressing, reg=0 is EAX, rm=1 is ECX
         byte[] codeBuffer = new byte[] { 0x85, 0xC1 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("test", instruction.Mnemonic);
-        Assert.Equal("ecx, eax", instruction.Operands);
+        Assert.Equal(InstructionType.Test, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (ECX)
+        var ecxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ecxOperand);
+        var registerOperand1 = (RegisterOperand)ecxOperand;
+        Assert.Equal(RegisterIndex.C, registerOperand1.Register);
+        Assert.Equal(32, registerOperand1.Size); // Validate that it's a 32-bit register (ECX)
+        
+        // Check the second operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[1];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand2 = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand2.Register);
+        Assert.Equal(32, registerOperand2.Size); // Validate that it's a 32-bit register (EAX)
     }
     
     /// <summary>
@@ -38,15 +57,33 @@ public class TestInstructionHandlerTests
         // TEST CL, AL (84 C1) - ModR/M byte C1 = 11 000 001 (mod=3, reg=0, rm=1)
         // mod=3 means direct register addressing, reg=0 is AL, rm=1 is CL
         byte[] codeBuffer = new byte[] { 0x84, 0xC1 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("test", instruction.Mnemonic);
-        Assert.Equal("cl, al", instruction.Operands);
+        Assert.Equal(InstructionType.Test, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (CL)
+        var clOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(clOperand);
+        var registerOperand1 = (RegisterOperand)clOperand;
+        Assert.Equal(RegisterIndex.C, registerOperand1.Register);
+        Assert.Equal(8, registerOperand1.Size); // Validate that it's an 8-bit register (CL)
+        
+        // Check the second operand (AL)
+        var alOperand = instruction.StructuredOperands[1];
+        Assert.IsType<RegisterOperand>(alOperand);
+        var registerOperand2 = (RegisterOperand)alOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand2.Register);
+        Assert.Equal(8, registerOperand2.Size); // Validate that it's an 8-bit register (AL)
     }
     
     /// <summary>
@@ -58,16 +95,33 @@ public class TestInstructionHandlerTests
         // Arrange
         // TEST AL, 0x42 (A8 42)
         byte[] codeBuffer = new byte[] { 0xA8, 0x42 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("test", instruction.Mnemonic);
-        // The handler should produce "al, 0xXX" as the operands
-        Assert.Equal("al, 0x42", instruction.Operands);
+        Assert.Equal(InstructionType.Test, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (AL)
+        var alOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(alOperand);
+        var registerOperand = (RegisterOperand)alOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.Equal(8, registerOperand.Size); // Validate that it's an 8-bit register (AL)
+        
+        // Check the second operand (immediate value)
+        var immOperand = instruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x42U, immediateOperand.Value);
+        Assert.Equal(8, immediateOperand.Size); // Validate that it's an 8-bit immediate
     }
     
     /// <summary>
@@ -79,18 +133,35 @@ public class TestInstructionHandlerTests
         // Arrange
         // TEST EAX, 0x12345678 (A9 78 56 34 12)
         byte[] codeBuffer = new byte[] { 0xA9, 0x78, 0x56, 0x34, 0x12 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("test", instruction.Mnemonic);
-        // The handler should produce "eax, 0xXXXXXXXX" as the operands
-        Assert.Equal("eax, 0x12345678", instruction.Operands);
+        Assert.Equal(InstructionType.Test, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (immediate value)
+        var immOperand = instruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x12345678U, immediateOperand.Value);
+        Assert.Equal(32, immediateOperand.Size); // Validate that it's a 32-bit immediate
     }
-
+    
     /// <summary>
     /// Tests the TestImmWithRm8Handler for decoding TEST r/m8, imm8 instructions
     /// </summary>
@@ -101,15 +172,33 @@ public class TestInstructionHandlerTests
         // TEST AH, 0x01 (F6 C4 01) - ModR/M byte C4 = 11 000 100 (mod=3, reg=0, rm=4)
         // mod=3 means direct register addressing, reg=0 indicates TEST operation, rm=4 is AH
         byte[] codeBuffer = new byte[] { 0xF6, 0xC4, 0x01 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("test", instruction.Mnemonic);
-        Assert.Equal("ah, 0x01", instruction.Operands);
+        Assert.Equal(InstructionType.Test, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (AH)
+        var ahOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ahOperand);
+        var registerOperand = (RegisterOperand)ahOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.Equal(8, registerOperand.Size); // Validate that it's an 8-bit register (AH)
+        
+        // Check the second operand (immediate value)
+        var immOperand = instruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x01U, immediateOperand.Value);
+        Assert.Equal(8, immediateOperand.Size); // Validate that it's an 8-bit immediate
     }
     
     /// <summary>
@@ -122,14 +211,32 @@ public class TestInstructionHandlerTests
         // TEST EDI, 0x12345678 (F7 C7 78 56 34 12) - ModR/M byte C7 = 11 000 111 (mod=3, reg=0, rm=7)
         // mod=3 means direct register addressing, reg=0 indicates TEST operation, rm=7 is EDI
         byte[] codeBuffer = new byte[] { 0xF7, 0xC7, 0x78, 0x56, 0x34, 0x12 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("test", instruction.Mnemonic);
-        Assert.Equal("edi, 0x12345678", instruction.Operands);
+        Assert.Equal(InstructionType.Test, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EDI)
+        var ediOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ediOperand);
+        var registerOperand = (RegisterOperand)ediOperand;
+        Assert.Equal(RegisterIndex.D, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EDI)
+        
+        // Check the second operand (immediate value)
+        var immOperand = instruction.StructuredOperands[1];
+        Assert.IsType<ImmediateOperand>(immOperand);
+        var immediateOperand = (ImmediateOperand)immOperand;
+        Assert.Equal(0x12345678U, immediateOperand.Value);
+        Assert.Equal(32, immediateOperand.Size); // Validate that it's a 32-bit immediate
     }
 }

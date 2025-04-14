@@ -1,4 +1,5 @@
 using X86Disassembler.X86;
+using X86Disassembler.X86.Operands;
 
 namespace X86DisassemblerTests.InstructionTests;
 
@@ -16,15 +17,34 @@ public class SegmentOverrideTests
         // Arrange
         // CS segment override prefix (0x2E) followed by MOV EAX, [0] (8B 05 00 00 00 00)
         byte[] codeBuffer = new byte[] { 0x2E, 0x8B, 0x05, 0x00, 0x00, 0x00, 0x00 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("mov", instruction.Mnemonic);
-        Assert.Equal("eax, dword ptr cs:[0x00000000]", instruction.Operands);
+        Assert.Equal(InstructionType.Move, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (memory operand with CS segment override)
+        var memOperand = instruction.StructuredOperands[1];
+        Assert.IsType<DirectMemoryOperand>(memOperand);
+        var memoryOperand = (DirectMemoryOperand)memOperand;
+        Assert.Equal(32, memoryOperand.Size); // Validate that it's a 32-bit memory reference
+        Assert.Equal(0, memoryOperand.Address);
+        Assert.Equal("cs", memoryOperand.SegmentOverride);
     }
     
     /// <summary>
@@ -36,15 +56,34 @@ public class SegmentOverrideTests
         // Arrange
         // DS segment override prefix (0x3E) followed by MOV EAX, [0] (8B 05 00 00 00 00)
         byte[] codeBuffer = new byte[] { 0x3E, 0x8B, 0x05, 0x00, 0x00, 0x00, 0x00 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("mov", instruction.Mnemonic);
-        Assert.Equal("eax, dword ptr ds:[0x00000000]", instruction.Operands);
+        Assert.Equal(InstructionType.Move, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (memory operand with DS segment override)
+        var memOperand = instruction.StructuredOperands[1];
+        Assert.IsType<DirectMemoryOperand>(memOperand);
+        var memoryOperand = (DirectMemoryOperand)memOperand;
+        Assert.Equal(32, memoryOperand.Size); // Validate that it's a 32-bit memory reference
+        Assert.Equal(0, memoryOperand.Address);
+        Assert.Equal("ds", memoryOperand.SegmentOverride);
     }
     
     /// <summary>
@@ -56,15 +95,34 @@ public class SegmentOverrideTests
         // Arrange
         // ES segment override prefix (0x26) followed by MOV EAX, [0] (8B 05 00 00 00 00)
         byte[] codeBuffer = new byte[] { 0x26, 0x8B, 0x05, 0x00, 0x00, 0x00, 0x00 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("mov", instruction.Mnemonic);
-        Assert.Equal("eax, dword ptr es:[0x00000000]", instruction.Operands);
+        Assert.Equal(InstructionType.Move, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (memory operand with ES segment override)
+        var memOperand = instruction.StructuredOperands[1];
+        Assert.IsType<DirectMemoryOperand>(memOperand);
+        var memoryOperand = (DirectMemoryOperand)memOperand;
+        Assert.Equal(32, memoryOperand.Size); // Validate that it's a 32-bit memory reference
+        Assert.Equal(0, memoryOperand.Address);
+        Assert.Equal("es", memoryOperand.SegmentOverride);
     }
     
     /// <summary>
@@ -76,15 +134,34 @@ public class SegmentOverrideTests
         // Arrange
         // FS segment override prefix (0x64) followed by MOV [0], ESP (89 25 00 00 00 00)
         byte[] codeBuffer = new byte[] { 0x64, 0x89, 0x25, 0x00, 0x00, 0x00, 0x00 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("mov", instruction.Mnemonic);
-        Assert.Equal("dword ptr fs:[0x00000000], esp", instruction.Operands);
+        Assert.Equal(InstructionType.Move, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (memory operand with FS segment override)
+        var memOperand = instruction.StructuredOperands[0];
+        Assert.IsType<DirectMemoryOperand>(memOperand);
+        var memoryOperand = (DirectMemoryOperand)memOperand;
+        Assert.Equal(32, memoryOperand.Size); // Validate that it's a 32-bit memory reference
+        Assert.Equal(0, memoryOperand.Address);
+        Assert.Equal("fs", memoryOperand.SegmentOverride);
+        
+        // Check the second operand (ESP)
+        var espOperand = instruction.StructuredOperands[1];
+        Assert.IsType<RegisterOperand>(espOperand);
+        var registerOperand = (RegisterOperand)espOperand;
+        Assert.Equal(RegisterIndex.Sp, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (ESP)
     }
     
     /// <summary>
@@ -96,15 +173,34 @@ public class SegmentOverrideTests
         // Arrange
         // GS segment override prefix (0x65) followed by MOV EAX, [0] (8B 05 00 00 00 00)
         byte[] codeBuffer = new byte[] { 0x65, 0x8B, 0x05, 0x00, 0x00, 0x00, 0x00 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("mov", instruction.Mnemonic);
-        Assert.Equal("eax, dword ptr gs:[0x00000000]", instruction.Operands);
+        Assert.Equal(InstructionType.Move, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (memory operand with GS segment override)
+        var memOperand = instruction.StructuredOperands[1];
+        Assert.IsType<DirectMemoryOperand>(memOperand);
+        var memoryOperand = (DirectMemoryOperand)memOperand;
+        Assert.Equal(32, memoryOperand.Size); // Validate that it's a 32-bit memory reference
+        Assert.Equal(0, memoryOperand.Address);
+        Assert.Equal("gs", memoryOperand.SegmentOverride);
     }
     
     /// <summary>
@@ -116,15 +212,35 @@ public class SegmentOverrideTests
         // Arrange
         // SS segment override prefix (0x36) followed by MOV EAX, [EBP-4] (8B 45 FC)
         byte[] codeBuffer = new byte[] { 0x36, 0x8B, 0x45, 0xFC };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("mov", instruction.Mnemonic);
-        Assert.Equal("eax, dword ptr ss:[ebp-0x04]", instruction.Operands);
+        Assert.Equal(InstructionType.Move, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (memory operand with SS segment override)
+        var memOperand = instruction.StructuredOperands[1];
+        Assert.IsType<DisplacementMemoryOperand>(memOperand);
+        var memoryOperand = (DisplacementMemoryOperand)memOperand;
+        Assert.Equal(32, memoryOperand.Size); // Validate that it's a 32-bit memory reference
+        Assert.Equal("ss", memoryOperand.SegmentOverride);
+        Assert.Equal(RegisterIndex.Bp, memoryOperand.BaseRegister);
+        Assert.Equal(-4, memoryOperand.Displacement);
     }
     
     /// <summary>
@@ -136,15 +252,16 @@ public class SegmentOverrideTests
         // Arrange
         // Just the FS segment override prefix (0x64)
         byte[] codeBuffer = new byte[] { 0x64 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("fs", instruction.Mnemonic);
-        Assert.Equal("", instruction.Operands);
+        Assert.Equal(InstructionType.Rep, instruction.Type);
     }
     
     /// <summary>
@@ -156,15 +273,37 @@ public class SegmentOverrideTests
         // Arrange
         // FS segment override prefix (0x64) followed by MOV EAX, [EBX+ECX*4+0x10] (8B 84 8B 10 00 00 00)
         byte[] codeBuffer = new byte[] { 0x64, 0x8B, 0x84, 0x8B, 0x10, 0x00, 0x00, 0x00 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("mov", instruction.Mnemonic);
-        Assert.Equal("eax, dword ptr fs:[ebx+ecx*4+0x10]", instruction.Operands);
+        Assert.Equal(InstructionType.Move, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (memory operand with FS segment override)
+        var memOperand = instruction.StructuredOperands[1];
+        Assert.IsType<ScaledIndexMemoryOperand>(memOperand);
+        var memoryOperand = (ScaledIndexMemoryOperand)memOperand;
+        Assert.Equal(32, memoryOperand.Size); // Validate that it's a 32-bit memory reference
+        Assert.Equal("fs", memoryOperand.SegmentOverride);
+        Assert.Equal(RegisterIndex.B, memoryOperand.BaseRegister);
+        Assert.Equal(RegisterIndex.C, memoryOperand.IndexRegister);
+        Assert.Equal(4, memoryOperand.Scale);
+        Assert.Equal(0x10, memoryOperand.Displacement);
     }
     
     /// <summary>
@@ -176,16 +315,34 @@ public class SegmentOverrideTests
         // Arrange
         // ES segment override prefix (0x26) followed by LODS DWORD PTR DS:[ESI] (AD)
         byte[] codeBuffer = new byte[] { 0x26, 0xAD };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("lods", instruction.Mnemonic);
-        // The string instruction uses DS:ESI by default, but with ES override it becomes ES:ESI
-        Assert.Equal("eax, dword ptr es:[esi]", instruction.Operands);
+        Assert.Equal(InstructionType.LodsD, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (EAX)
+        var eaxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(eaxOperand);
+        var registerOperand = (RegisterOperand)eaxOperand;
+        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EAX)
+        
+        // Check the second operand (memory operand with ES segment override)
+        var memOperand = instruction.StructuredOperands[1];
+        Assert.IsType<DirectMemoryOperand>(memOperand);
+        var memoryOperand = (DirectMemoryOperand)memOperand;
+        Assert.Equal(32, memoryOperand.Size); // Validate that it's a 32-bit memory reference
+        Assert.Equal(0, memoryOperand.Address);
+        Assert.Equal("es", memoryOperand.SegmentOverride);
     }
     
     /// <summary>
@@ -197,14 +354,34 @@ public class SegmentOverrideTests
         // Arrange
         // REP prefix (F3) followed by FS segment override prefix (0x64) followed by MOVS (A4)
         byte[] codeBuffer = new byte[] { 0xF3, 0x64, 0xA4 };
-        var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
+        var disassembler = new Disassembler(codeBuffer, 0);
         
         // Act
-        var instruction = decoder.DecodeInstruction();
+        var instructions = disassembler.Disassemble();
         
         // Assert
+        Assert.Single(instructions);
+        var instruction = instructions[0];
         Assert.NotNull(instruction);
-        Assert.Equal("rep movs", instruction.Mnemonic);
-        Assert.Equal("byte ptr fs:[edi], byte ptr fs:[esi]", instruction.Operands);
+        Assert.Equal(InstructionType.RepMovsB, instruction.Type);
+        
+        // Check that we have two operands
+        Assert.Equal(2, instruction.StructuredOperands.Count);
+        
+        // Check the first operand (memory operand with FS segment override)
+        var memOperand = instruction.StructuredOperands[0];
+        Assert.IsType<BaseRegisterMemoryOperand>(memOperand);
+        var memoryOperand = (BaseRegisterMemoryOperand)memOperand;
+        Assert.Equal(8, memoryOperand.Size); // Validate that it's a byte memory reference
+        Assert.Equal("fs", memoryOperand.SegmentOverride);
+        Assert.Equal(RegisterIndex.Di, memoryOperand.BaseRegister);
+        
+        // Check the second operand (memory operand with FS segment override)
+        var memOperand2 = instruction.StructuredOperands[1];
+        Assert.IsType<BaseRegisterMemoryOperand>(memOperand2);
+        var memoryOperand2 = (BaseRegisterMemoryOperand)memOperand2;
+        Assert.Equal(8, memoryOperand2.Size); // Validate that it's a byte memory reference
+        Assert.Equal("fs", memoryOperand2.SegmentOverride);
+        Assert.Equal(RegisterIndex.Si, memoryOperand2.BaseRegister);
     }
 }

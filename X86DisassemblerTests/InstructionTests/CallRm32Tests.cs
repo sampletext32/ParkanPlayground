@@ -1,4 +1,5 @@
 using X86Disassembler.X86;
+using X86Disassembler.X86.Operands;
 
 namespace X86DisassemblerTests.InstructionTests;
 
@@ -22,8 +23,18 @@ public class CallRm32Tests
         
         // Assert
         Assert.Single(instructions);
-        Assert.Equal("call", instructions[0].Mnemonic);
-        Assert.Equal("ebx", instructions[0].Operands);
+        var instruction = instructions[0];
+        Assert.Equal(InstructionType.Call, instruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(instruction.StructuredOperands);
+        
+        // Check the operand (EBX)
+        var ebxOperand = instruction.StructuredOperands[0];
+        Assert.IsType<RegisterOperand>(ebxOperand);
+        var registerOperand = (RegisterOperand)ebxOperand;
+        Assert.Equal(RegisterIndex.B, registerOperand.Register);
+        Assert.Equal(32, registerOperand.Size); // Validate that it's a 32-bit register (EBX)
     }
     
     /// <summary>
@@ -41,7 +52,17 @@ public class CallRm32Tests
         
         // Assert
         Assert.Single(instructions);
-        Assert.Equal("call", instructions[0].Mnemonic);
-        Assert.Equal("dword ptr [eax]", instructions[0].Operands);
+        var instruction = instructions[0];
+        Assert.Equal(InstructionType.Call, instruction.Type);
+        
+        // Check that we have one operand
+        Assert.Single(instruction.StructuredOperands);
+        
+        // Check the operand (memory operand)
+        var memoryOperand = instruction.StructuredOperands[0];
+        Assert.IsType<BaseRegisterMemoryOperand>(memoryOperand);
+        var memory = (BaseRegisterMemoryOperand)memoryOperand;
+        Assert.Equal(RegisterIndex.A, memory.BaseRegister); // Base register is EAX
+        Assert.Equal(32, memory.Size); // Memory size is 32 bits (DWORD)
     }
 }
