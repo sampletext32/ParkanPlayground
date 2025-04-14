@@ -60,6 +60,6 @@ public class ScaledIndexMemoryOperand : MemoryOperand
             dispPart = $"{sign}0x{Math.Abs(Displacement):X}";
         }
         
-        return $"{GetSegmentPrefix()}{GetSizePrefix()}[{baseRegPart}{indexPart}{dispPart}]";
+        return $"{GetSizePrefix()}[{baseRegPart}{indexPart}{dispPart}]";
     }
 }

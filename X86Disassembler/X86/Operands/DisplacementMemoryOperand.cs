@@ -43,6 +43,6 @@ public class DisplacementMemoryOperand : MemoryOperand
             ? $"0x{Math.Abs(Displacement):X2}" 
             : $"0x{Math.Abs(Displacement):X}";
         
-        return $"{GetSegmentPrefix()}{GetSizePrefix()}[{registerName}{sign}{formattedDisplacement}]";
+        return $"{GetSizePrefix()}[{registerName}{sign}{formattedDisplacement}]";
     }
 }

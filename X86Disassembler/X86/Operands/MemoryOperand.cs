@@ -20,17 +20,7 @@ public abstract class MemoryOperand : Operand
         Size = size;
         SegmentOverride = segmentOverride;
     }
-    
-    /// <summary>
-    /// Gets the segment prefix string for display
-    /// </summary>
-    /// <returns>The segment prefix string</returns>
-    protected string GetSegmentPrefix()
-    {
-        // Format changed to match expected test output: "dword ptr es:[ebp+0x10]" instead of "es:dword ptr [ebp+0x10]"
-        return "";
-    }
-    
+
     /// <summary>
     /// Gets the size prefix string for display (e.g., "byte ptr", "word ptr", "dword ptr")
     /// </summary>

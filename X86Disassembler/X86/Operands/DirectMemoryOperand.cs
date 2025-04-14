@@ -28,6 +28,6 @@ public class DirectMemoryOperand : MemoryOperand
     /// </summary>
     public override string ToString()
     {
-        return $"{GetSegmentPrefix()}{GetSizePrefix()}[0x{Address:X}]";
+        return $"{GetSizePrefix()}[0x{Address:X}]";
     }
 }
