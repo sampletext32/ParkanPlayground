@@ -10,14 +10,14 @@ public class Int16OperationHandler : InstructionHandler
     // Memory operand instruction types for DE opcode - operations on int16
     private static readonly InstructionType[] MemoryInstructionTypes =
     [
-        InstructionType.Unknown, // fiadd - not in enum
-        InstructionType.Unknown, // fimul - not in enum
-        InstructionType.Unknown, // ficom - not in enum
-        InstructionType.Unknown, // ficomp - not in enum
-        InstructionType.Unknown, // fisub - not in enum
-        InstructionType.Unknown, // fisubr - not in enum
-        InstructionType.Unknown, // fidiv - not in enum
-        InstructionType.Unknown  // fidivr - not in enum
+        InstructionType.Fiadd,  // fiadd word ptr [r/m]
+        InstructionType.Fmul,   // fimul word ptr [r/m]
+        InstructionType.Fcom,   // ficom word ptr [r/m]
+        InstructionType.Fcomp,  // ficomp word ptr [r/m]
+        InstructionType.Fsub,   // fisub word ptr [r/m]
+        InstructionType.Fsubr,  // fisubr word ptr [r/m]
+        InstructionType.Fdiv,   // fidiv word ptr [r/m]
+        InstructionType.Fdivr   // fidivr word ptr [r/m]
     ];
     
     // Register-register operations mapping (mod=3)

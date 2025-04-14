@@ -27,6 +27,13 @@ public class ImmediateOperand : Operand
     /// </summary>
     public override string ToString()
     {
+        // For negative values, ensure we show the full 32-bit representation
+        if (Value < 0 && Size == 32)
+        {
+            return $"0x{Value & 0xFFFFFFFF:X8}";
+        }
+        
+        // For positive values or other sizes, show the regular representation
         return $"0x{Value:X}";
     }
 }

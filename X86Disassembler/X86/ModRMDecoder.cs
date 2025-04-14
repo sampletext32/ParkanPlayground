@@ -33,6 +33,36 @@ public class ModRMDecoder
     {
         _decoder = decoder;
     }
+    
+    /// <summary>
+    /// Maps the register index from the ModR/M byte to the RegisterIndex enum value
+    /// </summary>
+    /// <param name="modRMRegIndex">The register index from the ModR/M byte (0-7)</param>
+    /// <returns>The corresponding RegisterIndex enum value</returns>
+    private RegisterIndex MapModRMToRegisterIndex(int modRMRegIndex)
+    {
+        // The mapping from ModR/M register index to RegisterIndex enum is:
+        // 0 -> A (EAX)
+        // 1 -> C (ECX)
+        // 2 -> D (EDX)
+        // 3 -> B (EBX)
+        // 4 -> Sp (ESP)
+        // 5 -> Bp (EBP)
+        // 6 -> Si (ESI)
+        // 7 -> Di (EDI)
+        return modRMRegIndex switch
+        {
+            0 => RegisterIndex.A,  // EAX
+            1 => RegisterIndex.C,  // ECX
+            2 => RegisterIndex.D,  // EDX
+            3 => RegisterIndex.B,  // EBX
+            4 => RegisterIndex.Sp, // ESP
+            5 => RegisterIndex.Bp, // EBP
+            6 => RegisterIndex.Si, // ESI
+            7 => RegisterIndex.Di, // EDI
+            _ => RegisterIndex.A   // Default to EAX
+        };
+    }
 
     /// <summary>
     /// Decodes a ModR/M byte to get the operand
@@ -62,7 +92,7 @@ public class ModRMDecoder
                 }
 
                 // Special case: [ESP] is encoded with SIB byte
-                if (rmIndex == RegisterIndex.Si) // SIB (was ESP/SP)
+                if (rmIndex == RegisterIndex.Sp) // SIB (was ESP/SP)
                 {
                     // Handle SIB byte
                     if (_decoder.CanReadByte())
@@ -72,14 +102,14 @@ public class ModRMDecoder
                     }
 
                     // Fallback for incomplete data
-                    return OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Si, operandSize);
+                    return OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Sp, operandSize);
                 }
 
                 // Regular case: [reg]
                 return OperandFactory.CreateBaseRegisterMemoryOperand(rmIndex, operandSize);
 
             case 1: // [reg + disp8]
-                if (rmIndex == RegisterIndex.Si) // SIB + disp8 (was ESP/SP)
+                if (rmIndex == RegisterIndex.Sp) // SIB + disp8 (ESP/SP)
                 {
                     // Handle SIB byte
                     if (_decoder.CanReadByte())
@@ -90,7 +120,7 @@ public class ModRMDecoder
                     }
 
                     // Fallback for incomplete data
-                    return OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Si, operandSize);
+                    return OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Sp, operandSize);
                 }
                 else
                 {
@@ -98,8 +128,9 @@ public class ModRMDecoder
                     {
                         sbyte disp8 = (sbyte)_decoder.ReadByte();
 
-                        // Only show displacement if it's not zero
-                        if (disp8 == 0)
+                        // For EBP (BP), always create a displacement memory operand, even if displacement is 0
+                        // This is because [EBP] with no displacement is encoded as [EBP+0]
+                        if (disp8 == 0 && rmIndex != RegisterIndex.Bp)
                         {
                             return OperandFactory.CreateBaseRegisterMemoryOperand(rmIndex, operandSize);
                         }
@@ -112,7 +143,7 @@ public class ModRMDecoder
                 }
 
             case 2: // [reg + disp32]
-                if (rmIndex == RegisterIndex.Si) // SIB + disp32 (was ESP/SP)
+                if (rmIndex == RegisterIndex.Sp) // SIB + disp32 (ESP/SP)
                 {
                     // Handle SIB byte
                     if (_decoder.CanReadUInt())
@@ -123,13 +154,20 @@ public class ModRMDecoder
                     }
 
                     // Fallback for incomplete data
-                    return OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Si, operandSize);
+                    return OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Sp, operandSize);
                 }
                 else
                 {
                     if (_decoder.CanReadUInt())
                     {
                         uint disp32 = _decoder.ReadUInt32();
+
+                        // For EBP (BP), always create a displacement memory operand, even if displacement is 0
+                        // This is because [EBP] with no displacement is encoded as [EBP+disp]
+                        if (rmIndex == RegisterIndex.Bp)
+                        {
+                            return OperandFactory.CreateDisplacementMemoryOperand(rmIndex, (int)disp32, operandSize);
+                        }
 
                         // Only show displacement if it's not zero
                         if (disp32 == 0)
@@ -154,6 +192,48 @@ public class ModRMDecoder
     }
 
     /// <summary>
+    /// Peaks a ModR/M byte and returns the raw field values, without advancing position
+    /// </summary>
+    /// <returns>A tuple containing the raw mod, reg, and rm fields from the ModR/M byte</returns>
+    public (byte mod, byte reg, byte rm) PeakModRMRaw()
+    {
+        if (!_decoder.CanReadByte())
+        {
+            return (0, 0, 0);
+        }
+
+        byte modRM = _decoder.PeakByte();
+
+        // Extract fields from ModR/M byte
+        byte mod = (byte)((modRM & MOD_MASK) >> 6);  // Top 2 bits (bits 6-7)
+        byte regIndex = (byte)((modRM & REG_MASK) >> 3);  // Middle 3 bits (bits 3-5)
+        byte rmIndex = (byte)(modRM & RM_MASK);  // Bottom 3 bits (bits 0-2)
+
+        return (mod, regIndex, rmIndex);
+    }
+
+    /// <summary>
+    /// Reads a ModR/M byte and returns the raw field values
+    /// </summary>
+    /// <returns>A tuple containing the raw mod, reg, and rm fields from the ModR/M byte</returns>
+    public (byte mod, byte reg, byte rm) ReadModRMRaw()
+    {
+        if (!_decoder.CanReadByte())
+        {
+            return (0, 0, 0);
+        }
+
+        byte modRM = _decoder.ReadByte();
+
+        // Extract fields from ModR/M byte
+        byte mod = (byte)((modRM & MOD_MASK) >> 6);  // Top 2 bits (bits 6-7)
+        byte regIndex = (byte)((modRM & REG_MASK) >> 3);  // Middle 3 bits (bits 3-5)
+        byte rmIndex = (byte)(modRM & RM_MASK);  // Bottom 3 bits (bits 0-2)
+
+        return (mod, regIndex, rmIndex);
+    }
+
+    /// <summary>
     /// Reads and decodes a ModR/M byte
     /// </summary>
     /// <param name="is64Bit">True if the operand is 64-bit</param>
@@ -169,8 +249,12 @@ public class ModRMDecoder
 
         // Extract fields from ModR/M byte
         byte mod = (byte)((modRM & MOD_MASK) >> 6);
-        RegisterIndex reg = (RegisterIndex)((modRM & REG_MASK) >> 3);
-        RegisterIndex rm = (RegisterIndex)(modRM & RM_MASK);
+        byte regIndex = (byte)((modRM & REG_MASK) >> 3);
+        byte rmIndex = (byte)(modRM & RM_MASK);
+        
+        // Map the ModR/M register indices to RegisterIndex enum values
+        RegisterIndex reg = MapModRMToRegisterIndex(regIndex);
+        RegisterIndex rm = MapModRMToRegisterIndex(rmIndex);
 
         Operand operand = DecodeModRM(mod, rm, is64Bit);
 
@@ -190,14 +274,18 @@ public class ModRMDecoder
 
         // Extract fields from SIB byte
         byte scale = (byte)((sib & SIB_SCALE_MASK) >> 6);
-        RegisterIndex index = (RegisterIndex)((sib & SIB_INDEX_MASK) >> 3);
-        RegisterIndex @base = (RegisterIndex)(sib & SIB_BASE_MASK);
+        int indexIndex = (sib & SIB_INDEX_MASK) >> 3;
+        int baseIndex = sib & SIB_BASE_MASK;
+        
+        // Map the SIB register indices to RegisterIndex enum values
+        RegisterIndex index = MapModRMToRegisterIndex(indexIndex);
+        RegisterIndex @base = MapModRMToRegisterIndex(baseIndex);
 
         // Special case: ESP/SP (4) in index field means no index register
-        if (index == RegisterIndex.Si)
+        if (index == RegisterIndex.Sp)
         {
             // Special case: EBP/BP (5) in base field with no displacement means disp32 only
-            if (@base == RegisterIndex.Di && displacement == 0)
+            if (@base == RegisterIndex.Bp && displacement == 0)
             {
                 if (_decoder.CanReadUInt())
                 {

@@ -133,6 +133,9 @@ public enum InstructionType
     Fcom,       // Compare floating point
     Fcomp,      // Compare floating point and pop
     Fcompp,     // Compare floating point and pop twice
+    Fcomip,     // Compare floating point and pop, set EFLAGS
+    Fucomip,    // Unordered compare floating point and pop, set EFLAGS
+    Ffreep,     // Free floating point register and pop
     Fnstsw,     // Store FPU status word
     Fnstcw,     // Store FPU control word
     Fldcw,      // Load FPU control word
