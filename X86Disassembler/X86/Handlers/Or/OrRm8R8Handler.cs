@@ -29,9 +29,6 @@ public class OrRm8R8Handler : InstructionHandler
         // Check if we can read the ModR/M byte
         if (!Decoder.CanReadByte())
             return false;
-            
-        // Peek at the ModR/M byte to verify this is the correct instruction
-        byte modRM = Decoder.PeakByte();
         
         return true;
     }
@@ -54,7 +51,7 @@ public class OrRm8R8Handler : InstructionHandler
         }
 
         // Read the ModR/M byte, specifying that we're dealing with 8-bit operands
-        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM8();
+        var (_, reg, _, destinationOperand) = ModRMDecoder.ReadModRM8();
         
         // Adjust the operand size to 8-bit
         destinationOperand.Size = 8;

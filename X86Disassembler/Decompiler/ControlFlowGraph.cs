@@ -1,8 +1,8 @@
 namespace X86Disassembler.Decompiler;
 
 using System.Collections.Generic;
-using X86Disassembler.X86;
-using X86Disassembler.X86.Operands;
+using X86;
+using X86.Operands;
 
 /// <summary>
 /// Represents a control flow graph for decompilation

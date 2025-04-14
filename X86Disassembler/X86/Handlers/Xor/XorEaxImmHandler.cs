@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86.Handlers.Xor;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handler for XOR EAX, imm32 instruction (0x35)

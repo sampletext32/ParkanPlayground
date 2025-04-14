@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86.Handlers.Xor;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handler for XOR r/m16, r16 instruction (0x31 with 0x66 prefix)
@@ -44,7 +44,7 @@ public class XorRm16R16Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
+        var (_, reg, _, destinationOperand) = ModRMDecoder.ReadModRM();
 
         // Create the source register operand (16-bit)
         var sourceOperand = OperandFactory.CreateRegisterOperand(reg, 16);

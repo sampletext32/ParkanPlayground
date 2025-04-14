@@ -50,7 +50,7 @@ public class MovRegMemHandler : InstructionHandler
         // For MOV r32, r/m32 (0x8B) or MOV r8, r/m8 (0x8A):
         // - The reg field specifies the destination register
         // - The r/m field with mod specifies the source operand (register or memory)
-        var (mod, reg, rm, sourceOperand) = ModRMDecoder.ReadModRM();
+        var (_, reg, _, sourceOperand) = ModRMDecoder.ReadModRM();
 
         // Adjust the operand size based on the opcode
         sourceOperand.Size = operandSize;

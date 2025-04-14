@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86.Handlers.Call;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handler for CALL rel32 instruction (0xE8)

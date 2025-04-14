@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86.Handlers.Cmp;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handler for CMP AL, imm8 instruction (0x3C)

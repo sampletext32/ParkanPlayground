@@ -40,7 +40,7 @@ public class SubR32Rm32Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, sourceOperand) = ModRMDecoder.ReadModRM();
+        var (_, reg, _, sourceOperand) = ModRMDecoder.ReadModRM();
         
         // Set the instruction type
         instruction.Type = InstructionType.Sub;

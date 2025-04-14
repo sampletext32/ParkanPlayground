@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handles decoding of ModR/M bytes in x86 instructions
@@ -213,21 +213,19 @@ public class ModRMDecoder
     /// Peaks a ModR/M byte and returns the raw field values, without advancing position
     /// </summary>
     /// <returns>A tuple containing the raw mod, reg, and rm fields from the ModR/M byte</returns>
-    public (byte mod, byte reg, byte rm) PeakModRMRaw()
+    public byte PeakModRMReg()
     {
         if (!_decoder.CanReadByte())
         {
-            return (0, 0, 0);
+            return 0;
         }
 
         byte modRM = _decoder.PeakByte();
 
         // Extract fields from ModR/M byte
-        byte mod = (byte)((modRM & MOD_MASK) >> 6);  // Top 2 bits (bits 6-7)
         byte regIndex = (byte)((modRM & REG_MASK) >> 3);  // Middle 3 bits (bits 3-5)
-        byte rmIndex = (byte)(modRM & RM_MASK);  // Bottom 3 bits (bits 0-2)
 
-        return (mod, regIndex, rmIndex);
+        return regIndex;
     }
 
     /// <summary>

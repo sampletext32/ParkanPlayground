@@ -47,7 +47,7 @@ public class MovRm8Imm8Handler : InstructionHandler
         // For MOV r/m8, imm8 (0xC6):
         // - The r/m field with mod specifies the destination operand (register or memory)
         // - The immediate value is the source operand
-        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
+        var (_, reg, _, destinationOperand) = ModRMDecoder.ReadModRM();
         
         // MOV r/m8, imm8 only uses reg=0
         if (reg != 0)

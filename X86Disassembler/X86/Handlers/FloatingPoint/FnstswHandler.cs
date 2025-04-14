@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86.Handlers.FloatingPoint;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handler for FNSTSW AX instruction (0xDF 0xE0)

@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86.Handlers.Adc;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handler for ADC r/m32, imm32 instruction (0x81 /2)
@@ -30,8 +30,7 @@ public class AdcImmToRm32Handler : InstructionHandler
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = Decoder.PeakByte();
-        byte reg = (byte) ((modRM & 0x38) >> 3);
+        var reg = ModRMDecoder.PeakModRMReg();
 
         return reg == 2; // 2 = ADC
     }
@@ -53,7 +52,7 @@ public class AdcImmToRm32Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        var (_, _, _, destOperand) = ModRMDecoder.ReadModRM();
 
         if (!Decoder.CanReadUInt())
         {

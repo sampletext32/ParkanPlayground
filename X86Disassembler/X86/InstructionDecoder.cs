@@ -4,7 +4,7 @@ using System.Diagnostics.Contracts;
 namespace X86Disassembler.X86;
 
 using Handlers;
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Decodes x86 instructions from a byte buffer
@@ -25,7 +25,6 @@ public class InstructionDecoder
 
     // Specialized decoders
     private readonly PrefixDecoder _prefixDecoder;
-    private readonly ModRMDecoder _modRMDecoder;
 
     /// <summary>
     /// Initializes a new instance of the InstructionDecoder class
@@ -40,7 +39,7 @@ public class InstructionDecoder
 
         // Create specialized decoders
         _prefixDecoder = new PrefixDecoder();
-        _modRMDecoder = new ModRMDecoder(this);
+        new ModRMDecoder(this);
 
         // Create the instruction handler factory
         _handlerFactory = new InstructionHandlerFactory(_codeBuffer, this, _length);
@@ -133,8 +132,7 @@ public class InstructionDecoder
             string segmentOverride = _prefixDecoder.GetSegmentOverride();
 
             // Save the position before decoding
-            int beforeDecodePosition = _position;
-            
+
             // Decode the instruction
             handlerSuccess = handler.Decode(opcode, instruction);
 
@@ -144,7 +142,7 @@ public class InstructionDecoder
                 // Apply segment override to memory operands
                 foreach (var operand in instruction.StructuredOperands)
                 {
-                    if (operand is Operands.MemoryOperand memoryOperand)
+                    if (operand is MemoryOperand memoryOperand)
                     {
                         memoryOperand.SegmentOverride = segmentOverride;
                     }
@@ -285,15 +283,6 @@ public class InstructionDecoder
     public bool HasOperandSizeOverridePrefix()
     {
         return _prefixDecoder.HasOperandSizePrefix();
-    }
-
-    /// <summary>
-    /// Gets the prefix decoder
-    /// </summary>
-    /// <returns>The prefix decoder</returns>
-    public PrefixDecoder GetPrefixDecoder()
-    {
-        return _prefixDecoder;
     }
 
     /// <summary>

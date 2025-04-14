@@ -43,7 +43,7 @@ public class CmpR32Rm32Handler : InstructionHandler
         instruction.Type = InstructionType.Cmp;
 
         // Read the ModR/M byte
-        var (mod, reg, rm, sourceOperand) = ModRMDecoder.ReadModRM();
+        var (_, reg, _, sourceOperand) = ModRMDecoder.ReadModRM();
         
         // Create the destination register operand (32-bit)
         var destinationOperand = OperandFactory.CreateRegisterOperand((RegisterIndex)reg, 32);

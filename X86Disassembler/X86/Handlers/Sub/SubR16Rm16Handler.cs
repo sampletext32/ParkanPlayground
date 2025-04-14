@@ -44,7 +44,7 @@ public class SubR16Rm16Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, sourceOperand) = ModRMDecoder.ReadModRM();
+        var (_, reg, _, sourceOperand) = ModRMDecoder.ReadModRM();
         
         // Ensure the source operand has the correct size (16-bit)
         sourceOperand.Size = 16;

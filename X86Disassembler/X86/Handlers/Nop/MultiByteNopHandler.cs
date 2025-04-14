@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86.Handlers.Nop;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handler for multi-byte NOP instructions (0x0F 0x1F ...)

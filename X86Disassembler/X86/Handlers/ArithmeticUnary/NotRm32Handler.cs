@@ -31,8 +31,7 @@ public class NotRm32Handler : InstructionHandler
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = Decoder.PeakByte();
-        byte reg = (byte) ((modRM & 0x38) >> 3);
+        var reg = ModRMDecoder.PeakModRMReg();
 
         return reg == 2; // 2 = NOT
     }
@@ -56,7 +55,7 @@ public class NotRm32Handler : InstructionHandler
         // Read the ModR/M byte
         // For NOT r/m32 (0xF7 /2):
         // - The r/m field with mod specifies the operand (register or memory)
-        var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
+        var (_, reg, _, operand) = ModRMDecoder.ReadModRM();
 
         // Verify this is a NOT instruction
         // The reg field should be 2 (NOT), which maps to RegisterIndex.D in our enum

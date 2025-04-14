@@ -30,8 +30,7 @@ public class DivRm32Handler : InstructionHandler
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = Decoder.PeakByte();
-        byte reg = (byte) ((modRM & 0x38) >> 3);
+        var reg = ModRMDecoder.PeakModRMReg();
 
         return reg == 6; // 6 = DIV
     }
@@ -55,7 +54,7 @@ public class DivRm32Handler : InstructionHandler
         // Read the ModR/M byte
         // For DIV r/m32 (0xF7 /6):
         // - The r/m field with mod specifies the operand (register or memory)
-        var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
+        var (_, reg, _, operand) = ModRMDecoder.ReadModRM();
         
         // Verify this is a DIV instruction
         // The reg field should be 6 (DIV), which maps to RegisterIndex.Si in our enum

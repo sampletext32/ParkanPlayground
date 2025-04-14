@@ -43,7 +43,7 @@ public class SubRm32R32Handler : InstructionHandler
         instruction.Type = InstructionType.Sub;
 
         // Read the ModR/M byte
-        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
+        var (_, reg, _, destinationOperand) = ModRMDecoder.ReadModRM();
         
         // Create the source register operand (32-bit)
         var sourceOperand = OperandFactory.CreateRegisterOperand((RegisterIndex)reg, 32);

@@ -35,8 +35,7 @@ public class AndImmToRm8Handler : InstructionHandler
         }
 
         // Read the ModR/M byte to check the reg field (bits 5-3)
-        byte modRM = Decoder.PeakByte();
-        int reg = (modRM >> 3) & 0x7;
+        var reg = ModRMDecoder.PeakModRMReg();
 
         // reg = 4 means AND operation
         return reg == 4;
@@ -57,7 +56,7 @@ public class AndImmToRm8Handler : InstructionHandler
         // For AND r/m8, imm8 (0x80 /4):
         // - The r/m field with mod specifies the destination operand (register or memory)
         // - The immediate value is the source operand
-        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
+        var (_, _, _, destinationOperand) = ModRMDecoder.ReadModRM();
 
         // Adjust the operand size to 8-bit
         destinationOperand.Size = 8;

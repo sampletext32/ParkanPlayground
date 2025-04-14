@@ -30,8 +30,7 @@ public class OrImmToRm8Handler : InstructionHandler
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = Decoder.PeakByte();
-        byte reg = (byte) ((modRM & 0x38) >> 3);
+        var reg = ModRMDecoder.PeakModRMReg();
 
         return reg == 1; // 1 = OR
     }
@@ -56,7 +55,7 @@ public class OrImmToRm8Handler : InstructionHandler
         // For OR r/m8, imm8 (0x80 /1):
         // - The r/m field with mod specifies the destination operand (register or memory)
         // - The immediate value is the source operand
-        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
+        var (_, _, _, destinationOperand) = ModRMDecoder.ReadModRM();
         
         // Adjust the operand size to 8-bit
         destinationOperand.Size = 8;

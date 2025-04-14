@@ -30,8 +30,7 @@ public class SubImmFromRm8Handler : InstructionHandler
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = Decoder.PeakByte();
-        byte reg = (byte) ((modRM & 0x38) >> 3);
+        var reg = ModRMDecoder.PeakModRMReg();
 
         return reg == 5; // 5 = SUB
     }
@@ -48,7 +47,7 @@ public class SubImmFromRm8Handler : InstructionHandler
         instruction.Type = InstructionType.Sub;
         
         // Read the ModR/M byte, specifying that we're dealing with 8-bit operands
-        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM8();
+        var (_, _, _, destinationOperand) = ModRMDecoder.ReadModRM8();
         
         // Ensure the destination operand has the correct size (8-bit)
         destinationOperand.Size = 8;

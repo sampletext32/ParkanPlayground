@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86.Handlers.And;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handler for AND r/m32, imm32 instruction (0x81 /4)
@@ -30,8 +30,7 @@ public class AndImmToRm32Handler : InstructionHandler
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = Decoder.PeakByte();
-        byte reg = (byte) ((modRM & 0x38) >> 3);
+        var reg = ModRMDecoder.PeakModRMReg();
 
         return reg == 4; // 4 = AND
     }
@@ -53,7 +52,7 @@ public class AndImmToRm32Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        var (_, _, _, destOperand) = ModRMDecoder.ReadModRM();
 
         // Read the immediate value
         if (!Decoder.CanReadUInt())

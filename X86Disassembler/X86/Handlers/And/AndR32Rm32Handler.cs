@@ -46,7 +46,7 @@ public class AndR32Rm32Handler : InstructionHandler
         // For AND r32, r/m32 (0x23):
         // - The reg field specifies the destination register
         // - The r/m field with mod specifies the source operand (register or memory)
-        var (mod, reg, rm, sourceOperand) = ModRMDecoder.ReadModRM();
+        var (_, reg, _, sourceOperand) = ModRMDecoder.ReadModRM();
 
         // Create the destination register operand
         var destinationOperand = OperandFactory.CreateRegisterOperand(reg, 32);

@@ -30,8 +30,7 @@ public class AddImmToRm32SignExtendedHandler : InstructionHandler
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = Decoder.PeakByte();
-        byte reg = (byte) ((modRM & 0x38) >> 3);
+        var reg = ModRMDecoder.PeakModRMReg();
 
         return reg == 0; // 0 = ADD
     }
@@ -52,7 +51,7 @@ public class AddImmToRm32SignExtendedHandler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        var (_, _, _, destOperand) = ModRMDecoder.ReadModRM();
 
         // Check if we have enough bytes for the immediate value
         if (!Decoder.CanReadByte())

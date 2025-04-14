@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86.Handlers.Mov;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handler for MOV r/m32, imm32 instruction (0xC7)
@@ -38,7 +38,7 @@ public class MovRm32Imm32Handler : InstructionHandler
         instruction.Type = InstructionType.Mov;
         
         // Read the ModR/M byte
-        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
+        var (_, reg, _, destinationOperand) = ModRMDecoder.ReadModRM();
         
         // MOV r/m32, imm32 only uses reg=0
         if (reg != 0)

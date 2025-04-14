@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86.Handlers.Xor;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handler for XOR AX, imm16 instruction (0x35 with 0x66 prefix)

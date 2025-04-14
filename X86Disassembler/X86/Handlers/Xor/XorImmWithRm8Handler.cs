@@ -29,9 +29,8 @@ public class XorImmWithRm8Handler : InstructionHandler
         // Check if the reg field of the ModR/M byte is 6 (XOR)
         if (!Decoder.CanReadByte())
             return false;
-            
-        byte modRM = Decoder.PeakByte();
-        byte reg = (byte)((modRM & 0x38) >> 3);
+
+        var reg = ModRMDecoder.PeakModRMReg();
         
         return reg == 6; // 6 = XOR
     }
@@ -48,7 +47,7 @@ public class XorImmWithRm8Handler : InstructionHandler
         instruction.Type = InstructionType.Xor;
         
         // Read the ModR/M byte, specifying that we're dealing with 8-bit operands
-        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM8();
+        var (_, _, _, destinationOperand) = ModRMDecoder.ReadModRM8();
         
         // Ensure the destination operand has the correct size (8-bit)
         destinationOperand.Size = 8;

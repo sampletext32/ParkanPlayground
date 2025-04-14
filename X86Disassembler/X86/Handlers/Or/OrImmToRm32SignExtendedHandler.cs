@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86.Handlers.Or;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handler for OR r/m32, imm8 (sign-extended) instruction (0x83 /1)
@@ -30,8 +30,7 @@ public class OrImmToRm32SignExtendedHandler : InstructionHandler
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = Decoder.PeakByte();
-        byte reg = (byte) ((modRM & 0x38) >> 3);
+        var reg = ModRMDecoder.PeakModRMReg();
 
         return reg == 1; // 1 = OR
     }
@@ -53,7 +52,7 @@ public class OrImmToRm32SignExtendedHandler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        var (_, _, _, destOperand) = ModRMDecoder.ReadModRM();
 
         // Read the immediate value (sign-extended from 8 to 32 bits)
         if (!Decoder.CanReadByte())

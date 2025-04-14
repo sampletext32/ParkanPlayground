@@ -30,8 +30,7 @@ public class AndImmWithRm32Handler : InstructionHandler
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = Decoder.PeakByte();
-        byte reg = (byte) ((modRM & 0x38) >> 3);
+        var reg = ModRMDecoder.PeakModRMReg();
 
         return reg == 4; // 4 = AND
     }
@@ -51,7 +50,7 @@ public class AndImmWithRm32Handler : InstructionHandler
         // For AND r/m32, imm32 (0x81 /4):
         // - The r/m field with mod specifies the destination operand (register or memory)
         // - The immediate value is the source operand
-        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
+        var (_, _, _, destinationOperand) = ModRMDecoder.ReadModRM();
         
         // Check if we have enough bytes for the immediate value
         if (!Decoder.CanReadUInt())

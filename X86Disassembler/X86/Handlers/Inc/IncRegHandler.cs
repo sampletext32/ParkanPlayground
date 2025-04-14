@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86.Handlers.Inc;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handler for INC r32 instructions (0x40-0x47)

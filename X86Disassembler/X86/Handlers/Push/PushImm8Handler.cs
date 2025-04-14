@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86.Handlers.Push;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handler for PUSH imm8 instruction (0x6A)

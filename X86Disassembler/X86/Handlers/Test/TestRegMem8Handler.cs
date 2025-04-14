@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86.Handlers.Test;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handler for TEST r/m8, r8 instruction (0x84)

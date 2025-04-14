@@ -35,8 +35,7 @@ public class AndImmToRm32SignExtendedHandler : InstructionHandler
         }
 
         // Read the ModR/M byte to check the reg field (bits 5-3)
-        byte modRM = Decoder.PeakByte();
-        int reg = (modRM >> 3) & 0x7;
+        var reg = ModRMDecoder.PeakModRMReg();
 
         // reg = 4 means AND operation
         return reg == 4;
@@ -57,7 +56,7 @@ public class AndImmToRm32SignExtendedHandler : InstructionHandler
         // For AND r/m32, imm8 (sign-extended) (0x83 /4):
         // - The r/m field with mod specifies the destination operand (register or memory)
         // - The immediate value is the source operand (sign-extended from 8 to 32 bits)
-        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
+        var (_, _, _, destinationOperand) = ModRMDecoder.ReadModRM();
 
         if (!Decoder.CanReadByte())
         {

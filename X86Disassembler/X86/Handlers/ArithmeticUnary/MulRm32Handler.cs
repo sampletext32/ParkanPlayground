@@ -30,8 +30,7 @@ public class MulRm32Handler : InstructionHandler
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = Decoder.PeakByte();
-        byte reg = (byte) ((modRM & 0x38) >> 3);
+        var reg = ModRMDecoder.PeakModRMReg();
 
         return reg == 4; // 4 = MUL
     }
@@ -55,7 +54,7 @@ public class MulRm32Handler : InstructionHandler
         // Read the ModR/M byte
         // For MUL r/m32 (0xF7 /4):
         // - The r/m field with mod specifies the operand (register or memory)
-        var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
+        var (_, reg, _, operand) = ModRMDecoder.ReadModRM();
         
         // Verify this is a MUL instruction
         // The reg field should be 4 (MUL), which maps to RegisterIndex.Sp in our enum

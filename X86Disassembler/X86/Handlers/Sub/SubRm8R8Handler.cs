@@ -38,7 +38,7 @@ public class SubRm8R8Handler : InstructionHandler
         instruction.Type = InstructionType.Sub;
         
         // Read the ModR/M byte, specifying that we're dealing with 8-bit operands
-        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM8();
+        var (_, reg, _, destinationOperand) = ModRMDecoder.ReadModRM8();
         
         // Ensure the destination operand has the correct size (8-bit)
         destinationOperand.Size = 8;

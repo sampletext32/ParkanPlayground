@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86.Handlers.Dec;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handler for DEC r32 instructions (0x48-0x4F)

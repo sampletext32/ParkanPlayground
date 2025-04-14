@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86.Handlers.Add;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handler for ADD r/m8, imm8 instruction (0x80 /0)
@@ -29,8 +29,7 @@ public class AddImmToRm8Handler : InstructionHandler
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = Decoder.PeakByte();
-        byte reg = (byte) ((modRM & 0x38) >> 3);
+        var reg = ModRMDecoder.PeakModRMReg();
 
         return reg == 0; // 0 = ADD
     }
@@ -52,7 +51,7 @@ public class AddImmToRm8Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        var (_, _, _, destOperand) = ModRMDecoder.ReadModRM();
 
         // Adjust the operand size to 8-bit
         destOperand.Size = 8;

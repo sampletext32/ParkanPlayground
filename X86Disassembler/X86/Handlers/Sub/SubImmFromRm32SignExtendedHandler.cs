@@ -30,8 +30,7 @@ public class SubImmFromRm32SignExtendedHandler : InstructionHandler
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = Decoder.PeakByte();
-        byte reg = (byte) ((modRM & 0x38) >> 3);
+        var reg = ModRMDecoder.PeakModRMReg();
 
         return reg == 5; // 5 = SUB
     }
@@ -54,7 +53,7 @@ public class SubImmFromRm32SignExtendedHandler : InstructionHandler
         }
 
         // Extract the fields from the ModR/M byte
-        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
+        var (_, _, _, destinationOperand) = ModRMDecoder.ReadModRM();
 
         // Check if we have enough bytes for the immediate value
         if (!Decoder.CanReadByte())

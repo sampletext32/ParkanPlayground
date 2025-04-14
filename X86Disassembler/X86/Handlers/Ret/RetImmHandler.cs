@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86.Handlers.Ret;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handler for RET instruction with immediate operand (0xC2)

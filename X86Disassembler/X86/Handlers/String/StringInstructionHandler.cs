@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86.Handlers.String;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handler for string instructions (MOVS, STOS, LODS, SCAS) with and without REP/REPNE prefixes

@@ -30,8 +30,7 @@ public class CmpImmWithRm32Handler : InstructionHandler
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = Decoder.PeakByte();
-        byte reg = (byte) ((modRM & 0x38) >> 3);
+        var reg = ModRMDecoder.PeakModRMReg();
 
         return reg == 7; // 7 = CMP
     }
@@ -48,7 +47,7 @@ public class CmpImmWithRm32Handler : InstructionHandler
         instruction.Type = InstructionType.Cmp;
 
         // Read the ModR/M byte
-        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
+        var (_, _, _, destinationOperand) = ModRMDecoder.ReadModRM();
 
         // Read the immediate value
         if (!Decoder.CanReadUInt())

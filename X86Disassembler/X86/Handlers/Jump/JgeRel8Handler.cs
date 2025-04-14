@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86.Handlers.Jump;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handler for JGE rel8 instruction (0x7D)

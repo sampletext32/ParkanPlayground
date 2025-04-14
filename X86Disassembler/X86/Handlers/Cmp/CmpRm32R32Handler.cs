@@ -46,7 +46,7 @@ public class CmpRm32R32Handler : InstructionHandler
         // For CMP r/m32, r32 (0x39):
         // - The r/m field with mod specifies the destination operand (register or memory)
         // - The reg field specifies the source register
-        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
+        var (_, reg, _, destinationOperand) = ModRMDecoder.ReadModRM();
         
         // Create the source register operand
         var sourceOperand = OperandFactory.CreateRegisterOperand(reg, 32);

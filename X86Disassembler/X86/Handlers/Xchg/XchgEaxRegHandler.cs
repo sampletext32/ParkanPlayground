@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86.Handlers.Xchg;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handler for XCHG EAX, r32 instruction (0x90-0x97)

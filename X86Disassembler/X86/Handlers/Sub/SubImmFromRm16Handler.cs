@@ -36,8 +36,7 @@ public class SubImmFromRm16Handler : InstructionHandler
         }
         
         // Check if the reg field is 5 (SUB)
-        byte modRM = Decoder.PeakByte();
-        byte reg = (byte)((modRM & 0x38) >> 3);
+        var reg = ModRMDecoder.PeakModRMReg();
         
         return reg == 5; // 5 = SUB
     }
@@ -63,7 +62,7 @@ public class SubImmFromRm16Handler : InstructionHandler
         // For SUB r/m16, imm16 (0x81 /5 with 0x66 prefix):
         // - The r/m field with mod specifies the destination operand (register or memory)
         // - The immediate value is the source operand
-        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
+        var (_, _, _, destinationOperand) = ModRMDecoder.ReadModRM();
 
         // Adjust the operand size to 16-bit
         destinationOperand.Size = 16;

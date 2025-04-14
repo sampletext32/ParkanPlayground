@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86.Handlers.And;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handler for AND r8, r/m8 instruction (0x22)

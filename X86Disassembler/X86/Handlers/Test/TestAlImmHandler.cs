@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86.Handlers.Test;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handler for TEST AL, imm8 instruction (0xA8)

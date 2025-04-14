@@ -47,7 +47,7 @@ public class AddRm32R32Handler : InstructionHandler
         // - The r/m field with mod specifies the destination operand (register or memory)
         // - The reg field specifies the source register
         // The destinationOperand is already created by ModRMDecoder based on mod and rm fields
-        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
+        var (_, reg, _, destinationOperand) = ModRMDecoder.ReadModRM();
 
         // Create the source register operand from the reg field
         var sourceOperand = OperandFactory.CreateRegisterOperand(reg, 32);

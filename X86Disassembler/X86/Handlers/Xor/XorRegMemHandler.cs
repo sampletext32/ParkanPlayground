@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86.Handlers.Xor;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handler for XOR r32, r/m32 instruction (0x33)
@@ -45,7 +45,7 @@ public class XorRegMemHandler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, srcOperand) = ModRMDecoder.ReadModRM();
+        var (_, reg, _, srcOperand) = ModRMDecoder.ReadModRM();
 
         // Create the destination register operand
         var destOperand = OperandFactory.CreateRegisterOperand(reg, 32);

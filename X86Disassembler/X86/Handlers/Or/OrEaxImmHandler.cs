@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86.Handlers.Or;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handler for OR EAX, imm32 instruction (0x0D)

@@ -1,6 +1,6 @@
 namespace X86Disassembler.X86.Handlers.Sbb;
 
-using X86Disassembler.X86.Operands;
+using Operands;
 
 /// <summary>
 /// Handler for SBB r/m32, imm32 instruction (0x81 /3)
@@ -30,8 +30,7 @@ public class SbbImmFromRm32Handler : InstructionHandler
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = Decoder.PeakByte();
-        byte reg = (byte) ((modRM & 0x38) >> 3);
+        var reg = ModRMDecoder.PeakModRMReg();
 
         return reg == 3; // 3 = SBB
     }
@@ -53,7 +52,7 @@ public class SbbImmFromRm32Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, destOperand) = ModRMDecoder.ReadModRM();
+        var (_, _, _, destOperand) = ModRMDecoder.ReadModRM();
 
         // Read the immediate value
         if (!Decoder.CanReadUInt())

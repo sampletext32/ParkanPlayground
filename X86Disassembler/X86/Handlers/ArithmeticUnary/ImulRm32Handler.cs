@@ -30,8 +30,7 @@ public class ImulRm32Handler : InstructionHandler
         if (!Decoder.CanReadByte())
             return false;
 
-        byte modRM = Decoder.PeakByte();
-        byte reg = (byte) ((modRM & 0x38) >> 3);
+        var reg = ModRMDecoder.PeakModRMReg();
 
         return reg == 5; // 5 = IMUL
     }
@@ -55,7 +54,7 @@ public class ImulRm32Handler : InstructionHandler
         // Read the ModR/M byte
         // For IMUL r/m32 (0xF7 /5):
         // - The r/m field with mod specifies the operand (register or memory)
-        var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
+        var (_, reg, _, operand) = ModRMDecoder.ReadModRM();
         
         // Verify this is an IMUL instruction
         // The reg field should be 5 (IMUL), which maps to RegisterIndex.Bp in our enum

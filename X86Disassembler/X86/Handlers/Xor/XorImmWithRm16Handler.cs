@@ -30,8 +30,7 @@ public class XorImmWithRm16Handler : InstructionHandler
         if (!Decoder.CanReadByte())
             return false;
             
-        byte modRM = Decoder.PeakByte();
-        byte reg = (byte)((modRM & 0x38) >> 3);
+        var reg = ModRMDecoder.PeakModRMReg();
         
         return reg == 6; // 6 = XOR
     }
@@ -54,7 +53,7 @@ public class XorImmWithRm16Handler : InstructionHandler
         }
         
         // Read the ModR/M byte
-        var (mod, reg, rm, destinationOperand) = ModRMDecoder.ReadModRM();
+        var (_, _, _, destinationOperand) = ModRMDecoder.ReadModRM();
         
         // Ensure the destination operand has the correct size (16-bit)
         destinationOperand.Size = 16;

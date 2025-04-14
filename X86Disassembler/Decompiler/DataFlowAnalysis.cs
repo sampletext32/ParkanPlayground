@@ -1,7 +1,7 @@
 namespace X86Disassembler.Decompiler;
 
 using System.Collections.Generic;
-using X86Disassembler.X86;
+using X86;
 
 /// <summary>
 /// Performs data flow analysis on x86 instructions

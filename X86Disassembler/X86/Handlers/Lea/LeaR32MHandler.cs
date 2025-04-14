@@ -41,7 +41,7 @@ public class LeaR32MHandler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, sourceOperand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, _, sourceOperand) = ModRMDecoder.ReadModRM();
 
         // LEA only works with memory operands, not registers
         if (mod == 3)

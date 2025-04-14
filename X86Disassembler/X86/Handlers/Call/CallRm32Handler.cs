@@ -35,11 +35,8 @@ public class CallRm32Handler : InstructionHandler
             return false;
         }
         
-        // Peek at the ModR/M byte without advancing the position
-        byte modRM = Decoder.PeakByte();
-        
         // Extract the reg field (bits 3-5)
-        byte reg = (byte)((modRM & 0x38) >> 3);
+        var reg = ModRMDecoder.PeakModRMReg();
         
         // CALL r/m32 is encoded as FF /2 (reg field = 2)
         return reg == 2;
@@ -65,7 +62,7 @@ public class CallRm32Handler : InstructionHandler
         // Read the ModR/M byte
         // For CALL r/m32 (FF /2):
         // - The r/m field with mod specifies the operand (register or memory)
-        var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
+        var (_, _, _, operand) = ModRMDecoder.ReadModRM();
 
         // Set the structured operands
         // CALL has only one operand
