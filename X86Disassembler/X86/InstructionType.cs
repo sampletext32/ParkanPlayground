@@ -136,19 +136,25 @@ public enum InstructionType
     Fst,        // Store floating point value
     Fstp,       // Store floating point value and pop
     Fadd,       // Add floating point
+    Faddp,      // Add floating point and pop
     Fiadd,      // Add integer to floating point
     Fild,       // Load integer to floating point
     Fist,       // Store integer
     Fistp,      // Store integer and pop
     Fsub,       // Subtract floating point
+    Fsubp,      // Subtract floating point and pop
     Fisub,      // Subtract integer from floating point
     Fsubr,      // Subtract floating point reversed
+    Fsubrp,     // Subtract floating point reversed and pop
     Fisubr,     // Subtract floating point from integer (reversed)
     Fmul,       // Multiply floating point
+    Fmulp,      // Multiply floating point and pop
     Fimul,      // Multiply integer with floating point
     Fdiv,       // Divide floating point
+    Fdivp,      // Divide floating point and pop
     Fidiv,      // Divide integer by floating point
     Fdivr,      // Divide floating point reversed
+    Fdivrp,     // Divide floating point reversed and pop
     Fidivr,     // Divide floating point by integer (reversed)
     Fcom,       // Compare floating point
     Ficom,      // Compare integer with floating point
@@ -159,6 +165,7 @@ public enum InstructionType
     Fcomi,      // Compare floating point, set EFLAGS
     Fucom,      // Unordered compare floating point
     Fucomp,     // Unordered compare floating point and pop
+    Fucompp,    // Unordered compare floating point and pop twice
     Fucomip,    // Unordered compare floating point and pop, set EFLAGS
     Fucomi,     // Unordered compare floating point, set EFLAGS
     Ffreep,     // Free floating point register and pop
@@ -174,9 +181,12 @@ public enum InstructionType
     Finit,      // Initialize FPU (with FWAIT prefix)
     Fninit,     // Initialize FPU without checking for pending unmasked exceptions
     Fclex,      // Clear floating-point exceptions
+    Fnclex,     // Clear floating-point exceptions without checking for pending unmasked exceptions
     Fldenv,     // Load FPU environment
     Fnstenv,    // Store FPU environment
     Frstor,     // Restore FPU state
+    Fnsave,     // Save FPU state without checking for pending unmasked exceptions
+    Fsave,      // Save FPU state
     
     // Flag control instructions
     Stc,        // Set Carry Flag
@@ -188,27 +198,26 @@ public enum InstructionType
     Cli,        // Clear Interrupt Flag
     Sahf,       // Store AH into Flags
     Lahf,       // Load Flags into AH
-    Fnsave,     // Save FPU state
     Fxch,       // Exchange floating point registers
     Fchs,       // Change sign of floating point value
     Fabs,       // Absolute value of floating point
     Ftst,       // Test floating point
     F2xm1,      // 2^x - 1
     Fyl2x,      // y * log2(x)
+    Fyl2xp1,    // y * log2(x+1)
     Fptan,      // Partial tangent
     Fpatan,     // Partial arctangent
     Fxtract,    // Extract exponent and significand
-    Fprem1,     // Partial remainder (IEEE)
-    Fdecstp,    // Decrement stack pointer
-    Fincstp,    // Increment stack pointer
     Fprem,      // Partial remainder
-    Fyl2xp1,    // y * log2(x+1)
-    Fsqrt,      // Square root
-    Fsincos,    // Sine and cosine
+    Fprem1,     // Partial remainder (IEEE)
+    Fdecstp,    // Decrement FPU stack pointer
+    Fincstp,    // Increment FPU stack pointer
     Frndint,    // Round to integer
     Fscale,     // Scale by power of 2
     Fsin,       // Sine
     Fcos,       // Cosine
+    Fsincos,    // Sine and cosine
+    Fsqrt,      // Square root
     Fnop,       // No operation
     Fwait,      // Wait for FPU
     

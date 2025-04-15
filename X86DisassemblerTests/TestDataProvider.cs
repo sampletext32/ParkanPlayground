@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Globalization;
-using System.Reflection;
+using System.IO;
 using CsvHelper;
 using CsvHelper.Configuration;
 
@@ -14,38 +14,51 @@ public class TestDataProvider : IEnumerable<object[]>
     /// <summary>
     /// Gets all CSV test files from the TestData directory
     /// </summary>
-    /// <returns>An enumerable of test file names</returns>
+    /// <returns>An enumerable of test file paths</returns>
     private IEnumerable<string> GetTestFiles()
     {
-        // Get all CSV files from the TestData directory in the assembly
-        var assembly = Assembly.GetExecutingAssembly();
-        var resourceNames = assembly.GetManifestResourceNames()
-            .Where(name => name.StartsWith("X86DisassemblerTests.TestData.") && name.EndsWith(".csv"));
-            
-        // Return all CSV files from the TestData directory
-        // All files have been converted to the new format
-        foreach (var resourceName in resourceNames)
+        // Get the directory where the test assembly is located
+        var assemblyLocation = typeof(TestDataProvider).Assembly.Location;
+        var assemblyDirectory = Path.GetDirectoryName(assemblyLocation);
+        
+        // Navigate to the TestData directory
+        // First try to find it in the project structure (for development)
+        string testDataDirectory = Path.Combine(assemblyDirectory!, "..", "..", "..", "TestData");
+        
+        // If the directory doesn't exist (e.g., in a published build), try the output directory
+        if (!Directory.Exists(testDataDirectory))
         {
-            // Return the full resource name
-            yield return resourceName;
+            testDataDirectory = Path.Combine(assemblyDirectory!, "TestData");
+            
+            // If still not found, throw an exception
+            if (!Directory.Exists(testDataDirectory))
+            {
+                throw new DirectoryNotFoundException($"Could not find TestData directory at {testDataDirectory}");
+            }
         }
+        
+        // Get the absolute path
+        testDataDirectory = Path.GetFullPath(testDataDirectory);
+        
+        // Return all CSV files from the TestData directory
+        return Directory.GetFiles(testDataDirectory, "*.csv");
     }
 
     /// <summary>
     /// Loads test entries from a CSV file
     /// </summary>
-    /// <param name="resourceName">The full resource name of the CSV file</param>
+    /// <param name="filePath">The full path to the CSV file</param>
     /// <returns>An enumerable of TestFromFileEntry objects</returns>
-    private IEnumerable<TestFromFileEntry> LoadTestEntries(string resourceName)
+    private IEnumerable<TestFromFileEntry> LoadTestEntries(string filePath)
     {
-        // Load the CSV test file from embedded resources
-        using var stream = Assembly.GetExecutingAssembly()
-            .GetManifestResourceStream(resourceName);
-
-        if (stream == null)
+        // Check if the file exists
+        if (!File.Exists(filePath))
         {
-            throw new InvalidOperationException($"Could not find {resourceName} embedded resource");
+            throw new FileNotFoundException($"Could not find test file at {filePath}");
         }
+        
+        // Open the file directly from the file system
+        using var stream = File.OpenRead(filePath);
 
         // Configure CSV reader with semicolon delimiter
         var config = new CsvConfiguration(CultureInfo.InvariantCulture)
@@ -79,13 +92,13 @@ public class TestDataProvider : IEnumerable<object[]>
     /// </summary>
     public IEnumerator<object[]> GetEnumerator()
     {
-        foreach (var resourceName in GetTestFiles())
+        foreach (var filePath in GetTestFiles())
         {
             // Extract just the filename part for display purposes
-            string fileName = resourceName.Replace("X86DisassemblerTests.TestData.", "");
+            string fileName = Path.GetFileName(filePath);
             int testIndex = 0;
 
-            foreach (var entry in LoadTestEntries(resourceName))
+            foreach (var entry in LoadTestEntries(filePath))
             {
                 // Yield each test entry as a separate test case
                 // Include the file name and index for better test identification

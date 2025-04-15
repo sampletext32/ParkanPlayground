@@ -28,50 +28,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="TestData\adc_tests.csv"/>
-        <EmbeddedResource Include="TestData\add_tests.csv"/>
-        <EmbeddedResource Include="TestData\and_tests.csv"/>
-        <EmbeddedResource Include="TestData\bit_tests.csv"/>
-        <EmbeddedResource Include="TestData\call_tests.csv"/>
-        <EmbeddedResource Include="TestData\cmp_tests.csv"/>
-        <EmbeddedResource Include="TestData\div_tests.csv"/>
-        <EmbeddedResource Include="TestData\flag_tests.csv"/>
-        <EmbeddedResource Include="TestData\fnstsw_tests.csv"/>
-        <EmbeddedResource Include="TestData\fpu_tests.csv"/>
-        <EmbeddedResource Include="TestData\group3_instruction_tests.csv"/>
-        <EmbeddedResource Include="TestData\idiv_tests.csv"/>
-        <EmbeddedResource Include="TestData\imul_tests.csv"/>
-        <EmbeddedResource Include="TestData\jcc_tests.csv"/>
-        <EmbeddedResource Include="TestData\jmp_tests.csv"/>
-        <EmbeddedResource Include="TestData\lea_tests.csv"/>
-        <EmbeddedResource Include="TestData\misc_tests.csv"/>
-        <EmbeddedResource Include="TestData\mov_tests.csv"/>
-        <EmbeddedResource Include="TestData\mul_tests.csv"/>
-        <EmbeddedResource Include="TestData\neg_tests.csv"/>
-        <EmbeddedResource Include="TestData\nop_tests.csv"/>
-        <EmbeddedResource Include="TestData\not_tests.csv"/>
-        <EmbeddedResource Include="TestData\or_tests.csv"/>
-        <EmbeddedResource Include="TestData\popreg_tests.csv"/>
-        <EmbeddedResource Include="TestData\poprm_tests.csv"/>
-        <EmbeddedResource Include="TestData\pushimm_tests.csv"/>
-        <EmbeddedResource Include="TestData\pushreg_tests.csv"/>
-        <EmbeddedResource Include="TestData\pushrm_tests.csv"/>
-        <EmbeddedResource Include="TestData\rcl_tests.csv"/>
-        <EmbeddedResource Include="TestData\rcr_tests.csv"/>
-        <EmbeddedResource Include="TestData\ret_tests.csv"/>
-        <EmbeddedResource Include="TestData\rol_tests.csv"/>
-        <EmbeddedResource Include="TestData\ror_tests.csv"/>
-        <EmbeddedResource Include="TestData\sar_tests.csv"/>
-        <EmbeddedResource Include="TestData\sbb_tests.csv"/>
-        <EmbeddedResource Include="TestData\segment_override_tests.csv"/>
-        <EmbeddedResource Include="TestData\shl_tests.csv"/>
-        <EmbeddedResource Include="TestData\shr_tests.csv"/>
-        <EmbeddedResource Include="TestData\stack_tests.csv"/>
-        <EmbeddedResource Include="TestData\string_tests.csv"/>
-        <EmbeddedResource Include="TestData\sub_tests.csv"/>
-        <EmbeddedResource Include="TestData\test_tests.csv"/>
-        <EmbeddedResource Include="TestData\xchg_tests.csv"/>
-        <EmbeddedResource Include="TestData\xor_tests.csv"/>
+        <Content Include="TestData\**\*.csv">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
 </Project>
