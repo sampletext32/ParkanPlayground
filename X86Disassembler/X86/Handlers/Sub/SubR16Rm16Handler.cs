@@ -43,14 +43,13 @@ public class SubR16Rm16Handler : InstructionHandler
             return false;
         }
 
-        // Read the ModR/M byte
-        var (_, reg, _, sourceOperand) = ModRMDecoder.ReadModRM();
+        // Read the ModR/M byte, specifying that we're dealing with 16-bit operands
+        var (_, reg, _, sourceOperand) = ModRMDecoder.ReadModRM16();
         
-        // Ensure the source operand has the correct size (16-bit)
-        sourceOperand.Size = 16;
+        // Note: The operand size is already set to 16-bit by the ReadModRM16 method
         
         // Create the destination register operand (16-bit)
-        var destinationOperand = OperandFactory.CreateRegisterOperand((RegisterIndex)reg, 16);
+        var destinationOperand = OperandFactory.CreateRegisterOperand(reg, 16);
         
         // Set the structured operands
         instruction.StructuredOperands = 

@@ -92,7 +92,7 @@ public class LoadStoreInt16Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, memoryOperand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, rawMemoryOperand) = ModRMDecoder.ReadModRM();
 
         // Handle based on addressing mode
         if (mod != 3) // Memory operand
@@ -100,21 +100,49 @@ public class LoadStoreInt16Handler : InstructionHandler
             // Set the instruction type based on the reg field
             instruction.Type = MemoryInstructionTypes[(int)reg];
             
-            // Set the size based on the operation
+            // Create the appropriate memory operand based on the operation type and original operand type
+            Operand memoryOperand;
+            int operandSize;
+            
+            // Determine the operand size based on the operation
             if (reg == RegisterIndex.A || reg == RegisterIndex.C || reg == RegisterIndex.D) // 16-bit integer operations
             {
-                // Set to 16-bit for integer operations
-                memoryOperand.Size = 16;
+                operandSize = 16;
             }
             else if (reg == RegisterIndex.Di || reg == RegisterIndex.Bp) // 64-bit integer operations
             {
-                // Set to 64-bit for integer operations
-                memoryOperand.Size = 64;
+                operandSize = 64;
             }
             else if (reg == RegisterIndex.Si || reg == RegisterIndex.Sp) // 80-bit packed BCD operations
             {
-                // Set to 80-bit for BCD operations
-                memoryOperand.Size = 80;
+                operandSize = 80;
+            }
+            else
+            {
+                // Default to 32-bit for other operations
+                operandSize = 32;
+            }
+            
+            // Create the appropriate memory operand based on the type of the raw operand
+            if (rawMemoryOperand is DirectMemoryOperand directMemory)
+            {
+                memoryOperand = OperandFactory.CreateDirectMemoryOperand(directMemory.Address, operandSize);
+            }
+            else if (rawMemoryOperand is BaseRegisterMemoryOperand baseMemory)
+            {
+                memoryOperand = OperandFactory.CreateBaseRegisterMemoryOperand(baseMemory.BaseRegister, operandSize);
+            }
+            else if (rawMemoryOperand is DisplacementMemoryOperand dispMemory)
+            {
+                memoryOperand = OperandFactory.CreateDisplacementMemoryOperand(dispMemory.BaseRegister, dispMemory.Displacement, operandSize);
+            }
+            else if (rawMemoryOperand is ScaledIndexMemoryOperand scaledMemory)
+            {
+                memoryOperand = OperandFactory.CreateScaledIndexMemoryOperand(scaledMemory.IndexRegister, scaledMemory.Scale, scaledMemory.BaseRegister, scaledMemory.Displacement, operandSize);
+            }
+            else
+            {
+                memoryOperand = rawMemoryOperand;
             }
             
             // Set the structured operands

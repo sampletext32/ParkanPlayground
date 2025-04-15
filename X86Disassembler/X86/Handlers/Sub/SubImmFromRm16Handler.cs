@@ -62,10 +62,9 @@ public class SubImmFromRm16Handler : InstructionHandler
         // For SUB r/m16, imm16 (0x81 /5 with 0x66 prefix):
         // - The r/m field with mod specifies the destination operand (register or memory)
         // - The immediate value is the source operand
-        var (_, _, _, destinationOperand) = ModRMDecoder.ReadModRM();
+        var (_, _, _, destinationOperand) = ModRMDecoder.ReadModRM16();
 
-        // Adjust the operand size to 16-bit
-        destinationOperand.Size = 16;
+        // Note: The operand size is already set to 16-bit by the ReadModRM16 method
 
         // Check if we have enough bytes for the immediate value
         if (!Decoder.CanReadUShort())

@@ -51,13 +51,23 @@ public class MovMemRegHandler : InstructionHandler
         // For MOV r/m32, r32 (0x89) or MOV r/m8, r8 (0x88):
         // - The r/m field with mod specifies the destination operand (register or memory)
         // - The reg field specifies the source register
-        var (_, reg, _, destinationOperand) = ModRMDecoder.ReadModRM();
-
-        // Adjust the operand size based on the opcode
-        destinationOperand.Size = operandSize;
-
-        // Create the source register operand
-        var sourceOperand = OperandFactory.CreateRegisterOperand(reg, operandSize);
+        Operand destinationOperand;
+        Operand sourceOperand;
+        
+        if (operandSize == 8)
+        {
+            // For 8-bit operands, use the 8-bit ModR/M decoder and factory methods
+            var (_, reg8, _, destOperand8) = ModRMDecoder.ReadModRM8();
+            destinationOperand = destOperand8;
+            sourceOperand = OperandFactory.CreateRegisterOperand8(reg8);
+        }
+        else
+        {
+            // For 32-bit operands, use the standard ModR/M decoder
+            var (_, regStd, _, destOperandStd) = ModRMDecoder.ReadModRM();
+            destinationOperand = destOperandStd;
+            sourceOperand = OperandFactory.CreateRegisterOperand(regStd, operandSize);
+        }
         
         // Set the structured operands
         instruction.StructuredOperands = 
