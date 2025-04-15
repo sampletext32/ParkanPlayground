@@ -23,8 +23,9 @@ FF10;[{ "Type": "Call", "Operands": ["dword ptr [eax]"] }]
 FF11;[{ "Type": "Call", "Operands": ["dword ptr [ecx]"] }]
 FF12;[{ "Type": "Call", "Operands": ["dword ptr [edx]"] }]
 FF13;[{ "Type": "Call", "Operands": ["dword ptr [ebx]"] }]
-FF14;[{ "Type": "Call", "Operands": ["dword ptr [esp]"] }]
-FF15;[{ "Type": "Call", "Operands": ["dword ptr [ebp]"] }]
+# TODO: these are not recognized by ghidra, but these seem to be valid x86 instructions. 
+# FF14;[{ "Type": "Call", "Operands": ["dword ptr [esp]"] }]
+# FF15;[{ "Type": "Call", "Operands": ["dword ptr [ebp]"] }]
 FF16;[{ "Type": "Call", "Operands": ["dword ptr [esi]"] }]
 FF17;[{ "Type": "Call", "Operands": ["dword ptr [edi]"] }]
 

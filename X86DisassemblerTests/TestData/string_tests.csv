@@ -4,7 +4,7 @@ RawBytes;Instructions
 
 # MOVS - Move string
 A4;[{ "Type": "MovsB", "Operands": [] }]
-A5;[{ "Type": "MovsD", "Operands": [] }]
+A5;[{ "Type": "MovsD", "Operands": ["dword ptr es:[edi]", "dword ptr ds:[esi]"] }]
 66A5;[{ "Type": "MovsW", "Operands": [] }]
 
 # CMPS - Compare string
@@ -28,12 +28,12 @@ AB;[{ "Type": "StosD", "Operands": [] }]
 66AB;[{ "Type": "StosW", "Operands": [] }]
 
 # REP prefix with string instructions
-F3A4;[{ "Type": "RepMovsB", "Operands": [] }]
-F3A5;[{ "Type": "RepMovsD", "Operands": [] }]
-F366A5;[{ "Type": "RepMovsW", "Operands": [] }]
-F3AA;[{ "Type": "RepStosB", "Operands": [] }]
-F3AB;[{ "Type": "RepStosD", "Operands": [] }]
-F366AB;[{ "Type": "RepStosW", "Operands": [] }]
+F3A4;[{ "Type": "RepMovsB", "Operands": ["dword ptr es:[edi]", "dword ptr ds:[esi]"] }]
+F3A5;[{ "Type": "RepMovsD", "Operands": ["dword ptr es:[edi]", "dword ptr ds:[esi]"] }]
+F366A5;[{ "Type": "RepMovsW", "Operands": ["dword ptr es:[edi]", "dword ptr ds:[esi]"] }]
+F3AA;[{ "Type": "RepStosB", "Operands": ["dword ptr es:[edi]"] }]
+F3AB;[{ "Type": "RepStosD", "Operands": ["dword ptr es:[edi]"] }]
+F366AB;[{ "Type": "RepStosW", "Operands": ["dword ptr es:[edi]"] }]
 
 # REPE/REPZ prefix with string instructions
 F3A6;[{ "Type": "RepeCmpsB", "Operands": [] }]

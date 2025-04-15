@@ -345,27 +345,17 @@ public class ModRMDecoder
                 if (_decoder.CanReadUInt())
                 {
                     uint disp32 = _decoder.ReadUInt32();
-                    int scaleValue = 1 << scale; // 1, 2, 4, or 8
                     
-                    // Create a scaled index memory operand with displacement but no base register
-                    return OperandFactory.CreateScaledIndexMemoryOperand(
-                        index,
-                        scaleValue,
-                        null,
-                        (int)disp32,
-                        operandSize);
+                    // When both index is ESP (no index) and base is EBP with disp32,
+                    // this is a direct memory reference [disp32]
+                    return OperandFactory.CreateDirectMemoryOperand(disp32, operandSize);
                 }
 
                 // Fallback for incomplete data
-                return OperandFactory.CreateScaledIndexMemoryOperand(
-                    index,
-                    1 << scale,
-                    null,
-                    0,
-                    operandSize);
+                return OperandFactory.CreateDirectMemoryOperand(0, operandSize);
             }
 
-            // Base register only with displacement
+            // When index is ESP (no index), we just have a base register with optional displacement
             if (displacement == 0)
             {
                 return OperandFactory.CreateBaseRegisterMemoryOperand(@base, operandSize);
@@ -381,6 +371,13 @@ public class ModRMDecoder
             {
                 uint disp32 = _decoder.ReadUInt32();
                 int scaleValue = 1 << scale; // 1, 2, 4, or 8
+                
+                // If we have a direct memory reference with a specific displacement,
+                // use a direct memory operand instead of a scaled index memory operand
+                if (disp32 > 0 && index == RegisterIndex.Sp)
+                {
+                    return OperandFactory.CreateDirectMemoryOperand(disp32, operandSize);
+                }
                 
                 // Create a scaled index memory operand with displacement but no base register
                 return OperandFactory.CreateScaledIndexMemoryOperand(
@@ -420,15 +417,13 @@ public class ModRMDecoder
     /// <returns>The register name</returns>
     public static string GetRegisterName(RegisterIndex regIndex, int size)
     {
-        // Convert RegisterIndex to raw index for array access
-        int index = (int)regIndex;
-
         return size switch
         {
-            8 => RegisterNames8[index],
-            16 => RegisterNames16[index],
-            32 => RegisterNames32[index],
-            _ => RegisterNames32[index] // Default to 32-bit registers
+            8 => RegisterNames8[(int)regIndex],
+            16 => RegisterNames16[(int)regIndex],
+            32 => RegisterNames32[(int)regIndex],
+            64 => RegisterNames32[(int)regIndex], // For now, reuse 32-bit names for 64-bit
+            _ => "unknown"
         };
     }
 }

@@ -27,6 +27,6 @@ public class RelativeOffsetOperand : Operand
     /// </summary>
     public override string ToString()
     {
-        return $"0x{TargetAddress:X}";
+        return $"0x{TargetAddress:X8}";
     }
 }
