@@ -4,22 +4,56 @@ RawBytes;Instructions
 
 # CMP r/m8, imm8 (opcode 80 /7)
 80F842;[{ "Type": "Cmp", "Operands": ["al", "0x42"] }]
+80FB42;[{ "Type": "Cmp", "Operands": ["bl", "0x42"] }]
+80F942;[{ "Type": "Cmp", "Operands": ["cl", "0x42"] }]
+80FA42;[{ "Type": "Cmp", "Operands": ["dl", "0x42"] }]
+
+# CMP AL, imm8 (opcode 3C)
+3C42;[{ "Type": "Cmp", "Operands": ["al", "0x42"] }]
 
 # CMP r/m32, imm32 (opcode 81 /7)
 81F878563412;[{ "Type": "Cmp", "Operands": ["eax", "0x12345678"] }]
+81FB78563412;[{ "Type": "Cmp", "Operands": ["ebx", "0x12345678"] }]
+81F978563412;[{ "Type": "Cmp", "Operands": ["ecx", "0x12345678"] }]
+81FA78563412;[{ "Type": "Cmp", "Operands": ["edx", "0x12345678"] }]
+
+# CMP EAX, imm32 (opcode 3D)
+3D78563412;[{ "Type": "Cmp", "Operands": ["eax", "0x12345678"] }]
 
 # CMP r/m32, imm8 (opcode 83 /7)
 83F842;[{ "Type": "Cmp", "Operands": ["eax", "0x42"] }]
+83FB42;[{ "Type": "Cmp", "Operands": ["ebx", "0x42"] }]
+83F942;[{ "Type": "Cmp", "Operands": ["ecx", "0x42"] }]
+83FA42;[{ "Type": "Cmp", "Operands": ["edx", "0x42"] }]
 
-# CMP with memory operands
-813C2578563412;[{ "Type": "Cmp", "Operands": ["dword ptr [eax]", "0x12345678"] }]
+# CMP r/m8, r8 (opcode 38)
+38C3;[{ "Type": "Cmp", "Operands": ["bl", "al"] }]
+38D9;[{ "Type": "Cmp", "Operands": ["cl", "bl"] }]
+38E2;[{ "Type": "Cmp", "Operands": ["dl", "ah"] }]
+
+# CMP r8, r/m8 (opcode 3A)
+3AC3;[{ "Type": "Cmp", "Operands": ["al", "bl"] }]
+3AD9;[{ "Type": "Cmp", "Operands": ["bl", "cl"] }]
+3AE2;[{ "Type": "Cmp", "Operands": ["ah", "dl"] }]
 
 # CMP r/m32, r32 (opcode 39)
 39D8;[{ "Type": "Cmp", "Operands": ["eax", "ebx"] }]
 39CA;[{ "Type": "Cmp", "Operands": ["edx", "ecx"] }]
+39E5;[{ "Type": "Cmp", "Operands": ["ebp", "esp"] }]
 394B10;[{ "Type": "Cmp", "Operands": ["dword ptr [ebx+0x10]", "ecx"] }]
 
 # CMP r32, r/m32 (opcode 3B)
 3BD8;[{ "Type": "Cmp", "Operands": ["ebx", "eax"] }]
 3BCA;[{ "Type": "Cmp", "Operands": ["ecx", "edx"] }]
+3BE5;[{ "Type": "Cmp", "Operands": ["esp", "ebp"] }]
 3B4B10;[{ "Type": "Cmp", "Operands": ["ecx", "dword ptr [ebx+0x10]"] }]
+
+# CMP with memory operands
+8004251000000042;[{ "Type": "Cmp", "Operands": ["byte ptr [0x10]", "0x42"] }]
+813C2578563412;[{ "Type": "Cmp", "Operands": ["dword ptr [eax]", "0x12345678"] }]
+8104251000000078563412;[{ "Type": "Cmp", "Operands": ["dword ptr [0x10]", "0x12345678"] }]
+8304251000000042;[{ "Type": "Cmp", "Operands": ["dword ptr [0x10]", "0x42"] }]
+3804251000000000;[{ "Type": "Cmp", "Operands": ["byte ptr [0x10]", "al"] }]
+3A04251000000000;[{ "Type": "Cmp", "Operands": ["al", "byte ptr [0x10]"] }]
+3904251000000000;[{ "Type": "Cmp", "Operands": ["dword ptr [0x10]", "eax"] }]
+3B04251000000000;[{ "Type": "Cmp", "Operands": ["eax", "dword ptr [0x10]"] }]

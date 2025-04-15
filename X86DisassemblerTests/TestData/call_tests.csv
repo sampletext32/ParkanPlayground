@@ -5,6 +5,8 @@ RawBytes;Instructions
 # CALL rel32 (opcode E8)
 E810000000;[{ "Type": "Call", "Operands": ["0x00000015"] }]
 E8FEFFFFFF;[{ "Type": "Call", "Operands": ["0x00000003"] }]
+E800000000;[{ "Type": "Call", "Operands": ["0x00000005"] }]
+E8FFFFFFFF;[{ "Type": "Call", "Operands": ["0x00000004"] }]
 
 # CALL r/m32 (opcode FF /2) with register operands
 FFD0;[{ "Type": "Call", "Operands": ["eax"] }]
@@ -55,9 +57,14 @@ FF1C;[{ "Type": "Call", "Operands": ["fword ptr [esp]"] }]
 FF1D;[{ "Type": "Call", "Operands": ["fword ptr [ebp]"] }]
 FF1E;[{ "Type": "Call", "Operands": ["fword ptr [esi]"] }]
 FF1F;[{ "Type": "Call", "Operands": ["fword ptr [edi]"] }]
+FF18;[{ "Type": "Call", "Operands": ["fword ptr [eax]"] }]
+FF19;[{ "Type": "Call", "Operands": ["fword ptr [ecx]"] }]
+FF1A;[{ "Type": "Call", "Operands": ["fword ptr [edx]"] }]
+FF1B;[{ "Type": "Call", "Operands": ["fword ptr [ebx]"] }]
 
 # CALL m32 (opcode FF /2) with direct memory operand
 FF1578563412;[{ "Type": "Call", "Operands": ["dword ptr [0x12345678]"] }]
+FF1534127856;[{ "Type": "Call", "Operands": ["dword ptr [0x56781234]"] }]
 
 # CALL m32 (opcode FF /2) with segment override prefixes
 26FF5510;[{ "Type": "Call", "Operands": ["dword ptr es:[ebp+0x10]"] }]
