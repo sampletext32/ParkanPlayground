@@ -56,8 +56,8 @@ public class OrRm8R8Handler : InstructionHandler
         // Adjust the operand size to 8-bit
         destinationOperand.Size = 8;
         
-        // Create the source register operand (8-bit)
-        var sourceOperand = OperandFactory.CreateRegisterOperand(reg, 8);
+        // Create the source register operand using the 8-bit register type
+        var sourceOperand = OperandFactory.CreateRegisterOperand8(reg);
         
         // Set the structured operands
         instruction.StructuredOperands = 

@@ -49,14 +49,14 @@ public class TestRegMem8Handler : InstructionHandler
         // Ensure the destination operand has the correct size (8-bit)
         destOperand.Size = 8;
 
-        // Create the register operand for the reg field (8-bit)
-        var regOperand = OperandFactory.CreateRegisterOperand(reg, 8);
+        // Create the register operand for the reg field using the 8-bit register type
+        var regOperand = OperandFactory.CreateRegisterOperand8(reg);
         
         // Set the structured operands based on addressing mode
         if (mod == 3) // Direct register addressing
         {
-            // Create the register operand for the r/m field (8-bit)
-            var rmOperand = OperandFactory.CreateRegisterOperand(rm, 8);
+            // Create the register operand for the r/m field using the 8-bit register type
+            var rmOperand = OperandFactory.CreateRegisterOperand8(rm);
             
             // Set the structured operands
             instruction.StructuredOperands = 

@@ -18,7 +18,6 @@ public class ModRMDecoder
     private const byte SIB_BASE_MASK = 0x07; // 00000111b
 
     // Register names for different sizes
-    private static readonly string[] RegisterNames8 = {"al", "cl", "dl", "bl", "ah", "ch", "dh", "bh"};
     private static readonly string[] RegisterNames16 = {"ax", "cx", "dx", "bx", "sp", "bp", "si", "di"};
     private static readonly string[] RegisterNames32 = {"eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi"};
 
@@ -65,21 +64,15 @@ public class ModRMDecoder
     }
 
     /// <summary>
-    /// Maps the register index from the ModR/M byte to the RegisterIndex enum value for 8-bit high registers
+    /// Maps the register index from the ModR/M byte to the RegisterIndex8 enum value
     /// </summary>
     /// <param name="modRMRegIndex">The register index from the ModR/M byte (0-7)</param>
-    /// <returns>The corresponding RegisterIndex enum value for 8-bit high registers</returns>
-    private RegisterIndex MapModRMToHighRegister8Index(int modRMRegIndex)
+    /// <returns>The corresponding RegisterIndex8 enum value</returns>
+    private RegisterIndex8 MapModRMToRegisterIndex8(int modRMRegIndex)
     {
-        // For 8-bit high registers (AH, CH, DH, BH), the mapping is different
-        return modRMRegIndex switch
-        {
-            4 => RegisterIndex.A,  // AH
-            5 => RegisterIndex.C,  // CH
-            6 => RegisterIndex.D,  // DH
-            7 => RegisterIndex.B,  // BH
-            _ => MapModRMToRegisterIndex(modRMRegIndex) // Fall back to normal mapping for other indices
-        };
+        // The mapping from ModR/M register index to RegisterIndex8 enum is direct:
+        // 0 -> AL, 1 -> CL, 2 -> DL, 3 -> BL, 4 -> AH, 5 -> CH, 6 -> DH, 7 -> BH
+        return (RegisterIndex8)modRMRegIndex;
     }
 
     /// <summary>
@@ -255,7 +248,7 @@ public class ModRMDecoder
     /// <returns>A tuple containing the mod, reg, rm fields and the decoded operand</returns>
     public (byte mod, RegisterIndex reg, RegisterIndex rm, Operand operand) ReadModRM()
     {
-        return ReadModRMInternal(false, false);
+        return ReadModRMInternal(false);
     }
 
     /// <summary>
@@ -264,29 +257,28 @@ public class ModRMDecoder
     /// <returns>A tuple containing the mod, reg, rm fields and the decoded operand</returns>
     public (byte mod, RegisterIndex reg, RegisterIndex rm, Operand operand) ReadModRM64()
     {
-        return ReadModRMInternal(true, false);
+        return ReadModRMInternal(true);
     }
 
     /// <summary>
     /// Reads and decodes a ModR/M byte for 8-bit operands
     /// </summary>
     /// <returns>A tuple containing the mod, reg, rm fields and the decoded operand</returns>
-    public (byte mod, RegisterIndex reg, RegisterIndex rm, Operand operand) ReadModRM8()
+    public (byte mod, RegisterIndex8 reg, RegisterIndex8 rm, Operand operand) ReadModRM8()
     {
-        return ReadModRMInternal(false, true);
+        return ReadModRM8Internal();
     }
 
     /// <summary>
-    /// Internal implementation for reading and decoding a ModR/M byte
+    /// Internal implementation for reading and decoding a ModR/M byte for standard 32-bit or 64-bit operands
     /// </summary>
     /// <param name="is64Bit">True if the operand is 64-bit</param>
-    /// <param name="is8Bit">True if the operand is 8-bit</param>
     /// <returns>A tuple containing the mod, reg, rm fields and the decoded operand</returns>
-    private (byte mod, RegisterIndex reg, RegisterIndex rm, Operand operand) ReadModRMInternal(bool is64Bit, bool is8Bit)
+    private (byte mod, RegisterIndex reg, RegisterIndex rm, Operand operand) ReadModRMInternal(bool is64Bit)
     {
         if (!_decoder.CanReadByte())
         {
-            return (0, RegisterIndex.A, RegisterIndex.A, OperandFactory.CreateRegisterOperand(RegisterIndex.A, is64Bit ? 64 : (is8Bit ? 8 : 32)));
+            return (0, RegisterIndex.A, RegisterIndex.A, OperandFactory.CreateRegisterOperand(RegisterIndex.A, is64Bit ? 64 : 32));
         }
 
         byte modRM = _decoder.ReadByte();
@@ -296,21 +288,52 @@ public class ModRMDecoder
         byte regIndex = (byte)((modRM & REG_MASK) >> 3);
         byte rmIndex = (byte)(modRM & RM_MASK);
         
-        // For 8-bit registers with mod=3, we need to check if they are high registers
-        bool isRmHighRegister = is8Bit && mod == 3 && rmIndex >= 4;
-        bool isRegHighRegister = is8Bit && regIndex >= 4;
-        
         // Map the ModR/M register indices to RegisterIndex enum values
-        RegisterIndex reg = isRegHighRegister ? MapModRMToHighRegister8Index(regIndex) : MapModRMToRegisterIndex(regIndex);
-        RegisterIndex rm = isRmHighRegister ? MapModRMToHighRegister8Index(rmIndex) : MapModRMToRegisterIndex(rmIndex);
+        RegisterIndex reg = MapModRMToRegisterIndex(regIndex);
+        RegisterIndex rm = MapModRMToRegisterIndex(rmIndex);
 
         // Create the operand based on the mod and rm fields
         Operand operand = DecodeModRM(mod, rm, is64Bit);
-        
-        // For 8-bit operands, set the size to 8
-        if (is8Bit)
+
+        return (mod, reg, rm, operand);
+    }
+    
+    /// <summary>
+    /// Internal implementation for reading and decoding a ModR/M byte for 8-bit operands
+    /// </summary>
+    /// <returns>A tuple containing the mod, reg, rm fields and the decoded operand</returns>
+    private (byte mod, RegisterIndex8 reg, RegisterIndex8 rm, Operand operand) ReadModRM8Internal()
+    {
+        if (!_decoder.CanReadByte())
         {
-            operand.Size = 8;
+            return (0, RegisterIndex8.AL, RegisterIndex8.AL, OperandFactory.CreateRegisterOperand8(RegisterIndex8.AL));
+        }
+
+        byte modRM = _decoder.ReadByte();
+
+        // Extract fields from ModR/M byte
+        byte mod = (byte)((modRM & MOD_MASK) >> 6);
+        byte regIndex = (byte)((modRM & REG_MASK) >> 3);
+        byte rmIndex = (byte)(modRM & RM_MASK);
+        
+        // Map the ModR/M register indices to RegisterIndex8 enum values
+        RegisterIndex8 reg = MapModRMToRegisterIndex8(regIndex);
+        RegisterIndex8 rm = MapModRMToRegisterIndex8(rmIndex);
+
+        // Create the operand based on the mod and rm fields
+        Operand operand;
+        
+        if (mod == 3) // Register operand
+        {
+            // For register operands, create an 8-bit register operand
+            operand = OperandFactory.CreateRegisterOperand8(rm);
+        }
+        else // Memory operand
+        {
+            // For memory operands, we need to map the RegisterIndex8 to RegisterIndex for base registers
+            RegisterIndex rmRegIndex = MapRegister8ToBaseRegister(rm);
+            operand = DecodeModRM(mod, rmRegIndex, false);
+            operand.Size = 8; // Set size to 8 bits
         }
 
         return (mod, reg, rm, operand);
@@ -413,17 +436,48 @@ public class ModRMDecoder
     /// Gets the register name based on the register index and size
     /// </summary>
     /// <param name="regIndex">The register index as RegisterIndex enum</param>
-    /// <param name="size">The register size (8, 16, or 32 bits)</param>
+    /// <param name="size">The register size (16 or 32 bits)</param>
     /// <returns>The register name</returns>
     public static string GetRegisterName(RegisterIndex regIndex, int size)
     {
         return size switch
         {
-            8 => RegisterNames8[(int)regIndex],
             16 => RegisterNames16[(int)regIndex],
             32 => RegisterNames32[(int)regIndex],
             64 => RegisterNames32[(int)regIndex], // For now, reuse 32-bit names for 64-bit
             _ => "unknown"
+        };
+    }
+    
+    /// <summary>
+    /// Gets the 8-bit register name based on the RegisterIndex8 enum value
+    /// </summary>
+    /// <param name="regIndex8">The register index as RegisterIndex8 enum</param>
+    /// <returns>The 8-bit register name</returns>
+    public static string GetRegisterName(RegisterIndex8 regIndex8)
+    {
+        return regIndex8.ToString().ToLower();
+    }
+    
+    /// <summary>
+    /// Maps a RegisterIndex8 enum value to the corresponding RegisterIndex enum value for base registers
+    /// </summary>
+    /// <param name="regIndex8">The RegisterIndex8 enum value</param>
+    /// <returns>The corresponding RegisterIndex enum value</returns>
+    private RegisterIndex MapRegister8ToBaseRegister(RegisterIndex8 regIndex8)
+    {
+        // Map 8-bit register indices to their corresponding 32-bit register indices
+        return regIndex8 switch
+        {
+            RegisterIndex8.AL => RegisterIndex.A,
+            RegisterIndex8.CL => RegisterIndex.C,
+            RegisterIndex8.DL => RegisterIndex.D,
+            RegisterIndex8.BL => RegisterIndex.B,
+            RegisterIndex8.AH => RegisterIndex.A,
+            RegisterIndex8.CH => RegisterIndex.C,
+            RegisterIndex8.DH => RegisterIndex.D,
+            RegisterIndex8.BH => RegisterIndex.B,
+            _ => RegisterIndex.A // Default to EAX
         };
     }
 }

@@ -50,9 +50,8 @@ public class AddRm8R8Handler : InstructionHandler
         // - The r/m field with mod specifies the destination operand (register or memory)
         var (_, reg, _, destinationOperand) = ModRMDecoder.ReadModRM8();
         
-        // Create the source register operand
-        // For high registers, we need to set the IsHighRegister flag
-        var sourceOperand = OperandFactory.CreateRegisterOperand(reg, 8);
+        // Create the source register operand using the 8-bit register type
+        var sourceOperand = OperandFactory.CreateRegisterOperand8(reg);
 
         // Set the structured operands
         instruction.StructuredOperands = 

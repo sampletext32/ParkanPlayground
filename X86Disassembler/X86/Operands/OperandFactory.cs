@@ -17,6 +17,17 @@ public static class OperandFactory
     }
     
     /// <summary>
+    /// Creates an 8-bit register operand using RegisterIndex8 enum
+    /// </summary>
+    /// <param name="register8">The 8-bit register</param>
+    /// <returns>A register operand for 8-bit registers</returns>
+    public static Register8Operand CreateRegisterOperand8(RegisterIndex8 register8)
+    {
+        // Create a new Register8Operand with the 8-bit register
+        return new Register8Operand(register8);
+    }
+    
+    /// <summary>
     /// Creates an immediate value operand
     /// </summary>
     /// <param name="value">The immediate value</param>

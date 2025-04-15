@@ -43,8 +43,8 @@ public class SubRm8R8Handler : InstructionHandler
         // Ensure the destination operand has the correct size (8-bit)
         destinationOperand.Size = 8;
         
-        // Create the source register operand
-        var sourceOperand = OperandFactory.CreateRegisterOperand(reg, 8);
+        // Create the source register operand using the 8-bit register type
+        var sourceOperand = OperandFactory.CreateRegisterOperand8(reg);
         
         // Set the structured operands
         instruction.StructuredOperands = 

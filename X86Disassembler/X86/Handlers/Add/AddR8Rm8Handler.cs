@@ -51,7 +51,7 @@ public class AddR8Rm8Handler : InstructionHandler
         var (_, reg, _, sourceOperand) = ModRMDecoder.ReadModRM8();
 
         // Create the destination register operand
-        var destinationOperand = OperandFactory.CreateRegisterOperand(reg, 8);
+        var destinationOperand = OperandFactory.CreateRegisterOperand8(reg);
 
         // Set the structured operands
         instruction.StructuredOperands = 
