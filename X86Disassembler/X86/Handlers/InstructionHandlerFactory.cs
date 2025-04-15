@@ -269,6 +269,11 @@ public class InstructionHandlerFactory
         _handlers.Add(new AddR32Rm32Handler(_decoder));
         _handlers.Add(new AddRm32R32Handler(_decoder));
         _handlers.Add(new AddEaxImmHandler(_decoder));
+        
+        // Add 8-bit ADD handlers
+        _handlers.Add(new AddRm8R8Handler(_decoder)); // ADD r/m8, r8 (opcode 00)
+        _handlers.Add(new AddR8Rm8Handler(_decoder)); // ADD r8, r/m8 (opcode 02)
+        _handlers.Add(new AddAlImmHandler(_decoder)); // ADD AL, imm8 (opcode 04)
 
         // Add ADD immediate handlers from ArithmeticImmediate namespace
         _handlers.Add(new AddImmToRm8Handler(_decoder));
