@@ -1,3 +1,19 @@
+# PUSH immediate instruction tests
+# Format: RawBytes;Instructions
 RawBytes;Instructions
-6878563412;[{ "Mnemonic": "push", "Operands": "0x12345678" }]
-6A10;[{ "Mnemonic": "push", "Operands": "0x10" }]
+
+# PUSH imm32 (32-bit immediate)
+6878563412;[{ "Type": "Push", "Operands": ["0x12345678"] }]
+
+# PUSH imm8 (8-bit immediate)
+6A10;[{ "Type": "Push", "Operands": ["0x10"] }]
+6A00;[{ "Type": "Push", "Operands": ["0x00"] }]
+6AFF;[{ "Type": "Push", "Operands": ["0xFF"] }]
+
+# PUSH imm32 with various values
+6800000000;[{ "Type": "Push", "Operands": ["0x00000000"] }]
+68FFFFFFFF;[{ "Type": "Push", "Operands": ["0xFFFFFFFF"] }]
+6801000000;[{ "Type": "Push", "Operands": ["0x00000001"] }]
+
+# PUSH imm16 with operand size prefix
+66687856;[{ "Type": "Push", "Operands": ["0x5678"] }]

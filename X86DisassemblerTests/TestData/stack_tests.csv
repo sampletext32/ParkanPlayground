@@ -1,0 +1,24 @@
+# Stack manipulation instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# PUSHA/PUSHAD - Push All General-Purpose Registers
+60;[{ "Type": "Pushad", "Operands": [] }]
+
+# POPA/POPAD - Pop All General-Purpose Registers
+61;[{ "Type": "Popad", "Operands": [] }]
+
+# PUSHF/PUSHFD - Push EFLAGS Register onto the Stack
+9C;[{ "Type": "Pushfd", "Operands": [] }]
+
+# POPF/POPFD - Pop Stack into EFLAGS Register
+9D;[{ "Type": "Popfd", "Operands": [] }]
+
+# ENTER - Make Stack Frame for Procedure Parameters
+C8000000;[{ "Type": "Enter", "Operands": ["0x0000", "0x00"] }]
+C8100000;[{ "Type": "Enter", "Operands": ["0x0010", "0x00"] }]
+C8000001;[{ "Type": "Enter", "Operands": ["0x0000", "0x01"] }]
+C8100001;[{ "Type": "Enter", "Operands": ["0x0010", "0x01"] }]
+
+# LEAVE - High Level Procedure Exit
+C9;[{ "Type": "Leave", "Operands": [] }]

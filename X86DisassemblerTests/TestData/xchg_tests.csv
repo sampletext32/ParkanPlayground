@@ -1,8 +1,36 @@
+# XCHG instruction tests
+# Format: RawBytes;Instructions
 RawBytes;Instructions
-91;[{ "Mnemonic": "xchg", "Operands": "eax, ecx" }]
-92;[{ "Mnemonic": "xchg", "Operands": "eax, edx" }]
-93;[{ "Mnemonic": "xchg", "Operands": "eax, ebx" }]
-94;[{ "Mnemonic": "xchg", "Operands": "eax, esp" }]
-95;[{ "Mnemonic": "xchg", "Operands": "eax, ebp" }]
-96;[{ "Mnemonic": "xchg", "Operands": "eax, esi" }]
-97;[{ "Mnemonic": "xchg", "Operands": "eax, edi" }]
+
+# XCHG EAX, reg32 (opcodes 90-97)
+90;[{ "Type": "Nop", "Operands": [] }]
+91;[{ "Type": "Xchg", "Operands": ["eax", "ecx"] }]
+92;[{ "Type": "Xchg", "Operands": ["eax", "edx"] }]
+93;[{ "Type": "Xchg", "Operands": ["eax", "ebx"] }]
+94;[{ "Type": "Xchg", "Operands": ["eax", "esp"] }]
+95;[{ "Type": "Xchg", "Operands": ["eax", "ebp"] }]
+96;[{ "Type": "Xchg", "Operands": ["eax", "esi"] }]
+97;[{ "Type": "Xchg", "Operands": ["eax", "edi"] }]
+
+# XCHG reg32, r/m32 (opcode 87)
+87D9;[{ "Type": "Xchg", "Operands": ["ecx", "ebx"] }]
+87CA;[{ "Type": "Xchg", "Operands": ["edx", "ecx"] }]
+
+# XCHG r/m32, reg32 (opcode 87) - memory operands
+874B10;[{ "Type": "Xchg", "Operands": ["ecx", "dword ptr [ebx+0x10]"] }]
+8711;[{ "Type": "Xchg", "Operands": ["edx", "dword ptr [ecx]"] }]
+8713;[{ "Type": "Xchg", "Operands": ["edx", "dword ptr [ebx]"] }]
+
+# XCHG with 16-bit operand size prefix
+6687D9;[{ "Type": "Xchg", "Operands": ["ecx", "ebx"] }]
+6691;[{ "Type": "Xchg", "Operands": ["eax", "ecx"] }]
+
+# XCHG with 8-bit registers (opcode 86)
+86D9;[{ "Type": "Xchg", "Operands": ["cl", "bl"] }]
+86C3;[{ "Type": "Xchg", "Operands": ["al", "bl"] }]
+86C1;[{ "Type": "Xchg", "Operands": ["al", "cl"] }]
+86D3;[{ "Type": "Xchg", "Operands": ["dl", "bl"] }]
+
+# XCHG r/m8, reg8 (opcode 86) - memory operands
+8601;[{ "Type": "Xchg", "Operands": ["al", "byte ptr [ecx]"] }]
+8603;[{ "Type": "Xchg", "Operands": ["al", "byte ptr [ebx]"] }]

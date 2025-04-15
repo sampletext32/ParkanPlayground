@@ -1,0 +1,15 @@
+# FNSTSW instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# FNSTSW AX - Store FPU status word in AX without checking for pending unmasked exceptions
+DFE0;[{ "Type": "Fnstsw", "Operands": ["ax"] }]
+
+# FSTSW AX - Store FPU status word in AX
+9BDFE0;[{ "Type": "Fstsw", "Operands": ["ax"] }]
+
+# FSTSW m2byte - Store FPU status word to memory
+9BDD3C25;[{ "Type": "Fstsw", "Operands": ["word ptr [eax]"] }]
+
+# FNSTSW m2byte - Store FPU status word to memory without checking for pending unmasked exceptions
+DD3C25;[{ "Type": "Fnstsw", "Operands": ["word ptr [eax]"] }]

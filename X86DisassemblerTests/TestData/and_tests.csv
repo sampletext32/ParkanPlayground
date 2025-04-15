@@ -1,0 +1,25 @@
+# AND instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# AND r/m8, imm8 (opcode 80 /4)
+80E042;[{ "Type": "And", "Operands": ["al", "0x42"] }]
+
+# AND r/m32, imm32 (opcode 81 /4)
+81E078563412;[{ "Type": "And", "Operands": ["eax", "0x12345678"] }]
+
+# AND r/m32, imm8 (opcode 83 /4)
+83E042;[{ "Type": "And", "Operands": ["eax", "0x42"] }]
+
+# AND with memory operands
+8124251000000078563412;[{ "Type": "And", "Operands": ["dword ptr [0x10]", "0x12345678"] }]
+
+# AND r/m32, r32 (opcode 21)
+21D8;[{ "Type": "And", "Operands": ["eax", "ebx"] }]
+21CA;[{ "Type": "And", "Operands": ["edx", "ecx"] }]
+214B10;[{ "Type": "And", "Operands": ["dword ptr [ebx+0x10]", "ecx"] }]
+
+# AND r32, r/m32 (opcode 23)
+23D8;[{ "Type": "And", "Operands": ["ebx", "eax"] }]
+23CA;[{ "Type": "And", "Operands": ["ecx", "edx"] }]
+234B10;[{ "Type": "And", "Operands": ["ecx", "dword ptr [ebx+0x10]"] }]

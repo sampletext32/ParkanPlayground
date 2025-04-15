@@ -1,0 +1,25 @@
+# CMP instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# CMP r/m8, imm8 (opcode 80 /7)
+80F842;[{ "Type": "Cmp", "Operands": ["al", "0x42"] }]
+
+# CMP r/m32, imm32 (opcode 81 /7)
+81F878563412;[{ "Type": "Cmp", "Operands": ["eax", "0x12345678"] }]
+
+# CMP r/m32, imm8 (opcode 83 /7)
+83F842;[{ "Type": "Cmp", "Operands": ["eax", "0x42"] }]
+
+# CMP with memory operands
+813C2578563412;[{ "Type": "Cmp", "Operands": ["dword ptr [eax]", "0x12345678"] }]
+
+# CMP r/m32, r32 (opcode 39)
+39D8;[{ "Type": "Cmp", "Operands": ["eax", "ebx"] }]
+39CA;[{ "Type": "Cmp", "Operands": ["edx", "ecx"] }]
+394B10;[{ "Type": "Cmp", "Operands": ["dword ptr [ebx+0x10]", "ecx"] }]
+
+# CMP r32, r/m32 (opcode 3B)
+3BD8;[{ "Type": "Cmp", "Operands": ["ebx", "eax"] }]
+3BCA;[{ "Type": "Cmp", "Operands": ["ecx", "edx"] }]
+3B4B10;[{ "Type": "Cmp", "Operands": ["ecx", "dword ptr [ebx+0x10]"] }]

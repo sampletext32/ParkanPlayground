@@ -1,7 +1,61 @@
+# Segment override prefix tests
+# Format: RawBytes;Instructions
 RawBytes;Instructions
-26FF7510;[{ "Mnemonic": "push", "Operands": "dword ptr es:[ebp+0x10]" }]
-2EFF7510;[{ "Mnemonic": "push", "Operands": "dword ptr cs:[ebp+0x10]" }]
-36FF7510;[{ "Mnemonic": "push", "Operands": "dword ptr ss:[ebp+0x10]" }]
-3EFF7510;[{ "Mnemonic": "push", "Operands": "dword ptr ds:[ebp+0x10]" }]
-64FF7510;[{ "Mnemonic": "push", "Operands": "dword ptr fs:[ebp+0x10]" }]
-65FF7510;[{ "Mnemonic": "push", "Operands": "dword ptr gs:[ebp+0x10]" }]
+
+# Basic segment override tests with PUSH instruction
+26FF7510;[{ "Type": "Push", "Operands": ["dword ptr es:[ebp+0x10]"] }]
+2EFF7510;[{ "Type": "Push", "Operands": ["dword ptr cs:[ebp+0x10]"] }]
+36FF7510;[{ "Type": "Push", "Operands": ["dword ptr ss:[ebp+0x10]"] }]
+3EFF7510;[{ "Type": "Push", "Operands": ["dword ptr ds:[ebp+0x10]"] }]
+64FF7510;[{ "Type": "Push", "Operands": ["dword ptr fs:[ebp+0x10]"] }]
+65FF7510;[{ "Type": "Push", "Operands": ["dword ptr gs:[ebp+0x10]"] }]
+
+# Segment override with different instructions
+
+# MOV instructions with segment overrides
+26890D78563412;[{ "Type": "Mov", "Operands": ["dword ptr es:[0x12345678]", "ecx"] }]
+2E8B0D78563412;[{ "Type": "Mov", "Operands": ["ecx", "dword ptr cs:[0x12345678]"] }]
+368B4D10;[{ "Type": "Mov", "Operands": ["ecx", "dword ptr ss:[ebp+0x10]"] }]
+3E8B4D10;[{ "Type": "Mov", "Operands": ["ecx", "dword ptr ds:[ebp+0x10]"] }]
+64A178563412;[{ "Type": "Mov", "Operands": ["eax", "dword ptr fs:[0x12345678]"] }]
+65A378563412;[{ "Type": "Mov", "Operands": ["dword ptr gs:[0x12345678]", "eax"] }]
+
+# ADD instructions with segment overrides
+26034B10;[{ "Type": "Add", "Operands": ["ecx", "dword ptr es:[ebx+0x10]"] }]
+2E014B10;[{ "Type": "Add", "Operands": ["dword ptr cs:[ebx+0x10]", "ecx"] }]
+36034B10;[{ "Type": "Add", "Operands": ["ecx", "dword ptr ss:[ebx+0x10]"] }]
+3E014B10;[{ "Type": "Add", "Operands": ["dword ptr ds:[ebx+0x10]", "ecx"] }]
+64034B10;[{ "Type": "Add", "Operands": ["ecx", "dword ptr fs:[ebx+0x10]"] }]
+65014B10;[{ "Type": "Add", "Operands": ["dword ptr gs:[ebx+0x10]", "ecx"] }]
+
+# SUB instructions with segment overrides
+262B4B10;[{ "Type": "Sub", "Operands": ["ecx", "dword ptr es:[ebx+0x10]"] }]
+2E294B10;[{ "Type": "Sub", "Operands": ["dword ptr cs:[ebx+0x10]", "ecx"] }]
+362B4B10;[{ "Type": "Sub", "Operands": ["ecx", "dword ptr ss:[ebx+0x10]"] }]
+3E294B10;[{ "Type": "Sub", "Operands": ["dword ptr ds:[ebx+0x10]", "ecx"] }]
+642B4B10;[{ "Type": "Sub", "Operands": ["ecx", "dword ptr fs:[ebx+0x10]"] }]
+65294B10;[{ "Type": "Sub", "Operands": ["dword ptr gs:[ebx+0x10]", "ecx"] }]
+
+# XOR instructions with segment overrides
+26334B10;[{ "Type": "Xor", "Operands": ["ecx", "dword ptr es:[ebx+0x10]"] }]
+2E314B10;[{ "Type": "Xor", "Operands": ["dword ptr cs:[ebx+0x10]", "ecx"] }]
+36334B10;[{ "Type": "Xor", "Operands": ["ecx", "dword ptr ss:[ebx+0x10]"] }]
+3E314B10;[{ "Type": "Xor", "Operands": ["dword ptr ds:[ebx+0x10]", "ecx"] }]
+64334B10;[{ "Type": "Xor", "Operands": ["ecx", "dword ptr fs:[ebx+0x10]"] }]
+65314B10;[{ "Type": "Xor", "Operands": ["dword ptr gs:[ebx+0x10]", "ecx"] }]
+
+# Complex addressing modes with segment overrides
+26891C8D78563412;[{ "Type": "Mov", "Operands": ["dword ptr es:[ebp+ecx*4+0x12345678]", "ebx"] }]
+2E8B1C8D78563412;[{ "Type": "Mov", "Operands": ["ebx", "dword ptr cs:[ebp+ecx*4+0x12345678]"] }]
+36891C8D78563412;[{ "Type": "Mov", "Operands": ["dword ptr ss:[ebp+ecx*4+0x12345678]", "ebx"] }]
+3E8B1C8D78563412;[{ "Type": "Mov", "Operands": ["ebx", "dword ptr ds:[ebp+ecx*4+0x12345678]"] }]
+64891C8D78563412;[{ "Type": "Mov", "Operands": ["dword ptr fs:[ebp+ecx*4+0x12345678]", "ebx"] }]
+658B1C8D78563412;[{ "Type": "Mov", "Operands": ["ebx", "dword ptr gs:[ebp+ecx*4+0x12345678]"] }]
+
+# Direct memory addressing with segment overrides
+26FF3578563412;[{ "Type": "Push", "Operands": ["dword ptr es:[0x12345678]"] }]
+2EFF3578563412;[{ "Type": "Push", "Operands": ["dword ptr cs:[0x12345678]"] }]
+36FF3578563412;[{ "Type": "Push", "Operands": ["dword ptr ss:[0x12345678]"] }]
+3EFF3578563412;[{ "Type": "Push", "Operands": ["dword ptr ds:[0x12345678]"] }]
+64FF3578563412;[{ "Type": "Push", "Operands": ["dword ptr fs:[0x12345678]"] }]
+65FF3578563412;[{ "Type": "Push", "Operands": ["dword ptr gs:[0x12345678]"] }]

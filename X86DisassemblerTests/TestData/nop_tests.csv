@@ -3,29 +3,29 @@
 RawBytes;Instructions
 
 # Basic NOP instruction (1-byte)
-90;[{ "Mnemonic": "nop", "Operands": "" }]
+90;[{ "Type": "Nop", "Operands": [] }]
 
 # Multi-byte NOP instructions (used for alignment)
 # 2-byte NOP (xchg AX, AX)
-6690;[{ "Mnemonic": "nop", "Operands": "" }]
+6690;[{ "Type": "Nop", "Operands": [] }]
 
 # 3-byte NOP (XCHG EAX, EAX)
-0F1F00;[{ "Mnemonic": "nop", "Operands": "dword ptr [eax]" }]
+0F1F00;[{ "Type": "Nop", "Operands": ["dword ptr [eax]"] }]
 
 # 4-byte NOP
-0F1F4000;[{ "Mnemonic": "nop", "Operands": "dword ptr [eax]" }]
+0F1F4000;[{ "Type": "Nop", "Operands": ["dword ptr [eax]"] }]
 
 # 5-byte NOP
-0F1F440000;[{ "Mnemonic": "nop", "Operands": "dword ptr [eax+eax*1]" }]
+0F1F440000;[{ "Type": "Nop", "Operands": ["dword ptr [eax+eax*1]"] }]
 
 # 6-byte NOP
-660F1F440000;[{ "Mnemonic": "nop", "Operands": "word ptr [eax+eax*1]" }]
+660F1F440000;[{ "Type": "Nop", "Operands": ["word ptr [eax+eax*1]"] }]
 
 # 7-byte NOP
-0F1F8000000000;[{ "Mnemonic": "nop", "Operands": "dword ptr [eax]" }]
+0F1F8000000000;[{ "Type": "Nop", "Operands": ["dword ptr [eax]"] }]
 
 # 8-byte NOP
-0F1F840000000000;[{ "Mnemonic": "nop", "Operands": "dword ptr [eax+eax*1]" }]
+0F1F840000000000;[{ "Type": "Nop", "Operands": ["dword ptr [eax+eax*1]"] }]
 
 # 9-byte NOP
-660F1F840000000000;[{ "Mnemonic": "nop", "Operands": "word ptr [eax+eax*1]" }]
+660F1F840000000000;[{ "Type": "Nop", "Operands": ["word ptr [eax+eax*1]"] }]

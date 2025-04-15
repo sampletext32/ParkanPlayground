@@ -3,87 +3,115 @@
 RawBytes;Instructions
 
 # Register-to-register SUB (32-bit)
-29D8;[{ "Mnemonic": "sub", "Operands": "eax, ebx" }]
+29D8;[{ "Type": "Sub", "Operands": ["eax", "ebx"] }]
 
 # Register-to-memory SUB (32-bit)
-294B10;[{ "Mnemonic": "sub", "Operands": "dword ptr [ebx+0x10], ecx" }]
+294B10;[{ "Type": "Sub", "Operands": ["dword ptr [ebx+0x10]", "ecx"] }]
 
 # Memory-to-register SUB (32-bit)
-2BD8;[{ "Mnemonic": "sub", "Operands": "ebx, eax" }]
-2B4B10;[{ "Mnemonic": "sub", "Operands": "ecx, dword ptr [ebx+0x10]" }]
+2BD8;[{ "Type": "Sub", "Operands": ["ebx", "eax"] }]
+2B4B10;[{ "Type": "Sub", "Operands": ["ecx", "dword ptr [ebx+0x10]"] }]
 
 # Immediate-to-register SUB (32-bit immediate)
-81E878563412;[{ "Mnemonic": "sub", "Operands": "eax, 0x12345678" }]
+81E878563412;[{ "Type": "Sub", "Operands": ["eax", "0x12345678"] }]
 
 # Immediate-to-memory SUB (32-bit immediate)
-816B1078563412;[{ "Mnemonic": "sub", "Operands": "dword ptr [ebx+0x10], 0x12345678" }]
+816B1078563412;[{ "Type": "Sub", "Operands": ["dword ptr [ebx+0x10]", "0x12345678"] }]
 
 # Small immediate SUB (8-bit immediate to 32-bit register)
-83E842;[{ "Mnemonic": "sub", "Operands": "eax, 0x42" }]
+83E842;[{ "Type": "Sub", "Operands": ["eax", "0x42"] }]
 
 # Sign-extended immediate SUB (8-bit immediate sign-extended to 32-bit)
-83E8F0;[{ "Mnemonic": "sub", "Operands": "eax, 0xFFFFFFF0" }]
+83E8F0;[{ "Type": "Sub", "Operands": ["eax", "0xFFFFFFF0"] }]
 
 # 8-bit register operations
 # SUB r/m8, r8 (opcode 28)
-28C3;[{ "Mnemonic": "sub", "Operands": "bl, al" }]
+28C3;[{ "Type": "Sub", "Operands": ["bl", "al"] }]
 
 # SUB r8, r/m8 (opcode 2A)
-2AC3;[{ "Mnemonic": "sub", "Operands": "al, bl" }]
+2AC3;[{ "Type": "Sub", "Operands": ["al", "bl"] }]
 
 # SUB AL, imm8 (opcode 2C)
-2C42;[{ "Mnemonic": "sub", "Operands": "al, 0x42" }]
+2C42;[{ "Type": "Sub", "Operands": ["al", "0x42"] }]
 
 # SUB r/m8, imm8 (opcode 80 /5)
-80EB42;[{ "Mnemonic": "sub", "Operands": "bl, 0x42" }]
+80EB42;[{ "Type": "Sub", "Operands": ["bl", "0x42"] }]
 
 # 16-bit register operations with operand size prefix (0x66)
-# Note: The disassembler currently outputs 32-bit register names even with 0x66 prefix
 # SUB r/m16, r16 (opcode 29 with 0x66 prefix)
-6629D8;[{ "Mnemonic": "sub", "Operands": "eax, ebx" }]
+6629D8;[{ "Type": "Sub", "Operands": ["eax", "ebx"] }]
 
 # SUB r16, r/m16 (opcode 2B with 0x66 prefix)
-662BD8;[{ "Mnemonic": "sub", "Operands": "ebx, eax" }]
+662BD8;[{ "Type": "Sub", "Operands": ["ebx", "eax"] }]
 
 # SUB AX, imm16 (opcode 2D with 0x66 prefix)
-662D3412;[{ "Mnemonic": "sub", "Operands": "eax, 0x1234" }]
+662D3412;[{ "Type": "Sub", "Operands": ["eax", "0x1234"] }]
 
 # SUB r/m16, imm8 (opcode 83 /5 with 0x66 prefix and sign extension)
-6683EB42;[{ "Mnemonic": "sub", "Operands": "ebx, 0x42" }]
+6683EB42;[{ "Type": "Sub", "Operands": ["ebx", "0x42"] }]
+
+# SUB r/m16, imm16 (opcode 81 /5 with 0x66 prefix)
+6681EB3412;[{ "Type": "Sub", "Operands": ["ebx", "0x1234"] }]
 
 # Additional test cases for more complex addressing modes
 
 # SUB with SIB byte addressing (Scale-Index-Base)
 # SUB [eax+ecx*4], edx (opcode 29)
-291488;[{ "Mnemonic": "sub", "Operands": "dword ptr [eax+ecx*4], edx" }]
+291488;[{ "Type": "Sub", "Operands": ["dword ptr [eax+ecx*4]", "edx"] }]
 
 # SUB edx, [eax+ecx*4] (opcode 2B)
-2B1488;[{ "Mnemonic": "sub", "Operands": "edx, dword ptr [eax+ecx*4]" }]
+2B1488;[{ "Type": "Sub", "Operands": ["edx", "dword ptr [eax+ecx*4]"] }]
 
 # SUB with displacement-only addressing
 # SUB [0x12345678], eax (opcode 29)
-290578563412;[{ "Mnemonic": "sub", "Operands": "dword ptr [0x12345678], eax" }]
+290578563412;[{ "Type": "Sub", "Operands": ["dword ptr [0x12345678]", "eax"] }]
 
 # SUB with segment override prefixes
 # SUB fs:[ebx+0x10], ecx (opcode 29 with FS override)
-64294B10;[{ "Mnemonic": "sub", "Operands": "dword ptr fs:[ebx+0x10], ecx" }]
+64294B10;[{ "Type": "Sub", "Operands": ["dword ptr fs:[ebx+0x10]", "ecx"] }]
 
 # SUB ecx, gs:[ebx+0x10] (opcode 2B with GS override)
-652B4B10;[{ "Mnemonic": "sub", "Operands": "ecx, dword ptr gs:[ebx+0x10]" }]
+652B4B10;[{ "Type": "Sub", "Operands": ["ecx", "dword ptr gs:[ebx+0x10]"] }]
 
 # SUB with complex addressing mode: base + index + scale + displacement
 # SUB [eax+ecx*4+0x12345678], edx (opcode 29)
-29948878563412;[{ "Mnemonic": "sub", "Operands": "dword ptr [eax+ecx*4+0x12345678], edx" }]
+29948878563412;[{ "Type": "Sub", "Operands": ["dword ptr [eax+ecx*4+0x12345678]", "edx"] }]
 
 # Edge cases for immediate values
 # SUB eax, 0x0 (opcode 83 /5 with zero immediate)
-83E800;[{ "Mnemonic": "sub", "Operands": "eax, 0x00" }]
+83E800;[{ "Type": "Sub", "Operands": ["eax", "0x00"] }]
 
 # SUB al, 0xFF (opcode 2C with max 8-bit immediate)
-2CFF;[{ "Mnemonic": "sub", "Operands": "al, 0xFF" }]
+2CFF;[{ "Type": "Sub", "Operands": ["al", "0xFF"] }]
 
 # SUB eax, 0xFFFFFFFF (opcode 81 /5 with max 32-bit immediate)
-81E8FFFFFFFF;[{ "Mnemonic": "sub", "Operands": "eax, 0xFFFFFFFF" }]
+81E8FFFFFFFF;[{ "Type": "Sub", "Operands": ["eax", "0xFFFFFFFF"] }]
 
 # SUB with negative immediate value (sign-extended)
-83E8FF;[{ "Mnemonic": "sub", "Operands": "eax, 0xFFFFFFFF" }]
+83E8FF;[{ "Type": "Sub", "Operands": ["eax", "0xFFFFFFFF"] }]
+
+# Additional tests for SubImmFromRm32Handler
+# SUB r/m32, imm32 (opcode 81 /5) with various registers
+81E978563412;[{ "Type": "Sub", "Operands": ["ecx", "0x12345678"] }]
+81EA78563412;[{ "Type": "Sub", "Operands": ["edx", "0x12345678"] }]
+81EB78563412;[{ "Type": "Sub", "Operands": ["ebx", "0x12345678"] }]
+81EC78563412;[{ "Type": "Sub", "Operands": ["esp", "0x12345678"] }]
+81ED78563412;[{ "Type": "Sub", "Operands": ["ebp", "0x12345678"] }]
+81EE78563412;[{ "Type": "Sub", "Operands": ["esi", "0x12345678"] }]
+81EF78563412;[{ "Type": "Sub", "Operands": ["edi", "0x12345678"] }]
+
+# SUB r/m32, imm32 (opcode 81 /5) with memory operands
+818D10000000FFFFFFFF;[{ "Type": "Sub", "Operands": ["dword ptr [ebp+0x10]", "0xFFFFFFFF"] }]
+
+# Additional tests for SubImmFromRm32SignExtendedHandler
+# SUB r/m32, imm8 (opcode 83 /5) with sign extension
+83E9FF;[{ "Type": "Sub", "Operands": ["ecx", "0xFFFFFFFF"] }]
+83EAFF;[{ "Type": "Sub", "Operands": ["edx", "0xFFFFFFFF"] }]
+83EBFF;[{ "Type": "Sub", "Operands": ["ebx", "0xFFFFFFFF"] }]
+83ECFF;[{ "Type": "Sub", "Operands": ["esp", "0xFFFFFFFF"] }]
+83EDFF;[{ "Type": "Sub", "Operands": ["ebp", "0xFFFFFFFF"] }]
+83EEFF;[{ "Type": "Sub", "Operands": ["esi", "0xFFFFFFFF"] }]
+83EFFF;[{ "Type": "Sub", "Operands": ["edi", "0xFFFFFFFF"] }]
+
+# SUB r/m32, imm8 (opcode 83 /5) with memory operands and sign extension
+838D1000000080;[{ "Type": "Sub", "Operands": ["dword ptr [ebp+0x10]", "0xFFFFFF80"] }]

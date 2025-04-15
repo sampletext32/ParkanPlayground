@@ -1,0 +1,24 @@
+# DIV instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# DIV r/m8 (opcode F6 /6)
+F6F0;[{ "Type": "Div", "Operands": ["al"] }]
+F6F3;[{ "Type": "Div", "Operands": ["bl"] }]
+F6F1;[{ "Type": "Div", "Operands": ["cl"] }]
+F6F2;[{ "Type": "Div", "Operands": ["dl"] }]
+
+# DIV r/m32 (opcode F7 /6)
+F7F0;[{ "Type": "Div", "Operands": ["eax"] }]
+F7F3;[{ "Type": "Div", "Operands": ["ebx"] }]
+F7F1;[{ "Type": "Div", "Operands": ["ecx"] }]
+F7F2;[{ "Type": "Div", "Operands": ["edx"] }]
+F7F4;[{ "Type": "Div", "Operands": ["esp"] }]
+F7F5;[{ "Type": "Div", "Operands": ["ebp"] }]
+F7F6;[{ "Type": "Div", "Operands": ["esi"] }]
+F7F7;[{ "Type": "Div", "Operands": ["edi"] }]
+
+# DIV with memory operands
+F63425;[{ "Type": "Div", "Operands": ["byte ptr [eax]"] }]
+F73425;[{ "Type": "Div", "Operands": ["dword ptr [eax]"] }]
+F7342510000000;[{ "Type": "Div", "Operands": ["dword ptr [eax+0x10]"] }]

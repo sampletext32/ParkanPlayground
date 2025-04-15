@@ -1,143 +1,99 @@
-using System.Globalization;
-using System.Reflection;
-using CsvHelper;
-using CsvHelper.Configuration;
 using X86Disassembler.X86;
-using X86Disassembler.X86.Operands;
 using Xunit.Abstractions;
 
 namespace X86DisassemblerTests;
 
+/// <summary>
+/// Tests for disassembling raw bytes from CSV test files
+/// </summary>
 public class RawFromFileDisassemblyTests(ITestOutputHelper output)
 {
     [Theory]
-    [InlineData("pushreg_tests.csv")]
-    [InlineData("popreg_tests.csv")]
-    [InlineData("pushimm_tests.csv")]
-    [InlineData("nop_tests.csv")]
-    [InlineData("xchg_tests.csv")]
-    [InlineData("sub_tests.csv")]
-    [InlineData("xor_tests.csv")]
-    [InlineData("segment_override_tests.csv")]
-    public void RunTests(string file)
+    [ClassData(typeof(TestDataProvider))]
+    public void RunTests(string f, int idx, TestFromFileEntry test)
     {
-        // Load the CSV test file from embedded resources
-        using var stream = Assembly.GetExecutingAssembly()
-            .GetManifestResourceStream($"X86DisassemblerTests.TestData.{file}");
+        // Convert hex string to byte array
+        byte[] code = HexStringToByteArray(test.RawBytes);
 
-        if (stream == null)
+        // Create a disassembler with the code
+        Disassembler disassembler = new Disassembler(code, 0x1000);
+
+        // Disassemble the code
+        var disassembledInstructions = disassembler.Disassemble();
+
+        // Verify the number of instructions
+        if (test.Instructions.Count != disassembledInstructions.Count)
         {
-            throw new InvalidOperationException($"Could not find {file} embedded resource");
+            AssertFailWithReason(
+                idx,
+                f,
+                test,
+                disassembledInstructions,
+                "Instruction count mismatch"
+            );
         }
 
-        // Configure CSV reader with semicolon delimiter
-        var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+        // Verify each instruction
+        for (int i = 0; i < test.Instructions.Count; i++)
         {
-            HasHeaderRecord = true,
-            Delimiter = ";",
-            BadDataFound = null, // Ignore bad data
-            AllowComments = true, // Enable comments in CSV files
-            Comment = '#', // Use # as the comment character
-            IgnoreBlankLines = true // Skip empty lines
-        };
+            var expected = test.Instructions[i];
+            var actual = disassembledInstructions[i];
 
-        using var streamReader = new StreamReader(stream);
-        using var csvReader = new CsvReader(streamReader, config);
-
-        // Register class map for TestFromFileEntry
-        csvReader.Context.RegisterClassMap<TestFromFileEntryMap>();
-
-        // Read all records from CSV
-        var tests = csvReader.GetRecords<TestFromFileEntry>()
-            .ToList();
-
-        // Run tests for each instruction
-        for (var index = 0; index < tests.Count; index++)
-        {
-            var test = tests[index];
-
-            // Convert hex string to byte array
-            byte[] code = HexStringToByteArray(test.RawBytes);
-
-            // Create a disassembler with the code
-            Disassembler disassembler = new Disassembler(code, 0x1000);
-
-            // Disassemble the code
-            var disassembledInstructions = disassembler.Disassemble();
-
-            // Verify the number of instructions
-            if (test.Instructions.Count != disassembledInstructions.Count)
+            // Compare instruction type instead of mnemonic
+            if (expected.Type != actual.Type)
             {
                 AssertFailWithReason(
-                    index,
-                    file,
+                    idx,
+                    f,
                     test,
                     disassembledInstructions,
-                    "Instruction count mismatch"
+                    $"Type mismatch: Expected {expected.Type}, got {actual.Type}"
                 );
             }
 
-            // Verify each instruction
-            for (int i = 0; i < test.Instructions.Count; i++)
+            // Compare operands
+            if (!CompareOperands(expected.Operands, actual.StructuredOperands))
             {
-                var expected = test.Instructions[i];
-                var actual = disassembledInstructions[i];
-
-                // Compare instruction type instead of mnemonic
-                if (expected.Type != actual.Type)
-                {
-                    AssertFailWithReason(
-                        index,
-                        file,
-                        test,
-                        disassembledInstructions,
-                        $"Type mismatch: Expected {expected.Type}, got {actual.Type}"
-                    );
-                }
-
-                // For operands, we need to do a string comparison since the CSV contains string operands
-                // and we now have structured operands in the actual instruction
-                string actualOperandsString = string.Join(", ", actual.StructuredOperands);
-                if (!CompareOperands(expected.Operands, actualOperandsString))
-                {
-                    AssertFailWithReason(
-                        index,
-                        file,
-                        test,
-                        disassembledInstructions,
-                        $"Operands mismatch: Expected '{expected.Operands}', got '{actualOperandsString}'"
-                    );
-                }
+                AssertFailWithReason(
+                    idx,
+                    f,
+                    test,
+                    disassembledInstructions,
+                    $"Operands mismatch: \n" +
+                    $"Expected: {string.Join(", ", expected.Operands)}.\n" +
+                    $"Actual: {string.Join(", ", actual.StructuredOperands.Select(x => $"{x.GetType().Name}({x})"))}"
+                );
             }
         }
     }
 
-    // Compare operands with some flexibility since the string representation might be slightly different
-    private bool CompareOperands(string expected, string actual)
+    /// <summary>
+    /// Compare operands with some flexibility since the string representation might be slightly different
+    /// </summary>
+    private bool CompareOperands(string[] expectedOperands, List<Operand> actualOperands)
     {
-        // Normalize strings for comparison
-        expected = NormalizeOperandString(expected);
-        actual = NormalizeOperandString(actual);
-        
-        return expected == actual;
-    }
-    
-    // Normalize operand strings to handle slight formatting differences
-    private string NormalizeOperandString(string operands)
-    {
-        if (string.IsNullOrEmpty(operands))
-            return string.Empty;
-            
-        // Remove all spaces
-        operands = operands.Replace(" ", "");
-        
-        // Convert to lowercase
-        operands = operands.ToLowerInvariant();
-        
-        // Normalize hex values (remove 0x prefix if present)
-        operands = operands.Replace("0x", "");
-        
-        return operands;
+        // Check if the number of operands matches
+        if (expectedOperands.Length != actualOperands.Count)
+        {
+            return false;
+        }
+
+        // Initialize result to true and set to false if any operand doesn't match
+        bool result = true;
+
+        // Compare each operand
+        for (var i = 0; i < expectedOperands.Length; i++)
+        {
+            var expected = expectedOperands[i];
+            var actual = actualOperands[i];
+
+            if (expected == actual.ToString()) continue;
+
+            result = false;
+            break;
+        }
+
+        return result;
     }
 
     private void AssertFailWithReason(int index, string file, TestFromFileEntry test, List<Instruction> disassembledInstructions, string reason)
@@ -147,16 +103,19 @@ public class RawFromFileDisassemblyTests(ITestOutputHelper output)
         output.WriteLine("Expected instructions:");
         foreach (var instruction in test.Instructions)
         {
-            output.WriteLine($"  {instruction.Mnemonic} {instruction.Operands}");
+            output.WriteLine($"  {instruction.Type:G} {string.Join(",", instruction.Operands)}");
         }
         output.WriteLine("Actual instructions:");
         foreach (var instruction in disassembledInstructions)
         {
             output.WriteLine($"  {instruction.Type} {string.Join(", ", instruction.StructuredOperands)}");
         }
-        Assert.True(false, reason);
+        Assert.Fail(reason);
     }
 
+    /// <summary>
+    /// Converts a hexadecimal string to a byte array
+    /// </summary>
     private static byte[] HexStringToByteArray(string hex)
     {
         // Remove any spaces or other formatting characters

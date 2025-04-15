@@ -1,0 +1,32 @@
+# ROR instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# ROR r/m8, 1 (opcode D0 /1)
+D0C8;[{ "Type": "Ror", "Operands": ["al", "0x01"] }]
+D0CB;[{ "Type": "Ror", "Operands": ["bl", "0x01"] }]
+
+# ROR r/m32, 1 (opcode D1 /1)
+D1C8;[{ "Type": "Ror", "Operands": ["eax", "0x01"] }]
+D1CB;[{ "Type": "Ror", "Operands": ["ebx", "0x01"] }]
+
+# ROR r/m8, CL (opcode D2 /1)
+D2C8;[{ "Type": "Ror", "Operands": ["al", "cl"] }]
+D2CB;[{ "Type": "Ror", "Operands": ["bl", "cl"] }]
+
+# ROR r/m32, CL (opcode D3 /1)
+D3C8;[{ "Type": "Ror", "Operands": ["eax", "cl"] }]
+D3CB;[{ "Type": "Ror", "Operands": ["ebx", "cl"] }]
+
+# ROR r/m8, imm8 (opcode C0 /1)
+C0C805;[{ "Type": "Ror", "Operands": ["al", "0x05"] }]
+C0CB05;[{ "Type": "Ror", "Operands": ["bl", "0x05"] }]
+
+# ROR r/m32, imm8 (opcode C1 /1)
+C1C805;[{ "Type": "Ror", "Operands": ["eax", "0x05"] }]
+C1CB05;[{ "Type": "Ror", "Operands": ["ebx", "0x05"] }]
+
+# ROR with memory operands
+D00C2510;[{ "Type": "Ror", "Operands": ["byte ptr [eax+0x10]", "0x01"] }]
+D30C2510;[{ "Type": "Ror", "Operands": ["dword ptr [eax+0x10]", "cl"] }]
+C10C2505;[{ "Type": "Ror", "Operands": ["dword ptr [eax+0x10]", "0x05"] }]

@@ -1,9 +1,13 @@
+# POP register tests
+# Format: RawBytes;Instructions
 RawBytes;Instructions
-58;[{ "Mnemonic": "pop", "Operands": "eax" }]
-59;[{ "Mnemonic": "pop", "Operands": "ecx" }]
-5A;[{ "Mnemonic": "pop", "Operands": "edx" }]
-5B;[{ "Mnemonic": "pop", "Operands": "ebx" }]
-5C;[{ "Mnemonic": "pop", "Operands": "esp" }]
-5D;[{ "Mnemonic": "pop", "Operands": "ebp" }]
-5E;[{ "Mnemonic": "pop", "Operands": "esi" }]
-5F;[{ "Mnemonic": "pop", "Operands": "edi" }]
+
+# POP r32 (opcodes 58-5F)
+58;[{ "Type": "Pop", "Operands": ["eax"] }]
+59;[{ "Type": "Pop", "Operands": ["ecx"] }]
+5A;[{ "Type": "Pop", "Operands": ["edx"] }]
+5B;[{ "Type": "Pop", "Operands": ["ebx"] }]
+5C;[{ "Type": "Pop", "Operands": ["esp"] }]
+5D;[{ "Type": "Pop", "Operands": ["ebp"] }]
+5E;[{ "Type": "Pop", "Operands": ["esi"] }]
+5F;[{ "Type": "Pop", "Operands": ["edi"] }]

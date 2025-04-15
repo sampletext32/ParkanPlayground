@@ -10,6 +10,7 @@ public enum InstructionType
     Push,
     Pop,
     Xchg,
+    Lea,        // Load Effective Address
     
     // Arithmetic
     Add,
@@ -46,7 +47,7 @@ public enum InstructionType
     Bsr,        // Bit scan reverse
     
     // Control flow
-    Jmp,
+    Jmp,        // Jump unconditionally
     Je,         // Jump if equal
     Jne,        // Jump if not equal
     Jg,         // Jump if greater
@@ -63,14 +64,18 @@ public enum InstructionType
     Jno,        // Jump if not overflow
     Js,         // Jump if sign
     Jns,        // Jump if not sign
+    Jp,         // Jump if parity (even)
+    Jnp,        // Jump if not parity (odd)
     Jcxz,       // Jump if CX zero
     Jecxz,      // Jump if ECX zero
     Loop,       // Loop
     Loope,      // Loop if equal
     Loopne,     // Loop if not equal
-    Call,
-    Ret,
+    Call,       // Call procedure
+    Ret,        // Near return from procedure
+    Retf,       // Far return from procedure
     Int,        // Interrupt
+    Int3,       // Breakpoint interrupt
     Into,       // Interrupt if overflow
     Iret,       // Interrupt return
     
@@ -122,6 +127,9 @@ public enum InstructionType
     RepLodsB,   // REP LODSB
     RepLodsW,   // REP LODSW
     RepLodsD,   // REP LODSD
+    RepneCmpsB, // REPNE CMPSB
+    RepneCmpsD, // REPNE CMPSD
+    RepneCmpsW,  // REPNE CMPSW
     
     // Floating point
     Fld,        // Load floating point value
@@ -158,20 +166,33 @@ public enum InstructionType
     Fisttp,     // Store integer with truncation and pop
     Fbld,       // Load BCD
     Fbstp,      // Store BCD and pop
-    Fnstsw,     // Store FPU status word
+    Fnstsw,     // Store FPU status word without checking for pending unmasked exceptions
+    Fstsw,      // Store FPU status word
     Fnstcw,     // Store FPU control word
     Fldcw,      // Load FPU control word
+    Fxam,       // Examine floating point value
+    Finit,      // Initialize FPU (with FWAIT prefix)
+    Fninit,     // Initialize FPU without checking for pending unmasked exceptions
     Fclex,      // Clear floating-point exceptions
-    Finit,      // Initialize floating-point unit
     Fldenv,     // Load FPU environment
     Fnstenv,    // Store FPU environment
     Frstor,     // Restore FPU state
+    
+    // Flag control instructions
+    Stc,        // Set Carry Flag
+    Clc,        // Clear Carry Flag
+    Cmc,        // Complement Carry Flag
+    Std,        // Set Direction Flag
+    Cld,        // Clear Direction Flag
+    Sti,        // Set Interrupt Flag
+    Cli,        // Clear Interrupt Flag
+    Sahf,       // Store AH into Flags
+    Lahf,       // Load Flags into AH
     Fnsave,     // Save FPU state
     Fxch,       // Exchange floating point registers
     Fchs,       // Change sign of floating point value
     Fabs,       // Absolute value of floating point
     Ftst,       // Test floating point
-    Fxam,       // Examine floating point
     F2xm1,      // 2^x - 1
     Fyl2x,      // y * log2(x)
     Fptan,      // Partial tangent
@@ -205,9 +226,20 @@ public enum InstructionType
     Hlt,        // Halt
     Cpuid,      // CPU identification
     Rdtsc,      // Read time-stamp counter
+    Wait,       // Wait for FPU
+    Lock,       // Lock prefix
+    In,         // Input from port
+    Out,        // Output to port
+    
+    // Stack-related instructions
+    Pushad,     // Push all general-purpose registers
+    Popad,      // Pop all general-purpose registers
+    Pushfd,     // Push EFLAGS register onto the stack
+    Popfd,      // Pop stack into EFLAGS register
+    Enter,      // Make stack frame for procedure parameters
+    Leave,      // High level procedure exit
     
     // Other
-    Lea,        // Load effective address
     Nop,        // No operation
     Cdq,        // Convert doubleword to quadword
     Cwde,       // Convert word to doubleword

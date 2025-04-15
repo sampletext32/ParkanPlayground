@@ -1,0 +1,30 @@
+# Flag control instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# STC - Set Carry Flag
+F9;[{ "Type": "Stc", "Operands": [] }]
+
+# CLC - Clear Carry Flag
+F8;[{ "Type": "Clc", "Operands": [] }]
+
+# CMC - Complement Carry Flag
+F5;[{ "Type": "Cmc", "Operands": [] }]
+
+# STD - Set Direction Flag
+FD;[{ "Type": "Std", "Operands": [] }]
+
+# CLD - Clear Direction Flag
+FC;[{ "Type": "Cld", "Operands": [] }]
+
+# STI - Set Interrupt Flag
+FB;[{ "Type": "Sti", "Operands": [] }]
+
+# CLI - Clear Interrupt Flag
+FA;[{ "Type": "Cli", "Operands": [] }]
+
+# SAHF - Store AH into Flags
+9E;[{ "Type": "Sahf", "Operands": [] }]
+
+# LAHF - Load Flags into AH
+9F;[{ "Type": "Lahf", "Operands": [] }]

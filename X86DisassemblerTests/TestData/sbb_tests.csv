@@ -1,0 +1,25 @@
+# SBB instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# SBB r/m8, imm8 (opcode 80 /3)
+80D842;[{ "Type": "Sbb", "Operands": ["al", "0x42"] }]
+
+# SBB r/m32, imm32 (opcode 81 /3)
+81D878563412;[{ "Type": "Sbb", "Operands": ["eax", "0x12345678"] }]
+
+# SBB r/m32, imm8 (opcode 83 /3)
+83D842;[{ "Type": "Sbb", "Operands": ["eax", "0x42"] }]
+
+# SBB with memory operands
+811C2578563412;[{ "Type": "Sbb", "Operands": ["dword ptr [eax]", "0x12345678"] }]
+
+# SBB r/m32, r32 (opcode 19)
+19D8;[{ "Type": "Sbb", "Operands": ["eax", "ebx"] }]
+19CA;[{ "Type": "Sbb", "Operands": ["edx", "ecx"] }]
+194B10;[{ "Type": "Sbb", "Operands": ["dword ptr [ebx+0x10]", "ecx"] }]
+
+# SBB r32, r/m32 (opcode 1B)
+1BD8;[{ "Type": "Sbb", "Operands": ["ebx", "eax"] }]
+1BCA;[{ "Type": "Sbb", "Operands": ["ecx", "edx"] }]
+1B4B10;[{ "Type": "Sbb", "Operands": ["ecx", "dword ptr [ebx+0x10]"] }]

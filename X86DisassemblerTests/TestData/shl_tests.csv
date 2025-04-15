@@ -1,0 +1,32 @@
+# SHL instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# SHL r/m8, 1 (opcode D0 /4)
+D0E0;[{ "Type": "Shl", "Operands": ["al", "0x01"] }]
+D0E3;[{ "Type": "Shl", "Operands": ["bl", "0x01"] }]
+
+# SHL r/m32, 1 (opcode D1 /4)
+D1E0;[{ "Type": "Shl", "Operands": ["eax", "0x01"] }]
+D1E3;[{ "Type": "Shl", "Operands": ["ebx", "0x01"] }]
+
+# SHL r/m8, CL (opcode D2 /4)
+D2E0;[{ "Type": "Shl", "Operands": ["al", "cl"] }]
+D2E3;[{ "Type": "Shl", "Operands": ["bl", "cl"] }]
+
+# SHL r/m32, CL (opcode D3 /4)
+D3E0;[{ "Type": "Shl", "Operands": ["eax", "cl"] }]
+D3E3;[{ "Type": "Shl", "Operands": ["ebx", "cl"] }]
+
+# SHL r/m8, imm8 (opcode C0 /4)
+C0E005;[{ "Type": "Shl", "Operands": ["al", "0x05"] }]
+C0E305;[{ "Type": "Shl", "Operands": ["bl", "0x05"] }]
+
+# SHL r/m32, imm8 (opcode C1 /4)
+C1E005;[{ "Type": "Shl", "Operands": ["eax", "0x05"] }]
+C1E305;[{ "Type": "Shl", "Operands": ["ebx", "0x05"] }]
+
+# SHL with memory operands
+D0242510000000;[{ "Type": "Shl", "Operands": ["byte ptr [0x10]", "0x01"] }]
+D32425;[{ "Type": "Shl", "Operands": ["dword ptr [eax]", "cl"] }]
+C1242510000005;[{ "Type": "Shl", "Operands": ["dword ptr [0x10]", "0x05"] }]

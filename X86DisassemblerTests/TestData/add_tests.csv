@@ -1,0 +1,26 @@
+# ADD instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# ADD r/m8, imm8 (opcode 80 /0)
+80C042;[{ "Type": "Add", "Operands": ["al", "0x42"] }]
+
+# ADD r/m32, imm32 (opcode 81 /0)
+81C078563412;[{ "Type": "Add", "Operands": ["eax", "0x12345678"] }]
+
+# ADD r/m32, imm8 (opcode 83 /0) with sign extension
+83C042;[{ "Type": "Add", "Operands": ["eax", "0x42"] }]
+83C0FF;[{ "Type": "Add", "Operands": ["eax", "0xFFFFFFFF"] }]
+
+# ADD with memory operands
+8104251000000078563412;[{ "Type": "Add", "Operands": ["dword ptr [0x10]", "0x12345678"] }]
+
+# ADD r/m32, r32 (opcode 01)
+01D8;[{ "Type": "Add", "Operands": ["eax", "ebx"] }]
+01CA;[{ "Type": "Add", "Operands": ["edx", "ecx"] }]
+014B10;[{ "Type": "Add", "Operands": ["dword ptr [ebx+0x10]", "ecx"] }]
+
+# ADD r32, r/m32 (opcode 03)
+03D8;[{ "Type": "Add", "Operands": ["ebx", "eax"] }]
+03CA;[{ "Type": "Add", "Operands": ["ecx", "edx"] }]
+034B10;[{ "Type": "Add", "Operands": ["ecx", "dword ptr [ebx+0x10]"] }]

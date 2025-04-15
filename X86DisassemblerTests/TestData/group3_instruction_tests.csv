@@ -1,0 +1,60 @@
+# Group 3 instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# Group 3 instructions (opcode F6-F7 /0-/7)
+# TEST, NOT, NEG, MUL, IMUL, DIV, IDIV
+
+# Group 3 with 8-bit register/memory (opcode F6)
+# TEST r/m8, imm8 (opcode F6 /0)
+F6C042;[{ "Type": "Test", "Operands": ["al", "0x42"] }]
+
+# NOT r/m8 (opcode F6 /2)
+F6D0;[{ "Type": "Not", "Operands": ["al"] }]
+
+# NEG r/m8 (opcode F6 /3)
+F6D8;[{ "Type": "Neg", "Operands": ["al"] }]
+
+# MUL r/m8 (opcode F6 /4)
+F6E0;[{ "Type": "Mul", "Operands": ["al"] }]
+
+# IMUL r/m8 (opcode F6 /5)
+F6E8;[{ "Type": "Imul", "Operands": ["al"] }]
+
+# DIV r/m8 (opcode F6 /6)
+F6F0;[{ "Type": "Div", "Operands": ["al"] }]
+
+# IDIV r/m8 (opcode F6 /7)
+F6F8;[{ "Type": "Idiv", "Operands": ["al"] }]
+
+# Group 3 with 32-bit register/memory (opcode F7)
+# TEST r/m32, imm32 (opcode F7 /0)
+F7C078563412;[{ "Type": "Test", "Operands": ["eax", "0x12345678"] }]
+
+# NOT r/m32 (opcode F7 /2)
+F7D0;[{ "Type": "Not", "Operands": ["eax"] }]
+
+# NEG r/m32 (opcode F7 /3)
+F7D8;[{ "Type": "Neg", "Operands": ["eax"] }]
+
+# MUL r/m32 (opcode F7 /4)
+F7E0;[{ "Type": "Mul", "Operands": ["eax"] }]
+
+# IMUL r/m32 (opcode F7 /5)
+F7E8;[{ "Type": "Imul", "Operands": ["eax"] }]
+
+# DIV r/m32 (opcode F7 /6)
+F7F0;[{ "Type": "Div", "Operands": ["eax"] }]
+
+# IDIV r/m32 (opcode F7 /7)
+F7F8;[{ "Type": "Idiv", "Operands": ["eax"] }]
+
+# Group 3 with memory operands
+F6042542;[{ "Type": "Test", "Operands": ["byte ptr [eax]", "0x42"] }]
+F7042578563412;[{ "Type": "Test", "Operands": ["dword ptr [eax]", "0x12345678"] }]
+F71425;[{ "Type": "Not", "Operands": ["dword ptr [eax]"] }]
+F71C25;[{ "Type": "Neg", "Operands": ["dword ptr [eax]"] }]
+F72425;[{ "Type": "Mul", "Operands": ["dword ptr [eax]"] }]
+F72C25;[{ "Type": "Imul", "Operands": ["dword ptr [eax]"] }]
+F73425;[{ "Type": "Div", "Operands": ["dword ptr [eax]"] }]
+F73C25;[{ "Type": "Idiv", "Operands": ["dword ptr [eax]"] }]

@@ -1,0 +1,64 @@
+# LEA instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# LEA r32, m (opcode 8D) with basic addressing modes
+8D00;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [eax]"] }]
+8D01;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ecx]"] }]
+8D02;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [edx]"] }]
+8D03;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebx]"] }]
+8D05;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebp]"] }]
+8D06;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [esi]"] }]
+8D07;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [edi]"] }]
+
+# LEA r32, m (opcode 8D) with displacement
+8D4010;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [eax+0x10]"] }]
+8D4110;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ecx+0x10]"] }]
+8D4210;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [edx+0x10]"] }]
+8D4310;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebx+0x10]"] }]
+8D4510;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebp+0x10]"] }]
+8D4610;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [esi+0x10]"] }]
+8D4710;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [edi+0x10]"] }]
+
+# LEA r32, m (opcode 8D) with negative displacement
+8D40F0;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [eax-0x10]"] }]
+8D41F0;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ecx-0x10]"] }]
+8D42F0;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [edx-0x10]"] }]
+8D43F0;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebx-0x10]"] }]
+8D45F0;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebp-0x10]"] }]
+8D46F0;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [esi-0x10]"] }]
+8D47F0;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [edi-0x10]"] }]
+
+# LEA r32, m (opcode 8D) with SIB byte (no displacement)
+8D0424;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [esp]"] }]
+8D04CD;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ecx*8+ebp]"] }]
+8D04D5;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [edx*8+ebp]"] }]
+8D04DD;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebx*8+ebp]"] }]
+
+# LEA r32, m (opcode 8D) with SIB byte and displacement
+8D442410;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [esp+0x10]"] }]
+8D44CD10;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ecx*8+ebp+0x10]"] }]
+8D44D510;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [edx*8+ebp+0x10]"] }]
+8D44DD10;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebx*8+ebp+0x10]"] }]
+
+# LEA r32, m (opcode 8D) with direct memory operand
+8D0578563412;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [0x12345678]"] }]
+8D1D78563412;[{ "Type": "Lea", "Operands": ["ebx", "dword ptr [0x12345678]"] }]
+8D0D78563412;[{ "Type": "Lea", "Operands": ["ecx", "dword ptr [0x12345678]"] }]
+8D1578563412;[{ "Type": "Lea", "Operands": ["edx", "dword ptr [0x12345678]"] }]
+
+# LEA with different destination registers
+8DC3;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebx]"] }]
+8DCB;[{ "Type": "Lea", "Operands": ["ecx", "dword ptr [ebx]"] }]
+8DD3;[{ "Type": "Lea", "Operands": ["edx", "dword ptr [ebx]"] }]
+8DDB;[{ "Type": "Lea", "Operands": ["ebx", "dword ptr [ebx]"] }]
+8DE3;[{ "Type": "Lea", "Operands": ["esp", "dword ptr [ebx]"] }]
+8DEB;[{ "Type": "Lea", "Operands": ["ebp", "dword ptr [ebx]"] }]
+8DF3;[{ "Type": "Lea", "Operands": ["esi", "dword ptr [ebx]"] }]
+8DFB;[{ "Type": "Lea", "Operands": ["edi", "dword ptr [ebx]"] }]
+
+# LEA with complex addressing modes
+8D8C8D78563412;[{ "Type": "Lea", "Operands": ["ecx", "dword ptr [ebp+ecx*4+0x12345678]"] }]
+8D942D78563412;[{ "Type": "Lea", "Operands": ["edx", "dword ptr [ebp+ebp+0x12345678]"] }]
+8D9C1D78563412;[{ "Type": "Lea", "Operands": ["ebx", "dword ptr [ebp+ebx+0x12345678]"] }]
+8DA41D78563412;[{ "Type": "Lea", "Operands": ["esp", "dword ptr [ebp+ebx+0x12345678]"] }]

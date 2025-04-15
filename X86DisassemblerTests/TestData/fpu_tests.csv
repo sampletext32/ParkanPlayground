@@ -1,0 +1,109 @@
+# Floating Point instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# Basic FPU instructions
+
+# FNSTSW AX - Store FPU status word in AX without checking for pending unmasked exceptions
+DFE0;[{ "Type": "Fnstsw", "Operands": ["ax"] }]
+
+# FADD - Add floating point values
+D8C0;[{ "Type": "Fadd", "Operands": ["ST(0)", "ST(0)"] }]
+D8C1;[{ "Type": "Fadd", "Operands": ["ST(0)", "ST(1)"] }]
+DCC0;[{ "Type": "Fadd", "Operands": ["ST(0)", "ST(0)"] }]
+DCC1;[{ "Type": "Fadd", "Operands": ["ST(1)", "ST(0)"] }]
+D8042510000000;[{ "Type": "Fadd", "Operands": ["dword ptr [0x10]"] }]
+DC042510000000;[{ "Type": "Fadd", "Operands": ["qword ptr [0x10]"] }]
+
+# FSUB - Subtract floating point values
+D8E0;[{ "Type": "Fsub", "Operands": ["ST(0)", "ST(0)"] }]
+D8E1;[{ "Type": "Fsub", "Operands": ["ST(0)", "ST(1)"] }]
+DCE8;[{ "Type": "Fsub", "Operands": ["ST(0)", "ST(0)"] }]
+DCE9;[{ "Type": "Fsub", "Operands": ["ST(1)", "ST(0)"] }]
+D8242510000000;[{ "Type": "Fsub", "Operands": ["dword ptr [0x10]"] }]
+DC242510000000;[{ "Type": "Fsub", "Operands": ["qword ptr [0x10]"] }]
+
+# FSUBR - Subtract floating point values (reversed)
+D8E8;[{ "Type": "Fsubr", "Operands": ["ST(0)", "ST(0)"] }]
+D8E9;[{ "Type": "Fsubr", "Operands": ["ST(0)", "ST(1)"] }]
+DCE0;[{ "Type": "Fsubr", "Operands": ["ST(0)", "ST(0)"] }]
+DCE1;[{ "Type": "Fsubr", "Operands": ["ST(1)", "ST(0)"] }]
+D82C2510000000;[{ "Type": "Fsubr", "Operands": ["dword ptr [0x10]"] }]
+DC2C2510000000;[{ "Type": "Fsubr", "Operands": ["qword ptr [0x10]"] }]
+
+# FMUL - Multiply floating point values
+D8C8;[{ "Type": "Fmul", "Operands": ["ST(0)", "ST(0)"] }]
+D8C9;[{ "Type": "Fmul", "Operands": ["ST(0)", "ST(1)"] }]
+DCC8;[{ "Type": "Fmul", "Operands": ["ST(0)", "ST(0)"] }]
+DCC9;[{ "Type": "Fmul", "Operands": ["ST(1)", "ST(0)"] }]
+D80C2510000000;[{ "Type": "Fmul", "Operands": ["dword ptr [0x10]"] }]
+DC0C2510000000;[{ "Type": "Fmul", "Operands": ["qword ptr [0x10]"] }]
+
+# FDIV - Divide floating point values
+D8F0;[{ "Type": "Fdiv", "Operands": ["ST(0)", "ST(0)"] }]
+D8F1;[{ "Type": "Fdiv", "Operands": ["ST(0)", "ST(1)"] }]
+DCF8;[{ "Type": "Fdiv", "Operands": ["ST(0)", "ST(0)"] }]
+DCF9;[{ "Type": "Fdiv", "Operands": ["ST(1)", "ST(0)"] }]
+D8342510000000;[{ "Type": "Fdiv", "Operands": ["dword ptr [0x10]"] }]
+DC342510000000;[{ "Type": "Fdiv", "Operands": ["qword ptr [0x10]"] }]
+
+# FDIVR - Divide floating point values (reversed)
+D8F8;[{ "Type": "Fdivr", "Operands": ["ST(0)", "ST(0)"] }]
+D8F9;[{ "Type": "Fdivr", "Operands": ["ST(0)", "ST(1)"] }]
+DCF0;[{ "Type": "Fdivr", "Operands": ["ST(0)", "ST(0)"] }]
+DCF1;[{ "Type": "Fdivr", "Operands": ["ST(1)", "ST(0)"] }]
+D83C2510000000;[{ "Type": "Fdivr", "Operands": ["dword ptr [0x10]"] }]
+DC3C2510000000;[{ "Type": "Fdivr", "Operands": ["qword ptr [0x10]"] }]
+
+# FLD - Load floating point value
+D9C0;[{ "Type": "Fld", "Operands": ["ST(0)"] }]
+D9C1;[{ "Type": "Fld", "Operands": ["ST(1)"] }]
+D9042510000000;[{ "Type": "Fld", "Operands": ["dword ptr [0x10]"] }]
+DD042510000000;[{ "Type": "Fld", "Operands": ["qword ptr [0x10]"] }]
+DB2C25;[{ "Type": "Fld", "Operands": ["tbyte ptr [eax]"] }]
+
+# FST - Store floating point value
+D9D0;[{ "Type": "Fst", "Operands": ["ST(0)"] }]
+D9D1;[{ "Type": "Fst", "Operands": ["ST(1)"] }]
+D9142510000000;[{ "Type": "Fst", "Operands": ["dword ptr [0x10]"] }]
+DD142510000000;[{ "Type": "Fst", "Operands": ["qword ptr [0x10]"] }]
+
+# FSTP - Store floating point value and pop
+D9D8;[{ "Type": "Fstp", "Operands": ["ST(0)"] }]
+D9D9;[{ "Type": "Fstp", "Operands": ["ST(1)"] }]
+D91C2510000000;[{ "Type": "Fstp", "Operands": ["dword ptr [0x10]"] }]
+DD1C2510000000;[{ "Type": "Fstp", "Operands": ["qword ptr [0x10]"] }]
+DB3C25;[{ "Type": "Fstp", "Operands": ["tbyte ptr [eax]"] }]
+
+# FCOM - Compare floating point values
+D8D0;[{ "Type": "Fcom", "Operands": ["ST(0)"] }]
+D8D1;[{ "Type": "Fcom", "Operands": ["ST(1)"] }]
+D8142510000000;[{ "Type": "Fcom", "Operands": ["dword ptr [0x10]"] }]
+DC142510000000;[{ "Type": "Fcom", "Operands": ["qword ptr [0x10]"] }]
+
+# FCOMP - Compare floating point values and pop
+D8D8;[{ "Type": "Fcomp", "Operands": ["ST(0)"] }]
+D8D9;[{ "Type": "Fcomp", "Operands": ["ST(1)"] }]
+D81C2510000000;[{ "Type": "Fcomp", "Operands": ["dword ptr [0x10]"] }]
+DC1C2510000000;[{ "Type": "Fcomp", "Operands": ["qword ptr [0x10]"] }]
+
+# FCOMPP - Compare floating point values and pop twice
+DED9;[{ "Type": "Fcompp", "Operands": [] }]
+
+# FCHS - Change sign of floating point value
+D9E0;[{ "Type": "Fchs", "Operands": [] }]
+
+# FABS - Absolute value of floating point value
+D9E1;[{ "Type": "Fabs", "Operands": [] }]
+
+# FTST - Test floating point value
+D9E4;[{ "Type": "Ftst", "Operands": [] }]
+
+# FXAM - Examine floating point value
+D9E5;[{ "Type": "Fxam", "Operands": [] }]
+
+# FINIT - Initialize FPU (with FWAIT prefix)
+9BDBE3;[{ "Type": "Finit", "Operands": [] }]
+
+# FNINIT - Initialize FPU without checking for pending unmasked exceptions
+DBE3;[{ "Type": "Fninit", "Operands": [] }]

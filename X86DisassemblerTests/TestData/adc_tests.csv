@@ -1,0 +1,25 @@
+# ADC instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# ADC r/m8, imm8 (opcode 80 /2)
+80D042;[{ "Type": "Adc", "Operands": ["al", "0x42"] }]
+
+# ADC r/m32, imm32 (opcode 81 /2)
+81D078563412;[{ "Type": "Adc", "Operands": ["eax", "0x12345678"] }]
+
+# ADC r/m32, imm8 (opcode 83 /2)
+83D042;[{ "Type": "Adc", "Operands": ["eax", "0x42"] }]
+
+# ADC with memory operands
+8114251000000078563412;[{ "Type": "Adc", "Operands": ["dword ptr [0x10]", "0x12345678"] }]
+
+# ADC r/m32, r32 (opcode 11)
+11D8;[{ "Type": "Adc", "Operands": ["eax", "ebx"] }]
+11CA;[{ "Type": "Adc", "Operands": ["edx", "ecx"] }]
+114B10;[{ "Type": "Adc", "Operands": ["dword ptr [ebx+0x10]", "ecx"] }]
+
+# ADC r32, r/m32 (opcode 13)
+13D8;[{ "Type": "Adc", "Operands": ["ebx", "eax"] }]
+13CA;[{ "Type": "Adc", "Operands": ["ecx", "edx"] }]
+134B10;[{ "Type": "Adc", "Operands": ["ecx", "dword ptr [ebx+0x10]"] }]

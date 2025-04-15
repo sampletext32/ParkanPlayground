@@ -1,0 +1,24 @@
+# TEST instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# TEST r/m8, imm8 (opcode F6 /0)
+F6C042;[{ "Type": "Test", "Operands": ["al", "0x42"] }]
+F6C342;[{ "Type": "Test", "Operands": ["bl", "0x42"] }]
+
+# TEST r/m32, imm32 (opcode F7 /0)
+F7C078563412;[{ "Type": "Test", "Operands": ["eax", "0x12345678"] }]
+F7C378563412;[{ "Type": "Test", "Operands": ["ebx", "0x12345678"] }]
+
+# TEST r/m8, r8 (opcode 84)
+84C3;[{ "Type": "Test", "Operands": ["bl", "al"] }]
+84D9;[{ "Type": "Test", "Operands": ["cl", "bl"] }]
+
+# TEST r/m32, r32 (opcode 85)
+85C3;[{ "Type": "Test", "Operands": ["ebx", "eax"] }]
+85D9;[{ "Type": "Test", "Operands": ["ecx", "ebx"] }]
+
+# TEST with memory operands
+F6042542;[{ "Type": "Test", "Operands": ["byte ptr [eax]", "0x42"] }]
+F7042578563412;[{ "Type": "Test", "Operands": ["dword ptr [eax]", "0x12345678"] }]
+85042510;[{ "Type": "Test", "Operands": ["dword ptr [eax+0x10]", "eax"] }]

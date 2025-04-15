@@ -1,9 +1,13 @@
+# PUSH register tests
+# Format: RawBytes;Instructions
 RawBytes;Instructions
-50;[{ "Mnemonic": "push", "Operands": "eax" }]
-51;[{ "Mnemonic": "push", "Operands": "ecx" }]
-52;[{ "Mnemonic": "push", "Operands": "edx" }]
-53;[{ "Mnemonic": "push", "Operands": "ebx" }]
-54;[{ "Mnemonic": "push", "Operands": "esp" }]
-55;[{ "Mnemonic": "push", "Operands": "ebp" }]
-56;[{ "Mnemonic": "push", "Operands": "esi" }]
-57;[{ "Mnemonic": "push", "Operands": "edi" }]
+
+# PUSH r32 (opcodes 50-57)
+50;[{ "Type": "Push", "Operands": ["eax"] }]
+51;[{ "Type": "Push", "Operands": ["ecx"] }]
+52;[{ "Type": "Push", "Operands": ["edx"] }]
+53;[{ "Type": "Push", "Operands": ["ebx"] }]
+54;[{ "Type": "Push", "Operands": ["esp"] }]
+55;[{ "Type": "Push", "Operands": ["ebp"] }]
+56;[{ "Type": "Push", "Operands": ["esi"] }]
+57;[{ "Type": "Push", "Operands": ["edi"] }]

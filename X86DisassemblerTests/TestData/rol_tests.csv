@@ -1,0 +1,32 @@
+# ROL instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# ROL r/m8, 1 (opcode D0 /0)
+D0C0;[{ "Type": "Rol", "Operands": ["al", "0x01"] }]
+D0C3;[{ "Type": "Rol", "Operands": ["bl", "0x01"] }]
+
+# ROL r/m32, 1 (opcode D1 /0)
+D1C0;[{ "Type": "Rol", "Operands": ["eax", "0x01"] }]
+D1C3;[{ "Type": "Rol", "Operands": ["ebx", "0x01"] }]
+
+# ROL r/m8, CL (opcode D2 /0)
+D2C0;[{ "Type": "Rol", "Operands": ["al", "cl"] }]
+D2C3;[{ "Type": "Rol", "Operands": ["bl", "cl"] }]
+
+# ROL r/m32, CL (opcode D3 /0)
+D3C0;[{ "Type": "Rol", "Operands": ["eax", "cl"] }]
+D3C3;[{ "Type": "Rol", "Operands": ["ebx", "cl"] }]
+
+# ROL r/m8, imm8 (opcode C0 /0)
+C0C005;[{ "Type": "Rol", "Operands": ["al", "0x05"] }]
+C0C305;[{ "Type": "Rol", "Operands": ["bl", "0x05"] }]
+
+# ROL r/m32, imm8 (opcode C1 /0)
+C1C005;[{ "Type": "Rol", "Operands": ["eax", "0x05"] }]
+C1C305;[{ "Type": "Rol", "Operands": ["ebx", "0x05"] }]
+
+# ROL with memory operands
+D0042510;[{ "Type": "Rol", "Operands": ["byte ptr [eax+0x10]", "0x01"] }]
+D3042510;[{ "Type": "Rol", "Operands": ["dword ptr [eax+0x10]", "cl"] }]
+C1042505;[{ "Type": "Rol", "Operands": ["dword ptr [eax+0x10]", "0x05"] }]

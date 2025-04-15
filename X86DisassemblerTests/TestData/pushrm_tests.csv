@@ -1,0 +1,40 @@
+# PUSH r/m32 instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# PUSH r/m32 (opcode FF /6) with register operands
+FF30;[{ "Type": "Push", "Operands": ["dword ptr [eax]"] }]
+FF31;[{ "Type": "Push", "Operands": ["dword ptr [ecx]"] }]
+FF32;[{ "Type": "Push", "Operands": ["dword ptr [edx]"] }]
+FF33;[{ "Type": "Push", "Operands": ["dword ptr [ebx]"] }]
+FF34;[{ "Type": "Push", "Operands": ["dword ptr [esp]"] }]
+FF35;[{ "Type": "Push", "Operands": ["dword ptr [ebp]"] }]
+FF36;[{ "Type": "Push", "Operands": ["dword ptr [esi]"] }]
+FF37;[{ "Type": "Push", "Operands": ["dword ptr [edi]"] }]
+
+# PUSH r/m32 (opcode FF /6) with memory operands and displacement
+FF7010;[{ "Type": "Push", "Operands": ["dword ptr [eax+0x10]"] }]
+FF7110;[{ "Type": "Push", "Operands": ["dword ptr [ecx+0x10]"] }]
+FF7210;[{ "Type": "Push", "Operands": ["dword ptr [edx+0x10]"] }]
+FF7310;[{ "Type": "Push", "Operands": ["dword ptr [ebx+0x10]"] }]
+FF7410;[{ "Type": "Push", "Operands": ["dword ptr [esp+0x10]"] }]
+FF7510;[{ "Type": "Push", "Operands": ["dword ptr [ebp+0x10]"] }]
+FF7610;[{ "Type": "Push", "Operands": ["dword ptr [esi+0x10]"] }]
+FF7710;[{ "Type": "Push", "Operands": ["dword ptr [edi+0x10]"] }]
+
+# PUSH r/m32 (opcode FF /6) with SIB byte
+FF34C5;[{ "Type": "Push", "Operands": ["dword ptr [eax*8+ebp]"] }]
+FF34CD;[{ "Type": "Push", "Operands": ["dword ptr [ecx*8+ebp]"] }]
+FF34D5;[{ "Type": "Push", "Operands": ["dword ptr [edx*8+ebp]"] }]
+FF34DD;[{ "Type": "Push", "Operands": ["dword ptr [ebx*8+ebp]"] }]
+
+# PUSH r/m32 (opcode FF /6) with direct memory operand
+FF3578563412;[{ "Type": "Push", "Operands": ["dword ptr [0x12345678]"] }]
+
+# PUSH r/m32 (opcode FF /6) with segment override prefixes
+26FF7510;[{ "Type": "Push", "Operands": ["dword ptr es:[ebp+0x10]"] }]
+2EFF7510;[{ "Type": "Push", "Operands": ["dword ptr cs:[ebp+0x10]"] }]
+36FF7510;[{ "Type": "Push", "Operands": ["dword ptr ss:[ebp+0x10]"] }]
+3EFF7510;[{ "Type": "Push", "Operands": ["dword ptr ds:[ebp+0x10]"] }]
+64FF7510;[{ "Type": "Push", "Operands": ["dword ptr fs:[ebp+0x10]"] }]
+65FF7510;[{ "Type": "Push", "Operands": ["dword ptr gs:[ebp+0x10]"] }]

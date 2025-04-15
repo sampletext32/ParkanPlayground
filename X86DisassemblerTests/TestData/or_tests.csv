@@ -1,0 +1,25 @@
+# OR instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# OR r/m8, imm8 (opcode 80 /1)
+80C842;[{ "Type": "Or", "Operands": ["al", "0x42"] }]
+
+# OR r/m32, imm32 (opcode 81 /1)
+81C878563412;[{ "Type": "Or", "Operands": ["eax", "0x12345678"] }]
+
+# OR r/m32, imm8 (opcode 83 /1)
+83C842;[{ "Type": "Or", "Operands": ["eax", "0x42"] }]
+
+# OR with memory operands
+810C2578563412;[{ "Type": "Or", "Operands": ["dword ptr [eax]", "0x12345678"] }]
+
+# OR r/m32, r32 (opcode 09)
+09D8;[{ "Type": "Or", "Operands": ["eax", "ebx"] }]
+09CA;[{ "Type": "Or", "Operands": ["edx", "ecx"] }]
+094B10;[{ "Type": "Or", "Operands": ["dword ptr [ebx+0x10]", "ecx"] }]
+
+# OR r32, r/m32 (opcode 0B)
+0BD8;[{ "Type": "Or", "Operands": ["ebx", "eax"] }]
+0BCA;[{ "Type": "Or", "Operands": ["ecx", "edx"] }]
+0B4B10;[{ "Type": "Or", "Operands": ["ecx", "dword ptr [ebx+0x10]"] }]

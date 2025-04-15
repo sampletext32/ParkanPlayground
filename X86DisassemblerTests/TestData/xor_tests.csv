@@ -3,122 +3,122 @@
 RawBytes;Instructions
 
 # Register-to-register XOR (32-bit)
-31D8;[{ "Mnemonic": "xor", "Operands": "eax, ebx" }]
+31D8;[{ "Type": "Xor", "Operands": ["eax", "ebx"] }]
 
 # Register-to-memory XOR (32-bit)
-314B10;[{ "Mnemonic": "xor", "Operands": "dword ptr [ebx+0x10], ecx" }]
+314B10;[{ "Type": "Xor", "Operands": ["dword ptr [ebx+0x10]", "ecx"] }]
 
 # Memory-to-register XOR (32-bit)
-33D8;[{ "Mnemonic": "xor", "Operands": "ebx, eax" }]
-334B10;[{ "Mnemonic": "xor", "Operands": "ecx, dword ptr [ebx+0x10]" }]
+33D8;[{ "Type": "Xor", "Operands": ["ebx", "eax"] }]
+334B10;[{ "Type": "Xor", "Operands": ["ecx", "dword ptr [ebx+0x10]"] }]
 
 # Immediate-to-register XOR (32-bit immediate)
-81F078563412;[{ "Mnemonic": "xor", "Operands": "eax, 0x12345678" }]
+81F078563412;[{ "Type": "Xor", "Operands": ["eax", "0x12345678"] }]
 
 # Immediate-to-memory XOR (32-bit immediate)
-81701078563412;[{ "Mnemonic": "xor", "Operands": "dword ptr [eax+0x10], 0x12345678" }]
+81701078563412;[{ "Type": "Xor", "Operands": ["dword ptr [eax+0x10]", "0x12345678"] }]
 
 # Small immediate XOR (8-bit immediate to 32-bit register with sign extension)
-83F042;[{ "Mnemonic": "xor", "Operands": "eax, 0x42" }]
+83F042;[{ "Type": "Xor", "Operands": ["eax", "0x42"] }]
 
 # Sign-extended immediate XOR (8-bit immediate sign-extended to 32-bit)
-83F0F0;[{ "Mnemonic": "xor", "Operands": "eax, 0xFFFFFFF0" }]
+83F0F0;[{ "Type": "Xor", "Operands": ["eax", "0xFFFFFFF0"] }]
 
 # XOR AL, imm8 (opcode 0x34)
-3442;[{ "Mnemonic": "xor", "Operands": "al, 0x42" }]
+3442;[{ "Type": "Xor", "Operands": ["al", "0x42"] }]
 
 # XOR EAX, imm32 (opcode 0x35)
-3578563412;[{ "Mnemonic": "xor", "Operands": "eax, 0x12345678" }]
+3578563412;[{ "Type": "Xor", "Operands": ["eax", "0x12345678"] }]
 
 # XOR with SIB byte addressing (Scale-Index-Base)
 # XOR [eax+ecx*4], edx (opcode 0x31)
-311488;[{ "Mnemonic": "xor", "Operands": "dword ptr [eax+ecx*4], edx" }]
+311488;[{ "Type": "Xor", "Operands": ["dword ptr [eax+ecx*4]", "edx"] }]
 
 # XOR edx, [eax+ecx*4] (opcode 0x33)
-331488;[{ "Mnemonic": "xor", "Operands": "edx, dword ptr [eax+ecx*4]" }]
+331488;[{ "Type": "Xor", "Operands": ["edx", "dword ptr [eax+ecx*4]"] }]
 
 # XOR with displacement-only addressing
 # XOR [0x12345678], eax (opcode 0x31)
-310578563412;[{ "Mnemonic": "xor", "Operands": "dword ptr [0x12345678], eax" }]
+310578563412;[{ "Type": "Xor", "Operands": ["dword ptr [0x12345678]", "eax"] }]
 
 # XOR with segment override prefixes
 # XOR fs:[ebx+0x10], ecx (opcode 0x31 with FS override)
-64314B10;[{ "Mnemonic": "xor", "Operands": "dword ptr fs:[ebx+0x10], ecx" }]
+64314B10;[{ "Type": "Xor", "Operands": ["dword ptr fs:[ebx+0x10]", "ecx"] }]
 
 # XOR ecx, gs:[ebx+0x10] (opcode 0x33 with GS override)
-65334B10;[{ "Mnemonic": "xor", "Operands": "ecx, dword ptr gs:[ebx+0x10]" }]
+65334B10;[{ "Type": "Xor", "Operands": ["ecx", "dword ptr gs:[ebx+0x10]"] }]
 
 # XOR with complex addressing mode: base + index + scale + displacement
 # XOR [eax+ecx*4+0x12345678], edx (opcode 0x31)
-31948878563412;[{ "Mnemonic": "xor", "Operands": "dword ptr [eax+ecx*4+0x12345678], edx" }]
+31948878563412;[{ "Type": "Xor", "Operands": ["dword ptr [eax+ecx*4+0x12345678]", "edx"] }]
 
 # Edge cases for immediate values
 # XOR eax, 0x0 (opcode 0x83 /6 with zero immediate)
-83F000;[{ "Mnemonic": "xor", "Operands": "eax, 0x00" }]
+83F000;[{ "Type": "Xor", "Operands": ["eax", "0x00"] }]
 
 # XOR al, 0xFF (opcode 0x34 with max 8-bit immediate)
-34FF;[{ "Mnemonic": "xor", "Operands": "al, 0xFF" }]
+34FF;[{ "Type": "Xor", "Operands": ["al", "0xFF"] }]
 
 # XOR eax, 0xFFFFFFFF (opcode 0x81 /6 with max 32-bit immediate)
-81F0FFFFFFFF;[{ "Mnemonic": "xor", "Operands": "eax, 0xFFFFFFFF" }]
+81F0FFFFFFFF;[{ "Type": "Xor", "Operands": ["eax", "0xFFFFFFFF"] }]
 
 # XOR with negative immediate value (sign-extended)
-83F0FF;[{ "Mnemonic": "xor", "Operands": "eax, 0xFFFFFFFF" }]
+83F0FF;[{ "Type": "Xor", "Operands": ["eax", "0xFFFFFFFF"] }]
 
 # 16-bit XOR tests (with 0x66 prefix)
 # XOR AX, imm16 (opcode 0x35 with 0x66 prefix)
-6635ABCD;[{ "Mnemonic": "xor", "Operands": "ax, 0xCDAB" }]
+6635ABCD;[{ "Type": "Xor", "Operands": ["ax", "0xCDAB"] }]
 
 # XOR r16, r/m16 (opcode 0x33 with 0x66 prefix)
-6633D8;[{ "Mnemonic": "xor", "Operands": "bx, ax" }]
-6633C9;[{ "Mnemonic": "xor", "Operands": "cx, cx" }]
+6633D8;[{ "Type": "Xor", "Operands": ["bx", "ax"] }]
+6633C9;[{ "Type": "Xor", "Operands": ["cx", "cx"] }]
 
 # XOR r/m16, r16 (opcode 0x31 with 0x66 prefix)
-6631D8;[{ "Mnemonic": "xor", "Operands": "ax, bx" }]
-6631C9;[{ "Mnemonic": "xor", "Operands": "cx, cx" }]
+6631D8;[{ "Type": "Xor", "Operands": ["ax", "bx"] }]
+6631C9;[{ "Type": "Xor", "Operands": ["cx", "cx"] }]
 
 # XOR r/m16, imm16 (opcode 0x81 /6 with 0x66 prefix)
-6681F0ABCD;[{ "Mnemonic": "xor", "Operands": "ax, 0xCDAB" }]
+6681F0ABCD;[{ "Type": "Xor", "Operands": ["ax", "0xCDAB"] }]
 
 # XOR r/m16, imm8 (sign-extended) (opcode 0x83 /6 with 0x66 prefix)
-6683F042;[{ "Mnemonic": "xor", "Operands": "ax, 0x42" }]
-6683F0FF;[{ "Mnemonic": "xor", "Operands": "ax, 0xFFFF" }]
+6683F042;[{ "Type": "Xor", "Operands": ["ax", "0x42"] }]
+6683F0FF;[{ "Type": "Xor", "Operands": ["ax", "0xFFFF"] }]
 
 # 8-bit XOR tests
 # XOR r/m8, r8 (opcode 0x30)
-30D8;[{ "Mnemonic": "xor", "Operands": "al, bl" }]
-30C9;[{ "Mnemonic": "xor", "Operands": "cl, cl" }]
+30D8;[{ "Type": "Xor", "Operands": ["al", "bl"] }]
+30C9;[{ "Type": "Xor", "Operands": ["cl", "cl"] }]
 
 # XOR r8, r/m8 (opcode 0x32)
-32D8;[{ "Mnemonic": "xor", "Operands": "bl, al" }]
-32C9;[{ "Mnemonic": "xor", "Operands": "cl, cl" }]
+32D8;[{ "Type": "Xor", "Operands": ["bl", "al"] }]
+32C9;[{ "Type": "Xor", "Operands": ["cl", "cl"] }]
 
 # XOR r/m8, imm8 (opcode 0x80 /6)
-80F042;[{ "Mnemonic": "xor", "Operands": "al, 0x42" }]
-80F0FF;[{ "Mnemonic": "xor", "Operands": "al, 0xFF" }]
+80F042;[{ "Type": "Xor", "Operands": ["al", "0x42"] }]
+80F0FF;[{ "Type": "Xor", "Operands": ["al", "0xFF"] }]
 
 # Self-XOR tests (zeroing registers)
-31C0;[{ "Mnemonic": "xor", "Operands": "eax, eax" }]
-31DB;[{ "Mnemonic": "xor", "Operands": "ebx, ebx" }]
-31C9;[{ "Mnemonic": "xor", "Operands": "ecx, ecx" }]
-31D2;[{ "Mnemonic": "xor", "Operands": "edx, edx" }]
+31C0;[{ "Type": "Xor", "Operands": ["eax", "eax"] }]
+31DB;[{ "Type": "Xor", "Operands": ["ebx", "ebx"] }]
+31C9;[{ "Type": "Xor", "Operands": ["ecx", "ecx"] }]
+31D2;[{ "Type": "Xor", "Operands": ["edx", "edx"] }]
 
 # XOR with different addressing modes
 # XOR [ebp+0x8], eax (opcode 0x31)
-314508;[{ "Mnemonic": "xor", "Operands": "dword ptr [ebp+0x08], eax" }]
+314508;[{ "Type": "Xor", "Operands": ["dword ptr [ebp+0x08]", "eax"] }]
 
 # XOR eax, [ebp+0x8] (opcode 0x33)
-334508;[{ "Mnemonic": "xor", "Operands": "eax, dword ptr [ebp+0x08]" }]
+334508;[{ "Type": "Xor", "Operands": ["eax", "dword ptr [ebp+0x08]"] }]
 
 # XOR with other segment overrides
 # XOR ss:[ebx+0x10], ecx (opcode 0x31 with SS override)
-36314B10;[{ "Mnemonic": "xor", "Operands": "dword ptr ss:[ebx+0x10], ecx" }]
+36314B10;[{ "Type": "Xor", "Operands": ["dword ptr ss:[ebx+0x10]", "ecx"] }]
 
 # XOR ecx, ds:[ebx+0x10] (opcode 0x33 with DS override)
-3E334B10;[{ "Mnemonic": "xor", "Operands": "ecx, dword ptr ds:[ebx+0x10]" }]
+3E334B10;[{ "Type": "Xor", "Operands": ["ecx", "dword ptr ds:[ebx+0x10]"] }]
 
 # XOR ecx, es:[ebx+0x10] (opcode 0x33 with ES override)
-26334B10;[{ "Mnemonic": "xor", "Operands": "ecx, dword ptr es:[ebx+0x10]" }]
+26334B10;[{ "Type": "Xor", "Operands": ["ecx", "dword ptr es:[ebx+0x10]"] }]
 
 # XOR ecx, cs:[ebx+0x10] (opcode 0x33 with CS override)
-2E334B10;[{ "Mnemonic": "xor", "Operands": "ecx, dword ptr cs:[ebx+0x10]" }]
+2E334B10;[{ "Type": "Xor", "Operands": ["ecx", "dword ptr cs:[ebx+0x10]"] }]
