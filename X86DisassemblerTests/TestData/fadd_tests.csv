@@ -1,0 +1,60 @@
+# FADD instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# FADD - Add floating point values
+# ST(0), ST(i) form (D8 C0+i)
+D8C0;[{ "Type": "Fadd", "Operands": ["ST(0)", "ST(0)"] }]
+D8C1;[{ "Type": "Fadd", "Operands": ["ST(0)", "ST(1)"] }]
+D8C2;[{ "Type": "Fadd", "Operands": ["ST(0)", "ST(2)"] }]
+D8C3;[{ "Type": "Fadd", "Operands": ["ST(0)", "ST(3)"] }]
+D8C4;[{ "Type": "Fadd", "Operands": ["ST(0)", "ST(4)"] }]
+D8C5;[{ "Type": "Fadd", "Operands": ["ST(0)", "ST(5)"] }]
+D8C6;[{ "Type": "Fadd", "Operands": ["ST(0)", "ST(6)"] }]
+D8C7;[{ "Type": "Fadd", "Operands": ["ST(0)", "ST(7)"] }]
+
+# ST(i), ST(0) form (DC C0+i)
+DCC0;[{ "Type": "Fadd", "Operands": ["ST(0)", "ST(0)"] }]
+DCC1;[{ "Type": "Fadd", "Operands": ["ST(1)", "ST(0)"] }]
+DCC2;[{ "Type": "Fadd", "Operands": ["ST(2)", "ST(0)"] }]
+DCC3;[{ "Type": "Fadd", "Operands": ["ST(3)", "ST(0)"] }]
+DCC4;[{ "Type": "Fadd", "Operands": ["ST(4)", "ST(0)"] }]
+DCC5;[{ "Type": "Fadd", "Operands": ["ST(5)", "ST(0)"] }]
+DCC6;[{ "Type": "Fadd", "Operands": ["ST(6)", "ST(0)"] }]
+DCC7;[{ "Type": "Fadd", "Operands": ["ST(7)", "ST(0)"] }]
+
+# Memory operands
+D8042510000000;[{ "Type": "Fadd", "Operands": ["dword ptr [0x10]"] }]
+DC042510000000;[{ "Type": "Fadd", "Operands": ["qword ptr [0x10]"] }]
+D80425;[{ "Type": "Fadd", "Operands": ["dword ptr [eax]"] }]
+DC0425;[{ "Type": "Fadd", "Operands": ["qword ptr [eax]"] }]
+D8041D;[{ "Type": "Fadd", "Operands": ["dword ptr [ebx]"] }]
+DC041D;[{ "Type": "Fadd", "Operands": ["qword ptr [ebx]"] }]
+D8042D;[{ "Type": "Fadd", "Operands": ["dword ptr [ebp]"] }]
+DC042D;[{ "Type": "Fadd", "Operands": ["qword ptr [ebp]"] }]
+
+# With segment override prefixes
+26D80425;[{ "Type": "Fadd", "Operands": ["dword ptr es:[eax]"] }]
+2ED80425;[{ "Type": "Fadd", "Operands": ["dword ptr cs:[eax]"] }]
+36D80425;[{ "Type": "Fadd", "Operands": ["dword ptr ss:[eax]"] }]
+3ED80425;[{ "Type": "Fadd", "Operands": ["dword ptr ds:[eax]"] }]
+64D80425;[{ "Type": "Fadd", "Operands": ["dword ptr fs:[eax]"] }]
+65D80425;[{ "Type": "Fadd", "Operands": ["dword ptr gs:[eax]"] }]
+
+# FADDP - Add floating point values and pop
+DEC0;[{ "Type": "Faddp", "Operands": ["ST(0)", "ST(0)"] }]
+DEC1;[{ "Type": "Faddp", "Operands": ["ST(1)", "ST(0)"] }]
+DEC2;[{ "Type": "Faddp", "Operands": ["ST(2)", "ST(0)"] }]
+DEC3;[{ "Type": "Faddp", "Operands": ["ST(3)", "ST(0)"] }]
+DEC4;[{ "Type": "Faddp", "Operands": ["ST(4)", "ST(0)"] }]
+DEC5;[{ "Type": "Faddp", "Operands": ["ST(5)", "ST(0)"] }]
+DEC6;[{ "Type": "Faddp", "Operands": ["ST(6)", "ST(0)"] }]
+DEC7;[{ "Type": "Faddp", "Operands": ["ST(7)", "ST(0)"] }]
+
+# FIADD - Add integer to floating point
+DA042510000000;[{ "Type": "Fiadd", "Operands": ["dword ptr [0x10]"] }]
+DE042510000000;[{ "Type": "Fiadd", "Operands": ["word ptr [0x10]"] }]
+DA0425;[{ "Type": "Fiadd", "Operands": ["dword ptr [eax]"] }]
+DE0425;[{ "Type": "Fiadd", "Operands": ["word ptr [eax]"] }]
+DA041D;[{ "Type": "Fiadd", "Operands": ["dword ptr [ebx]"] }]
+DE041D;[{ "Type": "Fiadd", "Operands": ["word ptr [ebx]"] }]

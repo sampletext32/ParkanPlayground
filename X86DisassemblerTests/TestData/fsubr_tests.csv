@@ -1,0 +1,46 @@
+# FSUBR instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# FSUBR - Subtract floating point values (reversed)
+# ST(0), ST(i) form (D8 E8+i)
+D8E8;[{ "Type": "Fsubr", "Operands": ["ST(0)", "ST(0)"] }]
+D8E9;[{ "Type": "Fsubr", "Operands": ["ST(0)", "ST(1)"] }]
+D8EA;[{ "Type": "Fsubr", "Operands": ["ST(0)", "ST(2)"] }]
+D8EB;[{ "Type": "Fsubr", "Operands": ["ST(0)", "ST(3)"] }]
+D8EC;[{ "Type": "Fsubr", "Operands": ["ST(0)", "ST(4)"] }]
+D8ED;[{ "Type": "Fsubr", "Operands": ["ST(0)", "ST(5)"] }]
+D8EE;[{ "Type": "Fsubr", "Operands": ["ST(0)", "ST(6)"] }]
+D8EF;[{ "Type": "Fsubr", "Operands": ["ST(0)", "ST(7)"] }]
+
+# ST(i), ST(0) form (DC E0+i)
+DCE0;[{ "Type": "Fsubr", "Operands": ["ST(0)", "ST(0)"] }]
+DCE1;[{ "Type": "Fsubr", "Operands": ["ST(1)", "ST(0)"] }]
+DCE2;[{ "Type": "Fsubr", "Operands": ["ST(2)", "ST(0)"] }]
+DCE3;[{ "Type": "Fsubr", "Operands": ["ST(3)", "ST(0)"] }]
+DCE4;[{ "Type": "Fsubr", "Operands": ["ST(4)", "ST(0)"] }]
+DCE5;[{ "Type": "Fsubr", "Operands": ["ST(5)", "ST(0)"] }]
+DCE6;[{ "Type": "Fsubr", "Operands": ["ST(6)", "ST(0)"] }]
+DCE7;[{ "Type": "Fsubr", "Operands": ["ST(7)", "ST(0)"] }]
+
+# Memory operands
+D82C2510000000;[{ "Type": "Fsubr", "Operands": ["dword ptr [0x10]"] }]
+DC2C2510000000;[{ "Type": "Fsubr", "Operands": ["qword ptr [0x10]"] }]
+D82C25;[{ "Type": "Fsubr", "Operands": ["dword ptr [eax]"] }]
+DC2C25;[{ "Type": "Fsubr", "Operands": ["qword ptr [eax]"] }]
+
+# FSUBRP - Subtract floating point values (reversed) and pop
+DEE0;[{ "Type": "Fsubrp", "Operands": ["ST(0)", "ST(0)"] }]
+DEE1;[{ "Type": "Fsubrp", "Operands": ["ST(1)", "ST(0)"] }]
+DEE2;[{ "Type": "Fsubrp", "Operands": ["ST(2)", "ST(0)"] }]
+DEE3;[{ "Type": "Fsubrp", "Operands": ["ST(3)", "ST(0)"] }]
+DEE4;[{ "Type": "Fsubrp", "Operands": ["ST(4)", "ST(0)"] }]
+DEE5;[{ "Type": "Fsubrp", "Operands": ["ST(5)", "ST(0)"] }]
+DEE6;[{ "Type": "Fsubrp", "Operands": ["ST(6)", "ST(0)"] }]
+DEE7;[{ "Type": "Fsubrp", "Operands": ["ST(7)", "ST(0)"] }]
+
+# FISUBR - Subtract floating point from integer (reversed)
+DA2C2510000000;[{ "Type": "Fisubr", "Operands": ["dword ptr [0x10]"] }]
+DE2C2510000000;[{ "Type": "Fisubr", "Operands": ["word ptr [0x10]"] }]
+DA2C25;[{ "Type": "Fisubr", "Operands": ["dword ptr [eax]"] }]
+DE2C25;[{ "Type": "Fisubr", "Operands": ["word ptr [eax]"] }]

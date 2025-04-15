@@ -1,0 +1,61 @@
+# FLD/FST/FSTP instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# FLD - Load floating point value
+D9C0;[{ "Type": "Fld", "Operands": ["ST(0)"] }]
+D9C1;[{ "Type": "Fld", "Operands": ["ST(1)"] }]
+D9C2;[{ "Type": "Fld", "Operands": ["ST(2)"] }]
+D9C3;[{ "Type": "Fld", "Operands": ["ST(3)"] }]
+D9C4;[{ "Type": "Fld", "Operands": ["ST(4)"] }]
+D9C5;[{ "Type": "Fld", "Operands": ["ST(5)"] }]
+D9C6;[{ "Type": "Fld", "Operands": ["ST(6)"] }]
+D9C7;[{ "Type": "Fld", "Operands": ["ST(7)"] }]
+
+# Memory operands
+D9042510000000;[{ "Type": "Fld", "Operands": ["dword ptr [0x10]"] }]
+DD042510000000;[{ "Type": "Fld", "Operands": ["qword ptr [0x10]"] }]
+DB2C25;[{ "Type": "Fld", "Operands": ["tbyte ptr [eax]"] }]
+D90425;[{ "Type": "Fld", "Operands": ["dword ptr [eax]"] }]
+DD0425;[{ "Type": "Fld", "Operands": ["qword ptr [eax]"] }]
+
+# With segment override prefixes
+26D90425;[{ "Type": "Fld", "Operands": ["dword ptr es:[eax]"] }]
+2ED90425;[{ "Type": "Fld", "Operands": ["dword ptr cs:[eax]"] }]
+36D90425;[{ "Type": "Fld", "Operands": ["dword ptr ss:[eax]"] }]
+3ED90425;[{ "Type": "Fld", "Operands": ["dword ptr ds:[eax]"] }]
+64D90425;[{ "Type": "Fld", "Operands": ["dword ptr fs:[eax]"] }]
+65D90425;[{ "Type": "Fld", "Operands": ["dword ptr gs:[eax]"] }]
+
+# FST - Store floating point value
+D9D0;[{ "Type": "Fst", "Operands": ["ST(0)"] }]
+D9D1;[{ "Type": "Fst", "Operands": ["ST(1)"] }]
+D9D2;[{ "Type": "Fst", "Operands": ["ST(2)"] }]
+D9D3;[{ "Type": "Fst", "Operands": ["ST(3)"] }]
+D9D4;[{ "Type": "Fst", "Operands": ["ST(4)"] }]
+D9D5;[{ "Type": "Fst", "Operands": ["ST(5)"] }]
+D9D6;[{ "Type": "Fst", "Operands": ["ST(6)"] }]
+D9D7;[{ "Type": "Fst", "Operands": ["ST(7)"] }]
+
+# Memory operands
+D9142510000000;[{ "Type": "Fst", "Operands": ["dword ptr [0x10]"] }]
+DD142510000000;[{ "Type": "Fst", "Operands": ["qword ptr [0x10]"] }]
+D91425;[{ "Type": "Fst", "Operands": ["dword ptr [eax]"] }]
+DD1425;[{ "Type": "Fst", "Operands": ["qword ptr [eax]"] }]
+
+# FSTP - Store floating point value and pop
+D9D8;[{ "Type": "Fstp", "Operands": ["ST(0)"] }]
+D9D9;[{ "Type": "Fstp", "Operands": ["ST(1)"] }]
+D9DA;[{ "Type": "Fstp", "Operands": ["ST(2)"] }]
+D9DB;[{ "Type": "Fstp", "Operands": ["ST(3)"] }]
+D9DC;[{ "Type": "Fstp", "Operands": ["ST(4)"] }]
+D9DD;[{ "Type": "Fstp", "Operands": ["ST(5)"] }]
+D9DE;[{ "Type": "Fstp", "Operands": ["ST(6)"] }]
+D9DF;[{ "Type": "Fstp", "Operands": ["ST(7)"] }]
+
+# Memory operands
+D91C2510000000;[{ "Type": "Fstp", "Operands": ["dword ptr [0x10]"] }]
+DD1C2510000000;[{ "Type": "Fstp", "Operands": ["qword ptr [0x10]"] }]
+DB3C25;[{ "Type": "Fstp", "Operands": ["tbyte ptr [eax]"] }]
+D91C25;[{ "Type": "Fstp", "Operands": ["dword ptr [eax]"] }]
+DD1C25;[{ "Type": "Fstp", "Operands": ["qword ptr [eax]"] }]

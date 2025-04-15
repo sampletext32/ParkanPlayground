@@ -1,0 +1,46 @@
+# FSUB instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# FSUB - Subtract floating point values
+# ST(0), ST(i) form (D8 E0+i)
+D8E0;[{ "Type": "Fsub", "Operands": ["ST(0)", "ST(0)"] }]
+D8E1;[{ "Type": "Fsub", "Operands": ["ST(0)", "ST(1)"] }]
+D8E2;[{ "Type": "Fsub", "Operands": ["ST(0)", "ST(2)"] }]
+D8E3;[{ "Type": "Fsub", "Operands": ["ST(0)", "ST(3)"] }]
+D8E4;[{ "Type": "Fsub", "Operands": ["ST(0)", "ST(4)"] }]
+D8E5;[{ "Type": "Fsub", "Operands": ["ST(0)", "ST(5)"] }]
+D8E6;[{ "Type": "Fsub", "Operands": ["ST(0)", "ST(6)"] }]
+D8E7;[{ "Type": "Fsub", "Operands": ["ST(0)", "ST(7)"] }]
+
+# ST(i), ST(0) form (DC E8+i)
+DCE8;[{ "Type": "Fsub", "Operands": ["ST(0)", "ST(0)"] }]
+DCE9;[{ "Type": "Fsub", "Operands": ["ST(1)", "ST(0)"] }]
+DCEA;[{ "Type": "Fsub", "Operands": ["ST(2)", "ST(0)"] }]
+DCEB;[{ "Type": "Fsub", "Operands": ["ST(3)", "ST(0)"] }]
+DCEC;[{ "Type": "Fsub", "Operands": ["ST(4)", "ST(0)"] }]
+DCED;[{ "Type": "Fsub", "Operands": ["ST(5)", "ST(0)"] }]
+DCEE;[{ "Type": "Fsub", "Operands": ["ST(6)", "ST(0)"] }]
+DCEF;[{ "Type": "Fsub", "Operands": ["ST(7)", "ST(0)"] }]
+
+# Memory operands
+D8242510000000;[{ "Type": "Fsub", "Operands": ["dword ptr [0x10]"] }]
+DC242510000000;[{ "Type": "Fsub", "Operands": ["qword ptr [0x10]"] }]
+D82425;[{ "Type": "Fsub", "Operands": ["dword ptr [eax]"] }]
+DC2425;[{ "Type": "Fsub", "Operands": ["qword ptr [eax]"] }]
+
+# FSUBP - Subtract floating point values and pop
+DEE8;[{ "Type": "Fsubp", "Operands": ["ST(0)", "ST(0)"] }]
+DEE9;[{ "Type": "Fsubp", "Operands": ["ST(1)", "ST(0)"] }]
+DEEA;[{ "Type": "Fsubp", "Operands": ["ST(2)", "ST(0)"] }]
+DEEB;[{ "Type": "Fsubp", "Operands": ["ST(3)", "ST(0)"] }]
+DEEC;[{ "Type": "Fsubp", "Operands": ["ST(4)", "ST(0)"] }]
+DEED;[{ "Type": "Fsubp", "Operands": ["ST(5)", "ST(0)"] }]
+DEEE;[{ "Type": "Fsubp", "Operands": ["ST(6)", "ST(0)"] }]
+DEEF;[{ "Type": "Fsubp", "Operands": ["ST(7)", "ST(0)"] }]
+
+# FISUB - Subtract integer from floating point
+DA242510000000;[{ "Type": "Fisub", "Operands": ["dword ptr [0x10]"] }]
+DE242510000000;[{ "Type": "Fisub", "Operands": ["word ptr [0x10]"] }]
+DA2425;[{ "Type": "Fisub", "Operands": ["dword ptr [eax]"] }]
+DE2425;[{ "Type": "Fisub", "Operands": ["word ptr [eax]"] }]

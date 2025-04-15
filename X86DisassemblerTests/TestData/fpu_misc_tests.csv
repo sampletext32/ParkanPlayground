@@ -1,0 +1,75 @@
+# Miscellaneous FPU instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# FCHS - Change sign of floating point value
+D9E0;[{ "Type": "Fchs", "Operands": [] }]
+
+# FABS - Absolute value of floating point value
+D9E1;[{ "Type": "Fabs", "Operands": [] }]
+
+# FTST - Test floating point value
+D9E4;[{ "Type": "Ftst", "Operands": [] }]
+
+# FXAM - Examine floating point value
+D9E5;[{ "Type": "Fxam", "Operands": [] }]
+
+# FINIT - Initialize FPU (with FWAIT prefix)
+9BDBE3;[{ "Type": "Finit", "Operands": [] }]
+
+# FNINIT - Initialize FPU without checking for pending unmasked exceptions
+DBE3;[{ "Type": "Fninit", "Operands": [] }]
+
+# FXCH - Exchange floating point registers
+D9C8;[{ "Type": "Fxch", "Operands": ["ST(0)"] }]
+D9C9;[{ "Type": "Fxch", "Operands": ["ST(1)"] }]
+D9CA;[{ "Type": "Fxch", "Operands": ["ST(2)"] }]
+D9CB;[{ "Type": "Fxch", "Operands": ["ST(3)"] }]
+D9CC;[{ "Type": "Fxch", "Operands": ["ST(4)"] }]
+D9CD;[{ "Type": "Fxch", "Operands": ["ST(5)"] }]
+D9CE;[{ "Type": "Fxch", "Operands": ["ST(6)"] }]
+D9CF;[{ "Type": "Fxch", "Operands": ["ST(7)"] }]
+
+# FCLEX - Clear floating-point exceptions
+9BDBE2;[{ "Type": "Fclex", "Operands": [] }]
+
+# FNCLEX - Clear floating-point exceptions without checking for pending unmasked exceptions
+DBE2;[{ "Type": "Fnclex", "Operands": [] }]
+
+# FLDCW - Load FPU control word
+D92C2510000000;[{ "Type": "Fldcw", "Operands": ["word ptr [0x10]"] }]
+D92C25;[{ "Type": "Fldcw", "Operands": ["word ptr [eax]"] }]
+
+# FNSTCW - Store FPU control word without checking for pending unmasked exceptions
+D93C2510000000;[{ "Type": "Fnstcw", "Operands": ["word ptr [0x10]"] }]
+D93C25;[{ "Type": "Fnstcw", "Operands": ["word ptr [eax]"] }]
+
+# FLDENV - Load FPU environment
+D92425;[{ "Type": "Fldenv", "Operands": ["dword ptr [eax]"] }]
+
+# FNSTENV - Store FPU environment without checking for pending unmasked exceptions
+D93425;[{ "Type": "Fnstenv", "Operands": ["dword ptr [eax]"] }]
+
+# FRSTOR - Restore FPU state
+DD2425;[{ "Type": "Frstor", "Operands": ["dword ptr [eax]"] }]
+
+# FNSAVE - Save FPU state without checking for pending unmasked exceptions
+DD3425;[{ "Type": "Fnsave", "Operands": ["dword ptr [eax]"] }]
+
+# F2XM1 - 2^x - 1
+D9F0;[{ "Type": "F2xm1", "Operands": [] }]
+
+# FYL2X - y * log2(x)
+D9F1;[{ "Type": "Fyl2x", "Operands": [] }]
+
+# FPTAN - Partial tangent
+D9F2;[{ "Type": "Fptan", "Operands": [] }]
+
+# FPATAN - Partial arctangent
+D9F3;[{ "Type": "Fpatan", "Operands": [] }]
+
+# FXTRACT - Extract exponent and significand
+D9F4;[{ "Type": "Fxtract", "Operands": [] }]
+
+# FPREM1 - Partial remainder (IEEE)
+D9F5;[{ "Type": "Fprem1", "Operands": [] }]

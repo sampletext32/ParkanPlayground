@@ -1,0 +1,66 @@
+# FCOM/FCOMP/FCOMPP instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# FCOM - Compare floating point values
+D8D0;[{ "Type": "Fcom", "Operands": ["ST(0)"] }]
+D8D1;[{ "Type": "Fcom", "Operands": ["ST(1)"] }]
+D8D2;[{ "Type": "Fcom", "Operands": ["ST(2)"] }]
+D8D3;[{ "Type": "Fcom", "Operands": ["ST(3)"] }]
+D8D4;[{ "Type": "Fcom", "Operands": ["ST(4)"] }]
+D8D5;[{ "Type": "Fcom", "Operands": ["ST(5)"] }]
+D8D6;[{ "Type": "Fcom", "Operands": ["ST(6)"] }]
+D8D7;[{ "Type": "Fcom", "Operands": ["ST(7)"] }]
+
+# Memory operands
+D8142510000000;[{ "Type": "Fcom", "Operands": ["dword ptr [0x10]"] }]
+DC142510000000;[{ "Type": "Fcom", "Operands": ["qword ptr [0x10]"] }]
+D81425;[{ "Type": "Fcom", "Operands": ["dword ptr [eax]"] }]
+DC1425;[{ "Type": "Fcom", "Operands": ["qword ptr [eax]"] }]
+
+# With segment override prefixes
+26D81425;[{ "Type": "Fcom", "Operands": ["dword ptr es:[eax]"] }]
+2ED81425;[{ "Type": "Fcom", "Operands": ["dword ptr cs:[eax]"] }]
+36D81425;[{ "Type": "Fcom", "Operands": ["dword ptr ss:[eax]"] }]
+3ED81425;[{ "Type": "Fcom", "Operands": ["dword ptr ds:[eax]"] }]
+64D81425;[{ "Type": "Fcom", "Operands": ["dword ptr fs:[eax]"] }]
+65D81425;[{ "Type": "Fcom", "Operands": ["dword ptr gs:[eax]"] }]
+
+# FCOMP - Compare floating point values and pop
+D8D8;[{ "Type": "Fcomp", "Operands": ["ST(0)"] }]
+D8D9;[{ "Type": "Fcomp", "Operands": ["ST(1)"] }]
+D8DA;[{ "Type": "Fcomp", "Operands": ["ST(2)"] }]
+D8DB;[{ "Type": "Fcomp", "Operands": ["ST(3)"] }]
+D8DC;[{ "Type": "Fcomp", "Operands": ["ST(4)"] }]
+D8DD;[{ "Type": "Fcomp", "Operands": ["ST(5)"] }]
+D8DE;[{ "Type": "Fcomp", "Operands": ["ST(6)"] }]
+D8DF;[{ "Type": "Fcomp", "Operands": ["ST(7)"] }]
+
+# Memory operands
+D81C2510000000;[{ "Type": "Fcomp", "Operands": ["dword ptr [0x10]"] }]
+DC1C2510000000;[{ "Type": "Fcomp", "Operands": ["qword ptr [0x10]"] }]
+D81C25;[{ "Type": "Fcomp", "Operands": ["dword ptr [eax]"] }]
+DC1C25;[{ "Type": "Fcomp", "Operands": ["qword ptr [eax]"] }]
+
+# FCOMPP - Compare floating point values and pop twice
+DED9;[{ "Type": "Fcompp", "Operands": [] }]
+
+# FCOMI - Compare floating point and set EFLAGS
+DBF0;[{ "Type": "Fcomi", "Operands": ["ST(0)"] }]
+DBF1;[{ "Type": "Fcomi", "Operands": ["ST(1)"] }]
+DBF2;[{ "Type": "Fcomi", "Operands": ["ST(2)"] }]
+DBF3;[{ "Type": "Fcomi", "Operands": ["ST(3)"] }]
+DBF4;[{ "Type": "Fcomi", "Operands": ["ST(4)"] }]
+DBF5;[{ "Type": "Fcomi", "Operands": ["ST(5)"] }]
+DBF6;[{ "Type": "Fcomi", "Operands": ["ST(6)"] }]
+DBF7;[{ "Type": "Fcomi", "Operands": ["ST(7)"] }]
+
+# FCOMIP - Compare floating point and set EFLAGS and pop
+DFF0;[{ "Type": "Fcomip", "Operands": ["ST(0)"] }]
+DFF1;[{ "Type": "Fcomip", "Operands": ["ST(1)"] }]
+DFF2;[{ "Type": "Fcomip", "Operands": ["ST(2)"] }]
+DFF3;[{ "Type": "Fcomip", "Operands": ["ST(3)"] }]
+DFF4;[{ "Type": "Fcomip", "Operands": ["ST(4)"] }]
+DFF5;[{ "Type": "Fcomip", "Operands": ["ST(5)"] }]
+DFF6;[{ "Type": "Fcomip", "Operands": ["ST(6)"] }]
+DFF7;[{ "Type": "Fcomip", "Operands": ["ST(7)"] }]
