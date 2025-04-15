@@ -28,3 +28,37 @@ FA;[{ "Type": "Cli", "Operands": [] }]
 
 # LAHF - Load Flags into AH
 9F;[{ "Type": "Lahf", "Operands": [] }]
+
+# Flag instructions with prefixes (should be ignored by disassembler)
+# Operand size override prefix
+66F9;[{ "Type": "Stc", "Operands": [] }]
+66F8;[{ "Type": "Clc", "Operands": [] }]
+66F5;[{ "Type": "Cmc", "Operands": [] }]
+66FD;[{ "Type": "Std", "Operands": [] }]
+66FC;[{ "Type": "Cld", "Operands": [] }]
+66FB;[{ "Type": "Sti", "Operands": [] }]
+66FA;[{ "Type": "Cli", "Operands": [] }]
+669E;[{ "Type": "Sahf", "Operands": [] }]
+669F;[{ "Type": "Lahf", "Operands": [] }]
+
+# Address size override prefix
+67F9;[{ "Type": "Stc", "Operands": [] }]
+67F8;[{ "Type": "Clc", "Operands": [] }]
+67F5;[{ "Type": "Cmc", "Operands": [] }]
+67FD;[{ "Type": "Std", "Operands": [] }]
+67FC;[{ "Type": "Cld", "Operands": [] }]
+67FB;[{ "Type": "Sti", "Operands": [] }]
+67FA;[{ "Type": "Cli", "Operands": [] }]
+679E;[{ "Type": "Sahf", "Operands": [] }]
+679F;[{ "Type": "Lahf", "Operands": [] }]
+
+# LOCK prefix (invalid but should be parsed)
+F0F9;[{ "Type": "Stc", "Operands": [] }]
+F0F8;[{ "Type": "Clc", "Operands": [] }]
+F0F5;[{ "Type": "Cmc", "Operands": [] }]
+F0FD;[{ "Type": "Std", "Operands": [] }]
+F0FC;[{ "Type": "Cld", "Operands": [] }]
+F0FB;[{ "Type": "Sti", "Operands": [] }]
+F0FA;[{ "Type": "Cli", "Operands": [] }]
+F09E;[{ "Type": "Sahf", "Operands": [] }]
+F09F;[{ "Type": "Lahf", "Operands": [] }]
