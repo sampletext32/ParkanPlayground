@@ -1,0 +1,40 @@
+# POP r/m32 instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# POP r/m32 (opcode 8F /0) with register operands
+8F00;[{ "Type": "Pop", "Operands": ["dword ptr [eax]"] }]
+8F01;[{ "Type": "Pop", "Operands": ["dword ptr [ecx]"] }]
+8F02;[{ "Type": "Pop", "Operands": ["dword ptr [edx]"] }]
+8F03;[{ "Type": "Pop", "Operands": ["dword ptr [ebx]"] }]
+8F04;[{ "Type": "Pop", "Operands": ["dword ptr [esp]"] }]
+8F05;[{ "Type": "Pop", "Operands": ["dword ptr [ebp]"] }]
+8F06;[{ "Type": "Pop", "Operands": ["dword ptr [esi]"] }]
+8F07;[{ "Type": "Pop", "Operands": ["dword ptr [edi]"] }]
+
+# POP r/m32 (opcode 8F /0) with memory operands and displacement
+8F4010;[{ "Type": "Pop", "Operands": ["dword ptr [eax+0x10]"] }]
+8F4110;[{ "Type": "Pop", "Operands": ["dword ptr [ecx+0x10]"] }]
+8F4210;[{ "Type": "Pop", "Operands": ["dword ptr [edx+0x10]"] }]
+8F4310;[{ "Type": "Pop", "Operands": ["dword ptr [ebx+0x10]"] }]
+8F4410;[{ "Type": "Pop", "Operands": ["dword ptr [esp+0x10]"] }]
+8F4510;[{ "Type": "Pop", "Operands": ["dword ptr [ebp+0x10]"] }]
+8F4610;[{ "Type": "Pop", "Operands": ["dword ptr [esi+0x10]"] }]
+8F4710;[{ "Type": "Pop", "Operands": ["dword ptr [edi+0x10]"] }]
+
+# POP r/m32 (opcode 8F /0) with SIB byte
+8F04C5;[{ "Type": "Pop", "Operands": ["dword ptr [eax*8+ebp]"] }]
+8F04CD;[{ "Type": "Pop", "Operands": ["dword ptr [ecx*8+ebp]"] }]
+8F04D5;[{ "Type": "Pop", "Operands": ["dword ptr [edx*8+ebp]"] }]
+8F04DD;[{ "Type": "Pop", "Operands": ["dword ptr [ebx*8+ebp]"] }]
+
+# POP r/m32 (opcode 8F /0) with direct memory operand
+8F0578563412;[{ "Type": "Pop", "Operands": ["dword ptr [0x12345678]"] }]
+
+# POP r/m32 (opcode 8F /0) with segment override prefixes
+268F4510;[{ "Type": "Pop", "Operands": ["dword ptr es:[ebp+0x10]"] }]
+2E8F4510;[{ "Type": "Pop", "Operands": ["dword ptr cs:[ebp+0x10]"] }]
+368F4510;[{ "Type": "Pop", "Operands": ["dword ptr ss:[ebp+0x10]"] }]
+3E8F4510;[{ "Type": "Pop", "Operands": ["dword ptr ds:[ebp+0x10]"] }]
+648F4510;[{ "Type": "Pop", "Operands": ["dword ptr fs:[ebp+0x10]"] }]
+658F4510;[{ "Type": "Pop", "Operands": ["dword ptr gs:[ebp+0x10]"] }]

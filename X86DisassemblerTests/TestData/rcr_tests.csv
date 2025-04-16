@@ -1,0 +1,32 @@
+# RCR instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# RCR r/m8, 1 (opcode D0 /3)
+D0D8;[{ "Type": "Rcr", "Operands": ["al", "0x01"] }]
+D0DB;[{ "Type": "Rcr", "Operands": ["bl", "0x01"] }]
+
+# RCR r/m32, 1 (opcode D1 /3)
+D1D8;[{ "Type": "Rcr", "Operands": ["eax", "0x01"] }]
+D1DB;[{ "Type": "Rcr", "Operands": ["ebx", "0x01"] }]
+
+# RCR r/m8, CL (opcode D2 /3)
+D2D8;[{ "Type": "Rcr", "Operands": ["al", "cl"] }]
+D2DB;[{ "Type": "Rcr", "Operands": ["bl", "cl"] }]
+
+# RCR r/m32, CL (opcode D3 /3)
+D3D8;[{ "Type": "Rcr", "Operands": ["eax", "cl"] }]
+D3DB;[{ "Type": "Rcr", "Operands": ["ebx", "cl"] }]
+
+# RCR r/m8, imm8 (opcode C0 /3)
+C0D805;[{ "Type": "Rcr", "Operands": ["al", "0x05"] }]
+C0DB05;[{ "Type": "Rcr", "Operands": ["bl", "0x05"] }]
+
+# RCR r/m32, imm8 (opcode C1 /3)
+C1D805;[{ "Type": "Rcr", "Operands": ["eax", "0x05"] }]
+C1DB05;[{ "Type": "Rcr", "Operands": ["ebx", "0x05"] }]
+
+# RCR with memory operands
+D01C2510;[{ "Type": "Rcr", "Operands": ["byte ptr [eax+0x10]", "0x01"] }]
+D31C25;[{ "Type": "Rcr", "Operands": ["dword ptr [eax]", "cl"] }]
+C11C2505;[{ "Type": "Rcr", "Operands": ["dword ptr [eax]", "0x05"] }]

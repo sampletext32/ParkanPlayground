@@ -1,0 +1,24 @@
+# NOT instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# NOT r/m8 (opcode F6 /2)
+F6D0;[{ "Type": "Not", "Operands": ["al"] }]
+F6D3;[{ "Type": "Not", "Operands": ["bl"] }]
+F6D1;[{ "Type": "Not", "Operands": ["cl"] }]
+F6D2;[{ "Type": "Not", "Operands": ["dl"] }]
+
+# NOT r/m32 (opcode F7 /2)
+F7D0;[{ "Type": "Not", "Operands": ["eax"] }]
+F7D3;[{ "Type": "Not", "Operands": ["ebx"] }]
+F7D1;[{ "Type": "Not", "Operands": ["ecx"] }]
+F7D2;[{ "Type": "Not", "Operands": ["edx"] }]
+F7D4;[{ "Type": "Not", "Operands": ["esp"] }]
+F7D5;[{ "Type": "Not", "Operands": ["ebp"] }]
+F7D6;[{ "Type": "Not", "Operands": ["esi"] }]
+F7D7;[{ "Type": "Not", "Operands": ["edi"] }]
+
+# NOT with memory operands
+F61425;[{ "Type": "Not", "Operands": ["byte ptr [eax]"] }]
+F71425;[{ "Type": "Not", "Operands": ["dword ptr [eax]"] }]
+F7142510000000;[{ "Type": "Not", "Operands": ["dword ptr [eax+0x10]"] }]

@@ -1,0 +1,91 @@
+# MOV instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# MOV r8, imm8 (opcodes B0-B7)
+B042;[{ "Type": "Mov", "Operands": ["al", "0x42"] }]
+B142;[{ "Type": "Mov", "Operands": ["cl", "0x42"] }]
+B242;[{ "Type": "Mov", "Operands": ["dl", "0x42"] }]
+B342;[{ "Type": "Mov", "Operands": ["bl", "0x42"] }]
+B442;[{ "Type": "Mov", "Operands": ["ah", "0x42"] }]
+B542;[{ "Type": "Mov", "Operands": ["ch", "0x42"] }]
+B642;[{ "Type": "Mov", "Operands": ["dh", "0x42"] }]
+B742;[{ "Type": "Mov", "Operands": ["bh", "0x42"] }]
+
+# MOV r32, imm32 (opcodes B8-BF)
+B878563412;[{ "Type": "Mov", "Operands": ["eax", "0x12345678"] }]
+B978563412;[{ "Type": "Mov", "Operands": ["ecx", "0x12345678"] }]
+BA78563412;[{ "Type": "Mov", "Operands": ["edx", "0x12345678"] }]
+BB78563412;[{ "Type": "Mov", "Operands": ["ebx", "0x12345678"] }]
+BC78563412;[{ "Type": "Mov", "Operands": ["esp", "0x12345678"] }]
+BD78563412;[{ "Type": "Mov", "Operands": ["ebp", "0x12345678"] }]
+BE78563412;[{ "Type": "Mov", "Operands": ["esi", "0x12345678"] }]
+BF78563412;[{ "Type": "Mov", "Operands": ["edi", "0x12345678"] }]
+
+# MOV r/m8, r8 (opcode 88)
+8801;[{ "Type": "Mov", "Operands": ["byte ptr [ecx]", "al"] }]
+8803;[{ "Type": "Mov", "Operands": ["byte ptr [ebx]", "al"] }]
+8805;[{ "Type": "Mov", "Operands": ["byte ptr [ebp]", "al"] }]
+8807;[{ "Type": "Mov", "Operands": ["byte ptr [edi]", "al"] }]
+8841FF;[{ "Type": "Mov", "Operands": ["byte ptr [ecx-0x1]", "al"] }]
+8843FF;[{ "Type": "Mov", "Operands": ["byte ptr [ebx-0x1]", "al"] }]
+8845FF;[{ "Type": "Mov", "Operands": ["byte ptr [ebp-0x1]", "al"] }]
+8847FF;[{ "Type": "Mov", "Operands": ["byte ptr [edi-0x1]", "al"] }]
+
+# MOV r/m32, r32 (opcode 89)
+8901;[{ "Type": "Mov", "Operands": ["dword ptr [ecx]", "eax"] }]
+8903;[{ "Type": "Mov", "Operands": ["dword ptr [ebx]", "eax"] }]
+8905;[{ "Type": "Mov", "Operands": ["dword ptr [ebp]", "eax"] }]
+8907;[{ "Type": "Mov", "Operands": ["dword ptr [edi]", "eax"] }]
+8941FF;[{ "Type": "Mov", "Operands": ["dword ptr [ecx-0x1]", "eax"] }]
+8943FF;[{ "Type": "Mov", "Operands": ["dword ptr [ebx-0x1]", "eax"] }]
+8945FF;[{ "Type": "Mov", "Operands": ["dword ptr [ebp-0x1]", "eax"] }]
+8947FF;[{ "Type": "Mov", "Operands": ["dword ptr [edi-0x1]", "eax"] }]
+
+# MOV r8, r/m8 (opcode 8A)
+8A01;[{ "Type": "Mov", "Operands": ["al", "byte ptr [ecx]"] }]
+8A03;[{ "Type": "Mov", "Operands": ["al", "byte ptr [ebx]"] }]
+8A05;[{ "Type": "Mov", "Operands": ["al", "byte ptr [ebp]"] }]
+8A07;[{ "Type": "Mov", "Operands": ["al", "byte ptr [edi]"] }]
+8A41FF;[{ "Type": "Mov", "Operands": ["al", "byte ptr [ecx-0x1]"] }]
+8A43FF;[{ "Type": "Mov", "Operands": ["al", "byte ptr [ebx-0x1]"] }]
+8A45FF;[{ "Type": "Mov", "Operands": ["al", "byte ptr [ebp-0x1]"] }]
+8A47FF;[{ "Type": "Mov", "Operands": ["al", "byte ptr [edi-0x1]"] }]
+
+# MOV r32, r/m32 (opcode 8B)
+8B01;[{ "Type": "Mov", "Operands": ["eax", "dword ptr [ecx]"] }]
+8B03;[{ "Type": "Mov", "Operands": ["eax", "dword ptr [ebx]"] }]
+8B05;[{ "Type": "Mov", "Operands": ["eax", "dword ptr [ebp]"] }]
+8B07;[{ "Type": "Mov", "Operands": ["eax", "dword ptr [edi]"] }]
+8B41FF;[{ "Type": "Mov", "Operands": ["eax", "dword ptr [ecx-0x1]"] }]
+8B43FF;[{ "Type": "Mov", "Operands": ["eax", "dword ptr [ebx-0x1]"] }]
+8B45FF;[{ "Type": "Mov", "Operands": ["eax", "dword ptr [ebp-0x1]"] }]
+8B47FF;[{ "Type": "Mov", "Operands": ["eax", "dword ptr [edi-0x1]"] }]
+
+# MOV r/m8, imm8 (opcode C6 /0)
+C60142;[{ "Type": "Mov", "Operands": ["byte ptr [ecx]", "0x42"] }]
+C60342;[{ "Type": "Mov", "Operands": ["byte ptr [ebx]", "0x42"] }]
+C60542;[{ "Type": "Mov", "Operands": ["byte ptr [ebp]", "0x42"] }]
+C60742;[{ "Type": "Mov", "Operands": ["byte ptr [edi]", "0x42"] }]
+C641FF42;[{ "Type": "Mov", "Operands": ["byte ptr [ecx-0x1]", "0x42"] }]
+C643FF42;[{ "Type": "Mov", "Operands": ["byte ptr [ebx-0x1]", "0x42"] }]
+C645FF42;[{ "Type": "Mov", "Operands": ["byte ptr [ebp-0x1]", "0x42"] }]
+C647FF42;[{ "Type": "Mov", "Operands": ["byte ptr [edi-0x1]", "0x42"] }]
+
+# MOV r/m32, imm32 (opcode C7 /0)
+C70178563412;[{ "Type": "Mov", "Operands": ["dword ptr [ecx]", "0x12345678"] }]
+C70378563412;[{ "Type": "Mov", "Operands": ["dword ptr [ebx]", "0x12345678"] }]
+C70578563412;[{ "Type": "Mov", "Operands": ["dword ptr [ebp]", "0x12345678"] }]
+C70778563412;[{ "Type": "Mov", "Operands": ["dword ptr [edi]", "0x12345678"] }]
+C741FF78563412;[{ "Type": "Mov", "Operands": ["dword ptr [ecx-0x1]", "0x12345678"] }]
+C743FF78563412;[{ "Type": "Mov", "Operands": ["dword ptr [ebx-0x1]", "0x12345678"] }]
+C745FF78563412;[{ "Type": "Mov", "Operands": ["dword ptr [ebp-0x1]", "0x12345678"] }]
+C747FF78563412;[{ "Type": "Mov", "Operands": ["dword ptr [edi-0x1]", "0x12345678"] }]
+
+# MOV with segment override prefixes
+268B4510;[{ "Type": "Mov", "Operands": ["eax", "dword ptr es:[ebp+0x10]"] }]
+2E8B4510;[{ "Type": "Mov", "Operands": ["eax", "dword ptr cs:[ebp+0x10]"] }]
+368B4510;[{ "Type": "Mov", "Operands": ["eax", "dword ptr ss:[ebp+0x10]"] }]
+3E8B4510;[{ "Type": "Mov", "Operands": ["eax", "dword ptr ds:[ebp+0x10]"] }]
+648B4510;[{ "Type": "Mov", "Operands": ["eax", "dword ptr fs:[ebp+0x10]"] }]
+658B4510;[{ "Type": "Mov", "Operands": ["eax", "dword ptr gs:[ebp+0x10]"] }]

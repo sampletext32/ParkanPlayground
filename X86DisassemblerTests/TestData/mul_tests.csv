@@ -1,0 +1,24 @@
+# MUL instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# MUL r/m8 (opcode F6 /4)
+F6E0;[{ "Type": "Mul", "Operands": ["al"] }]
+F6E3;[{ "Type": "Mul", "Operands": ["bl"] }]
+F6E1;[{ "Type": "Mul", "Operands": ["cl"] }]
+F6E2;[{ "Type": "Mul", "Operands": ["dl"] }]
+
+# MUL r/m32 (opcode F7 /4)
+F7E0;[{ "Type": "Mul", "Operands": ["eax"] }]
+F7E3;[{ "Type": "Mul", "Operands": ["ebx"] }]
+F7E1;[{ "Type": "Mul", "Operands": ["ecx"] }]
+F7E2;[{ "Type": "Mul", "Operands": ["edx"] }]
+F7E4;[{ "Type": "Mul", "Operands": ["esp"] }]
+F7E5;[{ "Type": "Mul", "Operands": ["ebp"] }]
+F7E6;[{ "Type": "Mul", "Operands": ["esi"] }]
+F7E7;[{ "Type": "Mul", "Operands": ["edi"] }]
+
+# MUL with memory operands
+F62425;[{ "Type": "Mul", "Operands": ["byte ptr [eax]"] }]
+F72425;[{ "Type": "Mul", "Operands": ["dword ptr [eax]"] }]
+F7242510000000;[{ "Type": "Mul", "Operands": ["dword ptr [eax+0x10]"] }]

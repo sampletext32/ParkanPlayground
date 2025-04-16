@@ -1,0 +1,24 @@
+# IDIV instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# IDIV r/m8 (opcode F6 /7)
+F6F8;[{ "Type": "IDiv", "Operands": ["al"] }]
+F6FB;[{ "Type": "IDiv", "Operands": ["bl"] }]
+F6F9;[{ "Type": "IDiv", "Operands": ["cl"] }]
+F6FA;[{ "Type": "IDiv", "Operands": ["dl"] }]
+
+# IDIV r/m32 (opcode F7 /7)
+F7F8;[{ "Type": "IDiv", "Operands": ["eax"] }]
+F7FB;[{ "Type": "IDiv", "Operands": ["ebx"] }]
+F7F9;[{ "Type": "IDiv", "Operands": ["ecx"] }]
+F7FA;[{ "Type": "IDiv", "Operands": ["edx"] }]
+F7FC;[{ "Type": "IDiv", "Operands": ["esp"] }]
+F7FD;[{ "Type": "IDiv", "Operands": ["ebp"] }]
+F7FE;[{ "Type": "IDiv", "Operands": ["esi"] }]
+F7FF;[{ "Type": "IDiv", "Operands": ["edi"] }]
+
+# IDIV with memory operands
+F63C25;[{ "Type": "IDiv", "Operands": ["byte ptr [eax]"] }]
+F73C25;[{ "Type": "IDiv", "Operands": ["dword ptr [eax]"] }]
+F73C2510000000;[{ "Type": "IDiv", "Operands": ["dword ptr [eax+0x10]"] }]

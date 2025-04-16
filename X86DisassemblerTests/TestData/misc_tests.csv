@@ -1,0 +1,52 @@
+# Miscellaneous instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# NOP - No Operation
+90;[{ "Type": "Nop", "Operands": [] }]
+
+# INT - Call to Interrupt Procedure
+CD03;[{ "Type": "Int", "Operands": ["0x03"] }]
+CD10;[{ "Type": "Int", "Operands": ["0x10"] }]
+CD21;[{ "Type": "Int", "Operands": ["0x21"] }]
+CD80;[{ "Type": "Int", "Operands": ["0x80"] }]
+
+# INT3 - Breakpoint
+CC;[{ "Type": "Int3", "Operands": [] }]
+
+# INTO - Call to Interrupt Procedure if Overflow Flag is Set
+CE;[{ "Type": "Into", "Operands": [] }]
+
+# IRET/IRETD - Return from Interrupt
+CF;[{ "Type": "Iret", "Operands": [] }]
+
+# CPUID - CPU Identification
+0FA2;[{ "Type": "Cpuid", "Operands": [] }]
+
+# RDTSC - Read Time-Stamp Counter
+0F31;[{ "Type": "Rdtsc", "Operands": [] }]
+
+# HLT - Halt
+F4;[{ "Type": "Hlt", "Operands": [] }]
+
+# WAIT/FWAIT - Wait
+9B;[{ "Type": "Wait", "Operands": [] }]
+
+# LOCK prefix
+F0;[{ "Type": "Lock", "Operands": [] }]
+F0FE05;[{ "Type": "Inc", "Operands": ["byte ptr [ebp]"], "Prefix": "Lock" }]
+F0FF05;[{ "Type": "Inc", "Operands": ["dword ptr [ebp]"], "Prefix": "Lock" }]
+F0FE0D;[{ "Type": "Dec", "Operands": ["byte ptr [ebp]"], "Prefix": "Lock" }]
+F0FF0D;[{ "Type": "Dec", "Operands": ["dword ptr [ebp]"], "Prefix": "Lock" }]
+
+# IN - Input from Port
+E410;[{ "Type": "In", "Operands": ["al", "0x10"] }]
+E510;[{ "Type": "In", "Operands": ["eax", "0x10"] }]
+EC;[{ "Type": "In", "Operands": ["al", "dx"] }]
+ED;[{ "Type": "In", "Operands": ["eax", "dx"] }]
+
+# OUT - Output to Port
+E610;[{ "Type": "Out", "Operands": ["0x10", "al"] }]
+E710;[{ "Type": "Out", "Operands": ["0x10", "eax"] }]
+EE;[{ "Type": "Out", "Operands": ["dx", "al"] }]
+EF;[{ "Type": "Out", "Operands": ["dx", "eax"] }]

@@ -1,0 +1,52 @@
+# String instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# MOVS - Move string
+A4;[{ "Type": "MovsB", "Operands": [] }]
+A5;[{ "Type": "MovsD", "Operands": [] }]
+66A5;[{ "Type": "MovsW", "Operands": [] }]
+
+# CMPS - Compare string
+A6;[{ "Type": "CmpsB", "Operands": [] }]
+A7;[{ "Type": "CmpsD", "Operands": [] }]
+66A7;[{ "Type": "CmpsW", "Operands": [] }]
+
+# SCAS - Scan string
+AE;[{ "Type": "ScasB", "Operands": [] }]
+AF;[{ "Type": "ScasD", "Operands": [] }]
+66AF;[{ "Type": "ScasW", "Operands": [] }]
+
+# LODS - Load string
+AC;[{ "Type": "LodsB", "Operands": [] }]
+AD;[{ "Type": "LodsD", "Operands": [] }]
+66AD;[{ "Type": "LodsW", "Operands": [] }]
+
+# STOS - Store string
+AA;[{ "Type": "StosB", "Operands": [] }]
+AB;[{ "Type": "StosD", "Operands": [] }]
+66AB;[{ "Type": "StosW", "Operands": [] }]
+
+# REP prefix with string instructions
+F3A4;[{ "Type": "RepMovsB", "Operands": [] }]
+F3A5;[{ "Type": "RepMovsD", "Operands": [] }]
+F366A5;[{ "Type": "RepMovsW", "Operands": [] }]
+F3AA;[{ "Type": "RepStosB", "Operands": [] }]
+F3AB;[{ "Type": "RepStosD", "Operands": [] }]
+F366AB;[{ "Type": "RepStosW", "Operands": [] }]
+
+# REPE/REPZ prefix with string instructions
+F3A6;[{ "Type": "RepeCmpsB", "Operands": [] }]
+F3A7;[{ "Type": "RepeCmpsD", "Operands": [] }]
+F366A7;[{ "Type": "RepeCmpsW", "Operands": [] }]
+F3AE;[{ "Type": "RepScasB", "Operands": [] }]
+F3AF;[{ "Type": "RepScasD", "Operands": [] }]
+F366AF;[{ "Type": "RepScasW", "Operands": [] }]
+
+# REPNE/REPNZ prefix with string instructions
+F2A6;[{ "Type": "RepneCmpsB", "Operands": [] }]
+F2A7;[{ "Type": "RepneCmpsD", "Operands": [] }]
+F266A7;[{ "Type": "RepneCmpsW", "Operands": [] }]
+F2AE;[{ "Type": "RepneScasB", "Operands": [] }]
+F2AF;[{ "Type": "RepneScasD", "Operands": [] }]
+F266AF;[{ "Type": "RepneScasW", "Operands": [] }]

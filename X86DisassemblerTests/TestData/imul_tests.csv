@@ -1,0 +1,41 @@
+# IMUL instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# IMUL r/m8 (opcode F6 /5)
+F6E8;[{ "Type": "IMul", "Operands": ["al"] }]
+F6EB;[{ "Type": "IMul", "Operands": ["bl"] }]
+F6E9;[{ "Type": "IMul", "Operands": ["cl"] }]
+F6EA;[{ "Type": "IMul", "Operands": ["dl"] }]
+
+# IMUL r/m32 (opcode F7 /5)
+F7E8;[{ "Type": "IMul", "Operands": ["eax"] }]
+F7EB;[{ "Type": "IMul", "Operands": ["ebx"] }]
+F7E9;[{ "Type": "IMul", "Operands": ["ecx"] }]
+F7EA;[{ "Type": "IMul", "Operands": ["edx"] }]
+F7EC;[{ "Type": "IMul", "Operands": ["esp"] }]
+F7ED;[{ "Type": "IMul", "Operands": ["ebp"] }]
+F7EE;[{ "Type": "IMul", "Operands": ["esi"] }]
+F7EF;[{ "Type": "IMul", "Operands": ["edi"] }]
+
+# IMUL r32, r/m32 (opcode 0F AF)
+0FAFC3;[{ "Type": "IMul", "Operands": ["eax", "ebx"] }]
+0FAFD8;[{ "Type": "IMul", "Operands": ["ebx", "eax"] }]
+0FAFC9;[{ "Type": "IMul", "Operands": ["ecx", "ecx"] }]
+
+# IMUL r32, r/m32, imm8 (opcode 6B)
+6BC310;[{ "Type": "IMul", "Operands": ["eax", "ebx", "0x10"] }]
+6BD810;[{ "Type": "IMul", "Operands": ["ebx", "eax", "0x10"] }]
+6BC910;[{ "Type": "IMul", "Operands": ["ecx", "ecx", "0x10"] }]
+
+# IMUL r32, r/m32, imm32 (opcode 69)
+69C378563412;[{ "Type": "IMul", "Operands": ["eax", "ebx", "0x12345678"] }]
+69D878563412;[{ "Type": "IMul", "Operands": ["ebx", "eax", "0x12345678"] }]
+69C978563412;[{ "Type": "IMul", "Operands": ["ecx", "ecx", "0x12345678"] }]
+
+# IMUL with memory operands
+F62C25;[{ "Type": "IMul", "Operands": ["byte ptr [eax]"] }]
+F72C25;[{ "Type": "IMul", "Operands": ["dword ptr [eax]"] }]
+0FAF0425;[{ "Type": "IMul", "Operands": ["eax", "dword ptr [eax]"] }]
+6B042510;[{ "Type": "IMul", "Operands": ["eax", "dword ptr [eax]", "0x10"] }]
+69042578563412;[{ "Type": "IMul", "Operands": ["eax", "dword ptr [eax]", "0x12345678"] }]

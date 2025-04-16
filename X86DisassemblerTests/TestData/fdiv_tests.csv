@@ -1,0 +1,46 @@
+# FDIV instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# FDIV - Divide floating point values
+# ST(0), ST(i) form (D8 F0+i)
+D8F0;[{ "Type": "Fdiv", "Operands": ["ST(0)", "ST(0)"] }]
+D8F1;[{ "Type": "Fdiv", "Operands": ["ST(0)", "ST(1)"] }]
+D8F2;[{ "Type": "Fdiv", "Operands": ["ST(0)", "ST(2)"] }]
+D8F3;[{ "Type": "Fdiv", "Operands": ["ST(0)", "ST(3)"] }]
+D8F4;[{ "Type": "Fdiv", "Operands": ["ST(0)", "ST(4)"] }]
+D8F5;[{ "Type": "Fdiv", "Operands": ["ST(0)", "ST(5)"] }]
+D8F6;[{ "Type": "Fdiv", "Operands": ["ST(0)", "ST(6)"] }]
+D8F7;[{ "Type": "Fdiv", "Operands": ["ST(0)", "ST(7)"] }]
+
+# ST(i), ST(0) form (DC F8+i)
+DCF8;[{ "Type": "Fdiv", "Operands": ["ST(0)", "ST(0)"] }]
+DCF9;[{ "Type": "Fdiv", "Operands": ["ST(1)", "ST(0)"] }]
+DCFA;[{ "Type": "Fdiv", "Operands": ["ST(2)", "ST(0)"] }]
+DCFB;[{ "Type": "Fdiv", "Operands": ["ST(3)", "ST(0)"] }]
+DCFC;[{ "Type": "Fdiv", "Operands": ["ST(4)", "ST(0)"] }]
+DCFD;[{ "Type": "Fdiv", "Operands": ["ST(5)", "ST(0)"] }]
+DCFE;[{ "Type": "Fdiv", "Operands": ["ST(6)", "ST(0)"] }]
+DCFF;[{ "Type": "Fdiv", "Operands": ["ST(7)", "ST(0)"] }]
+
+# Memory operands
+D8342510000000;[{ "Type": "Fdiv", "Operands": ["dword ptr [0x10]"] }]
+DC342510000000;[{ "Type": "Fdiv", "Operands": ["qword ptr [0x10]"] }]
+D83425;[{ "Type": "Fdiv", "Operands": ["dword ptr [eax]"] }]
+DC3425;[{ "Type": "Fdiv", "Operands": ["qword ptr [eax]"] }]
+
+# FDIVP - Divide floating point values and pop
+DEF8;[{ "Type": "Fdivp", "Operands": ["ST(0)", "ST(0)"] }]
+DEF9;[{ "Type": "Fdivp", "Operands": ["ST(1)", "ST(0)"] }]
+DEFA;[{ "Type": "Fdivp", "Operands": ["ST(2)", "ST(0)"] }]
+DEFB;[{ "Type": "Fdivp", "Operands": ["ST(3)", "ST(0)"] }]
+DEFC;[{ "Type": "Fdivp", "Operands": ["ST(4)", "ST(0)"] }]
+DEFD;[{ "Type": "Fdivp", "Operands": ["ST(5)", "ST(0)"] }]
+DEFE;[{ "Type": "Fdivp", "Operands": ["ST(6)", "ST(0)"] }]
+DEFF;[{ "Type": "Fdivp", "Operands": ["ST(7)", "ST(0)"] }]
+
+# FIDIV - Divide integer by floating point
+DA342510000000;[{ "Type": "Fidiv", "Operands": ["dword ptr [0x10]"] }]
+DE342510000000;[{ "Type": "Fidiv", "Operands": ["word ptr [0x10]"] }]
+DA3425;[{ "Type": "Fidiv", "Operands": ["dword ptr [eax]"] }]
+DE3425;[{ "Type": "Fidiv", "Operands": ["word ptr [eax]"] }]

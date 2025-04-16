@@ -1,0 +1,24 @@
+# NEG instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# NEG r/m8 (opcode F6 /3)
+F6D8;[{ "Type": "Neg", "Operands": ["al"] }]
+F6DB;[{ "Type": "Neg", "Operands": ["bl"] }]
+F6D9;[{ "Type": "Neg", "Operands": ["cl"] }]
+F6DA;[{ "Type": "Neg", "Operands": ["dl"] }]
+
+# NEG r/m32 (opcode F7 /3)
+F7D8;[{ "Type": "Neg", "Operands": ["eax"] }]
+F7DB;[{ "Type": "Neg", "Operands": ["ebx"] }]
+F7D9;[{ "Type": "Neg", "Operands": ["ecx"] }]
+F7DA;[{ "Type": "Neg", "Operands": ["edx"] }]
+F7DC;[{ "Type": "Neg", "Operands": ["esp"] }]
+F7DD;[{ "Type": "Neg", "Operands": ["ebp"] }]
+F7DE;[{ "Type": "Neg", "Operands": ["esi"] }]
+F7DF;[{ "Type": "Neg", "Operands": ["edi"] }]
+
+# NEG with memory operands
+F61C25;[{ "Type": "Neg", "Operands": ["byte ptr [eax]"] }]
+F71C25;[{ "Type": "Neg", "Operands": ["dword ptr [eax]"] }]
+F71C2510000000;[{ "Type": "Neg", "Operands": ["dword ptr [eax+0x10]"] }]

@@ -1,0 +1,23 @@
+# RET instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# RET (opcode C3) - Near return to calling procedure
+C3;[{ "Type": "Ret", "Operands": [] }]
+
+# RET imm16 (opcode C2) - Near return to calling procedure and pop imm16 bytes from stack
+C20000;[{ "Type": "Ret", "Operands": ["0x0000"] }]
+C20400;[{ "Type": "Ret", "Operands": ["0x0004"] }]
+C20800;[{ "Type": "Ret", "Operands": ["0x0008"] }]
+C21000;[{ "Type": "Ret", "Operands": ["0x0010"] }]
+C2FFFF;[{ "Type": "Ret", "Operands": ["0xFFFF"] }]
+
+# RETF (opcode CB) - Far return to calling procedure
+CB;[{ "Type": "Retf", "Operands": [] }]
+
+# RETF imm16 (opcode CA) - Far return to calling procedure and pop imm16 bytes from stack
+CA0000;[{ "Type": "Retf", "Operands": ["0x0000"] }]
+CA0400;[{ "Type": "Retf", "Operands": ["0x0004"] }]
+CA0800;[{ "Type": "Retf", "Operands": ["0x0008"] }]
+CA1000;[{ "Type": "Retf", "Operands": ["0x0010"] }]
+CAFFFF;[{ "Type": "Retf", "Operands": ["0xFFFF"] }]

@@ -1,0 +1,32 @@
+# SAR instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# SAR r/m8, 1 (opcode D0 /7)
+D0F8;[{ "Type": "Sar", "Operands": ["al", "0x01"] }]
+D0FB;[{ "Type": "Sar", "Operands": ["bl", "0x01"] }]
+
+# SAR r/m32, 1 (opcode D1 /7)
+D1F8;[{ "Type": "Sar", "Operands": ["eax", "0x01"] }]
+D1FB;[{ "Type": "Sar", "Operands": ["ebx", "0x01"] }]
+
+# SAR r/m8, CL (opcode D2 /7)
+D2F8;[{ "Type": "Sar", "Operands": ["al", "cl"] }]
+D2FB;[{ "Type": "Sar", "Operands": ["bl", "cl"] }]
+
+# SAR r/m32, CL (opcode D3 /7)
+D3F8;[{ "Type": "Sar", "Operands": ["eax", "cl"] }]
+D3FB;[{ "Type": "Sar", "Operands": ["ebx", "cl"] }]
+
+# SAR r/m8, imm8 (opcode C0 /7)
+C0F805;[{ "Type": "Sar", "Operands": ["al", "0x05"] }]
+C0FB05;[{ "Type": "Sar", "Operands": ["bl", "0x05"] }]
+
+# SAR r/m32, imm8 (opcode C1 /7)
+C1F805;[{ "Type": "Sar", "Operands": ["eax", "0x05"] }]
+C1FB05;[{ "Type": "Sar", "Operands": ["ebx", "0x05"] }]
+
+# SAR with memory operands
+D03C2510;[{ "Type": "Sar", "Operands": ["byte ptr [eax+0x10]", "0x01"] }]
+D33C25;[{ "Type": "Sar", "Operands": ["dword ptr [eax]", "cl"] }]
+C13C2505;[{ "Type": "Sar", "Operands": ["dword ptr [eax]", "0x05"] }]

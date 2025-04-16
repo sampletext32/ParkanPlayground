@@ -1,0 +1,58 @@
+# JMP instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# JMP rel8 (opcode EB)
+EB10;[{ "Type": "Jmp", "Operands": ["0x00000012"] }]
+EBFE;[{ "Type": "Jmp", "Operands": ["0x00000000"] }]
+
+# JMP rel32 (opcode E9)
+E910000000;[{ "Type": "Jmp", "Operands": ["0x00000015"] }]
+E9FEFFFFFF;[{ "Type": "Jmp", "Operands": ["0x00000003"] }]
+
+# JMP r/m32 (opcode FF /4) with register operands
+FFE0;[{ "Type": "Jmp", "Operands": ["eax"] }]
+FFE1;[{ "Type": "Jmp", "Operands": ["ecx"] }]
+FFE2;[{ "Type": "Jmp", "Operands": ["edx"] }]
+FFE3;[{ "Type": "Jmp", "Operands": ["ebx"] }]
+FFE4;[{ "Type": "Jmp", "Operands": ["esp"] }]
+FFE5;[{ "Type": "Jmp", "Operands": ["ebp"] }]
+FFE6;[{ "Type": "Jmp", "Operands": ["esi"] }]
+FFE7;[{ "Type": "Jmp", "Operands": ["edi"] }]
+
+# JMP m32 (opcode FF /4) with memory operands
+FF20;[{ "Type": "Jmp", "Operands": ["dword ptr [eax]"] }]
+FF21;[{ "Type": "Jmp", "Operands": ["dword ptr [ecx]"] }]
+FF22;[{ "Type": "Jmp", "Operands": ["dword ptr [edx]"] }]
+FF23;[{ "Type": "Jmp", "Operands": ["dword ptr [ebx]"] }]
+FF24;[{ "Type": "Jmp", "Operands": ["dword ptr [esp]"] }]
+FF25;[{ "Type": "Jmp", "Operands": ["dword ptr [ebp]"] }]
+FF26;[{ "Type": "Jmp", "Operands": ["dword ptr [esi]"] }]
+FF27;[{ "Type": "Jmp", "Operands": ["dword ptr [edi]"] }]
+
+# JMP m32 (opcode FF /4) with displacement
+FF6010;[{ "Type": "Jmp", "Operands": ["dword ptr [eax+0x10]"] }]
+FF6110;[{ "Type": "Jmp", "Operands": ["dword ptr [ecx+0x10]"] }]
+FF6210;[{ "Type": "Jmp", "Operands": ["dword ptr [edx+0x10]"] }]
+FF6310;[{ "Type": "Jmp", "Operands": ["dword ptr [ebx+0x10]"] }]
+FF6410;[{ "Type": "Jmp", "Operands": ["dword ptr [esp+0x10]"] }]
+FF6510;[{ "Type": "Jmp", "Operands": ["dword ptr [ebp+0x10]"] }]
+FF6610;[{ "Type": "Jmp", "Operands": ["dword ptr [esi+0x10]"] }]
+FF6710;[{ "Type": "Jmp", "Operands": ["dword ptr [edi+0x10]"] }]
+
+# JMP m32 (opcode FF /4) with SIB byte
+FF24C5;[{ "Type": "Jmp", "Operands": ["dword ptr [eax*8+ebp]"] }]
+FF24CD;[{ "Type": "Jmp", "Operands": ["dword ptr [ecx*8+ebp]"] }]
+FF24D5;[{ "Type": "Jmp", "Operands": ["dword ptr [edx*8+ebp]"] }]
+FF24DD;[{ "Type": "Jmp", "Operands": ["dword ptr [ebx*8+ebp]"] }]
+
+# JMP m32 (opcode FF /4) with direct memory operand
+FF2578563412;[{ "Type": "Jmp", "Operands": ["dword ptr [0x12345678]"] }]
+
+# JMP m32 (opcode FF /4) with segment override prefixes
+26FF6510;[{ "Type": "Jmp", "Operands": ["dword ptr es:[ebp+0x10]"] }]
+2EFF6510;[{ "Type": "Jmp", "Operands": ["dword ptr cs:[ebp+0x10]"] }]
+36FF6510;[{ "Type": "Jmp", "Operands": ["dword ptr ss:[ebp+0x10]"] }]
+3EFF6510;[{ "Type": "Jmp", "Operands": ["dword ptr ds:[ebp+0x10]"] }]
+64FF6510;[{ "Type": "Jmp", "Operands": ["dword ptr fs:[ebp+0x10]"] }]
+65FF6510;[{ "Type": "Jmp", "Operands": ["dword ptr gs:[ebp+0x10]"] }]
