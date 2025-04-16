@@ -179,27 +179,27 @@ public class InstructionHandlerFactory
     private void RegisterXorHandlers()
     {
         // 16-bit handlers
-        _handlers.Add(new XorRm16R16Handler(_decoder));
-        _handlers.Add(new XorR16Rm16Handler(_decoder));
-        _handlers.Add(new XorImmWithRm16Handler(_decoder));
-        _handlers.Add(new XorImmWithRm16SignExtendedHandler(_decoder));
+        _handlers.Add(new XorRm16R16Handler(_decoder));              // XOR r/m16, r16 (opcode 31)
+        _handlers.Add(new XorR16Rm16Handler(_decoder));              // XOR r16, r/m16 (opcode 33)
+        _handlers.Add(new XorImmWithRm16Handler(_decoder));          // XOR r/m16, imm16 (opcode 81 /6)
+        _handlers.Add(new XorImmWithRm16SignExtendedHandler(_decoder)); // XOR r/m16, imm8 (opcode 83 /6)
         
         // 32-bit handlers
-        _handlers.Add(new XorMemRegHandler(_decoder));
-        _handlers.Add(new XorRegMemHandler(_decoder));
-        _handlers.Add(new XorImmWithRm32Handler(_decoder));
-        _handlers.Add(new XorImmWithRm32SignExtendedHandler(_decoder));
+        _handlers.Add(new XorMemRegHandler(_decoder));               // XOR r/m32, r32 (opcode 31)
+        _handlers.Add(new XorRegMemHandler(_decoder));               // XOR r32, r/m32 (opcode 33)
+        _handlers.Add(new XorImmWithRm32Handler(_decoder));          // XOR r/m32, imm32 (opcode 81 /6)
+        _handlers.Add(new XorImmWithRm32SignExtendedHandler(_decoder)); // XOR r/m32, imm8 (opcode 83 /6)
 
         // 8-bit handlers
-        _handlers.Add(new XorRm8R8Handler(_decoder));
-        _handlers.Add(new XorR8Rm8Handler(_decoder));
-        _handlers.Add(new XorAlImmHandler(_decoder));
-        _handlers.Add(new XorImmWithRm8Handler(_decoder));
+        _handlers.Add(new XorRm8R8Handler(_decoder));                // XOR r/m8, r8 (opcode 30)
+        _handlers.Add(new XorR8Rm8Handler(_decoder));                // XOR r8, r/m8 (opcode 32)
+        _handlers.Add(new XorAlImmHandler(_decoder));                // XOR AL, imm8 (opcode 34)
+        _handlers.Add(new XorImmWithRm8Handler(_decoder));           // XOR r/m8, imm8 (opcode 80 /6)
 
         // special treatment with xor-ing eax
         // precise handlers go first
-        _handlers.Add(new XorAxImm16Handler(_decoder));
-        _handlers.Add(new XorEaxImmHandler(_decoder));
+        _handlers.Add(new XorAxImm16Handler(_decoder));              // XOR AX, imm16 (opcode 35)
+        _handlers.Add(new XorEaxImmHandler(_decoder));               // XOR EAX, imm32 (opcode 35)
     }
 
     /// <summary>
@@ -397,7 +397,6 @@ public class InstructionHandlerFactory
     {
         // Add AND immediate handlers
         _handlers.Add(new AndImmToRm8Handler(_decoder));              // AND r/m8, imm8 (opcode 80 /4)
-        _handlers.Add(new AndImmWithRm32Handler(_decoder));           // AND r/m32, imm32 (opcode 81 /4)
         _handlers.Add(new AndImmToRm32Handler(_decoder));            // AND r/m32, imm32 (opcode 81 /4)
         _handlers.Add(new AndImmToRm32SignExtendedHandler(_decoder)); // AND r/m32, imm8 (opcode 83 /4)
 
