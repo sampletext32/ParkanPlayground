@@ -23,10 +23,16 @@ RawBytes;Instructions
 8F4710;[{ "Type": "Pop", "Operands": ["dword ptr [edi+0x10]"] }]
 
 # POP r/m32 (opcode 8F /0) with SIB byte
-8F04C5;[{ "Type": "Pop", "Operands": ["dword ptr [eax*8+ebp]"] }]
-8F04CD;[{ "Type": "Pop", "Operands": ["dword ptr [ecx*8+ebp]"] }]
-8F04D5;[{ "Type": "Pop", "Operands": ["dword ptr [edx*8+ebp]"] }]
-8F04DD;[{ "Type": "Pop", "Operands": ["dword ptr [ebx*8+ebp]"] }]
+
+# SPECIAL CASE: The following encodings with EBP as base register have special rules.
+# When the SIB byte has Base=101 (EBP) and Mod=00, the base register is not used.
+# Instead, a 32-bit displacement follows the SIB byte (similar to the Mod=00, R/M=101 special case).
+# These instructions are commented out because they're invalid without the 32-bit displacement.
+# The correct encoding would include a 32-bit displacement after the SIB byte.
+# 8F04C5;[{ "Type": "Pop", "Operands": ["dword ptr [eax*8+ebp]"] }]
+# 8F04CD;[{ "Type": "Pop", "Operands": ["dword ptr [ecx*8+ebp]"] }]
+# 8F04D5;[{ "Type": "Pop", "Operands": ["dword ptr [edx*8+ebp]"] }]
+# 8F04DD;[{ "Type": "Pop", "Operands": ["dword ptr [ebx*8+ebp]"] }]
 
 # POP r/m32 (opcode 8F /0) with direct memory operand
 8F0578563412;[{ "Type": "Pop", "Operands": ["dword ptr [0x12345678]"] }]

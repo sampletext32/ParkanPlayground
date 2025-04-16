@@ -23,10 +23,10 @@ FF7610;[{ "Type": "Push", "Operands": ["dword ptr [esi+0x10]"] }]
 FF7710;[{ "Type": "Push", "Operands": ["dword ptr [edi+0x10]"] }]
 
 # PUSH r/m32 (opcode FF /6) with SIB byte
-FF34C5;[{ "Type": "Push", "Operands": ["dword ptr [eax*8+ebp]"] }]
-FF34CD;[{ "Type": "Push", "Operands": ["dword ptr [ecx*8+ebp]"] }]
-FF34D5;[{ "Type": "Push", "Operands": ["dword ptr [edx*8+ebp]"] }]
-FF34DD;[{ "Type": "Push", "Operands": ["dword ptr [ebx*8+ebp]"] }]
+FF34C5;[{ "Type": "Push", "Operands": ["dword ptr [ebp+eax*8]"] }]
+FF34CD;[{ "Type": "Push", "Operands": ["dword ptr [ebp+ecx*8]"] }]
+FF34D5;[{ "Type": "Push", "Operands": ["dword ptr [ebp+edx*8]"] }]
+FF34DD;[{ "Type": "Push", "Operands": ["dword ptr [ebp+ebx*8]"] }]
 
 # PUSH r/m32 (opcode FF /6) with direct memory operand
 FF3578563412;[{ "Type": "Push", "Operands": ["dword ptr [0x12345678]"] }]

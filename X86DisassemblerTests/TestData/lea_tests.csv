@@ -31,15 +31,21 @@ RawBytes;Instructions
 
 # LEA r32, m (opcode 8D) with SIB byte (no displacement)
 8D0424;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [esp]"] }]
-8D04CD;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ecx*8+ebp]"] }]
-8D04D5;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [edx*8+ebp]"] }]
-8D04DD;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebx*8+ebp]"] }]
+
+# SPECIAL CASE: The following encodings with EBP as base register have special rules.
+# When the SIB byte has Base=101 (EBP) and Mod=00, the base register is not used.
+# Instead, a 32-bit displacement follows the SIB byte (similar to the Mod=00, R/M=101 special case).
+# These instructions are commented out because they're invalid without the 32-bit displacement.
+# The correct encoding would include a 32-bit displacement after the SIB byte.
+# 8D04CD;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ecx*8+ebp]"] }]
+# 8D04D5;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [edx*8+ebp]"] }]
+# 8D04DD;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebx*8+ebp]"] }]
 
 # LEA r32, m (opcode 8D) with SIB byte and displacement
 8D442410;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [esp+0x10]"] }]
-8D44CD10;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ecx*8+ebp+0x10]"] }]
-8D44D510;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [edx*8+ebp+0x10]"] }]
-8D44DD10;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebx*8+ebp+0x10]"] }]
+8D44CD10;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebp+ecx*8+0x10]"] }]
+8D44D510;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebp+edx*8+0x10]"] }]
+8D44DD10;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebp+ebx*8+0x10]"] }]
 
 # LEA r32, m (opcode 8D) with direct memory operand
 8D0578563412;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [0x12345678]"] }]
@@ -48,14 +54,29 @@ RawBytes;Instructions
 8D1578563412;[{ "Type": "Lea", "Operands": ["edx", "dword ptr [0x12345678]"] }]
 
 # LEA with different destination registers
-8DC3;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebx]"] }]
-8DCB;[{ "Type": "Lea", "Operands": ["ecx", "dword ptr [ebx]"] }]
-8DD3;[{ "Type": "Lea", "Operands": ["edx", "dword ptr [ebx]"] }]
-8DDB;[{ "Type": "Lea", "Operands": ["ebx", "dword ptr [ebx]"] }]
-8DE3;[{ "Type": "Lea", "Operands": ["esp", "dword ptr [ebx]"] }]
-8DEB;[{ "Type": "Lea", "Operands": ["ebp", "dword ptr [ebx]"] }]
-8DF3;[{ "Type": "Lea", "Operands": ["esi", "dword ptr [ebx]"] }]
-8DFB;[{ "Type": "Lea", "Operands": ["edi", "dword ptr [ebx]"] }]
+
+# SPECIAL CASE: The following encodings are invalid for LEA instructions.
+# When Mod=11 (bits 7-6 of the ModR/M byte), the R/M field specifies a register, not a memory location.
+# LEA requires a memory operand as its second operand, so these encodings are invalid.
+# The correct encoding for "LEA eax, [ebx]" would be 8D03, not 8DC3.
+# 8DC3;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebx]"] }]
+# 8DCB;[{ "Type": "Lea", "Operands": ["ecx", "dword ptr [ebx]"] }]
+# 8DD3;[{ "Type": "Lea", "Operands": ["edx", "dword ptr [ebx]"] }]
+# 8DDB;[{ "Type": "Lea", "Operands": ["ebx", "dword ptr [ebx]"] }]
+# 8DE3;[{ "Type": "Lea", "Operands": ["esp", "dword ptr [ebx]"] }]
+# 8DEB;[{ "Type": "Lea", "Operands": ["ebp", "dword ptr [ebx]"] }]
+# 8DF3;[{ "Type": "Lea", "Operands": ["esi", "dword ptr [ebx]"] }]
+# 8DFB;[{ "Type": "Lea", "Operands": ["edi", "dword ptr [ebx]"] }]
+
+# Valid LEA instructions with different destination registers (using Mod=00)
+8D03;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebx]"] }]
+8D0B;[{ "Type": "Lea", "Operands": ["ecx", "dword ptr [ebx]"] }]
+8D13;[{ "Type": "Lea", "Operands": ["edx", "dword ptr [ebx]"] }]
+8D1B;[{ "Type": "Lea", "Operands": ["ebx", "dword ptr [ebx]"] }]
+8D23;[{ "Type": "Lea", "Operands": ["esp", "dword ptr [ebx]"] }]
+8D2B;[{ "Type": "Lea", "Operands": ["ebp", "dword ptr [ebx]"] }]
+8D33;[{ "Type": "Lea", "Operands": ["esi", "dword ptr [ebx]"] }]
+8D3B;[{ "Type": "Lea", "Operands": ["edi", "dword ptr [ebx]"] }]
 
 # LEA with complex addressing modes
 8D8C8D78563412;[{ "Type": "Lea", "Operands": ["ecx", "dword ptr [ebp+ecx*4+0x12345678]"] }]

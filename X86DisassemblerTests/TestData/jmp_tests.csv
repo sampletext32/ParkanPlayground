@@ -39,7 +39,15 @@ FF6010;[{ "Type": "Jmp", "Operands": ["dword ptr [eax+0x10]"] }]
 FF6110;[{ "Type": "Jmp", "Operands": ["dword ptr [ecx+0x10]"] }]
 FF6210;[{ "Type": "Jmp", "Operands": ["dword ptr [edx+0x10]"] }]
 FF6310;[{ "Type": "Jmp", "Operands": ["dword ptr [ebx+0x10]"] }]
-FF6410;[{ "Type": "Jmp", "Operands": ["dword ptr [esp+0x10]"] }]
+# SPECIAL CASE: When Mod=01 and R/M=100 (ESP), a SIB byte is required.
+# The SIB byte 10 in FF6410 decodes as:
+# - Scale = 00 (bits 7-6 = 00) - Scale factor of 1
+# - Index = 010 (bits 5-3 = 010) - This corresponds to EDX
+# - Base = 000 (bits 2-0 = 000) - This corresponds to EAX
+# So the correct decoding should be "dword ptr [eax+edx*1+0x10]", not "dword ptr [esp+0x10]"
+# The correct encoding for [esp+0x10] would use a SIB byte with ESP as base and no index (0x24): FF642410
+# FF6410;[{ "Type": "Jmp", "Operands": ["dword ptr [esp+0x10]"] }]
+FF642410;[{ "Type": "Jmp", "Operands": ["dword ptr [esp+0x10]"] }]
 FF6510;[{ "Type": "Jmp", "Operands": ["dword ptr [ebp+0x10]"] }]
 FF6610;[{ "Type": "Jmp", "Operands": ["dword ptr [esi+0x10]"] }]
 FF6710;[{ "Type": "Jmp", "Operands": ["dword ptr [edi+0x10]"] }]
