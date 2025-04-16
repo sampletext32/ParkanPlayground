@@ -25,62 +25,104 @@ BF78563412;[{ "Type": "Mov", "Operands": ["edi", "0x12345678"] }]
 # MOV r/m8, r8 (opcode 88)
 8801;[{ "Type": "Mov", "Operands": ["byte ptr [ecx]", "al"] }]
 8803;[{ "Type": "Mov", "Operands": ["byte ptr [ebx]", "al"] }]
-8805;[{ "Type": "Mov", "Operands": ["byte ptr [ebp]", "al"] }]
+
+# SPECIAL CASE: When Mod=00 and R/M=101 (EBP), this doesn't actually refer to [EBP].
+# Instead, it's a special case that indicates a 32-bit displacement-only addressing mode.
+# The correct encoding for "MOV byte ptr [ebp], al" would be 884500 (with Mod=01 and a zero displacement).
+# 8805;[{ "Type": "Mov", "Operands": ["byte ptr [ebp]", "al"] }]
+# Adding the correct test case:
+884500;[{ "Type": "Mov", "Operands": ["byte ptr [ebp+0x00]", "al"] }]
+
 8807;[{ "Type": "Mov", "Operands": ["byte ptr [edi]", "al"] }]
-8841FF;[{ "Type": "Mov", "Operands": ["byte ptr [ecx-0x1]", "al"] }]
-8843FF;[{ "Type": "Mov", "Operands": ["byte ptr [ebx-0x1]", "al"] }]
-8845FF;[{ "Type": "Mov", "Operands": ["byte ptr [ebp-0x1]", "al"] }]
-8847FF;[{ "Type": "Mov", "Operands": ["byte ptr [edi-0x1]", "al"] }]
+8841FF;[{ "Type": "Mov", "Operands": ["byte ptr [ecx-0x01]", "al"] }]
+8843FF;[{ "Type": "Mov", "Operands": ["byte ptr [ebx-0x01]", "al"] }]
+8845FF;[{ "Type": "Mov", "Operands": ["byte ptr [ebp-0x01]", "al"] }]
+8847FF;[{ "Type": "Mov", "Operands": ["byte ptr [edi-0x01]", "al"] }]
 
 # MOV r/m32, r32 (opcode 89)
 8901;[{ "Type": "Mov", "Operands": ["dword ptr [ecx]", "eax"] }]
 8903;[{ "Type": "Mov", "Operands": ["dword ptr [ebx]", "eax"] }]
-8905;[{ "Type": "Mov", "Operands": ["dword ptr [ebp]", "eax"] }]
+
+# SPECIAL CASE: When Mod=00 and R/M=101 (EBP), this doesn't actually refer to [EBP].
+# Instead, it's a special case that indicates a 32-bit displacement-only addressing mode.
+# The correct encoding for "MOV dword ptr [ebp], eax" would be 894500 (with Mod=01 and a zero displacement).
+# 8905;[{ "Type": "Mov", "Operands": ["dword ptr [ebp]", "eax"] }]
+# Adding the correct test case:
+894500;[{ "Type": "Mov", "Operands": ["dword ptr [ebp+0x00]", "eax"] }]
+
 8907;[{ "Type": "Mov", "Operands": ["dword ptr [edi]", "eax"] }]
-8941FF;[{ "Type": "Mov", "Operands": ["dword ptr [ecx-0x1]", "eax"] }]
-8943FF;[{ "Type": "Mov", "Operands": ["dword ptr [ebx-0x1]", "eax"] }]
-8945FF;[{ "Type": "Mov", "Operands": ["dword ptr [ebp-0x1]", "eax"] }]
-8947FF;[{ "Type": "Mov", "Operands": ["dword ptr [edi-0x1]", "eax"] }]
+8941FF;[{ "Type": "Mov", "Operands": ["dword ptr [ecx-0x01]", "eax"] }]
+8943FF;[{ "Type": "Mov", "Operands": ["dword ptr [ebx-0x01]", "eax"] }]
+8945FF;[{ "Type": "Mov", "Operands": ["dword ptr [ebp-0x01]", "eax"] }]
+8947FF;[{ "Type": "Mov", "Operands": ["dword ptr [edi-0x01]", "eax"] }]
 
 # MOV r8, r/m8 (opcode 8A)
 8A01;[{ "Type": "Mov", "Operands": ["al", "byte ptr [ecx]"] }]
 8A03;[{ "Type": "Mov", "Operands": ["al", "byte ptr [ebx]"] }]
-8A05;[{ "Type": "Mov", "Operands": ["al", "byte ptr [ebp]"] }]
+
+# SPECIAL CASE: When Mod=00 and R/M=101 (EBP), this doesn't actually refer to [EBP].
+# Instead, it's a special case that indicates a 32-bit displacement-only addressing mode.
+# The correct encoding for "MOV al, byte ptr [ebp]" would be 8A4500 (with Mod=01 and a zero displacement).
+# 8A05;[{ "Type": "Mov", "Operands": ["al", "byte ptr [ebp]"] }]
+# Adding the correct test case:
+8A4500;[{ "Type": "Mov", "Operands": ["al", "byte ptr [ebp+0x00]"] }]
+
 8A07;[{ "Type": "Mov", "Operands": ["al", "byte ptr [edi]"] }]
-8A41FF;[{ "Type": "Mov", "Operands": ["al", "byte ptr [ecx-0x1]"] }]
-8A43FF;[{ "Type": "Mov", "Operands": ["al", "byte ptr [ebx-0x1]"] }]
-8A45FF;[{ "Type": "Mov", "Operands": ["al", "byte ptr [ebp-0x1]"] }]
-8A47FF;[{ "Type": "Mov", "Operands": ["al", "byte ptr [edi-0x1]"] }]
+8A41FF;[{ "Type": "Mov", "Operands": ["al", "byte ptr [ecx-0x01]"] }]
+8A43FF;[{ "Type": "Mov", "Operands": ["al", "byte ptr [ebx-0x01]"] }]
+8A45FF;[{ "Type": "Mov", "Operands": ["al", "byte ptr [ebp-0x01]"] }]
+8A47FF;[{ "Type": "Mov", "Operands": ["al", "byte ptr [edi-0x01]"] }]
 
 # MOV r32, r/m32 (opcode 8B)
 8B01;[{ "Type": "Mov", "Operands": ["eax", "dword ptr [ecx]"] }]
 8B03;[{ "Type": "Mov", "Operands": ["eax", "dword ptr [ebx]"] }]
-8B05;[{ "Type": "Mov", "Operands": ["eax", "dword ptr [ebp]"] }]
+
+# SPECIAL CASE: When Mod=00 and R/M=101 (EBP), this doesn't actually refer to [EBP].
+# Instead, it's a special case that indicates a 32-bit displacement-only addressing mode.
+# The correct encoding for "MOV eax, dword ptr [ebp]" would be 8B4500 (with Mod=01 and a zero displacement).
+# 8B05;[{ "Type": "Mov", "Operands": ["eax", "dword ptr [ebp]"] }]
+# Adding the correct test case:
+8B4500;[{ "Type": "Mov", "Operands": ["eax", "dword ptr [ebp+0x00]"] }]
+
 8B07;[{ "Type": "Mov", "Operands": ["eax", "dword ptr [edi]"] }]
-8B41FF;[{ "Type": "Mov", "Operands": ["eax", "dword ptr [ecx-0x1]"] }]
-8B43FF;[{ "Type": "Mov", "Operands": ["eax", "dword ptr [ebx-0x1]"] }]
-8B45FF;[{ "Type": "Mov", "Operands": ["eax", "dword ptr [ebp-0x1]"] }]
-8B47FF;[{ "Type": "Mov", "Operands": ["eax", "dword ptr [edi-0x1]"] }]
+8B41FF;[{ "Type": "Mov", "Operands": ["eax", "dword ptr [ecx-0x01]"] }]
+8B43FF;[{ "Type": "Mov", "Operands": ["eax", "dword ptr [ebx-0x01]"] }]
+8B45FF;[{ "Type": "Mov", "Operands": ["eax", "dword ptr [ebp-0x01]"] }]
+8B47FF;[{ "Type": "Mov", "Operands": ["eax", "dword ptr [edi-0x01]"] }]
 
 # MOV r/m8, imm8 (opcode C6 /0)
 C60142;[{ "Type": "Mov", "Operands": ["byte ptr [ecx]", "0x42"] }]
 C60342;[{ "Type": "Mov", "Operands": ["byte ptr [ebx]", "0x42"] }]
-C60542;[{ "Type": "Mov", "Operands": ["byte ptr [ebp]", "0x42"] }]
+
+# SPECIAL CASE: When Mod=00 and R/M=101 (EBP), this doesn't actually refer to [EBP].
+# Instead, it's a special case that indicates a 32-bit displacement-only addressing mode.
+# The correct encoding for "MOV byte ptr [ebp], 0x42" would be C64500 (with Mod=01 and a zero displacement).
+# C60542;[{ "Type": "Mov", "Operands": ["byte ptr [ebp]", "0x42"] }]
+# Adding the correct test case:
+C6450042;[{ "Type": "Mov", "Operands": ["byte ptr [ebp+0x00]", "0x42"] }]
+
 C60742;[{ "Type": "Mov", "Operands": ["byte ptr [edi]", "0x42"] }]
-C641FF42;[{ "Type": "Mov", "Operands": ["byte ptr [ecx-0x1]", "0x42"] }]
-C643FF42;[{ "Type": "Mov", "Operands": ["byte ptr [ebx-0x1]", "0x42"] }]
-C645FF42;[{ "Type": "Mov", "Operands": ["byte ptr [ebp-0x1]", "0x42"] }]
-C647FF42;[{ "Type": "Mov", "Operands": ["byte ptr [edi-0x1]", "0x42"] }]
+C641FF42;[{ "Type": "Mov", "Operands": ["byte ptr [ecx-0x01]", "0x42"] }]
+C643FF42;[{ "Type": "Mov", "Operands": ["byte ptr [ebx-0x01]", "0x42"] }]
+C645FF42;[{ "Type": "Mov", "Operands": ["byte ptr [ebp-0x01]", "0x42"] }]
+C647FF42;[{ "Type": "Mov", "Operands": ["byte ptr [edi-0x01]", "0x42"] }]
 
 # MOV r/m32, imm32 (opcode C7 /0)
 C70178563412;[{ "Type": "Mov", "Operands": ["dword ptr [ecx]", "0x12345678"] }]
 C70378563412;[{ "Type": "Mov", "Operands": ["dword ptr [ebx]", "0x12345678"] }]
-C70578563412;[{ "Type": "Mov", "Operands": ["dword ptr [ebp]", "0x12345678"] }]
+
+# SPECIAL CASE: When Mod=00 and R/M=101 (EBP), this doesn't actually refer to [EBP].
+# Instead, it's a special case that indicates a 32-bit displacement-only addressing mode.
+# The correct encoding for "MOV dword ptr [ebp], 0x12345678" would be C74500 (with Mod=01 and a zero displacement).
+# C70578563412;[{ "Type": "Mov", "Operands": ["dword ptr [ebp]", "0x12345678"] }]
+# Adding the correct test case:
+C7450078563412;[{ "Type": "Mov", "Operands": ["dword ptr [ebp+0x00]", "0x12345678"] }]
+
 C70778563412;[{ "Type": "Mov", "Operands": ["dword ptr [edi]", "0x12345678"] }]
-C741FF78563412;[{ "Type": "Mov", "Operands": ["dword ptr [ecx-0x1]", "0x12345678"] }]
-C743FF78563412;[{ "Type": "Mov", "Operands": ["dword ptr [ebx-0x1]", "0x12345678"] }]
-C745FF78563412;[{ "Type": "Mov", "Operands": ["dword ptr [ebp-0x1]", "0x12345678"] }]
-C747FF78563412;[{ "Type": "Mov", "Operands": ["dword ptr [edi-0x1]", "0x12345678"] }]
+C741FF78563412;[{ "Type": "Mov", "Operands": ["dword ptr [ecx-0x01]", "0x12345678"] }]
+C743FF78563412;[{ "Type": "Mov", "Operands": ["dword ptr [ebx-0x01]", "0x12345678"] }]
+C745FF78563412;[{ "Type": "Mov", "Operands": ["dword ptr [ebp-0x01]", "0x12345678"] }]
+C747FF78563412;[{ "Type": "Mov", "Operands": ["dword ptr [edi-0x01]", "0x12345678"] }]
 
 # MOV with segment override prefixes
 268B4510;[{ "Type": "Mov", "Operands": ["eax", "dword ptr es:[ebp+0x10]"] }]
