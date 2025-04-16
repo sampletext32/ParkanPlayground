@@ -34,8 +34,24 @@ F7EF;[{ "Type": "IMul", "Operands": ["edi"] }]
 69C978563412;[{ "Type": "IMul", "Operands": ["ecx", "ecx", "0x12345678"] }]
 
 # IMUL with memory operands
-F62C25;[{ "Type": "IMul", "Operands": ["byte ptr [eax]"] }]
-F72C25;[{ "Type": "IMul", "Operands": ["dword ptr [eax]"] }]
-0FAF0425;[{ "Type": "IMul", "Operands": ["eax", "dword ptr [eax]"] }]
-6B042510;[{ "Type": "IMul", "Operands": ["eax", "dword ptr [eax]", "0x10"] }]
-69042578563412;[{ "Type": "IMul", "Operands": ["eax", "dword ptr [eax]", "0x12345678"] }]
+
+# SPECIAL CASE: When using SIB byte with Base=101 (EBP) and Mod=00, it requires a 32-bit displacement
+# The correct encoding for "IMUL byte ptr [eax]" would be F628 (with Mod=00, R/M=0 for EAX)
+# F62C25;[{ "Type": "IMul", "Operands": ["byte ptr [eax]"] }]
+F628;[{ "Type": "IMul", "Operands": ["byte ptr [eax]"] }]
+
+# The correct encoding for "IMUL dword ptr [eax]" would be F728 (with Mod=00, R/M=0 for EAX)
+# F72C25;[{ "Type": "IMul", "Operands": ["dword ptr [eax]"] }]
+F728;[{ "Type": "IMul", "Operands": ["dword ptr [eax]"] }]
+
+# The correct encoding for "IMUL eax, dword ptr [eax]" would be 0FAF00 (with Mod=00, R/M=0 for EAX)
+# 0FAF0425;[{ "Type": "IMul", "Operands": ["eax", "dword ptr [eax]"] }]
+0FAF00;[{ "Type": "IMul", "Operands": ["eax", "dword ptr [eax]"] }]
+
+# The correct encoding for "IMUL eax, dword ptr [eax], 0x10" would be 6B0010 (with Mod=00, R/M=0 for EAX)
+# 6B042510;[{ "Type": "IMul", "Operands": ["eax", "dword ptr [eax]", "0x10"] }]
+6B0010;[{ "Type": "IMul", "Operands": ["eax", "dword ptr [eax]", "0x10"] }]
+
+# The correct encoding for "IMUL eax, dword ptr [eax], 0x12345678" would be 690078563412 (with Mod=00, R/M=0 for EAX)
+# 69042578563412;[{ "Type": "IMul", "Operands": ["eax", "dword ptr [eax]", "0x12345678"] }]
+690078563412;[{ "Type": "IMul", "Operands": ["eax", "dword ptr [eax]", "0x12345678"] }]
