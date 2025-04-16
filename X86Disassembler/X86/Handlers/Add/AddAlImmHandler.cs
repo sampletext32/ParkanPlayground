@@ -48,7 +48,7 @@ public class AddAlImmHandler : InstructionHandler
         byte imm8 = Decoder.ReadByte();
 
         // Create the destination register operand (AL)
-        var destinationOperand = OperandFactory.CreateRegisterOperand(RegisterIndex.A, 8);
+        var destinationOperand = OperandFactory.CreateRegisterOperand8(RegisterIndex8.AL);
 
         // Create the source immediate operand
         var sourceOperand = OperandFactory.CreateImmediateOperand(imm8);

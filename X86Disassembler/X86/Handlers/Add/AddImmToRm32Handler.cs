@@ -65,7 +65,7 @@ public class AddImmToRm32Handler : InstructionHandler
 
         instruction.StructuredOperands = [
             destOperand, 
-            OperandFactory.CreateImmediateOperand(imm, 32)
+            OperandFactory.CreateImmediateOperand(imm)
         ];
 
         return true;

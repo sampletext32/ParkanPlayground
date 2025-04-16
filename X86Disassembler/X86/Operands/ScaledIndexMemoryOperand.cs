@@ -56,8 +56,8 @@ public class ScaledIndexMemoryOperand : MemoryOperand
         
         if (Displacement != 0)
         {
-            string sign = Displacement > 0 ? "+" : "";
-            dispPart = $"{sign}0x{Math.Abs(Displacement):X}";
+            string sign = Displacement > 0 ? "+" : "-";
+            dispPart = $"{sign}0x{Math.Abs(Displacement):X2}";
         }
         
         return $"{GetSizePrefix()}[{baseRegPart}{indexPart}{dispPart}]";

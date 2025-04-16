@@ -46,25 +46,8 @@ public class CmpImmWithRm8Handler : InstructionHandler
         // Set the instruction type
         instruction.Type = InstructionType.Cmp;
 
-        // Read the ModR/M byte
-        var (mod, _, rm, rawOperand) = ModRMDecoder.ReadModRM8();
-        
-        // For the tests to pass, we need to ensure that when the base register is EBP/BP,
-        // we create a DisplacementMemoryOperand instead of a BaseRegisterMemoryOperand
-        Operand destinationOperand;
-        
-        // Check if we have a BaseRegisterMemoryOperand with EBP/BP as the base register
-        if (rawOperand is BaseRegisterMemoryOperand baseMemory && 
-            (baseMemory.BaseRegister == RegisterIndex.Bp))
-        {
-            // Create a DisplacementMemoryOperand with 0 displacement
-            destinationOperand = OperandFactory.CreateDisplacementMemoryOperand8(baseMemory.BaseRegister, 0);
-        }
-        else
-        {
-            // Use the operand as is
-            destinationOperand = rawOperand;
-        }
+        // Read the ModR/M byte, specifying that we're dealing with 8-bit operands
+        var (_, _, _, destinationOperand) = ModRMDecoder.ReadModRM8();
         
         // Note: The operand size is already set to 8-bit by the ReadModRM8 method
 

@@ -7,20 +7,6 @@ using Operands;
 /// </summary>
 public class ModRMDecoder
 {
-    // ModR/M byte masks
-    private const byte MOD_MASK = 0xC0; // 11000000b
-    private const byte REG_MASK = 0x38; // 00111000b
-    private const byte RM_MASK = 0x07; // 00000111b
-
-    // SIB byte masks
-    private const byte SIB_SCALE_MASK = 0xC0; // 11000000b
-    private const byte SIB_INDEX_MASK = 0x38; // 00111000b
-    private const byte SIB_BASE_MASK = 0x07; // 00000111b
-
-    // Register names for different sizes
-    private static readonly string[] RegisterNames16 = {"ax", "cx", "dx", "bx", "sp", "bp", "si", "di"};
-    private static readonly string[] RegisterNames32 = {"eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi"};
-
     // The instruction decoder that owns this ModRM decoder
     private readonly InstructionDecoder _decoder;
 
@@ -96,17 +82,6 @@ public class ModRMDecoder
     public Operand DecodeModRM8(byte mod, RegisterIndex rmIndex)
     {
         return DecodeModRMInternal(mod, rmIndex, 8);
-    }
-    
-    /// <summary>
-    /// Decodes a ModR/M byte to get a 16-bit operand
-    /// </summary>
-    /// <param name="mod">The mod field (2 bits)</param>
-    /// <param name="rmIndex">The r/m field as RegisterIndex</param>
-    /// <returns>The 16-bit operand object</returns>
-    public Operand DecodeModRM16(byte mod, RegisterIndex rmIndex)
-    {
-        return DecodeModRMInternal(mod, rmIndex, 16);
     }
     
     /// <summary>
@@ -249,30 +224,9 @@ public class ModRMDecoder
         byte modRM = _decoder.PeakByte();
 
         // Extract fields from ModR/M byte
-        byte regIndex = (byte)((modRM & REG_MASK) >> 3);  // Middle 3 bits (bits 3-5)
+        byte regIndex = (byte)((modRM & Constants.REG_MASK) >> 3);  // Middle 3 bits (bits 3-5)
 
         return regIndex;
-    }
-
-    /// <summary>
-    /// Reads a ModR/M byte and returns the raw field values
-    /// </summary>
-    /// <returns>A tuple containing the raw mod, reg, and rm fields from the ModR/M byte</returns>
-    public (byte mod, byte reg, byte rm) ReadModRMRaw()
-    {
-        if (!_decoder.CanReadByte())
-        {
-            return (0, 0, 0);
-        }
-
-        byte modRM = _decoder.ReadByte();
-
-        // Extract fields from ModR/M byte
-        byte mod = (byte)((modRM & MOD_MASK) >> 6);  // Top 2 bits (bits 6-7)
-        byte regIndex = (byte)((modRM & REG_MASK) >> 3);  // Middle 3 bits (bits 3-5)
-        byte rmIndex = (byte)(modRM & RM_MASK);  // Bottom 3 bits (bits 0-2)
-
-        return (mod, regIndex, rmIndex);
     }
 
     /// <summary>
@@ -356,9 +310,9 @@ public class ModRMDecoder
         byte modRM = _decoder.ReadByte();
 
         // Extract fields from ModR/M byte
-        byte mod = (byte)((modRM & MOD_MASK) >> 6);
-        byte regIndex = (byte)((modRM & REG_MASK) >> 3);
-        byte rmIndex = (byte)(modRM & RM_MASK);
+        byte mod = (byte)((modRM & Constants.MOD_MASK) >> 6);
+        byte regIndex = (byte)((modRM & Constants.REG_MASK) >> 3);
+        byte rmIndex = (byte)(modRM & Constants.RM_MASK);
         
         // Map the ModR/M register indices to RegisterIndex enum values
         RegisterIndex reg = MapModRMToRegisterIndex(regIndex);
@@ -384,9 +338,9 @@ public class ModRMDecoder
         byte modRM = _decoder.ReadByte();
 
         // Extract fields from ModR/M byte
-        byte mod = (byte)((modRM & MOD_MASK) >> 6);
-        byte regIndex = (byte)((modRM & REG_MASK) >> 3);
-        byte rmIndex = (byte)(modRM & RM_MASK);
+        byte mod = (byte)((modRM & Constants.MOD_MASK) >> 6);
+        byte regIndex = (byte)((modRM & Constants.REG_MASK) >> 3);
+        byte rmIndex = (byte)(modRM & Constants.RM_MASK);
         
         // Map the ModR/M register indices to RegisterIndex8 enum values
         RegisterIndex8 reg = MapModRMToRegisterIndex8(regIndex);
@@ -425,9 +379,9 @@ public class ModRMDecoder
     {
 
         // Extract fields from SIB byte
-        byte scale = (byte)((sib & SIB_SCALE_MASK) >> 6);
-        int indexIndex = (sib & SIB_INDEX_MASK) >> 3;
-        int baseIndex = sib & SIB_BASE_MASK;
+        byte scale = (byte)((sib & Constants.SIB_SCALE_MASK) >> 6);
+        int indexIndex = (sib & Constants.SIB_INDEX_MASK) >> 3;
+        int baseIndex = sib & Constants.SIB_BASE_MASK;
         
         // Map the SIB register indices to RegisterIndex enum values
         RegisterIndex index = MapModRMToRegisterIndex(indexIndex);
@@ -516,9 +470,9 @@ public class ModRMDecoder
     {
         return size switch
         {
-            16 => RegisterNames16[(int)regIndex],
-            32 => RegisterNames32[(int)regIndex],
-            64 => RegisterNames32[(int)regIndex], // For now, reuse 32-bit names for 64-bit
+            16 => Constants.RegisterNames16[(int)regIndex],
+            32 => Constants.RegisterNames32[(int)regIndex],
+            64 => Constants.RegisterNames32[(int)regIndex], // For now, reuse 32-bit names for 64-bit
             _ => "unknown"
         };
     }
@@ -531,27 +485,5 @@ public class ModRMDecoder
     public static string GetRegisterName(RegisterIndex8 regIndex8)
     {
         return regIndex8.ToString().ToLower();
-    }
-    
-    /// <summary>
-    /// Maps a RegisterIndex8 enum value to the corresponding RegisterIndex enum value for base registers
-    /// </summary>
-    /// <param name="regIndex8">The RegisterIndex8 enum value</param>
-    /// <returns>The corresponding RegisterIndex enum value</returns>
-    private RegisterIndex MapRegister8ToBaseRegister(RegisterIndex8 regIndex8)
-    {
-        // Map 8-bit register indices to their corresponding 32-bit register indices
-        return regIndex8 switch
-        {
-            RegisterIndex8.AL => RegisterIndex.A,
-            RegisterIndex8.CL => RegisterIndex.C,
-            RegisterIndex8.DL => RegisterIndex.D,
-            RegisterIndex8.BL => RegisterIndex.B,
-            RegisterIndex8.AH => RegisterIndex.A,
-            RegisterIndex8.CH => RegisterIndex.C,
-            RegisterIndex8.DH => RegisterIndex.D,
-            RegisterIndex8.BH => RegisterIndex.B,
-            _ => RegisterIndex.A // Default to EAX
-        };
     }
 }

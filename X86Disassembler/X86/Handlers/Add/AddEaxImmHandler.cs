@@ -46,8 +46,8 @@ public class AddEaxImmHandler : InstructionHandler
 
         instruction.StructuredOperands =
         [
-            OperandFactory.CreateRegisterOperand(RegisterIndex.A, 32),
-            OperandFactory.CreateImmediateOperand(imm32, 32)
+            OperandFactory.CreateRegisterOperand(RegisterIndex.A),
+            OperandFactory.CreateImmediateOperand(imm32)
         ];
 
         return true;

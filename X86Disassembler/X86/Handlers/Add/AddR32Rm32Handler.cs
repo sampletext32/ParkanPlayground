@@ -50,7 +50,7 @@ public class AddR32Rm32Handler : InstructionHandler
         var (_, reg, _, sourceOperand) = ModRMDecoder.ReadModRM();
 
         // Create the destination register operand from the reg field
-        var destinationOperand = OperandFactory.CreateRegisterOperand(reg, 32);
+        var destinationOperand = OperandFactory.CreateRegisterOperand(reg);
 
         // Set the structured operands
         instruction.StructuredOperands =

@@ -33,10 +33,12 @@ FF17;[{ "Type": "Call", "Operands": ["dword ptr [edi]"] }]
 FF1400;[{ "Type": "Call", "Operands": ["dword ptr [eax+eax*1]"] }]
 FF14C0;[{ "Type": "Call", "Operands": ["dword ptr [eax+eax*8]"] }]
 FF1444;[{ "Type": "Call", "Operands": ["dword ptr [esp+eax*2]"] }]
-FF1485;[{ "Type": "Call", "Operands": ["dword ptr [ebp+eax*4]"] }]
+# not recognized neither by ghidra nor online disasms
+# FF1485;[{ "Type": "Call", "Operands": ["dword ptr [ebp+eax*4]"] }]
 FF1498;[{ "Type": "Call", "Operands": ["dword ptr [eax+ebx*4]"] }]
 FF14D9;[{ "Type": "Call", "Operands": ["dword ptr [ecx+ebx*8]"] }]
-FF149D;[{ "Type": "Call", "Operands": ["dword ptr [ebp+ebx*4]"] }]
+# not recognized neither by ghidra nor online disasms
+# FF149D;[{ "Type": "Call", "Operands": ["dword ptr [ebp+ebx*4]"] }]
 
 # CALL m32 (opcode FF /2) with displacement
 FF5000;[{ "Type": "Call", "Operands": ["dword ptr [eax+0x0]"] }]

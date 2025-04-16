@@ -38,7 +38,7 @@ public class AndAlImmHandler : InstructionHandler
         instruction.Type = InstructionType.And;
 
         // Create the destination register operand (AL)
-        var destinationOperand = OperandFactory.CreateRegisterOperand(RegisterIndex.A, 8);
+        var destinationOperand = OperandFactory.CreateRegisterOperand8(RegisterIndex8.AL);
 
         // Read immediate value
         if (!Decoder.CanReadByte())

@@ -73,9 +73,9 @@ public class InstructionDecoderTests
         
         // Check the second operand (AL)
         var alOperand = instruction.StructuredOperands[1];
-        Assert.IsType<RegisterOperand>(alOperand);
-        var alRegisterOperand = (RegisterOperand)alOperand;
-        Assert.Equal(RegisterIndex.A, alRegisterOperand.Register);
+        Assert.IsType<Register8Operand>(alOperand);
+        var alRegisterOperand = (Register8Operand)alOperand;
+        Assert.Equal(RegisterIndex8.AL, alRegisterOperand.Register);
         Assert.Equal(8, alRegisterOperand.Size); // Validate that it's an 8-bit register (AL)
     }
     
