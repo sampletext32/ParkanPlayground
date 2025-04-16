@@ -43,10 +43,10 @@ public class OrRm8R8HandlerTests
         
         // Check the second operand (AL)
         var alOperand = instruction.StructuredOperands[1];
-        Assert.IsType<RegisterOperand>(alOperand);
-        var registerOperand = (RegisterOperand)alOperand;
-        Assert.Equal(RegisterIndex.A, registerOperand.Register);
-        Assert.Equal(8, registerOperand.Size); // Validate that it's an 8-bit register (AL)
+        Assert.IsType<Register8Operand>(alOperand);
+        var register8Operand = (Register8Operand)alOperand;
+        Assert.Equal(RegisterIndex8.AL, register8Operand.Register);
+        Assert.Equal(8, register8Operand.Size); // Validate that it's an 8-bit register (AL)
     }
     
     /// <summary>

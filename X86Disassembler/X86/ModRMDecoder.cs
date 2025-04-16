@@ -403,7 +403,9 @@ public class ModRMDecoder
         else // Memory operand
         {
             // For memory operands, we need to map the RegisterIndex8 to RegisterIndex for base registers
-            RegisterIndex rmRegIndex = MapRegister8ToBaseRegister(rm);
+            // The rmIndex is the raw value from the ModR/M byte, not the mapped RegisterIndex8
+            // This is important because we need to check if it's 4 (ESP) for SIB byte
+            RegisterIndex rmRegIndex = MapModRMToRegisterIndex(rmIndex);
             
             // Use the DecodeModRM8 method to get an 8-bit memory operand
             operand = DecodeModRM8(mod, rmRegIndex);
