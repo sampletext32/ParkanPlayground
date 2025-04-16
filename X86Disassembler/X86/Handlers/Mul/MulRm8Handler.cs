@@ -54,14 +54,7 @@ public class MulRm8Handler : InstructionHandler
         // Read the ModR/M byte
         // For MUL r/m8 (0xF6 /4):
         // - The r/m field with mod specifies the operand (register or memory)
-        var (_, reg, _, operand) = ModRMDecoder.ReadModRM8();
-        
-        // Verify this is a MUL instruction
-        // The reg field should be 4 (MUL), which maps to RegisterIndex8.AH in our enum
-        if (reg != RegisterIndex8.AH)
-        {
-            return false;
-        }
+        var (_, _, _, operand) = ModRMDecoder.ReadModRM8();
 
         // Set the structured operands
         // MUL has only one operand

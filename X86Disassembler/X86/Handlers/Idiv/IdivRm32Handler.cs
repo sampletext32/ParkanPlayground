@@ -1,17 +1,17 @@
 using X86Disassembler.X86.Operands;
 
-namespace X86Disassembler.X86.Handlers.ArithmeticUnary;
+namespace X86Disassembler.X86.Handlers.Idiv;
 
 /// <summary>
-/// Handler for NEG r/m32 instruction (0xF7 /3)
+/// Handler for IDIV r/m32 instruction (0xF7 /7)
 /// </summary>
-public class NegRm32Handler : InstructionHandler
+public class IdivRm32Handler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the NegRm32Handler class
+    /// Initializes a new instance of the IdivRm32Handler class
     /// </summary>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    public NegRm32Handler(InstructionDecoder decoder)
+    public IdivRm32Handler(InstructionDecoder decoder)
         : base(decoder)
     {
     }
@@ -26,17 +26,17 @@ public class NegRm32Handler : InstructionHandler
         if (opcode != 0xF7)
             return false;
 
-        // Check if the reg field of the ModR/M byte is 3 (NEG)
+        // Check if the reg field of the ModR/M byte is 7 (IDIV)
         if (!Decoder.CanReadByte())
             return false;
 
         var reg = ModRMDecoder.PeakModRMReg();
 
-        return reg == 3; // 3 = NEG
+        return reg == 7; // 7 = IDIV
     }
 
     /// <summary>
-    /// Decodes a NEG r/m32 instruction
+    /// Decodes an IDIV r/m32 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -44,7 +44,7 @@ public class NegRm32Handler : InstructionHandler
     public override bool Decode(byte opcode, Instruction instruction)
     {
         // Set the instruction type
-        instruction.Type = InstructionType.Neg;
+        instruction.Type = InstructionType.IDiv;
 
         if (!Decoder.CanReadByte())
         {
@@ -52,19 +52,12 @@ public class NegRm32Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        // For NEG r/m32 (0xF7 /3):
+        // For IDIV r/m32 (0xF7 /7):
         // - The r/m field with mod specifies the operand (register or memory)
-        var (_, reg, _, operand) = ModRMDecoder.ReadModRM();
-        
-        // Verify this is a NEG instruction
-        // The reg field should be 3 (NEG), which maps to RegisterIndex.B in our enum
-        if (reg != RegisterIndex.B)
-        {
-            return false;
-        }
+        var (_, _, _, operand) = ModRMDecoder.ReadModRM();
 
         // Set the structured operands
-        // NEG has only one operand
+        // IDIV has only one operand
         instruction.StructuredOperands = 
         [
             operand

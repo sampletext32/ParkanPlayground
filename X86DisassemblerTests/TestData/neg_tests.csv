@@ -30,4 +30,4 @@ F618;[{ "Type": "Neg", "Operands": ["byte ptr [eax]"] }]
 F718;[{ "Type": "Neg", "Operands": ["dword ptr [eax]"] }]
 
 # This test case is correct, as it includes the required displacement
-F71C2510000000;[{ "Type": "Neg", "Operands": ["dword ptr [eax+0x10]"] }]
+F71C2510000000;[{ "Type": "Neg", "Operands": ["dword ptr [0x10]"] }]

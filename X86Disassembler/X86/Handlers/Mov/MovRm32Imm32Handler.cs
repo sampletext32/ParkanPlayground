@@ -23,7 +23,22 @@ public class MovRm32Imm32Handler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        return opcode == 0xC7;
+        if (opcode != 0xC7)
+        {
+            return false;
+        }
+
+        // Then check if we can peek at the ModR/M byte
+        if (!Decoder.CanReadByte())
+        {
+            return false;
+        }
+        
+        // Peek at the ModR/M byte without advancing the position
+        var reg = ModRMDecoder.PeakModRMReg();
+        
+        // MOV r/m8, imm8 only uses reg=0
+        return reg == 0;
     }
 
     /// <summary>
@@ -38,13 +53,7 @@ public class MovRm32Imm32Handler : InstructionHandler
         instruction.Type = InstructionType.Mov;
         
         // Read the ModR/M byte
-        var (_, reg, _, destinationOperand) = ModRMDecoder.ReadModRM();
-        
-        // MOV r/m32, imm32 only uses reg=0
-        if (reg != 0)
-        {
-            return false;
-        }
+        var (_, _, _, destinationOperand) = ModRMDecoder.ReadModRM();
         
         // Check if we have enough bytes for the immediate value (4 bytes)
         if (!Decoder.CanReadUInt())
@@ -56,7 +65,7 @@ public class MovRm32Imm32Handler : InstructionHandler
         uint imm32 = Decoder.ReadUInt32();
         
         // Create the immediate operand
-        var sourceOperand = OperandFactory.CreateImmediateOperand(imm32, 32);
+        var sourceOperand = OperandFactory.CreateImmediateOperand(imm32);
         
         // Set the structured operands
         instruction.StructuredOperands = 

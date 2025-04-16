@@ -69,6 +69,7 @@ public class SIBDecoder
         {
             if (_decoder.CanReadUInt())
             {
+                // For other instructions, read the 32-bit displacement
                 uint disp32 = _decoder.ReadUInt32();
                 int scaleValue = 1 << scale; // 1, 2, 4, or 8
                 
@@ -83,7 +84,7 @@ public class SIBDecoder
                 return OperandFactory.CreateScaledIndexMemoryOperand(
                     index,
                     scaleValue,
-                    null,
+                    null,   // No base register
                     (int)disp32,
                     operandSize);
             }

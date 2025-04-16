@@ -1,17 +1,17 @@
 using X86Disassembler.X86.Operands;
 
-namespace X86Disassembler.X86.Handlers.Mov;
+namespace X86Disassembler.X86.Handlers.Imul;
 
 /// <summary>
-/// Handler for MOV r8, imm8 instruction (0xB0-0xB7)
+/// Handler for IMUL r/m32 instruction (0xF7 /5)
 /// </summary>
-public class MovRegImm8Handler : InstructionHandler
+public class ImulRm32Handler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the MovRegImm8Handler class
+    /// Initializes a new instance of the ImulRm32Handler class
     /// </summary>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    public MovRegImm8Handler(InstructionDecoder decoder)
+    public ImulRm32Handler(InstructionDecoder decoder)
         : base(decoder)
     {
     }
@@ -23,11 +23,20 @@ public class MovRegImm8Handler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        return opcode >= 0xB0 && opcode <= 0xB7;
+        if (opcode != 0xF7)
+            return false;
+
+        // Check if the reg field of the ModR/M byte is 5 (IMUL)
+        if (!Decoder.CanReadByte())
+            return false;
+
+        var reg = ModRMDecoder.PeakModRMReg();
+
+        return reg == 5; // 5 = IMUL
     }
 
     /// <summary>
-    /// Decodes a MOV r8, imm8 instruction
+    /// Decodes an IMUL r/m32 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -35,30 +44,23 @@ public class MovRegImm8Handler : InstructionHandler
     public override bool Decode(byte opcode, Instruction instruction)
     {
         // Set the instruction type
-        instruction.Type = InstructionType.Mov;
+        instruction.Type = InstructionType.IMul;
 
-        // Register is encoded in the low 3 bits of the opcode
-        RegisterIndex8 reg = (RegisterIndex8)(opcode & 0x07);
-
-        // Read the immediate value
         if (!Decoder.CanReadByte())
         {
             return false;
         }
 
-        byte imm8 = Decoder.ReadByte();
-
-        // Create the destination register operand
-        var destinationOperand = OperandFactory.CreateRegisterOperand8(reg);
-        
-        // Create the source immediate operand
-        var sourceOperand = OperandFactory.CreateImmediateOperand(imm8, 8);
+        // Read the ModR/M byte
+        // For IMUL r/m32 (0xF7 /5):
+        // - The r/m field with mod specifies the operand (register or memory)
+        var (_, _, _, operand) = ModRMDecoder.ReadModRM();
         
         // Set the structured operands
+        // IMUL has only one operand
         instruction.StructuredOperands = 
         [
-            destinationOperand,
-            sourceOperand
+            operand
         ];
 
         return true;

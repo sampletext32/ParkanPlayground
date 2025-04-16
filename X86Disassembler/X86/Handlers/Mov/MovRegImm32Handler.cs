@@ -49,10 +49,10 @@ public class MovRegImm32Handler : InstructionHandler
         uint imm32 = Decoder.ReadUInt32();
 
         // Create the destination register operand
-        var destinationOperand = OperandFactory.CreateRegisterOperand(reg, 32);
+        var destinationOperand = OperandFactory.CreateRegisterOperand(reg);
         
         // Create the source immediate operand
-        var sourceOperand = OperandFactory.CreateImmediateOperand(imm32, 32);
+        var sourceOperand = OperandFactory.CreateImmediateOperand(imm32);
         
         // Set the structured operands
         instruction.StructuredOperands = 

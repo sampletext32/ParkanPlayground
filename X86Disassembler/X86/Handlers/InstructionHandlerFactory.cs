@@ -1,11 +1,13 @@
 using X86Disassembler.X86.Handlers.Adc;
 using X86Disassembler.X86.Handlers.Add;
 using X86Disassembler.X86.Handlers.And;
-using X86Disassembler.X86.Handlers.ArithmeticUnary;
 using X86Disassembler.X86.Handlers.Call;
 using X86Disassembler.X86.Handlers.Cmp;
 using X86Disassembler.X86.Handlers.Dec;
+using X86Disassembler.X86.Handlers.Div;
 using X86Disassembler.X86.Handlers.FloatingPoint;
+using X86Disassembler.X86.Handlers.Idiv;
+using X86Disassembler.X86.Handlers.Imul;
 using X86Disassembler.X86.Handlers.Inc;
 using X86Disassembler.X86.Handlers.Jump;
 using X86Disassembler.X86.Handlers.Lea;
@@ -13,6 +15,7 @@ using X86Disassembler.X86.Handlers.Mov;
 using X86Disassembler.X86.Handlers.Mul;
 using X86Disassembler.X86.Handlers.Neg;
 using X86Disassembler.X86.Handlers.Nop;
+using X86Disassembler.X86.Handlers.Not;
 using X86Disassembler.X86.Handlers.Or;
 using X86Disassembler.X86.Handlers.Pop;
 using X86Disassembler.X86.Handlers.Push;
@@ -63,9 +66,13 @@ public class InstructionHandlerFactory
         RegisterArithmeticImmediateHandlers(); // Group 1 instructions (including 0x83)
         RegisterAddHandlers();
         RegisterAndHandlers();
-        RegisterArithmeticUnaryHandlers();
+        RegisterArithmeticUnaryHandlers(); // Empty, kept for consistency
         RegisterNegHandlers(); // Register NEG handlers
         RegisterMulHandlers(); // Register MUL handlers
+        RegisterNotHandlers(); // Register NOT handlers
+        RegisterImulHandlers(); // Register IMUL handlers
+        RegisterDivHandlers(); // Register DIV handlers
+        RegisterIdivHandlers(); // Register IDIV handlers
         RegisterCmpHandlers();
         RegisterXorHandlers();
         RegisterOrHandlers();
@@ -91,17 +98,7 @@ public class InstructionHandlerFactory
     /// </summary>
     private void RegisterArithmeticUnaryHandlers()
     {
-        // NOT handler
-        _handlers.Add(new NotRm32Handler(_decoder));
-
-        // IMUL handler
-        _handlers.Add(new ImulRm32Handler(_decoder));
-
-        // DIV handler
-        _handlers.Add(new DivRm32Handler(_decoder));
-
-        // IDIV handler
-        _handlers.Add(new IdivRm32Handler(_decoder));
+        // This method is kept for consistency, but all handlers have been moved to their own namespaces
     }
 
     /// <summary>
@@ -460,6 +457,54 @@ public class InstructionHandlerFactory
 
         // MUL r/m32 handler (F7 /4)
         _handlers.Add(new MulRm32Handler(_decoder));
+    }
+
+    /// <summary>
+    /// Registers all NOT instruction handlers
+    /// </summary>
+    private void RegisterNotHandlers()
+    {
+        // NOT r/m8 handler (F6 /2)
+        _handlers.Add(new NotRm8Handler(_decoder));
+
+        // NOT r/m32 handler (F7 /2)
+        _handlers.Add(new NotRm32Handler(_decoder));
+    }
+
+    /// <summary>
+    /// Registers all IMUL instruction handlers
+    /// </summary>
+    private void RegisterImulHandlers()
+    {
+        // IMUL r/m8 handler (F6 /5)
+        _handlers.Add(new ImulRm8Handler(_decoder));
+
+        // IMUL r/m32 handler (F7 /5)
+        _handlers.Add(new ImulRm32Handler(_decoder));
+    }
+
+    /// <summary>
+    /// Registers all DIV instruction handlers
+    /// </summary>
+    private void RegisterDivHandlers()
+    {
+        // DIV r/m8 handler (F6 /6)
+        _handlers.Add(new DivRm8Handler(_decoder));
+
+        // DIV r/m32 handler (F7 /6)
+        _handlers.Add(new DivRm32Handler(_decoder));
+    }
+
+    /// <summary>
+    /// Registers all IDIV instruction handlers
+    /// </summary>
+    private void RegisterIdivHandlers()
+    {
+        // IDIV r/m8 handler (F6 /7)
+        _handlers.Add(new IdivRm8Handler(_decoder));
+
+        // IDIV r/m32 handler (F7 /7)
+        _handlers.Add(new IdivRm32Handler(_decoder));
     }
 
     /// <summary>

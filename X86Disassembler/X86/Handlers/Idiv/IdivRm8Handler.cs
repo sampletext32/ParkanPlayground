@@ -1,17 +1,17 @@
 using X86Disassembler.X86.Operands;
 
-namespace X86Disassembler.X86.Handlers.ArithmeticUnary;
+namespace X86Disassembler.X86.Handlers.Idiv;
 
 /// <summary>
-/// Handler for NEG r/m8 instruction (0xF6 /3)
+/// Handler for IDIV r/m8 instruction (0xF6 /7)
 /// </summary>
-public class NegRm8Handler : InstructionHandler
+public class IdivRm8Handler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the NegRm8Handler class
+    /// Initializes a new instance of the IdivRm8Handler class
     /// </summary>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    public NegRm8Handler(InstructionDecoder decoder)
+    public IdivRm8Handler(InstructionDecoder decoder)
         : base(decoder)
     {
     }
@@ -26,17 +26,17 @@ public class NegRm8Handler : InstructionHandler
         if (opcode != 0xF6)
             return false;
 
-        // Check if the reg field of the ModR/M byte is 3 (NEG)
+        // Check if the reg field of the ModR/M byte is 7 (IDIV)
         if (!Decoder.CanReadByte())
             return false;
 
         var reg = ModRMDecoder.PeakModRMReg();
 
-        return reg == 3; // 3 = NEG
+        return reg == 7; // 7 = IDIV
     }
 
     /// <summary>
-    /// Decodes a NEG r/m8 instruction
+    /// Decodes an IDIV r/m8 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -44,7 +44,7 @@ public class NegRm8Handler : InstructionHandler
     public override bool Decode(byte opcode, Instruction instruction)
     {
         // Set the instruction type
-        instruction.Type = InstructionType.Neg;
+        instruction.Type = InstructionType.IDiv;
 
         if (!Decoder.CanReadByte())
         {
@@ -52,12 +52,12 @@ public class NegRm8Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        // For NEG r/m8 (0xF6 /3):
+        // For IDIV r/m8 (0xF6 /7):
         // - The r/m field with mod specifies the operand (register or memory)
-        var (_, reg, _, operand) = ModRMDecoder.ReadModRM8();
+        var (_, _, _, operand) = ModRMDecoder.ReadModRM8();
 
         // Set the structured operands
-        // NEG has only one operand
+        // IDIV has only one operand
         instruction.StructuredOperands = 
         [
             operand

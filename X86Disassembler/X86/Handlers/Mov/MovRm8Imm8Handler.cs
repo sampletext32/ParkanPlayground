@@ -23,7 +23,23 @@ public class MovRm8Imm8Handler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        return opcode == 0xC6;
+        // First check if the opcode matches
+        if (opcode != 0xC6)
+        {
+            return false;
+        }
+        
+        // Then check if we can peek at the ModR/M byte
+        if (!Decoder.CanReadByte())
+        {
+            return false;
+        }
+        
+        // Peek at the ModR/M byte without advancing the position
+        var reg = ModRMDecoder.PeakModRMReg();
+        
+        // MOV r/m8, imm8 only uses reg=0
+        return reg == 0;
     }
 
     /// <summary>
@@ -47,14 +63,8 @@ public class MovRm8Imm8Handler : InstructionHandler
         // For MOV r/m8, imm8 (0xC6):
         // - The r/m field with mod specifies the destination operand (register or memory)
         // - The immediate value is the source operand
-        var (_, reg, _, destinationOperand) = ModRMDecoder.ReadModRM8();
-        
-        // MOV r/m8, imm8 only uses reg=0
-        if (reg != 0)
-        {
-            return false;
-        }
-        
+        var (_, _, _, destinationOperand) = ModRMDecoder.ReadModRM8();
+
         // Note: The operand size is already set to 8-bit by the ReadModRM8 method
         
         // Read the immediate value

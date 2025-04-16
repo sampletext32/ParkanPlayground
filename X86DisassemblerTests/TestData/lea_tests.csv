@@ -13,7 +13,7 @@ RawBytes;Instructions
 # The correct encoding for "LEA eax, [ebp]" would be 8D4500 (with Mod=01 and a zero displacement).
 # 8D05;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebp]"] }]
 # Adding the correct test case:
-8D4500;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebp+0x0]"] }]
+8D4500;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebp+0x00]"] }]
 
 8D06;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [esi]"] }]
 8D07;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [edi]"] }]

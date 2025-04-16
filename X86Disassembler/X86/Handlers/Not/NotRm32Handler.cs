@@ -1,17 +1,17 @@
 using X86Disassembler.X86.Operands;
 
-namespace X86Disassembler.X86.Handlers.ArithmeticUnary;
+namespace X86Disassembler.X86.Handlers.Not;
 
 /// <summary>
-/// Handler for IMUL r/m32 instruction (0xF7 /5)
+/// Handler for NOT r/m32 instruction (0xF7 /2)
 /// </summary>
-public class ImulRm32Handler : InstructionHandler
+public class NotRm32Handler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the ImulRm32Handler class
+    /// Initializes a new instance of the NotRm32Handler class
     /// </summary>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    public ImulRm32Handler(InstructionDecoder decoder)
+    public NotRm32Handler(InstructionDecoder decoder)
         : base(decoder)
     {
     }
@@ -23,20 +23,21 @@ public class ImulRm32Handler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
+        // This handler only handles opcode 0xF7
         if (opcode != 0xF7)
             return false;
 
-        // Check if the reg field of the ModR/M byte is 5 (IMUL)
+        // Check if the reg field of the ModR/M byte is 2 (NOT)
         if (!Decoder.CanReadByte())
             return false;
 
         var reg = ModRMDecoder.PeakModRMReg();
 
-        return reg == 5; // 5 = IMUL
+        return reg == 2; // 2 = NOT
     }
 
     /// <summary>
-    /// Decodes an IMUL r/m32 instruction
+    /// Decodes a NOT r/m32 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -44,7 +45,7 @@ public class ImulRm32Handler : InstructionHandler
     public override bool Decode(byte opcode, Instruction instruction)
     {
         // Set the instruction type
-        instruction.Type = InstructionType.IMul;
+        instruction.Type = InstructionType.Not;
 
         if (!Decoder.CanReadByte())
         {
@@ -52,19 +53,12 @@ public class ImulRm32Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        // For IMUL r/m32 (0xF7 /5):
+        // For NOT r/m32 (0xF7 /2):
         // - The r/m field with mod specifies the operand (register or memory)
         var (_, reg, _, operand) = ModRMDecoder.ReadModRM();
-        
-        // Verify this is an IMUL instruction
-        // The reg field should be 5 (IMUL), which maps to RegisterIndex.Bp in our enum
-        if (reg != RegisterIndex.Bp)
-        {
-            return false;
-        }
-        
+
         // Set the structured operands
-        // IMUL has only one operand
+        // NOT has only one operand
         instruction.StructuredOperands = 
         [
             operand

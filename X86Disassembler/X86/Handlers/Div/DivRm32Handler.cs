@@ -1,6 +1,6 @@
 using X86Disassembler.X86.Operands;
 
-namespace X86Disassembler.X86.Handlers.ArithmeticUnary;
+namespace X86Disassembler.X86.Handlers.Div;
 
 /// <summary>
 /// Handler for DIV r/m32 instruction (0xF7 /6)
