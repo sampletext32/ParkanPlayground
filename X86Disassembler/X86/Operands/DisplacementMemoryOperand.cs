@@ -36,7 +36,7 @@ public class DisplacementMemoryOperand : MemoryOperand
     public override string ToString()
     {
         string sign = Displacement >= 0 ? "+" : "-";
-        var registerName = ModRMDecoder.GetRegisterName(BaseRegister, 32);
+        var registerName = RegisterMapper.GetRegisterName(BaseRegister, 32);
 
         string formattedDisplacement = $"0x{Displacement:X2}";
         

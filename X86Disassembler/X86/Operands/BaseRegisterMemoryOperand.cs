@@ -28,7 +28,7 @@ public class BaseRegisterMemoryOperand : MemoryOperand
     /// </summary>
     public override string ToString()
     {
-        var registerName = ModRMDecoder.GetRegisterName(BaseRegister, 32);
+        var registerName = RegisterMapper.GetRegisterName(BaseRegister, 32);
         return $"{GetSizePrefix()}[{registerName}]";
     }
 }

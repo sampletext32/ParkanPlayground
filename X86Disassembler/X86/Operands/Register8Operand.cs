@@ -26,6 +26,6 @@ public class Register8Operand : Operand
     /// </summary>
     public override string ToString()
     {
-        return ModRMDecoder.GetRegisterName(Register);
+        return RegisterMapper.GetRegisterName(Register);
     }
 }

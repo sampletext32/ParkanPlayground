@@ -22,8 +22,6 @@ public class ModRMDecoder
         _decoder = decoder;
         _sibDecoder = new SIBDecoder(decoder);
     }
-    
-    // These methods have been moved to the RegisterMapper class
 
     /// <summary>
     /// Decodes a ModR/M byte to get the operand
@@ -32,22 +30,16 @@ public class ModRMDecoder
     /// <param name="rmIndex">The r/m field as RegisterIndex</param>
     /// <param name="is64Bit">True if the operand is 64-bit</param>
     /// <returns>The operand object</returns>
-    public Operand DecodeModRM(byte mod, RegisterIndex rmIndex, bool is64Bit)
-    {
-        return DecodeModRMInternal(mod, rmIndex, is64Bit ? 64 : 32);
-    }
-    
+    public Operand DecodeModRM(byte mod, RegisterIndex rmIndex, bool is64Bit) => DecodeModRMInternal(mod, rmIndex, is64Bit ? 64 : 32);
+
     /// <summary>
     /// Decodes a ModR/M byte to get an 8-bit operand
     /// </summary>
     /// <param name="mod">The mod field (2 bits)</param>
     /// <param name="rmIndex">The r/m field as RegisterIndex</param>
     /// <returns>The 8-bit operand object</returns>
-    public Operand DecodeModRM8(byte mod, RegisterIndex rmIndex)
-    {
-        return DecodeModRMInternal(mod, rmIndex, 8);
-    }
-    
+    public Operand DecodeModRM8(byte mod, RegisterIndex rmIndex) => DecodeModRMInternal(mod, rmIndex, 8);
+
     /// <summary>
     /// Internal implementation for decoding a ModR/M byte to get an operand with specific size
     /// </summary>
@@ -57,7 +49,6 @@ public class ModRMDecoder
     /// <returns>The operand object</returns>
     private Operand DecodeModRMInternal(byte mod, RegisterIndex rmIndex, int operandSize)
     {
-
         switch (mod)
         {
             case 0: // [reg] or disp32
@@ -81,7 +72,7 @@ public class ModRMDecoder
                     if (_decoder.CanReadByte())
                     {
                         byte sib = _decoder.ReadByte();
-                        return DecodeSIB(sib, 0, operandSize);
+                        return _sibDecoder.DecodeSIB(sib, 0, operandSize);
                     }
 
                     // Fallback for incomplete data
@@ -99,7 +90,7 @@ public class ModRMDecoder
                     {
                         byte sib = _decoder.ReadByte();
                         sbyte disp8 = (sbyte)(_decoder.CanReadByte() ? _decoder.ReadByte() : 0);
-                        return DecodeSIB(sib, (uint)disp8, operandSize);
+                        return _sibDecoder.DecodeSIB(sib, (uint)disp8, operandSize);
                     }
 
                     // Fallback for incomplete data
@@ -133,7 +124,7 @@ public class ModRMDecoder
                     {
                         byte sib = _decoder.ReadByte();
                         uint disp32 = _decoder.ReadUInt32();
-                        return DecodeSIB(sib, disp32, operandSize);
+                        return _sibDecoder.DecodeSIB(sib, disp32, operandSize);
                     }
 
                     // Fallback for incomplete data
@@ -197,28 +188,19 @@ public class ModRMDecoder
     /// Reads and decodes a ModR/M byte for standard 32-bit operands
     /// </summary>
     /// <returns>A tuple containing the mod, reg, rm fields and the decoded operand</returns>
-    public (byte mod, RegisterIndex reg, RegisterIndex rm, Operand operand) ReadModRM()
-    {
-        return ReadModRMInternal(false);
-    }
+    public (byte mod, RegisterIndex reg, RegisterIndex rm, Operand operand) ReadModRM() => ReadModRMInternal(false);
 
     /// <summary>
     /// Reads and decodes a ModR/M byte for 64-bit operands
     /// </summary>
     /// <returns>A tuple containing the mod, reg, rm fields and the decoded operand</returns>
-    public (byte mod, RegisterIndex reg, RegisterIndex rm, Operand operand) ReadModRM64()
-    {
-        return ReadModRMInternal(true);
-    }
+    public (byte mod, RegisterIndex reg, RegisterIndex rm, Operand operand) ReadModRM64() => ReadModRMInternal(true);
 
     /// <summary>
     /// Reads and decodes a ModR/M byte for 8-bit operands
     /// </summary>
     /// <returns>A tuple containing the mod, reg, rm fields and the decoded operand</returns>
-    public (byte mod, RegisterIndex8 reg, RegisterIndex8 rm, Operand operand) ReadModRM8()
-    {
-        return ReadModRM8Internal();
-    }
+    public (byte mod, RegisterIndex8 reg, RegisterIndex8 rm, Operand operand) ReadModRM8() => ReadModRM8Internal();
 
     /// <summary>
     /// Reads and decodes a ModR/M byte for 16-bit operands
@@ -330,39 +312,5 @@ public class ModRMDecoder
         }
 
         return (mod, reg, rm, operand);
-    }
-
-    /// <summary>
-    /// Decodes a SIB byte
-    /// </summary>
-    /// <param name="sib">The SIB byte</param>
-    /// <param name="displacement">The displacement value</param>
-    /// <param name="operandSize">The size of the operand in bits (8, 16, 32, or 64)</param>
-    /// <returns>The decoded SIB operand</returns>
-    private Operand DecodeSIB(byte sib, uint displacement, int operandSize)
-    {
-        // Delegate to the SIBDecoder
-        return _sibDecoder.DecodeSIB(sib, displacement, operandSize);
-    }
-
-    /// <summary>
-    /// Gets the register name based on the register index and size
-    /// </summary>
-    /// <param name="regIndex">The register index as RegisterIndex enum</param>
-    /// <param name="size">The register size (16 or 32 bits)</param>
-    /// <returns>The register name</returns>
-    public static string GetRegisterName(RegisterIndex regIndex, int size)
-    {
-        return RegisterMapper.GetRegisterName(regIndex, size);
-    }
-    
-    /// <summary>
-    /// Gets the 8-bit register name based on the RegisterIndex8 enum value
-    /// </summary>
-    /// <param name="regIndex8">The register index as RegisterIndex8 enum</param>
-    /// <returns>The 8-bit register name</returns>
-    public static string GetRegisterName(RegisterIndex8 regIndex8)
-    {
-        return RegisterMapper.GetRegisterName(regIndex8);
     }
 }
