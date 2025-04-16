@@ -10,6 +10,8 @@ using X86Disassembler.X86.Handlers.Inc;
 using X86Disassembler.X86.Handlers.Jump;
 using X86Disassembler.X86.Handlers.Lea;
 using X86Disassembler.X86.Handlers.Mov;
+using X86Disassembler.X86.Handlers.Mul;
+using X86Disassembler.X86.Handlers.Neg;
 using X86Disassembler.X86.Handlers.Nop;
 using X86Disassembler.X86.Handlers.Or;
 using X86Disassembler.X86.Handlers.Pop;
@@ -62,6 +64,8 @@ public class InstructionHandlerFactory
         RegisterAddHandlers();
         RegisterAndHandlers();
         RegisterArithmeticUnaryHandlers();
+        RegisterNegHandlers(); // Register NEG handlers
+        RegisterMulHandlers(); // Register MUL handlers
         RegisterCmpHandlers();
         RegisterXorHandlers();
         RegisterOrHandlers();
@@ -89,13 +93,6 @@ public class InstructionHandlerFactory
     {
         // NOT handler
         _handlers.Add(new NotRm32Handler(_decoder));
-
-        // NEG handlers
-        _handlers.Add(new NegRm8Handler(_decoder));  // F6 /3 - NEG r/m8
-        _handlers.Add(new NegRm32Handler(_decoder)); // F7 /3 - NEG r/m32
-
-        // MUL handler
-        _handlers.Add(new MulRm32Handler(_decoder));
 
         // IMUL handler
         _handlers.Add(new ImulRm32Handler(_decoder));
@@ -439,6 +436,30 @@ public class InstructionHandlerFactory
         _handlers.Add(new NopHandler(_decoder));
         _handlers.Add(new TwoByteNopHandler(_decoder));
         _handlers.Add(new MultiByteNopHandler(_decoder));
+    }
+
+    /// <summary>
+    /// Registers all NEG instruction handlers
+    /// </summary>
+    private void RegisterNegHandlers()
+    {
+        // NEG r/m8 handler (F6 /3)
+        _handlers.Add(new NegRm8Handler(_decoder));
+
+        // NEG r/m32 handler (F7 /3)
+        _handlers.Add(new NegRm32Handler(_decoder));
+    }
+
+    /// <summary>
+    /// Registers all MUL instruction handlers
+    /// </summary>
+    private void RegisterMulHandlers()
+    {
+        // MUL r/m8 handler (F6 /4)
+        _handlers.Add(new MulRm8Handler(_decoder));
+
+        // MUL r/m32 handler (F7 /4)
+        _handlers.Add(new MulRm32Handler(_decoder));
     }
 
     /// <summary>
