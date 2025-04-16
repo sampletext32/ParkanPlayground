@@ -66,6 +66,7 @@ public class InstructionHandlerFactory
         RegisterArithmeticImmediateHandlers(); // Group 1 instructions (including 0x83)
         RegisterAddHandlers();
         RegisterAndHandlers();
+        RegisterOrHandlers(); // Register OR handlers
         RegisterArithmeticUnaryHandlers(); // Empty, kept for consistency
         RegisterNegHandlers(); // Register NEG handlers
         RegisterMulHandlers(); // Register MUL handlers
@@ -213,6 +214,7 @@ public class InstructionHandlerFactory
         _handlers.Add(new OrR8Rm8Handler(_decoder));
         _handlers.Add(new OrRm8R8Handler(_decoder));
         _handlers.Add(new OrR32Rm32Handler(_decoder));
+        _handlers.Add(new OrRm32R32Handler(_decoder)); // New handler for OR r/m32, r32 (opcode 09)
         _handlers.Add(new OrAlImmHandler(_decoder));
         _handlers.Add(new OrEaxImmHandler(_decoder));
     }
@@ -481,6 +483,15 @@ public class InstructionHandlerFactory
 
         // IMUL r/m32 handler (F7 /5)
         _handlers.Add(new ImulRm32Handler(_decoder));
+
+        // IMUL r32, r/m32 handler (0F AF /r)
+        _handlers.Add(new ImulR32Rm32Handler(_decoder));
+
+        // IMUL r32, r/m32, imm8 handler (6B /r ib)
+        _handlers.Add(new ImulR32Rm32Imm8Handler(_decoder));
+
+        // IMUL r32, r/m32, imm32 handler (69 /r id)
+        _handlers.Add(new ImulR32Rm32Imm32Handler(_decoder));
     }
 
     /// <summary>
