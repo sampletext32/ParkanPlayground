@@ -378,8 +378,10 @@ public class InstructionHandlerFactory
         _handlers.Add(new PushRm32Handler(_decoder));     // PUSH r/m32 (opcode FF /6)
         
         // Add PUSH immediate handlers
-        _handlers.Add(new PushImm32Handler(_decoder));    // PUSH imm32 (opcode 68)
+        // Note: Order matters! PushImm16Handler must be registered before PushImm32Handler
+        // since both check for opcode 68h but PushImm16Handler also checks for operand size prefix
         _handlers.Add(new PushImm16Handler(_decoder));    // PUSH imm16 with operand size prefix (0x66 0x68)
+        _handlers.Add(new PushImm32Handler(_decoder));    // PUSH imm32 (opcode 68)
         _handlers.Add(new PushImm8Handler(_decoder));     // PUSH imm8 (opcode 6A)
     }
 
