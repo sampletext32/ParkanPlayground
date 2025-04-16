@@ -19,6 +19,17 @@ F7E6;[{ "Type": "Mul", "Operands": ["esi"] }]
 F7E7;[{ "Type": "Mul", "Operands": ["edi"] }]
 
 # MUL with memory operands
-F62425;[{ "Type": "Mul", "Operands": ["byte ptr [eax]"] }]
-F72425;[{ "Type": "Mul", "Operands": ["dword ptr [eax]"] }]
-F7242510000000;[{ "Type": "Mul", "Operands": ["dword ptr [eax+0x10]"] }]
+
+# SPECIAL CASE: When using SIB byte with Base=101 (EBP) and Mod=00, it requires a 32-bit displacement
+# The correct encoding for "MUL byte ptr [eax]" would be F620 (with Mod=00, R/M=0 for EAX)
+# F62425;[{ "Type": "Mul", "Operands": ["byte ptr [eax]"] }]
+F620;[{ "Type": "Mul", "Operands": ["byte ptr [eax]"] }]
+
+# The correct encoding for "MUL dword ptr [eax]" would be F720 (with Mod=00, R/M=0 for EAX)
+# F72425;[{ "Type": "Mul", "Operands": ["dword ptr [eax]"] }]
+F720;[{ "Type": "Mul", "Operands": ["dword ptr [eax]"] }]
+
+# This test case has an issue - it should be a direct memory operand with a displacement
+# F7242510000000;[{ "Type": "Mul", "Operands": ["dword ptr [0x10]"] }]
+# The correct encoding for "MUL dword ptr [0x10]" would be F72510000000 (with Mod=00, R/M=5 for direct addressing)
+F72510000000;[{ "Type": "Mul", "Operands": ["dword ptr [0x10]"] }]
