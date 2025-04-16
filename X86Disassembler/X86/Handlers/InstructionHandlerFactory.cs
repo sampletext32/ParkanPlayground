@@ -149,9 +149,14 @@ public class InstructionHandlerFactory
     /// </summary>
     private void RegisterJumpHandlers()
     {
-        // JMP handlers
-        _handlers.Add(new JmpRel32Handler(_decoder));
-        _handlers.Add(new JmpRel8Handler(_decoder));
+        // JMP handlers for relative jumps
+        _handlers.Add(new JmpRel32Handler(_decoder));  // JMP rel32 (opcode E9)
+        _handlers.Add(new JmpRel8Handler(_decoder));   // JMP rel8 (opcode EB)
+        
+        // JMP handler for register/memory operands
+        _handlers.Add(new JmpRm32Handler(_decoder));   // JMP r/m32 (opcode FF /4)
+        
+        // Conditional jump handlers
         _handlers.Add(new JgeRel8Handler(_decoder));
         _handlers.Add(new ConditionalJumpHandler(_decoder));
         _handlers.Add(new TwoByteConditionalJumpHandler(_decoder));
