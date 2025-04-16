@@ -90,8 +90,9 @@ public class InstructionHandlerFactory
         // NOT handler
         _handlers.Add(new NotRm32Handler(_decoder));
 
-        // NEG handler
-        _handlers.Add(new NegRm32Handler(_decoder));
+        // NEG handlers
+        _handlers.Add(new NegRm8Handler(_decoder));  // F6 /3 - NEG r/m8
+        _handlers.Add(new NegRm32Handler(_decoder)); // F7 /3 - NEG r/m32
 
         // MUL handler
         _handlers.Add(new MulRm32Handler(_decoder));
