@@ -292,20 +292,22 @@ public class InstructionHandlerFactory
     /// </summary>
     private void RegisterAddHandlers()
     {
-        // Add ADD handlers
-        _handlers.Add(new AddR32Rm32Handler(_decoder));
-        _handlers.Add(new AddRm32R32Handler(_decoder));
-        _handlers.Add(new AddEaxImmHandler(_decoder));
+        // Add ADD register-to-register handlers (32-bit)
+        _handlers.Add(new AddR32Rm32Handler(_decoder));    // ADD r32, r/m32 (opcode 03)
+        _handlers.Add(new AddRm32R32Handler(_decoder));    // ADD r/m32, r32 (opcode 01)
+        _handlers.Add(new AddEaxImmHandler(_decoder));     // ADD EAX, imm32 (opcode 05)
         
-        // Add 8-bit ADD handlers
-        _handlers.Add(new AddRm8R8Handler(_decoder)); // ADD r/m8, r8 (opcode 00)
-        _handlers.Add(new AddR8Rm8Handler(_decoder)); // ADD r8, r/m8 (opcode 02)
-        _handlers.Add(new AddAlImmHandler(_decoder)); // ADD AL, imm8 (opcode 04)
+        // Add ADD register-to-register handlers (8-bit)
+        _handlers.Add(new AddRm8R8Handler(_decoder));      // ADD r/m8, r8 (opcode 00)
+        _handlers.Add(new AddR8Rm8Handler(_decoder));      // ADD r8, r/m8 (opcode 02)
+        _handlers.Add(new AddAlImmHandler(_decoder));      // ADD AL, imm8 (opcode 04)
 
-        // Add ADD immediate handlers from ArithmeticImmediate namespace
-        _handlers.Add(new AddImmToRm8Handler(_decoder));
-        _handlers.Add(new AddImmToRm32Handler(_decoder));
-        _handlers.Add(new AddImmToRm32SignExtendedHandler(_decoder));
+        // Add ADD immediate handlers
+        _handlers.Add(new AddImmToRm8Handler(_decoder));           // ADD r/m8, imm8 (opcode 80 /0)
+        _handlers.Add(new AddImmToRm16Handler(_decoder));          // ADD r/m16, imm16 (opcode 81 /0 with 0x66 prefix)
+        _handlers.Add(new AddImmToRm16SignExtendedHandler(_decoder)); // ADD r/m16, imm8 (opcode 83 /0 with 0x66 prefix)
+        _handlers.Add(new AddImmToRm32Handler(_decoder));          // ADD r/m32, imm32 (opcode 81 /0)
+        _handlers.Add(new AddImmToRm32SignExtendedHandler(_decoder)); // ADD r/m32, imm8 (opcode 83 /0)
     }
 
     /// <summary>
