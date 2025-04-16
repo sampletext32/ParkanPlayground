@@ -68,7 +68,14 @@ FF549DFF;[{ "Type": "Call", "Operands": ["dword ptr [ebp+ebx*4-0x01]"] }]
 
 # CALL m16:32 (opcode FF /3) - Far call with memory operand
 FF1C;[{ "Type": "Call", "Operands": ["fword ptr [esp]"] }]
-FF1D;[{ "Type": "Call", "Operands": ["fword ptr [ebp]"] }]
+# SPECIAL CASE in x86 encoding:
+# When Mod=00 and R/M=101 (EBP), this doesn't actually refer to [EBP] but instead indicates
+# a 32-bit displacement-only addressing mode. The correct encoding for "Call fword ptr [ebp]"
+# would be FF5D00 which is "Call fword ptr [ebp+0x0]"
+# FF1D;[{ "Type": "Call", "Operands": ["fword ptr [ebp]"] }]
+
+# Correct encoding for "Call fword ptr [ebp]" with displacement 0
+FF5D00;[{ "Type": "Call", "Operands": ["fword ptr [ebp+0x0]"] }]
 FF1E;[{ "Type": "Call", "Operands": ["fword ptr [esi]"] }]
 FF1F;[{ "Type": "Call", "Operands": ["fword ptr [edi]"] }]
 FF18;[{ "Type": "Call", "Operands": ["fword ptr [eax]"] }]

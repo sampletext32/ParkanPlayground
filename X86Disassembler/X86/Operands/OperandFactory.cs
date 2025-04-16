@@ -209,4 +209,15 @@ public static class OperandFactory
     {
         return new FPURegisterOperand(registerIndex);
     }
+    
+    /// <summary>
+    /// Creates a far pointer operand from an existing memory operand
+    /// </summary>
+    /// <param name="memoryOperand">The memory operand to convert to a far pointer</param>
+    /// <returns>A far pointer operand with the same addressing mode as the given memory operand</returns>
+    public static FarPointerOperand CreateFarPointerOperand(MemoryOperand memoryOperand)
+    {
+        // Create a new FarPointerOperand with the same properties as the given memory operand
+        return FarPointerOperand.FromMemoryOperand(memoryOperand);
+    }
 }

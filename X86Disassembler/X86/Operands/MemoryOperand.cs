@@ -27,11 +27,13 @@ public abstract class MemoryOperand : Operand
     /// <returns>The size prefix string</returns>
     protected string GetSizePrefix()
     {
+        // Use size-based prefix
         string sizePrefix = Size switch
         {
             8 => "byte ptr ",
             16 => "word ptr ",
             32 => "dword ptr ",
+            48 => "fword ptr ",
             64 => "qword ptr ",
             _ => ""
         };

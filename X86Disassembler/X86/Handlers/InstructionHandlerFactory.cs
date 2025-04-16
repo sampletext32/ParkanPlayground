@@ -137,8 +137,9 @@ public class InstructionHandlerFactory
     private void RegisterCallHandlers()
     {
         // Add Call handlers
-        _handlers.Add(new CallRel32Handler(_decoder));
-        _handlers.Add(new CallRm32Handler(_decoder));
+        _handlers.Add(new CallRel32Handler(_decoder));        // CALL rel32 (opcode E8)
+        _handlers.Add(new CallRm32Handler(_decoder));         // CALL r/m32 (opcode FF /2)
+        _handlers.Add(new CallFarPtrHandler(_decoder));       // CALL m16:32 (opcode FF /3) - Far call
     }
 
     /// <summary>
@@ -378,6 +379,7 @@ public class InstructionHandlerFactory
         
         // Add PUSH immediate handlers
         _handlers.Add(new PushImm32Handler(_decoder));    // PUSH imm32 (opcode 68)
+        _handlers.Add(new PushImm16Handler(_decoder));    // PUSH imm16 with operand size prefix (0x66 0x68)
         _handlers.Add(new PushImm8Handler(_decoder));     // PUSH imm8 (opcode 6A)
     }
 

@@ -12,7 +12,12 @@ RawBytes;Instructions
 83C842;[{ "Type": "Or", "Operands": ["eax", "0x42"] }]
 
 # OR with memory operands
-810C2578563412;[{ "Type": "Or", "Operands": ["dword ptr [eax]", "0x12345678"] }]
+# INVALID TEST: The following test has an invalid encoding.
+# When ModR/M byte has R/M=100 (ESP), a SIB byte is required.
+# 810C2578563412;[{ "Type": "Or", "Operands": ["dword ptr [eax]", "0x12345678"] }]
+
+# Correct encoding for "Or dword ptr [eax], 0x12345678"
+810878563412;[{ "Type": "Or", "Operands": ["dword ptr [eax]", "0x12345678"] }]
 
 # OR r/m32, r32 (opcode 09)
 09D8;[{ "Type": "Or", "Operands": ["eax", "ebx"] }]
