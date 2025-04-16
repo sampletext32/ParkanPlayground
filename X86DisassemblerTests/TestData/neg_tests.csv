@@ -19,6 +19,15 @@ F7DE;[{ "Type": "Neg", "Operands": ["esi"] }]
 F7DF;[{ "Type": "Neg", "Operands": ["edi"] }]
 
 # NEG with memory operands
-F61C25;[{ "Type": "Neg", "Operands": ["byte ptr [eax]"] }]
-F71C25;[{ "Type": "Neg", "Operands": ["dword ptr [eax]"] }]
+
+# SPECIAL CASE: When using SIB byte with Base=101 (EBP) and Mod=00, it requires a 32-bit displacement
+# The correct encoding for "NEG byte ptr [eax]" would be F618 (with Mod=00, R/M=0 for EAX)
+# F61C25;[{ "Type": "Neg", "Operands": ["byte ptr [eax]"] }]
+F618;[{ "Type": "Neg", "Operands": ["byte ptr [eax]"] }]
+
+# The correct encoding for "NEG dword ptr [eax]" would be F718 (with Mod=00, R/M=0 for EAX)
+# F71C25;[{ "Type": "Neg", "Operands": ["dword ptr [eax]"] }]
+F718;[{ "Type": "Neg", "Operands": ["dword ptr [eax]"] }]
+
+# This test case is correct, as it includes the required displacement
 F71C2510000000;[{ "Type": "Neg", "Operands": ["dword ptr [eax+0x10]"] }]
