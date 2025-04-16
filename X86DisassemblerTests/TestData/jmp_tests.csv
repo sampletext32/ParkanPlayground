@@ -26,7 +26,8 @@ FF21;[{ "Type": "Jmp", "Operands": ["dword ptr [ecx]"] }]
 FF22;[{ "Type": "Jmp", "Operands": ["dword ptr [edx]"] }]
 FF23;[{ "Type": "Jmp", "Operands": ["dword ptr [ebx]"] }]
 FF24;[{ "Type": "Jmp", "Operands": ["dword ptr [esp]"] }]
-FF25;[{ "Type": "Jmp", "Operands": ["dword ptr [ebp]"] }]
+
+# FF25;[{ "Type": "Jmp", "Operands": ["dword ptr [ebp]"] }]
 FF26;[{ "Type": "Jmp", "Operands": ["dword ptr [esi]"] }]
 FF27;[{ "Type": "Jmp", "Operands": ["dword ptr [edi]"] }]
 

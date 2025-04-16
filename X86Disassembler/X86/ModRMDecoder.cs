@@ -53,6 +53,8 @@ public class ModRMDecoder
         {
             case 0: // [reg] or disp32
                 // Special case: [EBP] is encoded as disp32 with no base register
+                // In x86 encoding, when Mod=00 and R/M=101 (which corresponds to EBP), this doesn't actually refer to [EBP] as you might expect.
+                // Instead, it's a special case that indicates a 32-bit displacement-only addressing mode (effectively [disp32] with no base register).
                 if (rmIndex == RegisterIndex.Bp) // disp32 (was EBP/BP)
                 {
                     if (_decoder.CanReadUInt())
@@ -66,6 +68,9 @@ public class ModRMDecoder
                 }
 
                 // Special case: [ESP] is encoded with SIB byte
+                // In x86 encoding, when Mod=00 and R/M=100 (which corresponds to ESP), this doesn't actually refer to [ESP] directly.
+                // Instead, it indicates that a SIB (Scale-Index-Base) byte follows, which provides additional addressing information.
+                // This special case exists because ESP cannot be used as an index register in the standard addressing modes.
                 if (rmIndex == RegisterIndex.Sp) // SIB (was ESP/SP)
                 {
                     // Handle SIB byte
