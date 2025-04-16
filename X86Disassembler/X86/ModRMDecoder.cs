@@ -9,6 +9,9 @@ public class ModRMDecoder
 {
     // The instruction decoder that owns this ModRM decoder
     private readonly InstructionDecoder _decoder;
+    
+    // The SIB decoder for handling SIB bytes
+    private readonly SIBDecoder _sibDecoder;
 
     /// <summary>
     /// Initializes a new instance of the ModRMDecoder class
@@ -17,49 +20,10 @@ public class ModRMDecoder
     public ModRMDecoder(InstructionDecoder decoder)
     {
         _decoder = decoder;
+        _sibDecoder = new SIBDecoder(decoder);
     }
     
-    /// <summary>
-    /// Maps the register index from the ModR/M byte to the RegisterIndex enum value
-    /// </summary>
-    /// <param name="modRMRegIndex">The register index from the ModR/M byte (0-7)</param>
-    /// <returns>The corresponding RegisterIndex enum value</returns>
-    private RegisterIndex MapModRMToRegisterIndex(int modRMRegIndex)
-    {
-        // The mapping from ModR/M register index to RegisterIndex enum is:
-        // 0 -> A (EAX)
-        // 1 -> C (ECX)
-        // 2 -> D (EDX)
-        // 3 -> B (EBX)
-        // 4 -> Sp (ESP)
-        // 5 -> Bp (EBP)
-        // 6 -> Si (ESI)
-        // 7 -> Di (EDI)
-        return modRMRegIndex switch
-        {
-            0 => RegisterIndex.A,  // EAX
-            1 => RegisterIndex.C,  // ECX
-            2 => RegisterIndex.D,  // EDX
-            3 => RegisterIndex.B,  // EBX
-            4 => RegisterIndex.Sp, // ESP
-            5 => RegisterIndex.Bp, // EBP
-            6 => RegisterIndex.Si, // ESI
-            7 => RegisterIndex.Di, // EDI
-            _ => RegisterIndex.A   // Default to EAX
-        };
-    }
-
-    /// <summary>
-    /// Maps the register index from the ModR/M byte to the RegisterIndex8 enum value
-    /// </summary>
-    /// <param name="modRMRegIndex">The register index from the ModR/M byte (0-7)</param>
-    /// <returns>The corresponding RegisterIndex8 enum value</returns>
-    private RegisterIndex8 MapModRMToRegisterIndex8(int modRMRegIndex)
-    {
-        // The mapping from ModR/M register index to RegisterIndex8 enum is direct:
-        // 0 -> AL, 1 -> CL, 2 -> DL, 3 -> BL, 4 -> AH, 5 -> CH, 6 -> DH, 7 -> BH
-        return (RegisterIndex8)modRMRegIndex;
-    }
+    // These methods have been moved to the RegisterMapper class
 
     /// <summary>
     /// Decodes a ModR/M byte to get the operand
@@ -315,8 +279,8 @@ public class ModRMDecoder
         byte rmIndex = (byte)(modRM & Constants.RM_MASK);
         
         // Map the ModR/M register indices to RegisterIndex enum values
-        RegisterIndex reg = MapModRMToRegisterIndex(regIndex);
-        RegisterIndex rm = MapModRMToRegisterIndex(rmIndex);
+        RegisterIndex reg = RegisterMapper.MapModRMToRegisterIndex(regIndex);
+        RegisterIndex rm = RegisterMapper.MapModRMToRegisterIndex(rmIndex);
 
         // Create the operand based on the mod and rm fields
         Operand operand = DecodeModRM(mod, rm, is64Bit);
@@ -343,8 +307,8 @@ public class ModRMDecoder
         byte rmIndex = (byte)(modRM & Constants.RM_MASK);
         
         // Map the ModR/M register indices to RegisterIndex8 enum values
-        RegisterIndex8 reg = MapModRMToRegisterIndex8(regIndex);
-        RegisterIndex8 rm = MapModRMToRegisterIndex8(rmIndex);
+        RegisterIndex8 reg = RegisterMapper.MapModRMToRegisterIndex8(regIndex);
+        RegisterIndex8 rm = RegisterMapper.MapModRMToRegisterIndex8(rmIndex);
 
         // Create the operand based on the mod and rm fields
         Operand operand;
@@ -359,7 +323,7 @@ public class ModRMDecoder
             // For memory operands, we need to map the RegisterIndex8 to RegisterIndex for base registers
             // The rmIndex is the raw value from the ModR/M byte, not the mapped RegisterIndex8
             // This is important because we need to check if it's 4 (ESP) for SIB byte
-            RegisterIndex rmRegIndex = MapModRMToRegisterIndex(rmIndex);
+            RegisterIndex rmRegIndex = RegisterMapper.MapModRMToRegisterIndex(rmIndex);
             
             // Use the DecodeModRM8 method to get an 8-bit memory operand
             operand = DecodeModRM8(mod, rmRegIndex);
@@ -377,87 +341,8 @@ public class ModRMDecoder
     /// <returns>The decoded SIB operand</returns>
     private Operand DecodeSIB(byte sib, uint displacement, int operandSize)
     {
-
-        // Extract fields from SIB byte
-        byte scale = (byte)((sib & Constants.SIB_SCALE_MASK) >> 6);
-        int indexIndex = (sib & Constants.SIB_INDEX_MASK) >> 3;
-        int baseIndex = sib & Constants.SIB_BASE_MASK;
-        
-        // Map the SIB register indices to RegisterIndex enum values
-        RegisterIndex index = MapModRMToRegisterIndex(indexIndex);
-        RegisterIndex @base = MapModRMToRegisterIndex(baseIndex);
-
-        // Special case: ESP/SP (4) in index field means no index register
-        if (index == RegisterIndex.Sp)
-        {
-            // Special case: EBP/BP (5) in base field with no displacement means disp32 only
-            if (@base == RegisterIndex.Bp && displacement == 0)
-            {
-                if (_decoder.CanReadUInt())
-                {
-                    uint disp32 = _decoder.ReadUInt32();
-                    
-                    // When both index is ESP (no index) and base is EBP with disp32,
-                    // this is a direct memory reference [disp32]
-                    return OperandFactory.CreateDirectMemoryOperand(disp32, operandSize);
-                }
-
-                // Fallback for incomplete data
-                return OperandFactory.CreateDirectMemoryOperand(0, operandSize);
-            }
-
-            // When index is ESP (no index), we just have a base register with optional displacement
-            if (displacement == 0)
-            {
-                return OperandFactory.CreateBaseRegisterMemoryOperand(@base, operandSize);
-            }
-
-            return OperandFactory.CreateDisplacementMemoryOperand(@base, (int)displacement, operandSize);
-        }
-
-        // Special case: EBP/BP (5) in base field with no displacement means disp32 only
-        if (@base == RegisterIndex.Bp && displacement == 0)
-        {
-            if (_decoder.CanReadUInt())
-            {
-                uint disp32 = _decoder.ReadUInt32();
-                int scaleValue = 1 << scale; // 1, 2, 4, or 8
-                
-                // If we have a direct memory reference with a specific displacement,
-                // use a direct memory operand instead of a scaled index memory operand
-                if (disp32 > 0 && index == RegisterIndex.Sp)
-                {
-                    return OperandFactory.CreateDirectMemoryOperand(disp32, operandSize);
-                }
-                
-                // Create a scaled index memory operand with displacement but no base register
-                return OperandFactory.CreateScaledIndexMemoryOperand(
-                    index,
-                    scaleValue,
-                    null,
-                    (int)disp32,
-                    operandSize);
-            }
-
-            // Fallback for incomplete data
-            return OperandFactory.CreateScaledIndexMemoryOperand(
-                index,
-                1 << scale,
-                null,
-                0,
-                operandSize);
-        }
-
-        // Normal case with base and index registers
-        int scaleFactor = 1 << scale; // 1, 2, 4, or 8
-
-        // Create a scaled index memory operand
-        return OperandFactory.CreateScaledIndexMemoryOperand(
-            index,
-            scaleFactor,
-            @base,
-            (int)displacement,
-            operandSize);
+        // Delegate to the SIBDecoder
+        return _sibDecoder.DecodeSIB(sib, displacement, operandSize);
     }
 
     /// <summary>
@@ -468,13 +353,7 @@ public class ModRMDecoder
     /// <returns>The register name</returns>
     public static string GetRegisterName(RegisterIndex regIndex, int size)
     {
-        return size switch
-        {
-            16 => Constants.RegisterNames16[(int)regIndex],
-            32 => Constants.RegisterNames32[(int)regIndex],
-            64 => Constants.RegisterNames32[(int)regIndex], // For now, reuse 32-bit names for 64-bit
-            _ => "unknown"
-        };
+        return RegisterMapper.GetRegisterName(regIndex, size);
     }
     
     /// <summary>
@@ -484,6 +363,6 @@ public class ModRMDecoder
     /// <returns>The 8-bit register name</returns>
     public static string GetRegisterName(RegisterIndex8 regIndex8)
     {
-        return regIndex8.ToString().ToLower();
+        return RegisterMapper.GetRegisterName(regIndex8);
     }
 }
