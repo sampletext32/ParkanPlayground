@@ -66,7 +66,7 @@ public class Float32OperationHandler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, rawOperand) = ModRMDecoder.ReadModRM();
 
         // Set the instruction type based on the reg field
         instruction.Type = InstructionTypes[(int)reg];
@@ -74,8 +74,29 @@ public class Float32OperationHandler : InstructionHandler
         // For memory operands, set the operand
         if (mod != 3) // Memory operand
         {
-            // Ensure the memory operand has the correct size (32-bit float)
-            operand.Size = 32;
+            // Create a new memory operand with 32-bit size using the appropriate factory method
+            Operand operand;
+            
+            if (rawOperand is DirectMemoryOperand directMemory)
+            {
+                operand = OperandFactory.CreateDirectMemoryOperand(directMemory.Address, 32);
+            }
+            else if (rawOperand is BaseRegisterMemoryOperand baseRegMemory)
+            {
+                operand = OperandFactory.CreateBaseRegisterMemoryOperand(baseRegMemory.BaseRegister, 32);
+            }
+            else if (rawOperand is DisplacementMemoryOperand dispMemory)
+            {
+                operand = OperandFactory.CreateDisplacementMemoryOperand(dispMemory.BaseRegister, dispMemory.Displacement, 32);
+            }
+            else if (rawOperand is ScaledIndexMemoryOperand scaledMemory)
+            {
+                operand = OperandFactory.CreateScaledIndexMemoryOperand(scaledMemory.IndexRegister, scaledMemory.Scale, scaledMemory.BaseRegister, scaledMemory.Displacement, 32);
+            }
+            else
+            {
+                operand = rawOperand;
+            }
             
             // Set the structured operands
             instruction.StructuredOperands = 

@@ -121,7 +121,7 @@ public class LoadStoreFloat64Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, memoryOperand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, rawMemoryOperand) = ModRMDecoder.ReadModRM();
 
         // Set the instruction type based on the mod and reg fields
         if (mod != 3) // Memory operand
@@ -132,18 +132,33 @@ public class LoadStoreFloat64Handler : InstructionHandler
             switch (reg)
             {
                 case RegisterIndex.A: // FLD m64real
-                    // Set the structured operands
-                    memoryOperand.Size = 64; // Set size to 64 bits for double precision
-                    instruction.StructuredOperands = 
-                    [
-                        memoryOperand
-                    ];
-                    return true;
-                    
                 case RegisterIndex.C: // FST m64real
                 case RegisterIndex.D: // FSTP m64real
+                    // Create a new memory operand with 64-bit size using the appropriate factory method
+                    Operand memoryOperand;
+                    
+                    if (rawMemoryOperand is DirectMemoryOperand directMemory)
+                    {
+                        memoryOperand = OperandFactory.CreateDirectMemoryOperand(directMemory.Address, 64);
+                    }
+                    else if (rawMemoryOperand is BaseRegisterMemoryOperand baseRegMemory)
+                    {
+                        memoryOperand = OperandFactory.CreateBaseRegisterMemoryOperand(baseRegMemory.BaseRegister, 64);
+                    }
+                    else if (rawMemoryOperand is DisplacementMemoryOperand dispMemory)
+                    {
+                        memoryOperand = OperandFactory.CreateDisplacementMemoryOperand(dispMemory.BaseRegister, dispMemory.Displacement, 64);
+                    }
+                    else if (rawMemoryOperand is ScaledIndexMemoryOperand scaledMemory)
+                    {
+                        memoryOperand = OperandFactory.CreateScaledIndexMemoryOperand(scaledMemory.IndexRegister, scaledMemory.Scale, scaledMemory.BaseRegister, scaledMemory.Displacement, 64);
+                    }
+                    else
+                    {
+                        memoryOperand = rawMemoryOperand;
+                    }
+                    
                     // Set the structured operands
-                    memoryOperand.Size = 64; // Set size to 64 bits for double precision
                     instruction.StructuredOperands = 
                     [
                         memoryOperand

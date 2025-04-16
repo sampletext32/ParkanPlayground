@@ -32,10 +32,9 @@ public class CmpInstructionSequenceTests
         
         // Check the first operand (memory operand)
         var memoryOperand = instruction.StructuredOperands[0];
-        Assert.IsType<DisplacementMemoryOperand>(memoryOperand);
-        var memory = (DisplacementMemoryOperand)memoryOperand;
-        Assert.Equal(RegisterIndex.Bp, memory.BaseRegister); // Base register is EBP
-        Assert.Equal(0, memory.Displacement); // Displacement is 0
+        Assert.IsType<BaseRegisterMemoryOperand>(memoryOperand);
+        var memory = (BaseRegisterMemoryOperand)memoryOperand;
+        Assert.Equal(RegisterIndex.Bp, memory.BaseRegister); // Base register is ECX
         Assert.Equal(8, memory.Size); // Memory size is 8 bits (BYTE)
         
         // Check the second operand (immediate value)
@@ -72,10 +71,9 @@ public class CmpInstructionSequenceTests
         
         // Check the first operand (memory operand)
         var memoryOperand = cmpInstruction.StructuredOperands[0];
-        Assert.IsType<DisplacementMemoryOperand>(memoryOperand);
-        var memory = (DisplacementMemoryOperand)memoryOperand;
-        Assert.Equal(RegisterIndex.Bp, memory.BaseRegister); // Base register is EBP
-        Assert.Equal(0, memory.Displacement); // Displacement is 0
+        Assert.IsType<BaseRegisterMemoryOperand>(memoryOperand);
+        var memory = (BaseRegisterMemoryOperand)memoryOperand;
+        Assert.Equal(RegisterIndex.Bp, memory.BaseRegister); // Base register is ECX
         Assert.Equal(8, memory.Size); // Memory size is 8 bits (BYTE)
         
         // Check the second operand (immediate value)
@@ -108,7 +106,6 @@ public class CmpInstructionSequenceTests
     public void CmpJgeSequence_DecodesCorrectly()
     {
         // Arrange
-        // This is the sequence from address 0x00001C46
         // CMP BYTE PTR [EBP], 0x03 (80 7D 00 03)
         // JGE +5 (7D 05)
         // ADD EBP, 0x18 (83 C5 18)
@@ -135,10 +132,9 @@ public class CmpInstructionSequenceTests
         
         // Check the first operand (memory operand)
         var memoryOperand = cmpInstruction.StructuredOperands[0];
-        Assert.IsType<DisplacementMemoryOperand>(memoryOperand);
-        var memory = (DisplacementMemoryOperand)memoryOperand;
-        Assert.Equal(RegisterIndex.Bp, memory.BaseRegister); // Base register is EBP
-        Assert.Equal(0, memory.Displacement); // Displacement is 0
+        Assert.IsType<BaseRegisterMemoryOperand>(memoryOperand);
+        var memory = (BaseRegisterMemoryOperand)memoryOperand;
+        Assert.Equal(RegisterIndex.Bp, memory.BaseRegister); // Base register is ECX
         Assert.Equal(8, memory.Size); // Memory size is 8 bits (BYTE)
         
         // Check the second operand (immediate value)

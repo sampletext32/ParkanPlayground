@@ -47,10 +47,9 @@ public class XorR16Rm16Handler : InstructionHandler
         // For XOR r16, r/m16 (0x33 with 0x66 prefix):
         // - The reg field specifies the destination register
         // - The r/m field with mod specifies the source operand (register or memory)
-        var (_, reg, _, sourceOperand) = ModRMDecoder.ReadModRM();
+        var (_, reg, _, sourceOperand) = ModRMDecoder.ReadModRM16();
 
-        // Adjust the operand size to 16-bit
-        sourceOperand.Size = 16;
+        // Note: The operand size is already set to 16-bit by the ReadModRM16 method
 
         // Create the destination register operand
         var destinationOperand = OperandFactory.CreateRegisterOperand(reg, 16);

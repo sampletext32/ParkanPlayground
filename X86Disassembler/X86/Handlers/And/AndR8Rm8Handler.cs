@@ -42,17 +42,17 @@ public class AndR8Rm8Handler : InstructionHandler
             return false;
         }
 
-        // Read the ModR/M byte
-        var (mod, reg, rm, srcOperand) = ModRMDecoder.ReadModRM();
+        // Read the ModR/M byte, specifying that we're dealing with 8-bit operands
+        var (mod, reg, rm, srcOperand) = ModRMDecoder.ReadModRM8();
 
-        // Create the destination register operand
-        var destOperand = OperandFactory.CreateRegisterOperand(reg, 8);
+        // Create the destination register operand using the 8-bit register type
+        var destOperand = OperandFactory.CreateRegisterOperand8(reg);
 
         // For mod == 3, both operands are registers
         if (mod == 3)
         {
-            // Create a register operand for the r/m field
-            var rmOperand = OperandFactory.CreateRegisterOperand(rm, 8);
+            // Create a register operand for the r/m field using the 8-bit register type
+            var rmOperand = OperandFactory.CreateRegisterOperand8(rm);
             
             // Set the structured operands
             instruction.StructuredOperands = 
@@ -63,11 +63,7 @@ public class AndR8Rm8Handler : InstructionHandler
         }
         else // Memory operand
         {
-            // Ensure memory operand has the correct size (8-bit)
-            if (srcOperand is MemoryOperand memOperand)
-            {
-                memOperand.Size = 8;
-            }
+            // Note: The operand size is already set to 8-bit by the ReadModRM8 method
             
             // Set the structured operands
             instruction.StructuredOperands = 

@@ -34,9 +34,9 @@ public class Group1InstructionTests
         
         // Check the first operand (AL)
         var alOperand = instruction.StructuredOperands[0];
-        Assert.IsType<RegisterOperand>(alOperand);
-        var registerOperand = (RegisterOperand)alOperand;
-        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.IsType<Register8Operand>(alOperand);
+        var registerOperand = (Register8Operand)alOperand;
+        Assert.Equal(RegisterIndex8.AL, registerOperand.Register);
         Assert.Equal(8, registerOperand.Size); // Validate that it's an 8-bit register (AL)
         
         // Check the second operand (immediate value)
@@ -110,9 +110,9 @@ public class Group1InstructionTests
         
         // Check the first operand (BL)
         var blOperand = instruction.StructuredOperands[0];
-        Assert.IsType<RegisterOperand>(blOperand);
-        var registerOperand = (RegisterOperand)blOperand;
-        Assert.Equal(RegisterIndex.B, registerOperand.Register);
+        Assert.IsType<Register8Operand>(blOperand);
+        var registerOperand = (Register8Operand)blOperand;
+        Assert.Equal(RegisterIndex8.BL, registerOperand.Register);
         Assert.Equal(8, registerOperand.Size); // Validate that it's an 8-bit register (BL)
         
         // Check the second operand (immediate value)

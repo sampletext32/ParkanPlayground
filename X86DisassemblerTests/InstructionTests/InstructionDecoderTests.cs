@@ -31,9 +31,9 @@ public class InstructionDecoderTests
         
         // Check the first operand (AH)
         var ahOperand = instruction.StructuredOperands[0];
-        Assert.IsType<RegisterOperand>(ahOperand);
-        var ahRegisterOperand = (RegisterOperand)ahOperand;
-        Assert.Equal(RegisterIndex.A, ahRegisterOperand.Register);
+        Assert.IsType<Register8Operand>(ahOperand);
+        var ahRegisterOperand = (Register8Operand)ahOperand;
+        Assert.Equal(RegisterIndex8.AH, ahRegisterOperand.Register);
         Assert.Equal(8, ahRegisterOperand.Size); // Validate that it's an 8-bit register (AH)
         
         // Check the second operand (immediate value)
@@ -66,9 +66,9 @@ public class InstructionDecoderTests
         
         // Check the first operand (CL)
         var clOperand = instruction.StructuredOperands[0];
-        Assert.IsType<RegisterOperand>(clOperand);
-        var clRegisterOperand = (RegisterOperand)clOperand;
-        Assert.Equal(RegisterIndex.C, clRegisterOperand.Register);
+        Assert.IsType<Register8Operand>(clOperand);
+        var clRegisterOperand = (Register8Operand)clOperand;
+        Assert.Equal(RegisterIndex8.CL, clRegisterOperand.Register);
         Assert.Equal(8, clRegisterOperand.Size); // Validate that it's an 8-bit register (CL)
         
         // Check the second operand (AL)
@@ -247,9 +247,9 @@ public class InstructionDecoderTests
         
         // Check the first operand (AH)
         var ahOperand = instruction1.StructuredOperands[0];
-        Assert.IsType<RegisterOperand>(ahOperand);
-        var ahRegisterOperand = (RegisterOperand)ahOperand;
-        Assert.Equal(RegisterIndex.A, ahRegisterOperand.Register);
+        Assert.IsType<Register8Operand>(ahOperand);
+        var ahRegisterOperand = (Register8Operand)ahOperand;
+        Assert.Equal(RegisterIndex8.AH, ahRegisterOperand.Register);
         Assert.Equal(8, ahRegisterOperand.Size); // Validate that it's an 8-bit register (AH)
         
         // Check the second operand (immediate value)

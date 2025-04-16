@@ -84,7 +84,40 @@ public class ModRMDecoder
     /// <returns>The operand object</returns>
     public Operand DecodeModRM(byte mod, RegisterIndex rmIndex, bool is64Bit)
     {
-        int operandSize = is64Bit ? 64 : 32;
+        return DecodeModRMInternal(mod, rmIndex, is64Bit ? 64 : 32);
+    }
+    
+    /// <summary>
+    /// Decodes a ModR/M byte to get an 8-bit operand
+    /// </summary>
+    /// <param name="mod">The mod field (2 bits)</param>
+    /// <param name="rmIndex">The r/m field as RegisterIndex</param>
+    /// <returns>The 8-bit operand object</returns>
+    public Operand DecodeModRM8(byte mod, RegisterIndex rmIndex)
+    {
+        return DecodeModRMInternal(mod, rmIndex, 8);
+    }
+    
+    /// <summary>
+    /// Decodes a ModR/M byte to get a 16-bit operand
+    /// </summary>
+    /// <param name="mod">The mod field (2 bits)</param>
+    /// <param name="rmIndex">The r/m field as RegisterIndex</param>
+    /// <returns>The 16-bit operand object</returns>
+    public Operand DecodeModRM16(byte mod, RegisterIndex rmIndex)
+    {
+        return DecodeModRMInternal(mod, rmIndex, 16);
+    }
+    
+    /// <summary>
+    /// Internal implementation for decoding a ModR/M byte to get an operand with specific size
+    /// </summary>
+    /// <param name="mod">The mod field (2 bits)</param>
+    /// <param name="rmIndex">The r/m field as RegisterIndex</param>
+    /// <param name="operandSize">The size of the operand in bits (8, 16, 32, or 64)</param>
+    /// <returns>The operand object</returns>
+    private Operand DecodeModRMInternal(byte mod, RegisterIndex rmIndex, int operandSize)
+    {
 
         switch (mod)
         {
@@ -109,7 +142,7 @@ public class ModRMDecoder
                     if (_decoder.CanReadByte())
                     {
                         byte sib = _decoder.ReadByte();
-                        return DecodeSIB(sib, 0, is64Bit);
+                        return DecodeSIB(sib, 0, operandSize);
                     }
 
                     // Fallback for incomplete data
@@ -127,7 +160,7 @@ public class ModRMDecoder
                     {
                         byte sib = _decoder.ReadByte();
                         sbyte disp8 = (sbyte)(_decoder.CanReadByte() ? _decoder.ReadByte() : 0);
-                        return DecodeSIB(sib, (uint)disp8, is64Bit);
+                        return DecodeSIB(sib, (uint)disp8, operandSize);
                     }
 
                     // Fallback for incomplete data
@@ -161,7 +194,7 @@ public class ModRMDecoder
                     {
                         byte sib = _decoder.ReadByte();
                         uint disp32 = _decoder.ReadUInt32();
-                        return DecodeSIB(sib, disp32, is64Bit);
+                        return DecodeSIB(sib, disp32, operandSize);
                     }
 
                     // Fallback for incomplete data
@@ -270,6 +303,45 @@ public class ModRMDecoder
     }
 
     /// <summary>
+    /// Reads and decodes a ModR/M byte for 16-bit operands
+    /// </summary>
+    /// <returns>A tuple containing the mod, reg, rm fields and the decoded operand</returns>
+    public (byte mod, RegisterIndex reg, RegisterIndex rm, Operand operand) ReadModRM16()
+    {
+        var (mod, reg, rm, operand) = ReadModRMInternal(false);
+        
+        // Create a new operand with 16-bit size using the appropriate factory method
+        if (operand is RegisterOperand registerOperand)
+        {
+            // For register operands, create a new 16-bit register operand
+            operand = OperandFactory.CreateRegisterOperand(registerOperand.Register, 16);
+        }
+        else if (operand is MemoryOperand)
+        {
+            // For memory operands, create a new 16-bit memory operand with the same properties
+            // This depends on the specific type of memory operand
+            if (operand is DirectMemoryOperand directMemory)
+            {
+                operand = OperandFactory.CreateDirectMemoryOperand16(directMemory.Address);
+            }
+            else if (operand is BaseRegisterMemoryOperand baseRegMemory)
+            {
+                operand = OperandFactory.CreateBaseRegisterMemoryOperand16(baseRegMemory.BaseRegister);
+            }
+            else if (operand is DisplacementMemoryOperand dispMemory)
+            {
+                operand = OperandFactory.CreateDisplacementMemoryOperand16(dispMemory.BaseRegister, dispMemory.Displacement);
+            }
+            else if (operand is ScaledIndexMemoryOperand scaledMemory)
+            {
+                operand = OperandFactory.CreateScaledIndexMemoryOperand16(scaledMemory.IndexRegister, scaledMemory.Scale, scaledMemory.BaseRegister, scaledMemory.Displacement);
+            }
+        }
+        
+        return (mod, reg, rm, operand);
+    }
+
+    /// <summary>
     /// Internal implementation for reading and decoding a ModR/M byte for standard 32-bit or 64-bit operands
     /// </summary>
     /// <param name="is64Bit">True if the operand is 64-bit</param>
@@ -332,8 +404,9 @@ public class ModRMDecoder
         {
             // For memory operands, we need to map the RegisterIndex8 to RegisterIndex for base registers
             RegisterIndex rmRegIndex = MapRegister8ToBaseRegister(rm);
-            operand = DecodeModRM(mod, rmRegIndex, false);
-            operand.Size = 8; // Set size to 8 bits
+            
+            // Use the DecodeModRM8 method to get an 8-bit memory operand
+            operand = DecodeModRM8(mod, rmRegIndex);
         }
 
         return (mod, reg, rm, operand);
@@ -344,11 +417,10 @@ public class ModRMDecoder
     /// </summary>
     /// <param name="sib">The SIB byte</param>
     /// <param name="displacement">The displacement value</param>
-    /// <param name="is64Bit">True if the operand is 64-bit</param>
+    /// <param name="operandSize">The size of the operand in bits (8, 16, 32, or 64)</param>
     /// <returns>The decoded SIB operand</returns>
-    private Operand DecodeSIB(byte sib, uint displacement, bool is64Bit)
+    private Operand DecodeSIB(byte sib, uint displacement, int operandSize)
     {
-        int operandSize = is64Bit ? 64 : 32;
 
         // Extract fields from SIB byte
         byte scale = (byte)((sib & SIB_SCALE_MASK) >> 6);

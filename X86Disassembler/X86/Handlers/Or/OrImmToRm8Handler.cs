@@ -51,14 +51,13 @@ public class OrImmToRm8Handler : InstructionHandler
             return false;
         }
 
-        // Read the ModR/M byte
+        // Read the ModR/M byte, specifying that we're dealing with 8-bit operands
         // For OR r/m8, imm8 (0x80 /1):
         // - The r/m field with mod specifies the destination operand (register or memory)
         // - The immediate value is the source operand
-        var (_, _, _, destinationOperand) = ModRMDecoder.ReadModRM();
+        var (_, _, _, destinationOperand) = ModRMDecoder.ReadModRM8();
         
-        // Adjust the operand size to 8-bit
-        destinationOperand.Size = 8;
+        // Note: The operand size is already set to 8-bit by the ReadModRM8 method
 
         // Read the immediate value
         if (!Decoder.CanReadByte())

@@ -11,9 +11,20 @@ public abstract class Operand
     public OperandType Type { get; protected set; }
     
     /// <summary>
-    /// Gets or sets the size of the operand in bits (8, 16, 32)
+    /// Gets the size of the operand in bits (8, 16, 32)
     /// </summary>
-    public int Size { get; set; }
+    public int Size { get; protected set; }
+    
+    /// <summary>
+    /// Sets the size of the operand in bits
+    /// </summary>
+    /// <param name="size">The new size in bits (8, 16, 32, or 64)</param>
+    /// <returns>The operand instance for method chaining</returns>
+    public virtual Operand WithSize(int size)
+    {
+        Size = size;
+        return this;
+    }
     
     /// <summary>
     /// Returns a string representation of this operand

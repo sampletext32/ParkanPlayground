@@ -50,11 +50,10 @@ public class AddImmToRm8Handler : InstructionHandler
             return false;
         }
 
-        // Read the ModR/M byte
-        var (_, _, _, destOperand) = ModRMDecoder.ReadModRM();
+        // Read the ModR/M byte, specifying that we're dealing with 8-bit operands
+        var (_, _, _, destOperand) = ModRMDecoder.ReadModRM8();
 
-        // Adjust the operand size to 8-bit
-        destOperand.Size = 8;
+        // Note: The operand size is already set to 8-bit by the ReadModRM8 method
 
         // Read the immediate value
         if (!Decoder.CanReadByte())

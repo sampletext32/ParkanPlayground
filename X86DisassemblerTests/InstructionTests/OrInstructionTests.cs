@@ -31,9 +31,9 @@ public class OrInstructionTests
         
         // Check the first operand (CL)
         var clOperand = instruction.StructuredOperands[0];
-        Assert.IsType<RegisterOperand>(clOperand);
-        var registerOperand1 = (RegisterOperand)clOperand;
-        Assert.Equal(RegisterIndex.C, registerOperand1.Register);
+        Assert.IsType<Register8Operand>(clOperand);
+        var registerOperand1 = (Register8Operand)clOperand;
+        Assert.Equal(RegisterIndex8.CL, registerOperand1.Register);
         Assert.Equal(8, registerOperand1.Size); // Validate that it's an 8-bit register (CL)
         
         // Check the second operand (AL)
@@ -67,9 +67,9 @@ public class OrInstructionTests
         
         // Check the first operand (AL)
         var alOperand = instruction.StructuredOperands[0];
-        Assert.IsType<RegisterOperand>(alOperand);
-        var registerOperand = (RegisterOperand)alOperand;
-        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.IsType<Register8Operand>(alOperand);
+        var registerOperand = (Register8Operand)alOperand;
+        Assert.Equal(RegisterIndex8.AL, registerOperand.Register);
         Assert.Equal(8, registerOperand.Size); // Validate that it's an 8-bit register (AL)
         
         // Check the second operand (memory operand)

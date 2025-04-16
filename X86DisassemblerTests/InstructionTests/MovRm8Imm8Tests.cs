@@ -31,9 +31,9 @@ public class MovRm8Imm8Tests
         
         // Check the first operand (AL)
         var alOperand = instruction.StructuredOperands[0];
-        Assert.IsType<RegisterOperand>(alOperand);
-        var registerOperand = (RegisterOperand)alOperand;
-        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.IsType<Register8Operand>(alOperand);
+        var registerOperand = (Register8Operand)alOperand;
+        Assert.Equal(RegisterIndex8.AL, registerOperand.Register);
         Assert.Equal(8, registerOperand.Size); // Validate that it's an 8-bit register (AL)
         
         // Check the second operand (immediate value)

@@ -33,9 +33,9 @@ public class SubRm8Imm8Tests
         
         // Check the first operand (BL)
         var blOperand = instruction.StructuredOperands[0];
-        Assert.IsType<RegisterOperand>(blOperand);
-        var registerOperand = (RegisterOperand)blOperand;
-        Assert.Equal(RegisterIndex.B, registerOperand.Register);
+        Assert.IsType<Register8Operand>(blOperand);
+        var registerOperand = (Register8Operand)blOperand;
+        Assert.Equal(RegisterIndex8.BL, registerOperand.Register);
         Assert.Equal(8, registerOperand.Size); // Validate that it's an 8-bit register (BL)
         
         // Check the second operand (immediate value)

@@ -73,9 +73,9 @@ public class TestInstructionHandlerTests
         
         // Check the first operand (CL)
         var clOperand = instruction.StructuredOperands[0];
-        Assert.IsType<RegisterOperand>(clOperand);
-        var registerOperand1 = (RegisterOperand)clOperand;
-        Assert.Equal(RegisterIndex.C, registerOperand1.Register);
+        Assert.IsType<Register8Operand>(clOperand);
+        var registerOperand1 = (Register8Operand)clOperand;
+        Assert.Equal(RegisterIndex8.CL, registerOperand1.Register);
         Assert.Equal(8, registerOperand1.Size); // Validate that it's an 8-bit register (CL)
         
         // Check the second operand (AL)
@@ -188,9 +188,9 @@ public class TestInstructionHandlerTests
         
         // Check the first operand (AH)
         var ahOperand = instruction.StructuredOperands[0];
-        Assert.IsType<RegisterOperand>(ahOperand);
-        var registerOperand = (RegisterOperand)ahOperand;
-        Assert.Equal(RegisterIndex.A, registerOperand.Register);
+        Assert.IsType<Register8Operand>(ahOperand);
+        var registerOperand = (Register8Operand)ahOperand;
+        Assert.Equal(RegisterIndex8.AH, registerOperand.Register);
         Assert.Equal(8, registerOperand.Size); // Validate that it's an 8-bit register (AH)
         
         // Check the second operand (immediate value)

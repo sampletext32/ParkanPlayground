@@ -52,11 +52,10 @@ public class XorImmWithRm16Handler : InstructionHandler
             return false;
         }
         
-        // Read the ModR/M byte
-        var (_, _, _, destinationOperand) = ModRMDecoder.ReadModRM();
+        // Read the ModR/M byte, specifying that we're dealing with 16-bit operands
+        var (_, _, _, destinationOperand) = ModRMDecoder.ReadModRM16();
         
-        // Ensure the destination operand has the correct size (16-bit)
-        destinationOperand.Size = 16;
+        // Note: The operand size is already set to 16-bit by the ReadModRM16 method
         
         // Check if we have enough bytes for the immediate value
         if (!Decoder.CanReadUShort())

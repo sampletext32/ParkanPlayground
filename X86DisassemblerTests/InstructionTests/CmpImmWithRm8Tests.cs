@@ -30,9 +30,9 @@ public class CmpImmWithRm8Tests
         
         // Check the first operand (CL)
         var clOperand = instructions[0].StructuredOperands[0];
-        Assert.IsType<RegisterOperand>(clOperand);
-        var registerOperand = (RegisterOperand)clOperand;
-        Assert.Equal(RegisterIndex.C, registerOperand.Register);
+        Assert.IsType<Register8Operand>(clOperand);
+        var registerOperand = (Register8Operand)clOperand;
+        Assert.Equal(RegisterIndex8.CL, registerOperand.Register);
         Assert.Equal(8, registerOperand.Size); // Validate that it's an 8-bit register (CL)
         
         // Check the second operand (immediate value)

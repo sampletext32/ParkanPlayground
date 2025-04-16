@@ -196,10 +196,10 @@ public class InstructionSequenceTests
         
         // Check the first operand (AL)
         var alOperand = instructions[5].StructuredOperands[0];
-        Assert.IsType<RegisterOperand>(alOperand);
-        registerOperand = (RegisterOperand)alOperand;
-        Assert.Equal(RegisterIndex.A, registerOperand.Register);
-        Assert.Equal(8, registerOperand.Size); // Validate that it's an 8-bit register (AL)
+        Assert.IsType<Register8Operand>(alOperand);
+        var registerOperand2 = (Register8Operand)alOperand;
+        Assert.Equal(RegisterIndex8.AL, registerOperand2.Register);
+        Assert.Equal(8, registerOperand2.Size); // Validate that it's an 8-bit register (AL)
         
         // Check the second operand (memory operand)
         memOperand = instructions[5].StructuredOperands[1];

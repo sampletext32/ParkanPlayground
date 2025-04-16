@@ -107,7 +107,7 @@ public class LoadStoreControlHandler : InstructionHandler
         }
         
         // Read the ModR/M byte
-        var (mod, reg, rm, memoryOperand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, rawMemoryOperand) = ModRMDecoder.ReadModRM();
         
         // Handle based on addressing mode
         if (mod != 3) // Memory operand
@@ -115,16 +115,60 @@ public class LoadStoreControlHandler : InstructionHandler
             // Set the instruction type based on the reg field
             instruction.Type = MemoryInstructionTypes[(int)reg];
             
-            // Set the size based on the operation
+            // Create a new memory operand with the appropriate size based on the operation
+            Operand memoryOperand;
+            
             if (reg == RegisterIndex.A || reg == RegisterIndex.C || reg == RegisterIndex.D) // fld, fst, fstp
             {
-                // Keep the default 32-bit size for floating point operations
-                memoryOperand.Size = 32;
+                // Create a 32-bit memory operand for floating point operations
+                if (rawMemoryOperand is DirectMemoryOperand directMemory)
+                {
+                    memoryOperand = OperandFactory.CreateDirectMemoryOperand(directMemory.Address, 32);
+                }
+                else if (rawMemoryOperand is BaseRegisterMemoryOperand baseRegMemory)
+                {
+                    memoryOperand = OperandFactory.CreateBaseRegisterMemoryOperand(baseRegMemory.BaseRegister, 32);
+                }
+                else if (rawMemoryOperand is DisplacementMemoryOperand dispMemory)
+                {
+                    memoryOperand = OperandFactory.CreateDisplacementMemoryOperand(dispMemory.BaseRegister, dispMemory.Displacement, 32);
+                }
+                else if (rawMemoryOperand is ScaledIndexMemoryOperand scaledMemory)
+                {
+                    memoryOperand = OperandFactory.CreateScaledIndexMemoryOperand(scaledMemory.IndexRegister, scaledMemory.Scale, scaledMemory.BaseRegister, scaledMemory.Displacement, 32);
+                }
+                else
+                {
+                    memoryOperand = rawMemoryOperand;
+                }
             }
             else if (reg == RegisterIndex.Di || reg == RegisterIndex.Bp) // fldcw, fnstcw
             {
-                // Set to 16-bit for control word operations
-                memoryOperand.Size = 16;
+                // Create a 16-bit memory operand for control word operations
+                if (rawMemoryOperand is DirectMemoryOperand directMemory)
+                {
+                    memoryOperand = OperandFactory.CreateDirectMemoryOperand16(directMemory.Address);
+                }
+                else if (rawMemoryOperand is BaseRegisterMemoryOperand baseRegMemory)
+                {
+                    memoryOperand = OperandFactory.CreateBaseRegisterMemoryOperand16(baseRegMemory.BaseRegister);
+                }
+                else if (rawMemoryOperand is DisplacementMemoryOperand dispMemory)
+                {
+                    memoryOperand = OperandFactory.CreateDisplacementMemoryOperand16(dispMemory.BaseRegister, dispMemory.Displacement);
+                }
+                else if (rawMemoryOperand is ScaledIndexMemoryOperand scaledMemory)
+                {
+                    memoryOperand = OperandFactory.CreateScaledIndexMemoryOperand16(scaledMemory.IndexRegister, scaledMemory.Scale, scaledMemory.BaseRegister, scaledMemory.Displacement);
+                }
+                else
+                {
+                    memoryOperand = rawMemoryOperand;
+                }
+            }
+            else
+            {
+                memoryOperand = rawMemoryOperand;
             }
             
             // Set the structured operands

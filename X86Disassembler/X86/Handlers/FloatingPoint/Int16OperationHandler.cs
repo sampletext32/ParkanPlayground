@@ -120,8 +120,8 @@ public class Int16OperationHandler : InstructionHandler
             return false;
         }
 
-        // Read the ModR/M byte
-        var (mod, reg, rm, memoryOperand) = ModRMDecoder.ReadModRM();
+        // Read the ModR/M byte, specifying that we're dealing with 16-bit operands
+        var (mod, reg, rm, memoryOperand) = ModRMDecoder.ReadModRM16();
 
         // Handle based on addressing mode
         if (mod != 3) // Memory operand
@@ -129,10 +129,8 @@ public class Int16OperationHandler : InstructionHandler
             // Set the instruction type based on the reg field
             instruction.Type = MemoryInstructionTypes[(int)reg];
             
-            // For memory operands, we need to set the size to 16-bit
-            // Create a new memory operand with 16-bit size
+            // Note: The operand size is already set to 16-bit by the ReadModRM16 method
             var int16Operand = memoryOperand;
-            int16Operand.Size = 16;
             
             // Set the structured operands
             instruction.StructuredOperands = 
