@@ -19,7 +19,7 @@ public class TwoByteConditionalJumpHandler : InstructionHandler
     [
         InstructionType.Jo, InstructionType.Jno, InstructionType.Jb, InstructionType.Jae, 
         InstructionType.Jz, InstructionType.Jnz, InstructionType.Jbe, InstructionType.Ja,
-        InstructionType.Js, InstructionType.Jns, InstructionType.Unknown, InstructionType.Unknown, 
+        InstructionType.Js, InstructionType.Jns, InstructionType.Jp, InstructionType.Jnp, 
         InstructionType.Jl, InstructionType.Jge, InstructionType.Jle, InstructionType.Jg
     ];
 
