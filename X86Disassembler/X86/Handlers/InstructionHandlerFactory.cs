@@ -231,11 +231,18 @@ public class InstructionHandlerFactory
     /// </summary>
     private void RegisterCmpHandlers()
     {
-        // Add Cmp handlers
+        // Add Cmp handlers for 32-bit operands
         _handlers.Add(new CmpR32Rm32Handler(_decoder));
         _handlers.Add(new CmpRm32R32Handler(_decoder));
+        
+        // Add Cmp handlers for 8-bit operands
+        _handlers.Add(new CmpRm8R8Handler(_decoder));  // CMP r/m8, r8 (opcode 38)
+        _handlers.Add(new CmpR8Rm8Handler(_decoder));  // CMP r8, r/m8 (opcode 3A)
+        
+        // Add Cmp handlers for immediate operands
         _handlers.Add(new CmpImmWithRm8Handler(_decoder));
-        _handlers.Add(new CmpAlImmHandler(_decoder));
+        _handlers.Add(new CmpAlImmHandler(_decoder));  // CMP AL, imm8 (opcode 3C)
+        _handlers.Add(new CmpEaxImmHandler(_decoder)); // CMP EAX, imm32 (opcode 3D)
 
         // Add CMP immediate handlers from ArithmeticImmediate namespace
         _handlers.Add(new CmpImmWithRm32Handler(_decoder));

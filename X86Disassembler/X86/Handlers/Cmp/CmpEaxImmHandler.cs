@@ -1,17 +1,17 @@
+using X86Disassembler.X86.Operands;
+
 namespace X86Disassembler.X86.Handlers.Cmp;
 
-using Operands;
-
 /// <summary>
-/// Handler for CMP AL, imm8 instruction (0x3C)
+/// Handler for CMP EAX, imm32 instruction (opcode 3D)
 /// </summary>
-public class CmpAlImmHandler : InstructionHandler
+public class CmpEaxImmHandler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the CmpAlImmHandler class
+    /// Initializes a new instance of the CmpEaxImmHandler class
     /// </summary>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    public CmpAlImmHandler(InstructionDecoder decoder)
+    public CmpEaxImmHandler(InstructionDecoder decoder)
         : base(decoder)
     {
     }
@@ -23,11 +23,12 @@ public class CmpAlImmHandler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        return opcode == 0x3C;
+        // CMP EAX, imm32 is encoded as 3D
+        return opcode == 0x3D;
     }
 
     /// <summary>
-    /// Decodes a CMP AL, imm8 instruction
+    /// Decodes a CMP EAX, imm32 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -37,25 +38,21 @@ public class CmpAlImmHandler : InstructionHandler
         // Set the instruction type
         instruction.Type = InstructionType.Cmp;
 
-        if (!Decoder.CanReadByte())
+        // Check if we have enough bytes for the immediate value
+        if (!Decoder.CanReadUInt())
         {
             return false;
         }
 
         // Read the immediate value
-        byte imm8 = Decoder.ReadByte();
+        uint imm32 = Decoder.ReadUInt32();
 
-        // Create the register operand for AL
-        var alOperand = OperandFactory.CreateRegisterOperand8(RegisterIndex8.AL);
-        
-        // Create the immediate operand
-        var immOperand = OperandFactory.CreateImmediateOperand(imm8, 8);
-        
         // Set the structured operands
+        // CMP EAX, imm32 has two operands: EAX and the immediate value
         instruction.StructuredOperands = 
         [
-            alOperand,
-            immOperand
+            OperandFactory.CreateRegisterOperand(RegisterIndex.A),
+            OperandFactory.CreateImmediateOperand(imm32)
         ];
 
         return true;

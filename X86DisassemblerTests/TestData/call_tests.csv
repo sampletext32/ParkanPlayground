@@ -41,19 +41,19 @@ FF14D9;[{ "Type": "Call", "Operands": ["dword ptr [ecx+ebx*8]"] }]
 # FF149D;[{ "Type": "Call", "Operands": ["dword ptr [ebp+ebx*4]"] }]
 
 # CALL m32 (opcode FF /2) with displacement
-FF5000;[{ "Type": "Call", "Operands": ["dword ptr [eax+0x0]"] }]
+FF5000;[{ "Type": "Call", "Operands": ["dword ptr [eax+0x00]"] }]
 FF5010;[{ "Type": "Call", "Operands": ["dword ptr [eax+0x10]"] }]
 FF90FFFFFF7F;[{ "Type": "Call", "Operands": ["dword ptr [eax+0x7FFFFFFF]"] }]
 FF9000000080;[{ "Type": "Call", "Operands": ["dword ptr [eax+0x80000000]"] }]
 
 # CALL m32 (opcode FF /2) with SIB and displacement
-FF5400FF;[{ "Type": "Call", "Operands": ["dword ptr [eax+eax*1-0x1]"] }]
-FF54C0FF;[{ "Type": "Call", "Operands": ["dword ptr [eax+eax*8-0x1]"] }]
-FF5444FF;[{ "Type": "Call", "Operands": ["dword ptr [esp+eax*2-0x1]"] }]
-FF5485FF;[{ "Type": "Call", "Operands": ["dword ptr [ebp+eax*4-0x1]"] }]
-FF5498FF;[{ "Type": "Call", "Operands": ["dword ptr [eax+ebx*4-0x1]"] }]
-FF54D9FF;[{ "Type": "Call", "Operands": ["dword ptr [ecx+ebx*8-0x1]"] }]
-FF549DFF;[{ "Type": "Call", "Operands": ["dword ptr [ebp+ebx*4-0x1]"] }]
+FF5400FF;[{ "Type": "Call", "Operands": ["dword ptr [eax+eax*1-0x01]"] }]
+FF54C0FF;[{ "Type": "Call", "Operands": ["dword ptr [eax+eax*8-0x01]"] }]
+FF5444FF;[{ "Type": "Call", "Operands": ["dword ptr [esp+eax*2-0x01]"] }]
+FF5485FF;[{ "Type": "Call", "Operands": ["dword ptr [ebp+eax*4-0x01]"] }]
+FF5498FF;[{ "Type": "Call", "Operands": ["dword ptr [eax+ebx*4-0x01]"] }]
+FF54D9FF;[{ "Type": "Call", "Operands": ["dword ptr [ecx+ebx*8-0x01]"] }]
+FF549DFF;[{ "Type": "Call", "Operands": ["dword ptr [ebp+ebx*4-0x01]"] }]
 
 # CALL m16:32 (opcode FF /3) - Far call with memory operand
 FF1C;[{ "Type": "Call", "Operands": ["fword ptr [esp]"] }]

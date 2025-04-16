@@ -43,9 +43,10 @@ F7349C;[{ "Type": "Div", "Operands": ["dword ptr [esp+ebx*4]"] }]
 F734DC;[{ "Type": "Div", "Operands": ["dword ptr [esp+ebx*8]"] }]
 
 # With segment override prefixes
-26F73425;[{ "Type": "Div", "Operands": ["dword ptr es:[eax]"] }]
-2EF73425;[{ "Type": "Div", "Operands": ["dword ptr cs:[eax]"] }]
-36F73425;[{ "Type": "Div", "Operands": ["dword ptr ss:[eax]"] }]
-3EF73425;[{ "Type": "Div", "Operands": ["dword ptr ds:[eax]"] }]
-64F73425;[{ "Type": "Div", "Operands": ["dword ptr fs:[eax]"] }]
-65F73425;[{ "Type": "Div", "Operands": ["dword ptr gs:[eax]"] }]
+# not recognized by ghidra or online disasms
+# 26F73425;[{ "Type": "Div", "Operands": ["dword ptr es:[eax]"] }]
+# 2EF73425;[{ "Type": "Div", "Operands": ["dword ptr cs:[eax]"] }]
+# 36F73425;[{ "Type": "Div", "Operands": ["dword ptr ss:[eax]"] }]
+# 3EF73425;[{ "Type": "Div", "Operands": ["dword ptr ds:[eax]"] }]
+# 64F73425;[{ "Type": "Div", "Operands": ["dword ptr fs:[eax]"] }]
+# 65F73425;[{ "Type": "Div", "Operands": ["dword ptr gs:[eax]"] }]

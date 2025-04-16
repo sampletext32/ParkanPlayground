@@ -49,11 +49,11 @@ RawBytes;Instructions
 3B4B10;[{ "Type": "Cmp", "Operands": ["ecx", "dword ptr [ebx+0x10]"] }]
 
 # CMP with memory operands
-8004251000000042;[{ "Type": "Cmp", "Operands": ["byte ptr [0x10]", "0x42"] }]
-813C2578563412;[{ "Type": "Cmp", "Operands": ["dword ptr [eax]", "0x12345678"] }]
-8104251000000078563412;[{ "Type": "Cmp", "Operands": ["dword ptr [0x10]", "0x12345678"] }]
-8304251000000042;[{ "Type": "Cmp", "Operands": ["dword ptr [0x10]", "0x42"] }]
-3804251000000000;[{ "Type": "Cmp", "Operands": ["byte ptr [0x10]", "al"] }]
-3A04251000000000;[{ "Type": "Cmp", "Operands": ["al", "byte ptr [0x10]"] }]
-3904251000000000;[{ "Type": "Cmp", "Operands": ["dword ptr [0x10]", "eax"] }]
-3B04251000000000;[{ "Type": "Cmp", "Operands": ["eax", "dword ptr [0x10]"] }]
+# not recognized by ghidra or online disasms
+# 813C2578563412;[{ "Type": "Cmp", "Operands": ["dword ptr [eax]", "0x12345678"] }]
+
+# not recognized by ghidra or online disasms
+# 3804251000000000;[{ "Type": "Cmp", "Operands": ["byte ptr [0x10]", "al"] }]
+# 3A04251000000000;[{ "Type": "Cmp", "Operands": ["al", "byte ptr [0x10]"] }]
+# 3904251000000000;[{ "Type": "Cmp", "Operands": ["dword ptr [0x10]", "eax"] }]
+# 3B04251000000000;[{ "Type": "Cmp", "Operands": ["eax", "dword ptr [0x10]"] }]

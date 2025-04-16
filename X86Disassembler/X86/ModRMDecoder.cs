@@ -102,13 +102,7 @@ public class ModRMDecoder
                     {
                         sbyte disp8 = (sbyte)_decoder.ReadByte();
 
-                        // For EBP (BP), always create a displacement memory operand, even if displacement is 0
-                        // This is because [EBP] with no displacement is encoded as [EBP+0]
-                        if (disp8 == 0 && rmIndex != RegisterIndex.Bp)
-                        {
-                            return OperandFactory.CreateBaseRegisterMemoryOperand(rmIndex, operandSize);
-                        }
-
+                        // Always create a displacement memory operand for mod=1, even if displacement is 0
                         return OperandFactory.CreateDisplacementMemoryOperand(rmIndex, disp8, operandSize);
                     }
 
@@ -140,7 +134,8 @@ public class ModRMDecoder
                         // This is because [EBP] with no displacement is encoded as [EBP+disp]
                         if (rmIndex == RegisterIndex.Bp)
                         {
-                            return OperandFactory.CreateDisplacementMemoryOperand(rmIndex, (int)disp32, operandSize);
+                            // Cast to long to preserve the unsigned value for large displacements
+                            return OperandFactory.CreateDisplacementMemoryOperand(rmIndex, (long)disp32, operandSize);
                         }
 
                         // Only show displacement if it's not zero
@@ -149,7 +144,8 @@ public class ModRMDecoder
                             return OperandFactory.CreateBaseRegisterMemoryOperand(rmIndex, operandSize);
                         }
 
-                        return OperandFactory.CreateDisplacementMemoryOperand(rmIndex, (int)disp32, operandSize);
+                        // Cast to long to preserve the unsigned value for large displacements
+                        return OperandFactory.CreateDisplacementMemoryOperand(rmIndex, (long)disp32, operandSize);
                     }
 
                     // Fallback for incomplete data
