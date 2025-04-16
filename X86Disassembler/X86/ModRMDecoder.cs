@@ -186,6 +186,18 @@ public class ModRMDecoder
     }
 
     /// <summary>
+    /// Extracts modRM reg field 
+    /// </summary>
+    /// <returns>A reg from the ModR/M byte</returns>
+    public static byte GetRegFromModRM(byte modRm)
+    {
+        // Extract fields from ModR/M byte
+        byte regIndex = (byte)((modRm & Constants.REG_MASK) >> 3);  // Middle 3 bits (bits 3-5)
+
+        return regIndex;
+    }
+
+    /// <summary>
     /// Reads and decodes a ModR/M byte for standard 32-bit operands
     /// </summary>
     /// <returns>A tuple containing the mod, reg, rm fields and the decoded operand</returns>

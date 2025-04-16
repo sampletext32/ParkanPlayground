@@ -46,7 +46,7 @@ public class SubAlImm8Handler : InstructionHandler
         instruction.Type = InstructionType.Sub;
         
         // Create the destination register operand (AL)
-        var destinationOperand = OperandFactory.CreateRegisterOperand(RegisterIndex.A, 8);
+        var destinationOperand = OperandFactory.CreateRegisterOperand8(RegisterIndex8.AL);
         
         // Create the source immediate operand
         var sourceOperand = OperandFactory.CreateImmediateOperand(imm8, 8);

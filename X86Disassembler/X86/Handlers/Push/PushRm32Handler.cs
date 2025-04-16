@@ -38,7 +38,9 @@ public class PushRm32Handler : InstructionHandler
         var reg = ModRMDecoder.PeakModRMReg();
         
         // PUSH r/m32 is encoded as FF /6 (reg field = 6)
-        return reg == 6;
+        // Only handle when the operand size prefix is NOT present
+        // This ensures 16-bit handlers get priority when the prefix is present
+        return reg == 6 && !Decoder.HasOperandSizePrefix();
     }
 
     /// <summary>

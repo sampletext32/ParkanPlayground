@@ -11,9 +11,9 @@ RawBytes;Instructions
 6AFF;[{ "Type": "Push", "Operands": ["0xFF"] }]
 
 # PUSH imm32 with various values
-6800000000;[{ "Type": "Push", "Operands": ["0x00000000"] }]
+6800000000;[{ "Type": "Push", "Operands": ["0x00"] }]
 68FFFFFFFF;[{ "Type": "Push", "Operands": ["0xFFFFFFFF"] }]
-6801000000;[{ "Type": "Push", "Operands": ["0x00000001"] }]
+6801000000;[{ "Type": "Push", "Operands": ["0x01"] }]
 
 # PUSH imm16 with operand size prefix
 66687856;[{ "Type": "Push", "Operands": ["0x5678"] }]

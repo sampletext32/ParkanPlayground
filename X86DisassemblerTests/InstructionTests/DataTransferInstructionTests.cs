@@ -148,9 +148,9 @@ public class DataTransferInstructionTests
         
         // Check the first operand (AL)
         var alOperand = instruction.StructuredOperands[0];
-        Assert.IsType<RegisterOperand>(alOperand);
-        var alRegisterOperand = (RegisterOperand)alOperand;
-        Assert.Equal(RegisterIndex.A, alRegisterOperand.Register);
+        Assert.IsType<Register8Operand>(alOperand);
+        var alRegisterOperand = (Register8Operand)alOperand;
+        Assert.Equal(RegisterIndex8.AL, alRegisterOperand.Register);
         Assert.Equal(8, alRegisterOperand.Size); // Validate that it's an 8-bit register (AL)
         
         // Check the second operand (Immediate)

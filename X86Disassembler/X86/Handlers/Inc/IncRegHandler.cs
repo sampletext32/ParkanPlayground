@@ -24,7 +24,9 @@ public class IncRegHandler : InstructionHandler
     public override bool CanHandle(byte opcode)
     {
         // INC EAX = 0x40, INC ECX = 0x41, ..., INC EDI = 0x47
-        return opcode >= 0x40 && opcode <= 0x47;
+        // Only handle when the operand size prefix is NOT present
+        // This ensures 16-bit handlers get priority when the prefix is present
+        return opcode >= 0x40 && opcode <= 0x47 && !Decoder.HasOperandSizePrefix();
     }
 
     /// <summary>

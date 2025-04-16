@@ -22,46 +22,23 @@ F7F5;[{ "Type": "Div", "Operands": ["ebp"] }]
 F7F6;[{ "Type": "Div", "Operands": ["esi"] }]
 F7F7;[{ "Type": "Div", "Operands": ["edi"] }]
 
-# DIV with memory operands
 # Basic memory addressing
 
-# SPECIAL CASE: When using SIB byte with Base=101 (EBP) and Mod=00, it requires a 32-bit displacement
-# The correct encoding for "DIV byte ptr [eax]" would be F630 (with Mod=00, R/M=0 for EAX)
-# F63425;[{ "Type": "Div", "Operands": ["byte ptr [eax]"] }]
 F630;[{ "Type": "Div", "Operands": ["byte ptr [eax]"] }]
 
-# For "DIV byte ptr [ebp]", we need to use Mod=01 with a zero displacement since [ebp] can't be encoded with Mod=00
-# F63C25;[{ "Type": "Div", "Operands": ["byte ptr [ebp]"] }]
-F66500;[{ "Type": "Div", "Operands": ["byte ptr [ebp]"] }]
-
-# The correct encoding for "DIV byte ptr [eax]" would be F630 (with Mod=00, R/M=0 for EAX)
-# F63825;[{ "Type": "Div", "Operands": ["byte ptr [eax]"] }]
 F630;[{ "Type": "Div", "Operands": ["byte ptr [eax]"] }]
 
-# The correct encoding for "DIV dword ptr [eax]" would be F730 (with Mod=00, R/M=0 for EAX)
-# F73425;[{ "Type": "Div", "Operands": ["dword ptr [eax]"] }]
 F730;[{ "Type": "Div", "Operands": ["dword ptr [eax]"] }]
 
-# For "DIV dword ptr [ebp]", we need to use Mod=01 with a zero displacement since [ebp] can't be encoded with Mod=00
-# F73C25;[{ "Type": "Div", "Operands": ["dword ptr [ebp]"] }]
-F76500;[{ "Type": "Div", "Operands": ["dword ptr [ebp]"] }]
+F77500;[{ "Type": "Div", "Operands": ["dword ptr [ebp+0x00]"] }]
 
-# The correct encoding for "DIV dword ptr [eax]" would be F730 (with Mod=00, R/M=0 for EAX)
-# F73825;[{ "Type": "Div", "Operands": ["dword ptr [eax]"] }]
 F730;[{ "Type": "Div", "Operands": ["dword ptr [eax]"] }]
 
-# With displacement
-# The correct encoding for "DIV dword ptr [eax+0x10]" would be F74010 (with Mod=01, R/M=0 for EAX, disp8=0x10)
-# F7742510000000;[{ "Type": "Div", "Operands": ["dword ptr [eax+0x10]"] }]
-F74010;[{ "Type": "Div", "Operands": ["dword ptr [eax+0x10]"] }]
+F77010;[{ "Type": "Div", "Operands": ["dword ptr [eax+0x10]"] }]
 
-# The correct encoding for "DIV dword ptr [eax+0x20]" would be F74020 (with Mod=01, R/M=0 for EAX, disp8=0x20)
-# F7742520000000;[{ "Type": "Div", "Operands": ["dword ptr [eax+0x20]"] }]
-F74020;[{ "Type": "Div", "Operands": ["dword ptr [eax+0x20]"] }]
+F77020;[{ "Type": "Div", "Operands": ["dword ptr [eax+0x20]"] }]
 
-# The correct encoding for "DIV dword ptr [eax+0x30]" would be F74030 (with Mod=01, R/M=0 for EAX, disp8=0x30)
-# F7742530000000;[{ "Type": "Div", "Operands": ["dword ptr [eax+0x30]"] }]
-F74030;[{ "Type": "Div", "Operands": ["dword ptr [eax+0x30]"] }]
+F77030;[{ "Type": "Div", "Operands": ["dword ptr [eax+0x30]"] }]
 
 # With SIB addressing
 F7341C;[{ "Type": "Div", "Operands": ["dword ptr [esp+ebx*1]"] }]
@@ -70,10 +47,9 @@ F7349C;[{ "Type": "Div", "Operands": ["dword ptr [esp+ebx*4]"] }]
 F734DC;[{ "Type": "Div", "Operands": ["dword ptr [esp+ebx*8]"] }]
 
 # With segment override prefixes
-# not recognized by ghidra or online disasms
-# 26F73425;[{ "Type": "Div", "Operands": ["dword ptr es:[eax]"] }]
-# 2EF73425;[{ "Type": "Div", "Operands": ["dword ptr cs:[eax]"] }]
-# 36F73425;[{ "Type": "Div", "Operands": ["dword ptr ss:[eax]"] }]
-# 3EF73425;[{ "Type": "Div", "Operands": ["dword ptr ds:[eax]"] }]
-# 64F73425;[{ "Type": "Div", "Operands": ["dword ptr fs:[eax]"] }]
-# 65F73425;[{ "Type": "Div", "Operands": ["dword ptr gs:[eax]"] }]
+26F730;[{ "Type": "Div", "Operands": ["dword ptr es:[eax]"] }]
+2EF730;[{ "Type": "Div", "Operands": ["dword ptr cs:[eax]"] }]
+36F730;[{ "Type": "Div", "Operands": ["dword ptr ss:[eax]"] }]
+3EF730;[{ "Type": "Div", "Operands": ["dword ptr ds:[eax]"] }]
+64F730;[{ "Type": "Div", "Operands": ["dword ptr fs:[eax]"] }]
+65F730;[{ "Type": "Div", "Operands": ["dword ptr gs:[eax]"] }]

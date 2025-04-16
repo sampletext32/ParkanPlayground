@@ -24,7 +24,9 @@ public class DecRegHandler : InstructionHandler
     public override bool CanHandle(byte opcode)
     {
         // DEC EAX = 0x48, DEC ECX = 0x49, ..., DEC EDI = 0x4F
-        return opcode >= 0x48 && opcode <= 0x4F;
+        // Only handle when the operand size prefix is NOT present
+        // This ensures 16-bit handlers get priority when the prefix is present
+        return opcode >= 0x48 && opcode <= 0x4F && !Decoder.HasOperandSizePrefix();
     }
 
     /// <summary>

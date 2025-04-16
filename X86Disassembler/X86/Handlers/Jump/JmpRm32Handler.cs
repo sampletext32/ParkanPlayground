@@ -39,7 +39,9 @@ public class JmpRm32Handler : InstructionHandler
         var reg = ModRMDecoder.PeakModRMReg();
         
         // JMP r/m32 is encoded as FF /4 (reg field = 4)
-        return reg == 4;
+        // Only handle when the operand size prefix is NOT present
+        // This ensures 16-bit handlers get priority when the prefix is present
+        return reg == 4 && !Decoder.HasOperandSizePrefix();
     }
 
     /// <summary>

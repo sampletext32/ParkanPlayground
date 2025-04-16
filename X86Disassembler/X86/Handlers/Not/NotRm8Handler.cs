@@ -55,7 +55,7 @@ public class NotRm8Handler : InstructionHandler
         // Read the ModR/M byte
         // For NOT r/m8 (0xF6 /2):
         // - The r/m field with mod specifies the operand (register or memory)
-        var (_, reg, _, operand) = ModRMDecoder.ReadModRM8();
+        var (_, _, _, operand) = ModRMDecoder.ReadModRM8();
 
         // Set the structured operands
         // NOT has only one operand

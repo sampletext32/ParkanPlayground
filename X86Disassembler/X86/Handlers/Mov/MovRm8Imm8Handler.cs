@@ -35,7 +35,7 @@ public class MovRm8Imm8Handler : InstructionHandler
             return false;
         }
         
-        // Peek at the ModR/M byte without advancing the position
+        // Peak at the ModR/M byte without advancing the position
         var reg = ModRMDecoder.PeakModRMReg();
         
         // MOV r/m8, imm8 only uses reg=0

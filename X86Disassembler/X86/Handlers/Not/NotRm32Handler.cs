@@ -33,7 +33,9 @@ public class NotRm32Handler : InstructionHandler
 
         var reg = ModRMDecoder.PeakModRMReg();
 
-        return reg == 2; // 2 = NOT
+        // Only handle when the operand size prefix is NOT present
+        // This ensures 16-bit handlers get priority when the prefix is present
+        return reg == 2 && !Decoder.HasOperandSizePrefix(); // 2 = NOT
     }
 
     /// <summary>
@@ -55,7 +57,7 @@ public class NotRm32Handler : InstructionHandler
         // Read the ModR/M byte
         // For NOT r/m32 (0xF7 /2):
         // - The r/m field with mod specifies the operand (register or memory)
-        var (_, reg, _, operand) = ModRMDecoder.ReadModRM();
+        var (_, _, _, operand) = ModRMDecoder.ReadModRM();
 
         // Set the structured operands
         // NOT has only one operand

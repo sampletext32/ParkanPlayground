@@ -39,7 +39,9 @@ public class CallRm32Handler : InstructionHandler
         var reg = ModRMDecoder.PeakModRMReg();
         
         // CALL r/m32 is encoded as FF /2 (reg field = 2)
-        return reg == 2;
+        // Only handle when the operand size prefix is NOT present
+        // This ensures 16-bit handlers get priority when the prefix is present
+        return reg == 2 && !Decoder.HasOperandSizePrefix();
     }
 
     /// <summary>

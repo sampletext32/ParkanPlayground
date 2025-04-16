@@ -23,7 +23,9 @@ public class PopRegHandler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        return opcode >= 0x58 && opcode <= 0x5F;
+        // Only handle opcodes 0x58-0x5F when the operand size prefix is NOT present
+        // This ensures 16-bit handlers get priority when the prefix is present
+        return opcode >= 0x58 && opcode <= 0x5F && !Decoder.HasOperandSizePrefix();
     }
     
     /// <summary>

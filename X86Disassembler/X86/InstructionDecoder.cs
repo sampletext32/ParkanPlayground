@@ -1,10 +1,14 @@
-using System.Diagnostics;
 using System.Diagnostics.Contracts;
 
 namespace X86Disassembler.X86;
 
 using Handlers;
 using Operands;
+
+public static class Printer
+{
+    public static Action<string>? WriteLine;
+}
 
 /// <summary>
 /// Decodes x86 instructions from a byte buffer
@@ -83,44 +87,19 @@ public class InstructionDecoder
             }
         }
         
-        // If only prefixes were found, return a prefix-only instruction
+        // If only prefixes were found and we're at the end of the buffer, return null
         if (_position > startPosition && !CanReadByte())
-        {
-            // Check for segment override prefix
-            if (_prefixDecoder.HasSegmentOverridePrefix())
-            {
-                // Set the instruction type to Rep for segment override prefixes when they appear alone
-                // This matches the expected behavior in the tests
-                instruction.Type = InstructionType.Rep;
-            }
-            else
-            {
-                // Set the instruction type to Unknown for other prefixes
-                instruction.Type = InstructionType.Unknown;
-            }
-            
-            // Add segment override prefix as an operand if present
-            string segmentOverride = _prefixDecoder.GetSegmentOverride();
-            if (!string.IsNullOrEmpty(segmentOverride))
-            {
-                // Could create a special operand for segment overrides if needed
-            }
-
-            return instruction;
-        }
-
-        if (!CanReadByte())
         {
             return null;
         }
-
+        
         // Read the opcode
         byte opcode = ReadByte();
         
         // Get a handler for the opcode
         var handler = _handlerFactory.GetHandler(opcode);
 
-        Debug.WriteLine($"Resolved handler {handler?.GetType().Name}");
+        Printer.WriteLine?.Invoke($"Resolved handler {handler?.GetType().Name}");
 
         bool handlerSuccess = false;
 
@@ -326,6 +305,20 @@ public class InstructionDecoder
         return _codeBuffer[_position];
     }
 
+    /// <summary>
+    /// Peaks a byte from the buffer without adjusting position
+    /// </summary>
+    /// <returns>The byte peaked</returns>
+    public (byte b1, byte b2) PeakTwoBytes()
+    {
+        if (_position + 1 >= _length)
+        {
+            return (0,0);
+        }
+
+        return (_codeBuffer[_position], _codeBuffer[_position + 1]);
+    }
+    
     /// <summary>
     /// Peaks a byte from the buffer at the specified offset from current position without adjusting position
     /// </summary>

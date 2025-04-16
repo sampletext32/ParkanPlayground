@@ -46,42 +46,25 @@ public class ImmediateOperand : Operand
             _ => Value
         };
         
-        // For 8-bit immediate values, always use at least 2 digits
-        if (Size == 8)
+        string format;
+
+        if (maskedValue == 0)
         {
-            return $"0x{maskedValue:X2}";
+            format = "X2";
         }
-        
-        // For 16-bit immediate values, format depends on the value
-        if (Size == 16)
+        else if (maskedValue <= 0xFF)
         {
-            // For small values (< 256), show without leading zeros
-            if (maskedValue < 256)
-            {
-                return $"0x{maskedValue:X}";
-            }
-            
-            // For larger values, use at least 4 digits
-            return $"0x{maskedValue:X4}";
+            format = "X2";
         }
-        
-        // For 32-bit immediate values, format depends on the instruction context
-        if (Size == 32)
+        else if (maskedValue <= 0xFFFF)
         {
-            // For small values (0), always show as 0x00
-            if (maskedValue == 0)
-            {
-                return "0x00";
-            }
-            
-            // For other small values (< 256), show as 0xNN
-            if (maskedValue < 256)
-            {
-                return $"0x{maskedValue:X2}";
-            }
+            format = "X4";
         }
-        
-        // For larger 32-bit values, show the full 32-bit representation
-        return $"0x{maskedValue:X8}";
+        else
+        {
+            format = "X8";
+        }
+
+        return $"0x{maskedValue.ToString(format)}";
     }
 }

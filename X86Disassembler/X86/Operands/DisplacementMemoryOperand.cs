@@ -39,26 +39,28 @@ public class DisplacementMemoryOperand : MemoryOperand
         var registerName = RegisterMapper.GetRegisterName(BaseRegister, 32);
 
         // Format the displacement value
-        string formattedDisplacement;
-        string sign;
-        
-        // Handle positive and negative displacements
-        if (Displacement >= 0)
+        long absDisplacement = Math.Abs(Displacement);
+        string sign = Displacement >= 0 ? "+" : "-";
+        string format;
+
+        if (absDisplacement == 0)
         {
-            sign = "+";
-            formattedDisplacement = Displacement < 256 
-                ? $"0x{Displacement:X2}"
-                : $"0x{Displacement:X8}";
+            format = "X2";
+        }
+        else if (absDisplacement <= 0xFF)
+        {
+            format = "X2";
+        }
+        else if (absDisplacement <= 0xFFFF)
+        {
+            format = "X4";
         }
         else
         {
-            sign = "-";
-            // For negative values, take the absolute value for display
-            var absDisplacement = Math.Abs(Displacement);
-            formattedDisplacement = absDisplacement < 256 
-                ? $"0x{absDisplacement:X2}"
-                : $"0x{absDisplacement:X8}";
+            format = "X8";
         }
+
+        string formattedDisplacement = $"0x{absDisplacement.ToString(format)}";
         
         return $"{GetSizePrefix()}[{registerName}{sign}{formattedDisplacement}]";
     }

@@ -23,7 +23,9 @@ public class RetImmHandler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        return opcode == 0xC2;
+        // Only handle opcode 0xC2 when the operand size prefix is NOT present
+        // This ensures 16-bit handlers get priority when the prefix is present
+        return opcode == 0xC2 && !Decoder.HasOperandSizePrefix();
     }
     
     /// <summary>

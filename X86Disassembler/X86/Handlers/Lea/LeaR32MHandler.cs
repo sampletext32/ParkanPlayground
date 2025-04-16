@@ -23,7 +23,9 @@ public class LeaR32MHandler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        return opcode == 0x8D;
+        // Only handle opcode 0x8D when the operand size prefix is NOT present
+        // This ensures 16-bit handlers get priority when the prefix is present
+        return opcode == 0x8D && !Decoder.HasOperandSizePrefix();
     }
 
     /// <summary>

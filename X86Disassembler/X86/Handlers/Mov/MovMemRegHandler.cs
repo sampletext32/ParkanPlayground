@@ -23,7 +23,13 @@ public class MovMemRegHandler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        return opcode == 0x88 || opcode == 0x89;
+        // For 8-bit operations (0x88), no prefix check needed
+        if (opcode == 0x88)
+            return true;
+            
+        // For 32-bit operations (0x89), only handle when operand size prefix is NOT present
+        // This ensures 16-bit handlers get priority when the prefix is present
+        return opcode == 0x89 && !Decoder.HasOperandSizePrefix();
     }
 
     /// <summary>

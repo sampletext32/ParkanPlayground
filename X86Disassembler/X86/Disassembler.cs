@@ -85,13 +85,16 @@ public class Disassembler
                 break;
             }
 
-            // If no special case applies, decode normally
+            // Store the position before decoding to handle prefixes properly
+            int startPosition = position;
+
+            // Decode the instruction
             Instruction? instruction = decoder.DecodeInstruction();
 
             if (instruction != null)
             {
                 // Adjust the instruction address to include the base address
-                instruction.Address += _baseAddress;
+                instruction.Address = _baseAddress + (uint)startPosition;
 
                 // Add the instruction to the list
                 instructions.Add(instruction);
@@ -103,7 +106,7 @@ public class Disassembler
 
                 Instruction dummyInstruction = new Instruction
                 {
-                    Address = _baseAddress + (uint) position,
+                    Address = _baseAddress + (uint)position,
                     Type = InstructionType.Unknown,
                     StructuredOperands = [OperandFactory.CreateImmediateOperand(unknownByte, 8),]
                 };

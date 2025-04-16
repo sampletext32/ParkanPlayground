@@ -23,40 +23,9 @@ public class XchgEaxRegHandler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        return opcode >= 0x91 && opcode <= 0x97;
-    }
-    
-    /// <summary>
-    /// Maps the register index from the opcode to the RegisterIndex enum value expected by tests
-    /// </summary>
-    /// <param name="opcodeRegIndex">The register index from the opcode (0-7)</param>
-    /// <returns>The corresponding RegisterIndex enum value</returns>
-    private RegisterIndex MapOpcodeToRegisterIndex(int opcodeRegIndex)
-    {
-        // The mapping from opcode register index to RegisterIndex enum is:
-        // 0 -> A (EAX)
-        // 1 -> C (ECX)
-        // 2 -> D (EDX)
-        // 3 -> B (EBX)
-        // 4 -> Sp (ESP)
-        // 5 -> Bp (EBP)
-        // 6 -> Si (ESI)
-        // 7 -> Di (EDI)
-        
-        // This mapping is based on the x86 instruction encoding
-        // but we need to map to the RegisterIndex enum values that the tests expect
-        return opcodeRegIndex switch
-        {
-            0 => RegisterIndex.A,  // EAX
-            1 => RegisterIndex.C,  // ECX
-            2 => RegisterIndex.D,  // EDX
-            3 => RegisterIndex.B,  // EBX
-            4 => RegisterIndex.Sp, // ESP
-            5 => RegisterIndex.Bp, // EBP
-            6 => RegisterIndex.Si, // ESI
-            7 => RegisterIndex.Di, // EDI
-            _ => RegisterIndex.A   // Default case, should never happen
-        };
+        // Only handle opcodes 0x91-0x97 when the operand size prefix is NOT present
+        // This ensures 16-bit handlers get priority when the prefix is present
+        return opcode >= 0x91 && opcode <= 0x97 && !Decoder.HasOperandSizePrefix();
     }
 
     /// <summary>
@@ -71,10 +40,7 @@ public class XchgEaxRegHandler : InstructionHandler
         instruction.Type = InstructionType.Xchg;
 
         // Register is encoded in the low 3 bits of the opcode
-        int opcodeRegIndex = opcode & 0x07;
-        
-        // Map the opcode register index to the RegisterIndex enum value
-        RegisterIndex reg = MapOpcodeToRegisterIndex(opcodeRegIndex);
+        RegisterIndex reg = (RegisterIndex)(opcode & 0x07);
         
         // Create the register operands
         var eaxOperand = OperandFactory.CreateRegisterOperand(RegisterIndex.A);

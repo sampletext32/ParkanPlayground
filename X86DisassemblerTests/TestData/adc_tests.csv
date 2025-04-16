@@ -2,57 +2,26 @@
 # Format: RawBytes;Instructions
 RawBytes;Instructions
 
-# ADC r/m8, imm8 (opcode 80 /2)
-80D042;[{ "Type": "Adc", "Operands": ["al", "0x42"] }]
-80D342;[{ "Type": "Adc", "Operands": ["bl", "0x42"] }]
-80D142;[{ "Type": "Adc", "Operands": ["cl", "0x42"] }]
-80D242;[{ "Type": "Adc", "Operands": ["dl", "0x42"] }]
-
-# ADC AL, imm8 (opcode 14)
-1442;[{ "Type": "Adc", "Operands": ["al", "0x42"] }]
-
-# ADC r/m32, imm32 (opcode 81 /2)
-81D078563412;[{ "Type": "Adc", "Operands": ["eax", "0x12345678"] }]
-81D378563412;[{ "Type": "Adc", "Operands": ["ebx", "0x12345678"] }]
-81D178563412;[{ "Type": "Adc", "Operands": ["ecx", "0x12345678"] }]
-81D278563412;[{ "Type": "Adc", "Operands": ["edx", "0x12345678"] }]
-
-# ADC EAX, imm32 (opcode 15)
-1578563412;[{ "Type": "Adc", "Operands": ["eax", "0x12345678"] }]
-
-# ADC r/m32, imm8 (opcode 83 /2)
-83D042;[{ "Type": "Adc", "Operands": ["eax", "0x42"] }]
-83D342;[{ "Type": "Adc", "Operands": ["ebx", "0x42"] }]
-83D142;[{ "Type": "Adc", "Operands": ["ecx", "0x42"] }]
-83D242;[{ "Type": "Adc", "Operands": ["edx", "0x42"] }]
-
-# ADC r/m8, r8 (opcode 10)
-10C3;[{ "Type": "Adc", "Operands": ["bl", "al"] }]
-10D9;[{ "Type": "Adc", "Operands": ["cl", "bl"] }]
-10E2;[{ "Type": "Adc", "Operands": ["dl", "ah"] }]
-
-# ADC r8, r/m8 (opcode 12)
-12C3;[{ "Type": "Adc", "Operands": ["al", "bl"] }]
-12D9;[{ "Type": "Adc", "Operands": ["bl", "cl"] }]
-12E2;[{ "Type": "Adc", "Operands": ["ah", "dl"] }]
-
-# ADC r/m32, r32 (opcode 11)
+14AA;[{ "Type": "Adc", "Operands": ["al", "0xAA"] }]
+80D1AA;[{ "Type": "Adc", "Operands": ["cl", "0xAA"] }]
+8010AA;[{ "Type": "Adc", "Operands": ["byte ptr [eax]", "0xAA"] }]
+805310AA;[{ "Type": "Adc", "Operands": ["byte ptr [ebx+0x10]", "0xAA"] }]
+10D8;[{ "Type": "Adc", "Operands": ["al", "bl"] }]
+1018;[{ "Type": "Adc", "Operands": ["byte ptr [eax]", "bl"] }]
+1218;[{ "Type": "Adc", "Operands": ["bl", "byte ptr [eax]"] }]
+801488AA;[{ "Type": "Adc", "Operands": ["byte ptr [eax+ecx*4]", "0xAA"] }]
+6681D1AA00;[{ "Type": "Adc", "Operands": ["cx", "0xAA"] }]
+668110AA00;[{ "Type": "Adc", "Operands": ["word ptr [eax]", "0xAA"] }]
+66815310AA00;[{ "Type": "Adc", "Operands": ["word ptr [ebx+0x10]", "0xAA"] }]
+6611D8;[{ "Type": "Adc", "Operands": ["ax", "bx"] }]
+661118;[{ "Type": "Adc", "Operands": ["word ptr [eax]", "bx"] }]
+661318;[{ "Type": "Adc", "Operands": ["bx", "word ptr [eax]"] }]
+66811488AA00;[{ "Type": "Adc", "Operands": ["word ptr [eax+ecx*4]", "0xAA"] }]
+15AAAA0000;[{ "Type": "Adc", "Operands": ["eax", "0xAAAA"] }]
+81D1AAAA0000;[{ "Type": "Adc", "Operands": ["ecx", "0xAAAA"] }]
+8110AAAA0000;[{ "Type": "Adc", "Operands": ["dword ptr [eax]", "0xAAAA"] }]
+815310AAAA0000;[{ "Type": "Adc", "Operands": ["dword ptr [ebx+0x10]", "0xAAAA"] }]
 11D8;[{ "Type": "Adc", "Operands": ["eax", "ebx"] }]
-11CA;[{ "Type": "Adc", "Operands": ["edx", "ecx"] }]
-11E5;[{ "Type": "Adc", "Operands": ["ebp", "esp"] }]
-114B10;[{ "Type": "Adc", "Operands": ["dword ptr [ebx+0x10]", "ecx"] }]
-
-# ADC r32, r/m32 (opcode 13)
-13D8;[{ "Type": "Adc", "Operands": ["ebx", "eax"] }]
-13CA;[{ "Type": "Adc", "Operands": ["ecx", "edx"] }]
-13E5;[{ "Type": "Adc", "Operands": ["esp", "ebp"] }]
-134B10;[{ "Type": "Adc", "Operands": ["ecx", "dword ptr [ebx+0x10]"] }]
-
-# ADC with memory operands
-8014251000000042;[{ "Type": "Adc", "Operands": ["byte ptr [0x10]", "0x42"] }]
-8114251000000078563412;[{ "Type": "Adc", "Operands": ["dword ptr [0x10]", "0x12345678"] }]
-8314251000000042;[{ "Type": "Adc", "Operands": ["dword ptr [0x10]", "0x42"] }]
-1004251000000000;[{ "Type": "Adc", "Operands": ["byte ptr [0x10]", "al"] }]
-1204251000000000;[{ "Type": "Adc", "Operands": ["al", "byte ptr [0x10]"] }]
-1104251000000000;[{ "Type": "Adc", "Operands": ["dword ptr [0x10]", "eax"] }]
-1304251000000000;[{ "Type": "Adc", "Operands": ["eax", "dword ptr [0x10]"] }]
+1118;[{ "Type": "Adc", "Operands": ["dword ptr [eax]", "ebx"] }]
+1318;[{ "Type": "Adc", "Operands": ["ebx", "dword ptr [eax]"] }]
+811488AAAA0000;[{ "Type": "Adc", "Operands": ["dword ptr [eax+ecx*4]", "0xAAAA"] }]

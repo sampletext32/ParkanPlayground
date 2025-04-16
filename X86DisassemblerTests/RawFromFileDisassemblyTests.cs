@@ -12,6 +12,8 @@ public class RawFromFileDisassemblyTests(ITestOutputHelper output)
     [ClassData(typeof(TestDataProvider))]
     public void RunTests(string f, int idx, TestFromFileEntry test)
     {
+        Printer.WriteLine = output.WriteLine;
+        
         // Convert hex string to byte array
         byte[] code = HexStringToByteArray(test.RawBytes);
 

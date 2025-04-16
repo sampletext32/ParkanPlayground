@@ -32,7 +32,9 @@ public class NegRm32Handler : InstructionHandler
 
         var reg = ModRMDecoder.PeakModRMReg();
 
-        return reg == 3; // 3 = NEG
+        // Only handle when the operand size prefix is NOT present
+        // This ensures 16-bit handlers get priority when the prefix is present
+        return reg == 3 && !Decoder.HasOperandSizePrefix(); // 3 = NEG
     }
 
     /// <summary>

@@ -23,7 +23,9 @@ public class SubR32Rm32Handler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        return opcode == 0x2B;
+        // Only handle opcode 0x2B when the operand size prefix is NOT present
+        // This ensures 16-bit handlers get priority when the prefix is present
+        return opcode == 0x2B && !Decoder.HasOperandSizePrefix();
     }
 
     /// <summary>

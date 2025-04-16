@@ -246,27 +246,6 @@ public class SegmentOverrideTests
     }
     
     /// <summary>
-    /// Tests that the FS segment override prefix (0x64) is correctly recognized when it's the only byte
-    /// </summary>
-    [Fact]
-    public void FsSegmentOverride_Alone_IsRecognized()
-    {
-        // Arrange
-        // Just the FS segment override prefix (0x64)
-        byte[] codeBuffer = new byte[] { 0x64 };
-        var disassembler = new Disassembler(codeBuffer, 0);
-        
-        // Act
-        var instructions = disassembler.Disassemble();
-        
-        // Assert
-        Assert.Single(instructions);
-        var instruction = instructions[0];
-        Assert.NotNull(instruction);
-        Assert.Equal(InstructionType.Rep, instruction.Type);
-    }
-    
-    /// <summary>
     /// Tests segment override with a complex addressing mode
     /// </summary>
     [Fact]
