@@ -81,9 +81,9 @@ public class OrRm8R8HandlerTests
         
         // Check the second operand (CH)
         var chOperand = instruction.StructuredOperands[1];
-        Assert.IsType<RegisterOperand>(chOperand);
-        var registerOperand2 = (RegisterOperand)chOperand;
-        Assert.Equal(RegisterIndex.C, registerOperand2.Register);
+        Assert.IsType<Register8Operand>(chOperand);
+        var registerOperand2 = (Register8Operand)chOperand;
+        Assert.Equal(RegisterIndex8.CH, registerOperand2.Register);
         Assert.Equal(8, registerOperand2.Size); // Validate that it's an 8-bit register (CH)
     }
 }
