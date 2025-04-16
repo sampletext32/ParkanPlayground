@@ -7,7 +7,14 @@ RawBytes;Instructions
 8D01;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ecx]"] }]
 8D02;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [edx]"] }]
 8D03;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebx]"] }]
-8D05;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebp]"] }]
+
+# SPECIAL CASE: When Mod=00 and R/M=101 (EBP), this doesn't actually refer to [EBP].
+# Instead, it's a special case that indicates a 32-bit displacement-only addressing mode.
+# The correct encoding for "LEA eax, [ebp]" would be 8D4500 (with Mod=01 and a zero displacement).
+# 8D05;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebp]"] }]
+# Adding the correct test case:
+8D4500;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebp+0x0]"] }]
+
 8D06;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [esi]"] }]
 8D07;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [edi]"] }]
 
@@ -57,16 +64,7 @@ RawBytes;Instructions
 
 # SPECIAL CASE: The following encodings are invalid for LEA instructions.
 # When Mod=11 (bits 7-6 of the ModR/M byte), the R/M field specifies a register, not a memory location.
-# LEA requires a memory operand as its second operand, so these encodings are invalid.
-# The correct encoding for "LEA eax, [ebx]" would be 8D03, not 8DC3.
-# 8DC3;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebx]"] }]
-# 8DCB;[{ "Type": "Lea", "Operands": ["ecx", "dword ptr [ebx]"] }]
-# 8DD3;[{ "Type": "Lea", "Operands": ["edx", "dword ptr [ebx]"] }]
-# 8DDB;[{ "Type": "Lea", "Operands": ["ebx", "dword ptr [ebx]"] }]
-# 8DE3;[{ "Type": "Lea", "Operands": ["esp", "dword ptr [ebx]"] }]
-# 8DEB;[{ "Type": "Lea", "Operands": ["ebp", "dword ptr [ebx]"] }]
-# 8DF3;[{ "Type": "Lea", "Operands": ["esi", "dword ptr [ebx]"] }]
-# 8DFB;[{ "Type": "Lea", "Operands": ["edi", "dword ptr [ebx]"] }]
+# LEA requires a memory operand as its second operand
 
 # Valid LEA instructions with different destination registers (using Mod=00)
 8D03;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebx]"] }]
@@ -80,6 +78,6 @@ RawBytes;Instructions
 
 # LEA with complex addressing modes
 8D8C8D78563412;[{ "Type": "Lea", "Operands": ["ecx", "dword ptr [ebp+ecx*4+0x12345678]"] }]
-8D942D78563412;[{ "Type": "Lea", "Operands": ["edx", "dword ptr [ebp+ebp+0x12345678]"] }]
-8D9C1D78563412;[{ "Type": "Lea", "Operands": ["ebx", "dword ptr [ebp+ebx+0x12345678]"] }]
-8DA41D78563412;[{ "Type": "Lea", "Operands": ["esp", "dword ptr [ebp+ebx+0x12345678]"] }]
+8D942D78563412;[{ "Type": "Lea", "Operands": ["edx", "dword ptr [ebp+ebp*1+0x12345678]"] }]
+8D9C1D78563412;[{ "Type": "Lea", "Operands": ["ebx", "dword ptr [ebp+ebx*1+0x12345678]"] }]
+8DA41D78563412;[{ "Type": "Lea", "Operands": ["esp", "dword ptr [ebp+ebx*1+0x12345678]"] }]
