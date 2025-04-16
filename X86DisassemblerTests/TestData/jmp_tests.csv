@@ -27,6 +27,9 @@ FF22;[{ "Type": "Jmp", "Operands": ["dword ptr [edx]"] }]
 FF23;[{ "Type": "Jmp", "Operands": ["dword ptr [ebx]"] }]
 FF24;[{ "Type": "Jmp", "Operands": ["dword ptr [esp]"] }]
 
+# SPECIAL CASE: When Mod=00 and R/M=101 (EBP), this doesn't actually refer to [EBP].
+# Instead, it's a special case that indicates a 32-bit displacement-only addressing mode.
+# The correct encoding for this would be FF2578563412 which is "Jmp dword ptr [0x12345678]"
 # FF25;[{ "Type": "Jmp", "Operands": ["dword ptr [ebp]"] }]
 FF26;[{ "Type": "Jmp", "Operands": ["dword ptr [esi]"] }]
 FF27;[{ "Type": "Jmp", "Operands": ["dword ptr [edi]"] }]
@@ -42,7 +45,11 @@ FF6610;[{ "Type": "Jmp", "Operands": ["dword ptr [esi+0x10]"] }]
 FF6710;[{ "Type": "Jmp", "Operands": ["dword ptr [edi+0x10]"] }]
 
 # JMP m32 (opcode FF /4) with SIB byte
-# not recognized by ghidra or online disasms
+# SPECIAL CASE: These SIB encodings with EBP as base register have special rules.
+# When the SIB byte has Base=101 (EBP) and Mod=00, the base register is not used.
+# Instead, a 32-bit displacement follows the SIB byte (similar to the Mod=00, R/M=101 special case).
+# These instructions are commented out because they're not correctly recognized by many disassemblers,
+# including Ghidra and online disassemblers, due to their unusual encoding.
 # FF24C5;[{ "Type": "Jmp", "Operands": ["dword ptr [eax*8+ebp]"] }]
 # FF24CD;[{ "Type": "Jmp", "Operands": ["dword ptr [ecx*8+ebp]"] }]
 # FF24D5;[{ "Type": "Jmp", "Operands": ["dword ptr [edx*8+ebp]"] }]

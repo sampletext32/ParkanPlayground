@@ -23,7 +23,12 @@ FF10;[{ "Type": "Call", "Operands": ["dword ptr [eax]"] }]
 FF11;[{ "Type": "Call", "Operands": ["dword ptr [ecx]"] }]
 FF12;[{ "Type": "Call", "Operands": ["dword ptr [edx]"] }]
 FF13;[{ "Type": "Call", "Operands": ["dword ptr [ebx]"] }]
-# TODO: these are not recognized by ghidra, but these seem to be valid x86 instructions. 
+# SPECIAL CASES in x86 encoding:
+# 1. When Mod=00 and R/M=100 (ESP), a SIB byte is required. The instruction FF14 is invalid because
+#    it's missing the required SIB byte. The correct encoding would use a SIB byte (e.g., FF1424).
+# 2. When Mod=00 and R/M=101 (EBP), this doesn't actually refer to [EBP] but instead indicates
+#    a 32-bit displacement-only addressing mode. The correct encoding for "Call [disp32]" would be
+#    FF1578563412 which is "Call dword ptr [0x12345678]"
 # FF14;[{ "Type": "Call", "Operands": ["dword ptr [esp]"] }]
 # FF15;[{ "Type": "Call", "Operands": ["dword ptr [ebp]"] }]
 FF16;[{ "Type": "Call", "Operands": ["dword ptr [esi]"] }]
@@ -33,11 +38,17 @@ FF17;[{ "Type": "Call", "Operands": ["dword ptr [edi]"] }]
 FF1400;[{ "Type": "Call", "Operands": ["dword ptr [eax+eax*1]"] }]
 FF14C0;[{ "Type": "Call", "Operands": ["dword ptr [eax+eax*8]"] }]
 FF1444;[{ "Type": "Call", "Operands": ["dword ptr [esp+eax*2]"] }]
-# not recognized neither by ghidra nor online disasms
+# SPECIAL CASE: SIB byte with EBP as base register
+# When the SIB byte has Base=101 (EBP) and Mod=00, the base register is not used.
+# Instead, a 32-bit displacement follows the SIB byte (similar to the Mod=00, R/M=101 special case).
+# This instruction is commented out because it's not correctly recognized by many disassemblers.
 # FF1485;[{ "Type": "Call", "Operands": ["dword ptr [ebp+eax*4]"] }]
 FF1498;[{ "Type": "Call", "Operands": ["dword ptr [eax+ebx*4]"] }]
 FF14D9;[{ "Type": "Call", "Operands": ["dword ptr [ecx+ebx*8]"] }]
-# not recognized neither by ghidra nor online disasms
+# SPECIAL CASE: Another SIB byte with EBP as base register
+# When the SIB byte has Base=101 (EBP) and Mod=00, the base register is not used.
+# Instead, a 32-bit displacement follows the SIB byte (similar to the Mod=00, R/M=101 special case).
+# This instruction is commented out because it's not correctly recognized by many disassemblers.
 # FF149D;[{ "Type": "Call", "Operands": ["dword ptr [ebp+ebx*4]"] }]
 
 # CALL m32 (opcode FF /2) with displacement
