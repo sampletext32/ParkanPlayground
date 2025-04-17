@@ -77,7 +77,7 @@ public class ModRMDecoder
                     if (_decoder.CanReadByte())
                     {
                         byte sib = _decoder.ReadByte();
-                        return _sibDecoder.DecodeSIB(sib, 0, operandSize);
+                        return _sibDecoder.DecodeSIB(sib, 0, operandSize, mod);
                     }
 
                     // Fallback for incomplete data
@@ -95,7 +95,7 @@ public class ModRMDecoder
                     {
                         byte sib = _decoder.ReadByte();
                         sbyte disp8 = (sbyte)(_decoder.CanReadByte() ? _decoder.ReadByte() : 0);
-                        return _sibDecoder.DecodeSIB(sib, (uint)disp8, operandSize);
+                        return _sibDecoder.DecodeSIB(sib, (uint)disp8, operandSize, mod);
                     }
 
                     // Fallback for incomplete data
@@ -108,6 +108,7 @@ public class ModRMDecoder
                         sbyte disp8 = (sbyte)_decoder.ReadByte();
 
                         // Always create a displacement memory operand for mod=1, even if displacement is 0
+                        // This ensures we show exactly what's encoded in the ModR/M byte
                         return OperandFactory.CreateDisplacementMemoryOperand(rmIndex, disp8, operandSize);
                     }
 
@@ -123,7 +124,7 @@ public class ModRMDecoder
                     {
                         byte sib = _decoder.ReadByte();
                         uint disp32 = _decoder.ReadUInt32();
-                        return _sibDecoder.DecodeSIB(sib, disp32, operandSize);
+                        return _sibDecoder.DecodeSIB(sib, disp32, operandSize, mod);
                     }
 
                     // Fallback for incomplete data
@@ -143,11 +144,7 @@ public class ModRMDecoder
                             return OperandFactory.CreateDisplacementMemoryOperand(rmIndex, (long)disp32, operandSize);
                         }
 
-                        // Only show displacement if it's not zero
-                        if (disp32 == 0)
-                        {
-                            return OperandFactory.CreateBaseRegisterMemoryOperand(rmIndex, operandSize);
-                        }
+                        // Always include the displacement, even if it's zero, to match the encoding
 
                         // Cast to long to preserve the unsigned value for large displacements
                         return OperandFactory.CreateDisplacementMemoryOperand(rmIndex, (long)disp32, operandSize);

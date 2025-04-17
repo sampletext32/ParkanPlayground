@@ -6,10 +6,10 @@ RawBytes;Instructions
 C3;[{ "Type": "Ret", "Operands": [] }]
 
 # RET imm16 (opcode C2) - Near return to calling procedure and pop imm16 bytes from stack
-C20000;[{ "Type": "Ret", "Operands": ["0x0000"] }]
-C20400;[{ "Type": "Ret", "Operands": ["0x0004"] }]
-C20800;[{ "Type": "Ret", "Operands": ["0x0008"] }]
-C21000;[{ "Type": "Ret", "Operands": ["0x0010"] }]
+C20000;[{ "Type": "Ret", "Operands": ["0x00"] }]
+C20400;[{ "Type": "Ret", "Operands": ["0x04"] }]
+C20800;[{ "Type": "Ret", "Operands": ["0x08"] }]
+C21000;[{ "Type": "Ret", "Operands": ["0x10"] }]
 C2FFFF;[{ "Type": "Ret", "Operands": ["0xFFFF"] }]
 
 # RETF (opcode CB) - Far return to calling procedure

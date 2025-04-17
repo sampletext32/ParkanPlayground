@@ -37,7 +37,7 @@ RawBytes;Instructions
 8D47F0;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [edi-0x10]"] }]
 
 # LEA r32, m (opcode 8D) with SIB byte (no displacement)
-8D0424;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [esp]"] }]
+8D0424;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [esp+0x00]"] }]
 
 # SPECIAL CASE: The following encodings with EBP as base register have special rules.
 # When the SIB byte has Base=101 (EBP) and Mod=00, the base register is not used.

@@ -21,4 +21,4 @@ F7C378563412;[{ "Type": "Test", "Operands": ["ebx", "0x12345678"] }]
 # TEST with memory operands
 F60042;[{ "Type": "Test", "Operands": ["byte ptr [eax]", "0x42"] }]
 F70078563412;[{ "Type": "Test", "Operands": ["dword ptr [eax]", "0x12345678"] }]
-854510;[{ "Type": "Test", "Operands": ["dword ptr [eax+0x10]", "eax"] }]
+854510;[{ "Type": "Test", "Operands": ["dword ptr [ebp+0x10]", "eax"] }]

@@ -23,7 +23,14 @@ public class AndEaxImmHandler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        return opcode == 0x25;
+        // AND EAX, imm32 is encoded as 0x25 without 0x66 prefix
+        if (opcode != 0x25)
+        {
+            return false;
+        }
+
+        // Only handle when the operand size prefix is NOT present
+        return !Decoder.HasOperandSizePrefix();
     }
     
     /// <summary>

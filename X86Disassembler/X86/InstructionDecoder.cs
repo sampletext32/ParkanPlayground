@@ -43,7 +43,6 @@ public class InstructionDecoder
 
         // Create specialized decoders
         _prefixDecoder = new PrefixDecoder();
-        new ModRMDecoder(this);
 
         // Create the instruction handler factory
         _handlerFactory = new InstructionHandlerFactory(_codeBuffer, this, _length);
@@ -101,7 +100,7 @@ public class InstructionDecoder
 
         Printer.WriteLine?.Invoke($"Resolved handler {handler?.GetType().Name}");
 
-        bool handlerSuccess = false;
+        bool handlerSuccess;
 
         // Try to decode with a handler first
         if (handler != null)
@@ -114,6 +113,11 @@ public class InstructionDecoder
 
             // Decode the instruction
             handlerSuccess = handler.Decode(opcode, instruction);
+
+            if (!handlerSuccess)
+            {
+                Printer.WriteLine?.Invoke($"Handler {handler.GetType().Name} failed!");
+            }
 
             // Apply segment override prefix to the structured operands if needed
             if (handlerSuccess && hasSegmentOverride)

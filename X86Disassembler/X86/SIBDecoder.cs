@@ -24,8 +24,9 @@ public class SIBDecoder
     /// <param name="sib">The SIB byte</param>
     /// <param name="displacement">The displacement value</param>
     /// <param name="operandSize">The size of the operand in bits (8, 16, 32, or 64)</param>
+    /// <param name="mod">The mod field from the ModR/M byte</param>
     /// <returns>The decoded SIB operand</returns>
-    public Operand DecodeSIB(byte sib, uint displacement, int operandSize)
+    public Operand DecodeSIB(byte sib, uint displacement, int operandSize, byte mod = 0)
     {
         // Extract fields from SIB byte
         byte scale = (byte)((sib & Constants.SIB_SCALE_MASK) >> 6);
@@ -39,8 +40,8 @@ public class SIBDecoder
         // Special case: ESP/SP (4) in index field means no index register
         if (index == RegisterIndex.Sp)
         {
-            // Special case: EBP/BP (5) in base field with no displacement means disp32 only
-            if (@base == RegisterIndex.Bp && displacement == 0)
+            // Special case: EBP/BP (5) in base field with mod=00 means disp32 only
+            if (@base == RegisterIndex.Bp && mod == 0)
             {
                 if (_decoder.CanReadUInt())
                 {
@@ -56,16 +57,12 @@ public class SIBDecoder
             }
 
             // When index is ESP (no index), we just have a base register with optional displacement
-            if (displacement == 0)
-            {
-                return OperandFactory.CreateBaseRegisterMemoryOperand(@base, operandSize);
-            }
-
+            // Always include the displacement, even if it's zero, to match the encoding
             return OperandFactory.CreateDisplacementMemoryOperand(@base, (int)displacement, operandSize);
         }
 
-        // Special case: EBP/BP (5) in base field with no displacement means disp32 only
-        if (@base == RegisterIndex.Bp && displacement == 0)
+        // Special case: EBP/BP (5) in base field with mod=00 means disp32 only
+        if (@base == RegisterIndex.Bp && mod == 0 && displacement == 0)
         {
             if (_decoder.CanReadUInt())
             {
@@ -95,6 +92,22 @@ public class SIBDecoder
                 1 << scale,
                 null,
                 0,
+                operandSize);
+        }
+
+        // Special case: When base is EBP/BP and mod is 01 or 10
+        // This is a special case in x86 addressing.
+        if (@base == RegisterIndex.Bp && (mod == 1 || mod == 2))
+        {
+            int scaleFactorBp = 1 << scale; // 1, 2, 4, or 8
+
+            // Always include the displacement for EBP, even if it's zero
+            // This ensures we show exactly what's encoded in the ModR/M and SIB bytes
+            return OperandFactory.CreateScaledIndexMemoryOperand(
+                index,
+                scaleFactorBp,
+                @base,
+                (int)displacement,
                 operandSize);
         }
 

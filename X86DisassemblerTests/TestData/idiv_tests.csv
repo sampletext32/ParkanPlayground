@@ -31,4 +31,4 @@ F738;[{ "Type": "IDiv", "Operands": ["dword ptr [eax]"] }]
 
 # The correct encoding for "IDIV dword ptr [eax+0x10]" would be F74010 (with Mod=01, R/M=0 for EAX, disp8=0x10)
 # F73C2510000000;[{ "Type": "IDiv", "Operands": ["dword ptr [eax+0x10]"] }]
-F74010;[{ "Type": "IDiv", "Operands": ["dword ptr [eax+0x10]"] }]
+F77810;[{ "Type": "IDiv", "Operands": ["dword ptr [eax+0x10]"] }]

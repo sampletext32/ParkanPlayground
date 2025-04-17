@@ -23,16 +23,19 @@ public class IdivRm32Handler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
+        // IDIV r/m32 is encoded as 0xF7 with reg field 7
         if (opcode != 0xF7)
             return false;
 
-        // Check if the reg field of the ModR/M byte is 7 (IDIV)
+        // Check if we can read the ModR/M byte
         if (!Decoder.CanReadByte())
             return false;
 
+        // Check if the reg field of the ModR/M byte is 7 (IDIV)
         var reg = ModRMDecoder.PeakModRMReg();
 
-        return reg == 7; // 7 = IDIV
+        // reg = 7 means IDIV operation
+        return reg == 7;
     }
 
     /// <summary>
@@ -54,7 +57,13 @@ public class IdivRm32Handler : InstructionHandler
         // Read the ModR/M byte
         // For IDIV r/m32 (0xF7 /7):
         // - The r/m field with mod specifies the operand (register or memory)
-        var (_, _, _, operand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM();
+
+        // Verify that the reg field is 7 (IDIV)
+        if (reg != RegisterIndex.Di)
+        {
+            return false;
+        }
 
         // Set the structured operands
         // IDIV has only one operand

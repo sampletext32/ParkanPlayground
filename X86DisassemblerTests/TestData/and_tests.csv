@@ -10,7 +10,7 @@ RawBytes;Instructions
 20D8;[{ "Type": "And", "Operands": ["al", "bl"] }]
 2018;[{ "Type": "And", "Operands": ["byte ptr [eax]", "bl"] }]
 2218;[{ "Type": "And", "Operands": ["bl", "byte ptr [eax]"] }]
-800488AA;[{ "Type": "And", "Operands": ["byte ptr [eax+ecx*4]", "0xAA"] }]
+802488AA;[{ "Type": "And", "Operands": ["byte ptr [eax+ecx*4]", "0xAA"] }]
 
 # 16-bit AND (with 66 prefix)
 6625AA00;[{ "Type": "And", "Operands": ["ax", "0xAA"] }]
@@ -22,7 +22,7 @@ RawBytes;Instructions
 6621D8;[{ "Type": "And", "Operands": ["ax", "bx"] }]
 662118;[{ "Type": "And", "Operands": ["word ptr [eax]", "bx"] }]
 662318;[{ "Type": "And", "Operands": ["bx", "word ptr [eax]"] }]
-66810488AA00;[{ "Type": "And", "Operands": ["word ptr [eax+ecx*4]", "0xAA"] }]
+66812488AA00;[{ "Type": "And", "Operands": ["word ptr [eax+ecx*4]", "0xAA"] }]
 
 # 32-bit AND
 25AA000000;[{ "Type": "And", "Operands": ["eax", "0xAA"] }]
@@ -34,9 +34,9 @@ RawBytes;Instructions
 21D8;[{ "Type": "And", "Operands": ["eax", "ebx"] }]
 2118;[{ "Type": "And", "Operands": ["dword ptr [eax]", "ebx"] }]
 2318;[{ "Type": "And", "Operands": ["ebx", "dword ptr [eax]"] }]
-810488AA000000;[{ "Type": "And", "Operands": ["dword ptr [eax+ecx*4]", "0xAA"] }]
+812488AA000000;[{ "Type": "And", "Operands": ["dword ptr [eax+ecx*4]", "0xAA"] }]
 
 # Complex addressing modes
-20A314285600;[{ "Type": "And", "Operands": ["byte ptr [ebx+0x562814]", "ah"] }]
+20A314285600;[{ "Type": "And", "Operands": ["byte ptr [ebx+0x00562814]", "ah"] }]
 6621B310203040;[{ "Type": "And", "Operands": ["word ptr [ebx+0x40302010]", "si"] }]
-230C8D10203040;[{ "Type": "And", "Operands": ["ecx", "dword ptr [ebp*4+0x40302010]"] }]
+230CAD10203040;[{ "Type": "And", "Operands": ["ecx", "dword ptr [ebp*4+0x40302010]"] }]
