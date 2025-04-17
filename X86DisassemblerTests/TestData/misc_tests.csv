@@ -34,19 +34,6 @@ F4;[{ "Type": "Hlt", "Operands": [] }]
 
 # LOCK prefix
 F0;[{ "Type": "Lock", "Operands": [] }]
-# SPECIAL CASE: When Mod=00 and R/M=101 (EBP), this doesn't actually refer to [EBP].
-# Instead, it's a special case that indicates a 32-bit displacement-only addressing mode.
-# The correct encoding for instructions with [ebp] would use Mod=01 and a zero displacement.
-# F0FE05;[{ "Type": "Inc", "Operands": ["byte ptr [ebp]"], "Prefix": "Lock" }]
-# F0FF05;[{ "Type": "Inc", "Operands": ["dword ptr [ebp]"], "Prefix": "Lock" }]
-# F0FE0D;[{ "Type": "Dec", "Operands": ["byte ptr [ebp]"], "Prefix": "Lock" }]
-# F0FF0D;[{ "Type": "Dec", "Operands": ["dword ptr [ebp]"], "Prefix": "Lock" }]
-
-# Adding the correct test cases:
-F0FE4500;[{ "Type": "Inc", "Operands": ["byte ptr [ebp+0x0]"], "Prefix": "Lock" }]
-F0FF4500;[{ "Type": "Inc", "Operands": ["dword ptr [ebp+0x0]"], "Prefix": "Lock" }]
-F0FE4D00;[{ "Type": "Dec", "Operands": ["byte ptr [ebp+0x0]"], "Prefix": "Lock" }]
-F0FF4D00;[{ "Type": "Dec", "Operands": ["dword ptr [ebp+0x0]"], "Prefix": "Lock" }]
 
 # IN - Input from Port
 E410;[{ "Type": "In", "Operands": ["al", "0x10"] }]

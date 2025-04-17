@@ -27,6 +27,6 @@ C1D805;[{ "Type": "Rcr", "Operands": ["eax", "0x05"] }]
 C1DB05;[{ "Type": "Rcr", "Operands": ["ebx", "0x05"] }]
 
 # RCR with memory operands
-D01C2510;[{ "Type": "Rcr", "Operands": ["byte ptr [eax+0x10]", "0x01"] }]
-D31C25;[{ "Type": "Rcr", "Operands": ["dword ptr [eax]", "cl"] }]
-C11C2505;[{ "Type": "Rcr", "Operands": ["dword ptr [eax]", "0x05"] }]
+D05810;[{ "Type": "Rcr", "Operands": ["byte ptr [eax+0x10]", "0x01"] }]
+D318;[{ "Type": "Rcr", "Operands": ["dword ptr [eax]", "cl"] }]
+C11805;[{ "Type": "Rcr", "Operands": ["dword ptr [eax]", "0x05"] }]

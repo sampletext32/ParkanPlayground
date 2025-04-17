@@ -26,7 +26,7 @@ C0EB05;[{ "Type": "Shr", "Operands": ["bl", "0x05"] }]
 C1E805;[{ "Type": "Shr", "Operands": ["eax", "0x05"] }]
 C1EB05;[{ "Type": "Shr", "Operands": ["ebx", "0x05"] }]
 
-# SHR with memory operands
-D02C2510;[{ "Type": "Shr", "Operands": ["byte ptr [eax+0x10]", "0x01"] }]
-D32C25;[{ "Type": "Shr", "Operands": ["dword ptr [eax]", "cl"] }]
-C12C2505;[{ "Type": "Shr", "Operands": ["dword ptr [eax]", "0x05"] }]
+# SHR with memory operands (fixed)
+D06810;[{ "Type": "Shr", "Operands": ["byte ptr [eax+0x10]", "0x01"] }]
+D328;[{ "Type": "Shr", "Operands": ["dword ptr [eax]", "cl"] }]
+C12805;[{ "Type": "Shr", "Operands": ["dword ptr [eax]", "0x05"] }]

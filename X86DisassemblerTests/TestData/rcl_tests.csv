@@ -26,7 +26,7 @@ C0D305;[{ "Type": "Rcl", "Operands": ["bl", "0x05"] }]
 C1D005;[{ "Type": "Rcl", "Operands": ["eax", "0x05"] }]
 C1D305;[{ "Type": "Rcl", "Operands": ["ebx", "0x05"] }]
 
-# RCL with memory operands
-D0142510;[{ "Type": "Rcl", "Operands": ["byte ptr [eax+0x10]", "0x01"] }]
-D31425;[{ "Type": "Rcl", "Operands": ["dword ptr [eax]", "cl"] }]
-C1142505;[{ "Type": "Rcl", "Operands": ["dword ptr [eax]", "0x05"] }]
+# RCL with memory operands (properly encoded)
+D05010;[{ "Type": "Rcl", "Operands": ["byte ptr [eax+0x10]", "0x01"] }]
+D310;[{ "Type": "Rcl", "Operands": ["dword ptr [eax]", "cl"] }]
+C11005;[{ "Type": "Rcl", "Operands": ["dword ptr [eax]", "0x05"] }]

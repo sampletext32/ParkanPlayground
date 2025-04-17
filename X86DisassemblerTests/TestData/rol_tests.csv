@@ -26,7 +26,7 @@ C0C305;[{ "Type": "Rol", "Operands": ["bl", "0x05"] }]
 C1C005;[{ "Type": "Rol", "Operands": ["eax", "0x05"] }]
 C1C305;[{ "Type": "Rol", "Operands": ["ebx", "0x05"] }]
 
-# ROL with memory operands
-D0042510;[{ "Type": "Rol", "Operands": ["byte ptr [eax+0x10]", "0x01"] }]
-D3042510;[{ "Type": "Rol", "Operands": ["dword ptr [eax+0x10]", "cl"] }]
-C1042505;[{ "Type": "Rol", "Operands": ["dword ptr [eax+0x10]", "0x05"] }]
+# ROL with memory operands (fixed)
+D04010;[{ "Type": "Rol", "Operands": ["byte ptr [eax+0x10]", "0x01"] }]
+D34010;[{ "Type": "Rol", "Operands": ["dword ptr [eax+0x10]", "cl"] }]
+C1401005;[{ "Type": "Rol", "Operands": ["dword ptr [eax+0x10]", "0x05"] }]

@@ -74,7 +74,7 @@ public enum InstructionType
     Call,       // Call procedure
     Ret,        // Near return from procedure
     Retf,       // Far return from procedure
-    Int,        // Interrupt
+    Int,        // Interrupt vector number specified by immediate byte.
     Int3,       // Breakpoint interrupt
     Into,       // Interrupt if overflow
     Iret,       // Interrupt return

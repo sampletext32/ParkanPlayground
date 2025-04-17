@@ -28,5 +28,5 @@ C1E305;[{ "Type": "Shl", "Operands": ["ebx", "0x05"] }]
 
 # SHL with memory operands
 D0242510000000;[{ "Type": "Shl", "Operands": ["byte ptr [0x10]", "0x01"] }]
-D32425;[{ "Type": "Shl", "Operands": ["dword ptr [eax]", "cl"] }]
-C1242510000005;[{ "Type": "Shl", "Operands": ["dword ptr [0x10]", "0x05"] }]
+D320;[{ "Type": "Shl", "Operands": ["dword ptr [eax]", "cl"] }]
+C1251000000005;[{ "Type": "Shl", "Operands": ["dword ptr [0x10]", "0x05"] }]

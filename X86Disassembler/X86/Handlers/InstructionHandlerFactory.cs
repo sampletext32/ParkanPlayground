@@ -23,6 +23,7 @@ using X86Disassembler.X86.Handlers.Pop;
 using X86Disassembler.X86.Handlers.Push;
 using X86Disassembler.X86.Handlers.Ret;
 using X86Disassembler.X86.Handlers.Sbb;
+using X86Disassembler.X86.Handlers.Shift;
 using X86Disassembler.X86.Handlers.String;
 using X86Disassembler.X86.Handlers.Sub;
 using X86Disassembler.X86.Handlers.Test;
@@ -56,7 +57,7 @@ public class InstructionHandlerFactory
     private void RegisterAllHandlers()
     {
         // Register specific instruction handlers
-        _handlers.Add(new Nop.Int3Handler(_decoder));
+        _handlers.Add(new Int3Handler(_decoder));
 
         // Register handlers in order of priority (most specific first)
         RegisterSbbHandlers();        // SBB instructions
@@ -91,6 +92,7 @@ public class InstructionHandlerFactory
         RegisterNopHandlers(); // Register NOP handlers
         RegisterBitHandlers(); // Register bit manipulation handlers
         RegisterMiscHandlers(); // Register miscellaneous instructions
+        RegisterShiftHandlers(); // Register shift and rotate instructions
     }
 
     /// <summary>
@@ -477,7 +479,7 @@ public class InstructionHandlerFactory
     private void RegisterMiscHandlers()
     {
         // Register miscellaneous instruction handlers
-        _handlers.Add(new IntHandler(_decoder));        // INT (opcode 0xCD)
+        _handlers.Add(new IntImm8Handler(_decoder));        // INT (opcode 0xCD)
         _handlers.Add(new IntoHandler(_decoder));       // INTO (opcode 0xCE)
         _handlers.Add(new IretHandler(_decoder));       // IRET (opcode 0xCF)
         _handlers.Add(new CpuidHandler(_decoder));      // CPUID (opcode 0x0F 0xA2)
@@ -487,6 +489,68 @@ public class InstructionHandlerFactory
         _handlers.Add(new LockHandler(_decoder));       // LOCK (opcode 0xF0)
         _handlers.Add(new InHandler(_decoder));         // IN (opcodes 0xE4, 0xE5, 0xEC, 0xED)
         _handlers.Add(new OutHandler(_decoder));        // OUT (opcodes 0xE6, 0xE7, 0xEE, 0xEF)
+    }
+
+    /// <summary>
+    /// Registers all shift and rotate instruction handlers
+    /// </summary>
+    private void RegisterShiftHandlers()
+    {
+        // SHL (Shift Left) handlers
+        _handlers.Add(new ShlRm8By1Handler(_decoder));       // SHL r/m8, 1 (0xD0 /4)
+        _handlers.Add(new ShlRm8ByClHandler(_decoder));      // SHL r/m8, CL (0xD2 /4)
+        _handlers.Add(new ShlRm8ByImmHandler(_decoder));     // SHL r/m8, imm8 (0xC0 /4)
+        _handlers.Add(new ShlRm32By1Handler(_decoder));      // SHL r/m32, 1 (0xD1 /4)
+        _handlers.Add(new ShlRm32ByClHandler(_decoder));     // SHL r/m32, CL (0xD3 /4)
+        _handlers.Add(new ShlRm32ByImmHandler(_decoder));    // SHL r/m32, imm8 (0xC1 /4)
+
+        // SHR (Shift Right) handlers
+        _handlers.Add(new ShrRm8By1Handler(_decoder));       // SHR r/m8, 1 (0xD0 /5)
+        _handlers.Add(new ShrRm8ByClHandler(_decoder));      // SHR r/m8, CL (0xD2 /5)
+        _handlers.Add(new ShrRm8ByImmHandler(_decoder));     // SHR r/m8, imm8 (0xC0 /5)
+        _handlers.Add(new ShrRm32By1Handler(_decoder));      // SHR r/m32, 1 (0xD1 /5)
+        _handlers.Add(new ShrRm32ByClHandler(_decoder));     // SHR r/m32, CL (0xD3 /5)
+        _handlers.Add(new ShrRm32ByImmHandler(_decoder));    // SHR r/m32, imm8 (0xC1 /5)
+
+        // SAR (Shift Arithmetic Right) handlers
+        _handlers.Add(new SarRm8By1Handler(_decoder));       // SAR r/m8, 1 (0xD0 /7)
+        _handlers.Add(new SarRm8ByClHandler(_decoder));      // SAR r/m8, CL (0xD2 /7)
+        _handlers.Add(new SarRm8ByImmHandler(_decoder));     // SAR r/m8, imm8 (0xC0 /7)
+        _handlers.Add(new SarRm32By1Handler(_decoder));      // SAR r/m32, 1 (0xD1 /7)
+        _handlers.Add(new SarRm32ByClHandler(_decoder));     // SAR r/m32, CL (0xD3 /7)
+        _handlers.Add(new SarRm32ByImmHandler(_decoder));    // SAR r/m32, imm8 (0xC1 /7)
+
+        // ROL (Rotate Left) handlers
+        _handlers.Add(new RolRm8By1Handler(_decoder));       // ROL r/m8, 1 (0xD0 /0)
+        _handlers.Add(new RolRm8ByClHandler(_decoder));      // ROL r/m8, CL (0xD2 /0)
+        _handlers.Add(new RolRm8ByImmHandler(_decoder));     // ROL r/m8, imm8 (0xC0 /0)
+        _handlers.Add(new RolRm32By1Handler(_decoder));      // ROL r/m32, 1 (0xD1 /0)
+        _handlers.Add(new RolRm32ByClHandler(_decoder));     // ROL r/m32, CL (0xD3 /0)
+        _handlers.Add(new RolRm32ByImmHandler(_decoder));    // ROL r/m32, imm8 (0xC1 /0)
+
+        // ROR (Rotate Right) handlers
+        _handlers.Add(new RorRm8By1Handler(_decoder));       // ROR r/m8, 1 (0xD0 /1)
+        _handlers.Add(new RorRm8ByClHandler(_decoder));      // ROR r/m8, CL (0xD2 /1)
+        _handlers.Add(new RorRm8ByImmHandler(_decoder));     // ROR r/m8, imm8 (0xC0 /1)
+        _handlers.Add(new RorRm32By1Handler(_decoder));      // ROR r/m32, 1 (0xD1 /1)
+        _handlers.Add(new RorRm32ByClHandler(_decoder));     // ROR r/m32, CL (0xD3 /1)
+        _handlers.Add(new RorRm32ByImmHandler(_decoder));    // ROR r/m32, imm8 (0xC1 /1)
+
+        // RCL (Rotate Carry Left) handlers
+        _handlers.Add(new RclRm8By1Handler(_decoder));       // RCL r/m8, 1 (0xD0 /2)
+        _handlers.Add(new RclRm8ByClHandler(_decoder));      // RCL r/m8, CL (0xD2 /2)
+        _handlers.Add(new RclRm8ByImmHandler(_decoder));     // RCL r/m8, imm8 (0xC0 /2)
+        _handlers.Add(new RclRm32By1Handler(_decoder));      // RCL r/m32, 1 (0xD1 /2)
+        _handlers.Add(new RclRm32ByClHandler(_decoder));     // RCL r/m32, CL (0xD3 /2)
+        _handlers.Add(new RclRm32ByImmHandler(_decoder));    // RCL r/m32, imm8 (0xC1 /2)
+
+        // RCR (Rotate Carry Right) handlers
+        _handlers.Add(new RcrRm8By1Handler(_decoder));       // RCR r/m8, 1 (0xD0 /3)
+        _handlers.Add(new RcrRm8ByClHandler(_decoder));      // RCR r/m8, CL (0xD2 /3)
+        _handlers.Add(new RcrRm8ByImmHandler(_decoder));     // RCR r/m8, imm8 (0xC0 /3)
+        _handlers.Add(new RcrRm32By1Handler(_decoder));      // RCR r/m32, 1 (0xD1 /3)
+        _handlers.Add(new RcrRm32ByClHandler(_decoder));     // RCR r/m32, CL (0xD3 /3)
+        _handlers.Add(new RcrRm32ByImmHandler(_decoder));    // RCR r/m32, imm8 (0xC1 /3)
     }
 
     /// <summary>

@@ -26,7 +26,7 @@ C0CB05;[{ "Type": "Ror", "Operands": ["bl", "0x05"] }]
 C1C805;[{ "Type": "Ror", "Operands": ["eax", "0x05"] }]
 C1CB05;[{ "Type": "Ror", "Operands": ["ebx", "0x05"] }]
 
-# ROR with memory operands
-D00C2510;[{ "Type": "Ror", "Operands": ["byte ptr [eax+0x10]", "0x01"] }]
-D30C2510;[{ "Type": "Ror", "Operands": ["dword ptr [eax+0x10]", "cl"] }]
-C10C2505;[{ "Type": "Ror", "Operands": ["dword ptr [eax+0x10]", "0x05"] }]
+# ROR with memory operands (fixed)
+D04810;[{ "Type": "Ror", "Operands": ["byte ptr [eax+0x10]", "0x01"] }]
+D34810;[{ "Type": "Ror", "Operands": ["dword ptr [eax+0x10]", "cl"] }]
+C1481005;[{ "Type": "Ror", "Operands": ["dword ptr [eax+0x10]", "0x05"] }]

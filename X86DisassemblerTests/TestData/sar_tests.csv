@@ -26,7 +26,7 @@ C0FB05;[{ "Type": "Sar", "Operands": ["bl", "0x05"] }]
 C1F805;[{ "Type": "Sar", "Operands": ["eax", "0x05"] }]
 C1FB05;[{ "Type": "Sar", "Operands": ["ebx", "0x05"] }]
 
-# SAR with memory operands
-D03C2510;[{ "Type": "Sar", "Operands": ["byte ptr [eax+0x10]", "0x01"] }]
-D33C25;[{ "Type": "Sar", "Operands": ["dword ptr [eax]", "cl"] }]
-C13C2505;[{ "Type": "Sar", "Operands": ["dword ptr [eax]", "0x05"] }]
+# SAR with memory operands (fixed)
+D07810;[{ "Type": "Sar", "Operands": ["byte ptr [eax+0x10]", "0x01"] }]
+D338;[{ "Type": "Sar", "Operands": ["dword ptr [eax]", "cl"] }]
+C13805;[{ "Type": "Sar", "Operands": ["dword ptr [eax]", "0x05"] }]

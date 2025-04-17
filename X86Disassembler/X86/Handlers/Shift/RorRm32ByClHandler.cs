@@ -1,17 +1,17 @@
 using X86Disassembler.X86.Operands;
 
-namespace X86Disassembler.X86.Handlers.Idiv;
+namespace X86Disassembler.X86.Handlers.Shift;
 
 /// <summary>
-/// Handler for IDIV r/m32 instruction (0xF7 /7)
+/// Handler for ROR r/m32, CL instruction (0xD3 /1)
 /// </summary>
-public class IdivRm32Handler : InstructionHandler
+public class RorRm32ByClHandler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the IdivRm32Handler class
+    /// Initializes a new instance of the RorRm32ByClHandler class
     /// </summary>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    public IdivRm32Handler(InstructionDecoder decoder)
+    public RorRm32ByClHandler(InstructionDecoder decoder)
         : base(decoder)
     {
     }
@@ -23,23 +23,21 @@ public class IdivRm32Handler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        // IDIV r/m32 is encoded as 0xF7 with reg field 7
-        if (opcode != 0xF7)
+        // ROR r/m32, CL is encoded as 0xD3 /1
+        if (opcode != 0xD3)
             return false;
 
         // Check if we can read the ModR/M byte
         if (!Decoder.CanReadByte())
             return false;
 
-        // Check if the reg field of the ModR/M byte is 7 (IDIV)
+        // Check if the reg field of the ModR/M byte is 1 (ROR)
         var reg = ModRMDecoder.PeakModRMReg();
-
-        // reg = 7 means IDIV operation
-        return reg == 7;
+        return reg == 1; // 1 = ROR
     }
 
     /// <summary>
-    /// Decodes an IDIV r/m32 instruction
+    /// Decodes a ROR r/m32, CL instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -47,23 +45,19 @@ public class IdivRm32Handler : InstructionHandler
     public override bool Decode(byte opcode, Instruction instruction)
     {
         // Set the instruction type
-        instruction.Type = InstructionType.IDiv;
-
-        if (!Decoder.CanReadByte())
-        {
-            return false;
-        }
+        instruction.Type = InstructionType.Ror;
 
         // Read the ModR/M byte
-        // For IDIV r/m32 (0xF7 /7):
-        // - The r/m field with mod specifies the operand (register or memory)
         var (_, _, _, operand) = ModRMDecoder.ReadModRM();
 
+        // Create a register operand for CL
+        var clOperand = OperandFactory.CreateRegisterOperand8(RegisterIndex8.CL);
+
         // Set the structured operands
-        // IDIV has only one operand
         instruction.StructuredOperands = 
         [
-            operand
+            operand,
+            clOperand
         ];
 
         return true;
