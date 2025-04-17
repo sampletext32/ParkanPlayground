@@ -40,5 +40,21 @@ public class InstructionHandlerFactoryTests
         {
             Assert.Contains(handlers, x => x.GetType() == handlerType);
         }
+
+        var uniqueRegisteredHandlers = new HashSet<string>();
+        var duplicates = new List<string>();
+        foreach (var handler in handlers)
+        {
+            if (!uniqueRegisteredHandlers.Add(handler.GetType().Name))
+            {
+                duplicates.Add(handler.GetType().Name);
+            }
+        }
+
+        if (duplicates.Count != 0)
+        {
+            Assert.Fail($"The following handlers are registered more than 1 time:\n" +
+                        $"{string.Join("\n", duplicates)}");
+        }
     }
 }
