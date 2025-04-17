@@ -51,8 +51,8 @@ public class FmulFloat64Handler : InstructionHandler
             return false;
         }
 
-        // Read the ModR/M byte using the specialized FPU method
-        var (mod, reg, fpuRm, rawOperand) = ModRMDecoder.ReadModRMFpu();
+        // Read the ModR/M byte using the specialized FPU method for 64-bit operands
+        var (mod, reg, fpuRm, rawOperand) = ModRMDecoder.ReadModRMFpu64();
         
         // Set the instruction type
         instruction.Type = InstructionType.Fmul;

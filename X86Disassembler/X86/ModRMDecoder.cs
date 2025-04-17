@@ -207,17 +207,33 @@ public class ModRMDecoder
     public (byte mod, RegisterIndex reg, RegisterIndex rm, Operand operand) ReadModRM64() => ReadModRMInternal(true);
     
     /// <summary>
-    /// Reads and decodes a ModR/M byte for FPU instructions
+    /// Reads and decodes a ModR/M byte for FPU instructions with 32-bit memory operands
     /// </summary>
     /// <returns>A tuple containing the mod, reg, rm fields (with rm as FpuRegisterIndex) and the decoded operand</returns>
-    public (byte mod, RegisterIndex reg, FpuRegisterIndex fpuRm, Operand operand) ReadModRMFpu()
+    public (byte mod, FpuRegisterIndex reg, FpuRegisterIndex rm, Operand operand) ReadModRMFpu()
     {
         var (mod, reg, rm, operand) = ReadModRMInternal(false);
         
         // Convert the RegisterIndex rm to FpuRegisterIndex
-        FpuRegisterIndex fpuRm = (FpuRegisterIndex)(int)rm;
+        FpuRegisterIndex regIndex = (FpuRegisterIndex)reg;
+        FpuRegisterIndex rmIndex = (FpuRegisterIndex)rm;
         
-        return (mod, reg, fpuRm, operand);
+        return (mod, regIndex, rmIndex, operand);
+    }
+    
+    /// <summary>
+    /// Reads and decodes a ModR/M byte for FPU instructions with 64-bit memory operands
+    /// </summary>
+    /// <returns>A tuple containing the mod, reg, rm fields (with rm as FpuRegisterIndex) and the decoded operand</returns>
+    public (byte mod, FpuRegisterIndex reg, FpuRegisterIndex rm, Operand operand) ReadModRMFpu64()
+    {
+        var (mod, reg, rm, operand) = ReadModRMInternal(true); // Use is64Bit=true for 64-bit operands
+        
+        // Convert the RegisterIndex rm to FpuRegisterIndex
+        FpuRegisterIndex regIndex = (FpuRegisterIndex)reg;
+        FpuRegisterIndex rmIndex = (FpuRegisterIndex)rm;
+        
+        return (mod, regIndex, rmIndex, operand);
     }
 
     /// <summary>
