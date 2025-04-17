@@ -45,7 +45,7 @@ public class InstructionDecoder
         _prefixDecoder = new PrefixDecoder();
 
         // Create the instruction handler factory
-        _handlerFactory = new InstructionHandlerFactory(_codeBuffer, this, _length);
+        _handlerFactory = new InstructionHandlerFactory(this);
     }
 
     /// <summary>
@@ -131,15 +131,6 @@ public class InstructionDecoder
                     }
                 }
             }
-            
-            // For MOV instructions with segment override prefixes in tests, skip the remaining bytes
-            // This is a special case handling for the segment override tests
-            if (handlerSuccess && hasSegmentOverride && instruction.Type == InstructionType.Mov)
-            {
-                // Skip to the end of the buffer for MOV instructions with segment override prefixes
-                // This is needed for the segment override tests
-                _position = _length;
-            }
         }
         else
         {
@@ -159,16 +150,24 @@ public class InstructionDecoder
         if (_prefixDecoder.HasRepPrefix())
         {
             // Map instruction types with REP prefix to specific REP-prefixed instruction types
+            // Note: REP and REPE are the same prefix (0xF3)
             instruction.Type = instruction.Type switch
             {
                 InstructionType.MovsB => InstructionType.RepMovsB,
+                InstructionType.MovsW => InstructionType.RepMovsW,
                 InstructionType.MovsD => InstructionType.RepMovsD,
                 InstructionType.StosB => InstructionType.RepStosB,
+                InstructionType.StosW => InstructionType.RepStosW,
                 InstructionType.StosD => InstructionType.RepStosD,
                 InstructionType.LodsB => InstructionType.RepLodsB,
+                InstructionType.LodsW => InstructionType.RepLodsW,
                 InstructionType.LodsD => InstructionType.RepLodsD,
                 InstructionType.ScasB => InstructionType.RepScasB,
+                InstructionType.ScasW => InstructionType.RepScasW,
                 InstructionType.ScasD => InstructionType.RepScasD,
+                InstructionType.CmpsB => InstructionType.RepeCmpsB,
+                InstructionType.CmpsW => InstructionType.RepeCmpsW,
+                InstructionType.CmpsD => InstructionType.RepeCmpsD,
                 _ => instruction.Type // Keep original type for other instructions
             };
         }
@@ -177,8 +176,15 @@ public class InstructionDecoder
             // Map instruction types with REPNE prefix to specific REPNE-prefixed instruction types
             instruction.Type = instruction.Type switch
             {
+                InstructionType.StosB => InstructionType.RepneStosB,
+                InstructionType.StosW => InstructionType.RepneStosW,
+                InstructionType.StosD => InstructionType.RepneStosD,
                 InstructionType.ScasB => InstructionType.RepneScasB,
+                InstructionType.ScasW => InstructionType.RepneScasW,
                 InstructionType.ScasD => InstructionType.RepneScasD,
+                InstructionType.CmpsB => InstructionType.RepneCmpsB,
+                InstructionType.CmpsW => InstructionType.RepneCmpsW,
+                InstructionType.CmpsD => InstructionType.RepneCmpsD,
                 _ => instruction.Type // Keep original type for other instructions
             };
         }

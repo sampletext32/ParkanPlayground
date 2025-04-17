@@ -148,43 +148,4 @@ public class PrefixDecoder
     {
         return _repnePrefix;
     }
-    
-    /// <summary>
-    /// Applies the segment override prefix to the operands string if applicable
-    /// </summary>
-    /// <param name="operands">The operands string</param>
-    /// <returns>The operands string with segment override applied</returns>
-    public string ApplySegmentOverride(string operands)
-    {
-        if (_segmentOverridePrefix && !string.IsNullOrEmpty(operands))
-        {
-            // If the instruction has memory operands, add the segment override
-            if (operands.Contains("["))
-            {
-                // Replace the first '[' with the segment override
-                return operands.Replace("[", $"{_segmentOverride}:[" );
-            }
-        }
-        
-        return operands;
-    }
-    
-    /// <summary>
-    /// Applies the REP/REPNE prefix to the mnemonic if applicable
-    /// </summary>
-    /// <param name="mnemonic">The mnemonic</param>
-    /// <returns>The mnemonic with REP/REPNE prefix applied</returns>
-    public string ApplyRepPrefix(string mnemonic)
-    {
-        if (_repnePrefix && !mnemonic.StartsWith("repne"))
-        {
-            return $"repne {mnemonic}";
-        }
-        else if (_repPrefix && !mnemonic.StartsWith("rep"))
-        {
-            return $"rep {mnemonic}";
-        }
-        
-        return mnemonic;
-    }
 }

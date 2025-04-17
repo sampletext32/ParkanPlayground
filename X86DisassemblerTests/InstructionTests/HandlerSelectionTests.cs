@@ -18,7 +18,7 @@ public class HandlerSelectionTests
         // Arrange
         byte[] codeBuffer = new byte[] {0x83, 0xC1, 0x04}; // ADD ecx, 0x04
         var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
-        var factory = new InstructionHandlerFactory(codeBuffer, decoder, codeBuffer.Length);
+        var factory = new InstructionHandlerFactory(decoder);
 
         // Act
         var handler = factory.GetHandler(0x83);

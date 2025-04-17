@@ -27,7 +27,7 @@ public class DebugHandlerRegistration
         // Create a factory
         byte[] codeBuffer = new byte[1];
         var decoder = new InstructionDecoder(codeBuffer, codeBuffer.Length);
-        var sut = new InstructionHandlerFactory(codeBuffer, decoder, codeBuffer.Length);
+        var sut = new InstructionHandlerFactory(decoder);
 
         // Get the handlers registered in the factory
         var handlers = (List<IInstructionHandler>)sut.GetType()

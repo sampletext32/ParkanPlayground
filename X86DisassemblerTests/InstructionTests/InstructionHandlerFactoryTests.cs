@@ -10,7 +10,7 @@ public class InstructionHandlerFactoryTests
     public void Factory_ShouldNotContainDuplicates()
     {
         byte[] code = new byte[] {0xCC, 0xCC, 0xCC};
-        var sut = new InstructionHandlerFactory(code, new InstructionDecoder(code, code.Length), code.Length);
+        var sut = new InstructionHandlerFactory(new InstructionDecoder(code, code.Length));
 
         var handlers = (List<IInstructionHandler>) sut.GetType()
             .GetField("_handlers", BindingFlags.Instance | BindingFlags.NonPublic)!
@@ -26,7 +26,7 @@ public class InstructionHandlerFactoryTests
     public void Factory_ShouldContainAllKnownHandlers()
     {
         byte[] code = new byte[] {0xCC, 0xCC, 0xCC};
-        var sut = new InstructionHandlerFactory(code, new InstructionDecoder(code, code.Length), code.Length);
+        var sut = new InstructionHandlerFactory(new InstructionDecoder(code, code.Length));
 
         var handlers = (List<IInstructionHandler>) sut.GetType()
             .GetField("_handlers", BindingFlags.Instance | BindingFlags.NonPublic)!

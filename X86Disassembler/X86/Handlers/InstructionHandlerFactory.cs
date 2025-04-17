@@ -12,6 +12,7 @@ using X86Disassembler.X86.Handlers.Imul;
 using X86Disassembler.X86.Handlers.Inc;
 using X86Disassembler.X86.Handlers.Jump;
 using X86Disassembler.X86.Handlers.Lea;
+using X86Disassembler.X86.Handlers.Misc;
 using X86Disassembler.X86.Handlers.Mov;
 using X86Disassembler.X86.Handlers.Mul;
 using X86Disassembler.X86.Handlers.Neg;
@@ -36,21 +37,15 @@ namespace X86Disassembler.X86.Handlers;
 public class InstructionHandlerFactory
 {
     private readonly List<IInstructionHandler> _handlers = [];
-    private readonly byte[] _codeBuffer;
     private readonly InstructionDecoder _decoder;
-    private readonly int _length;
 
     /// <summary>
     /// Initializes a new instance of the InstructionHandlerFactory class
     /// </summary>
-    /// <param name="codeBuffer">The buffer containing the code to decode</param>
     /// <param name="decoder">The instruction decoder that owns this factory</param>
-    /// <param name="length">The length of the buffer</param>
-    public InstructionHandlerFactory(byte[] codeBuffer, InstructionDecoder decoder, int length)
+    public InstructionHandlerFactory(InstructionDecoder decoder)
     {
-        _codeBuffer = codeBuffer;
         _decoder = decoder;
-        _length = length;
 
         RegisterAllHandlers();
     }
@@ -61,7 +56,7 @@ public class InstructionHandlerFactory
     private void RegisterAllHandlers()
     {
         // Register specific instruction handlers
-        _handlers.Add(new Int3Handler(_decoder));
+        _handlers.Add(new Nop.Int3Handler(_decoder));
 
         // Register handlers in order of priority (most specific first)
         RegisterSbbHandlers();        // SBB instructions
@@ -95,7 +90,7 @@ public class InstructionHandlerFactory
         RegisterSubHandlers(); // Register SUB handlers
         RegisterNopHandlers(); // Register NOP handlers
         RegisterBitHandlers(); // Register bit manipulation handlers
-        RegisterAndHandlers(); // Register AND handlers
+        RegisterMiscHandlers(); // Register miscellaneous instructions
     }
 
     /// <summary>
@@ -471,9 +466,27 @@ public class InstructionHandlerFactory
     private void RegisterNopHandlers()
     {
         // Register NOP handlers
-        _handlers.Add(new NopHandler(_decoder));                // NOP (opcode 0x90)
+        _handlers.Add(new Nop.NopHandler(_decoder));                // NOP (opcode 0x90)
         _handlers.Add(new TwoByteNopHandler(_decoder));         // 2-byte NOP (opcode 0x66 0x90)
         _handlers.Add(new MultiByteNopHandler(_decoder));       // Multi-byte NOP (opcode 0F 1F /0)
+    }
+
+    /// <summary>
+    /// Registers all miscellaneous instruction handlers
+    /// </summary>
+    private void RegisterMiscHandlers()
+    {
+        // Register miscellaneous instruction handlers
+        _handlers.Add(new IntHandler(_decoder));        // INT (opcode 0xCD)
+        _handlers.Add(new IntoHandler(_decoder));       // INTO (opcode 0xCE)
+        _handlers.Add(new IretHandler(_decoder));       // IRET (opcode 0xCF)
+        _handlers.Add(new CpuidHandler(_decoder));      // CPUID (opcode 0x0F 0xA2)
+        _handlers.Add(new RdtscHandler(_decoder));      // RDTSC (opcode 0x0F 0x31)
+        _handlers.Add(new HltHandler(_decoder));        // HLT (opcode 0xF4)
+        _handlers.Add(new WaitHandler(_decoder));       // WAIT (opcode 0x9B)
+        _handlers.Add(new LockHandler(_decoder));       // LOCK (opcode 0xF0)
+        _handlers.Add(new InHandler(_decoder));         // IN (opcodes 0xE4, 0xE5, 0xEC, 0xED)
+        _handlers.Add(new OutHandler(_decoder));        // OUT (opcodes 0xE6, 0xE7, 0xEE, 0xEF)
     }
 
     /// <summary>
