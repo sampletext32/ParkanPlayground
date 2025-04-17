@@ -31,13 +31,11 @@ public class FucomiHandler : InstructionHandler
             return false;
         }
 
-        // Check if the ModR/M byte has reg field = 6 and mod = 3
-        byte modRm = Decoder.PeakByte();
-        byte reg = (byte)((modRm >> 3) & 0x7);
-        byte mod = (byte)((modRm >> 6) & 0x3);
+        // Check second opcode byte
+        byte secondOpcode = Decoder.PeakByte();
         
-        // Only handle register operands (mod = 3) with reg = 6
-        return reg == 6 && mod == 3;
+        // Only handle F0-F7
+        return secondOpcode is >= 0xE8 and <= 0xEF;
     }
     
     /// <summary>
@@ -54,28 +52,14 @@ public class FucomiHandler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, _) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, _) = ModRMDecoder.ReadModRMFpu();
         
         // Set the instruction type
         instruction.Type = InstructionType.Fucomi;
-
-        // Map rm field to FPU register index
-        FpuRegisterIndex stIndex = rm switch
-        {
-            RegisterIndex.A => FpuRegisterIndex.ST0,
-            RegisterIndex.C => FpuRegisterIndex.ST1,
-            RegisterIndex.D => FpuRegisterIndex.ST2,
-            RegisterIndex.B => FpuRegisterIndex.ST3,
-            RegisterIndex.Sp => FpuRegisterIndex.ST4,
-            RegisterIndex.Bp => FpuRegisterIndex.ST5,
-            RegisterIndex.Si => FpuRegisterIndex.ST6,
-            RegisterIndex.Di => FpuRegisterIndex.ST7,
-            _ => FpuRegisterIndex.ST0 // Default case, should not happen
-        };
         
         // Create the FPU register operands
         var destOperand = OperandFactory.CreateFPURegisterOperand(FpuRegisterIndex.ST0);
-        var srcOperand = OperandFactory.CreateFPURegisterOperand(stIndex);
+        var srcOperand = OperandFactory.CreateFPURegisterOperand(rm);
         
         // Set the structured operands
         instruction.StructuredOperands = 

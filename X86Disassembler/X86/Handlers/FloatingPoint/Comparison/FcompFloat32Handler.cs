@@ -36,7 +36,7 @@ public class FcompFloat32Handler : InstructionHandler
         byte reg = (byte)((modRm >> 3) & 0x7);
         
         // special handling of modRM for D8 D8+i	FCOMP ST(i)
-        return reg == 3 && modRm is < 0xD8 or > 0xDE;
+        return reg == 3 && modRm is < 0xD8 or > 0xDF;
     }
     
     /// <summary>

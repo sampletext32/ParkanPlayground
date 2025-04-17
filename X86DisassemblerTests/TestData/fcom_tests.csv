@@ -39,8 +39,8 @@ D8DF;[{ "Type": "Fcomp", "Operands": ["ST(7)"] }]
 # Memory operands
 D81C2510000000;[{ "Type": "Fcomp", "Operands": ["dword ptr [0x10]"] }]
 DC1C2510000000;[{ "Type": "Fcomp", "Operands": ["qword ptr [0x10]"] }]
-D81C25;[{ "Type": "Fcomp", "Operands": ["dword ptr [eax]"] }]
-DC1C25;[{ "Type": "Fcomp", "Operands": ["qword ptr [eax]"] }]
+D818;[{ "Type": "Fcomp", "Operands": ["dword ptr [eax]"] }]
+DC18;[{ "Type": "Fcomp", "Operands": ["qword ptr [eax]"] }]
 
 # FCOMPP - Compare floating point values and pop twice
 DED9;[{ "Type": "Fcompp", "Operands": [] }]

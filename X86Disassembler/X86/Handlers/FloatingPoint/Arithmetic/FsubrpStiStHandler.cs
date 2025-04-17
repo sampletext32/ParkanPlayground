@@ -3,15 +3,15 @@ namespace X86Disassembler.X86.Handlers.FloatingPoint.Arithmetic;
 using X86Disassembler.X86.Operands;
 
 /// <summary>
-/// Handler for FADD ST(i), ST(0) instruction (DC C0-C7)
+/// Handler for FSUBRP ST(i), ST instruction (DE E8-EF)
 /// </summary>
-public class FaddRegisterHandler : InstructionHandler
+public class FsubrpStiStHandler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the FaddRegisterHandler class
+    /// Initializes a new instance of the FsubrpStiStHandler class
     /// </summary>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    public FaddRegisterHandler(InstructionDecoder decoder)
+    public FsubrpStiStHandler(InstructionDecoder decoder)
         : base(decoder)
     {
     }
@@ -23,25 +23,23 @@ public class FaddRegisterHandler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        // FADD ST(i), ST(0) is DC C0-C7
-        if (opcode != 0xDC) return false;
+        // FSUBRP ST(i), ST is DE E8-EF
+        if (opcode != 0xDE) return false;
 
         if (!Decoder.CanReadByte())
         {
             return false;
         }
 
-        // Check if the ModR/M byte has reg field = 0 and mod = 3
-        byte modRm = Decoder.PeakByte();
-        byte reg = (byte)((modRm >> 3) & 0x7);
-        byte mod = (byte)((modRm >> 6) & 0x3);
+        // Check second opcode byte
+        byte secondOpcode = Decoder.PeakByte();
         
-        // Only handle register operands (mod = 3) with reg = 0
-        return reg == 0 && mod == 3;
+        // Only handle E8-EF
+        return secondOpcode is >= 0xE8 and <= 0xEF;
     }
     
     /// <summary>
-    /// Decodes a FADD ST(i), ST(0) instruction
+    /// Decodes a FSUBRP ST(i), ST instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -53,25 +51,11 @@ public class FaddRegisterHandler : InstructionHandler
             return false;
         }
 
-        // Read the ModR/M byte
-        var (mod, reg, rm, _) = ModRMDecoder.ReadModRM();
+        // Read the ModR/M byte and calculate ST(i) index
+        var stIndex = (FpuRegisterIndex)(Decoder.ReadByte() - 0xE8);
         
         // Set the instruction type
-        instruction.Type = InstructionType.Fadd;
-
-        // Map rm field to FPU register index
-        FpuRegisterIndex stIndex = rm switch
-        {
-            RegisterIndex.A => FpuRegisterIndex.ST0,
-            RegisterIndex.C => FpuRegisterIndex.ST1,
-            RegisterIndex.D => FpuRegisterIndex.ST2,
-            RegisterIndex.B => FpuRegisterIndex.ST3,
-            RegisterIndex.Sp => FpuRegisterIndex.ST4,
-            RegisterIndex.Bp => FpuRegisterIndex.ST5,
-            RegisterIndex.Si => FpuRegisterIndex.ST6,
-            RegisterIndex.Di => FpuRegisterIndex.ST7,
-            _ => FpuRegisterIndex.ST0 // Default case, should not happen
-        };
+        instruction.Type = InstructionType.Fsubrp;
         
         // Create the FPU register operands
         var stiOperand = OperandFactory.CreateFPURegisterOperand(stIndex);

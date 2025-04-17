@@ -3,15 +3,15 @@ namespace X86Disassembler.X86.Handlers.FloatingPoint.Arithmetic;
 using X86Disassembler.X86.Operands;
 
 /// <summary>
-/// Handler for FSUB ST(i), ST(0) instruction (DC E0-E7)
+/// Handler for FDIVP ST(i), ST instruction (DE F0-F7)
 /// </summary>
-public class FsubRegisterHandler : InstructionHandler
+public class FdivpStiStHandler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the FsubRegisterHandler class
+    /// Initializes a new instance of the FdivpStiStHandler class
     /// </summary>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    public FsubRegisterHandler(InstructionDecoder decoder)
+    public FdivpStiStHandler(InstructionDecoder decoder)
         : base(decoder)
     {
     }
@@ -23,8 +23,8 @@ public class FsubRegisterHandler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        // FSUB ST(i), ST(0) is DC E0-E7
-        if (opcode != 0xDC) return false;
+        // FDIVP ST(i), ST is DE F0-F7
+        if (opcode != 0xDE) return false;
 
         if (!Decoder.CanReadByte())
         {
@@ -34,12 +34,12 @@ public class FsubRegisterHandler : InstructionHandler
         // Check second opcode byte
         byte secondOpcode = Decoder.PeakByte();
         
-        // Only handle E0-E7
-        return secondOpcode is >= 0xE0 and <= 0xE7;
+        // Only handle F0-F7
+        return secondOpcode is >= 0xF0 and <= 0xF7;
     }
     
     /// <summary>
-    /// Decodes a FSUB ST(i), ST(0) instruction
+    /// Decodes a FDIVP ST(i), ST instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -52,10 +52,10 @@ public class FsubRegisterHandler : InstructionHandler
         }
 
         // Read the ModR/M byte and calculate ST(i) index
-        var stIndex = (FpuRegisterIndex)(Decoder.ReadByte() - 0xE0);
+        var stIndex = (FpuRegisterIndex)(Decoder.ReadByte() - 0xF0);
         
         // Set the instruction type
-        instruction.Type = InstructionType.Fsub;
+        instruction.Type = InstructionType.Fdivp;
         
         // Create the FPU register operands
         var stiOperand = OperandFactory.CreateFPURegisterOperand(stIndex);

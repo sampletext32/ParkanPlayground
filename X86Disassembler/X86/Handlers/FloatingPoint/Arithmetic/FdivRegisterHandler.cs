@@ -31,13 +31,11 @@ public class FdivRegisterHandler : InstructionHandler
             return false;
         }
 
-        // Check if the ModR/M byte has reg field = 6 and mod = 3
-        byte modRm = Decoder.PeakByte();
-        byte reg = (byte)((modRm >> 3) & 0x7);
-        byte mod = (byte)((modRm >> 6) & 0x3);
+        // Check second opcode byte
+        byte secondOpcode = Decoder.PeakByte();
         
-        // Only handle register operands (mod = 3) with reg = 6
-        return reg == 6 && mod == 3;
+        // Only handle F0-F7
+        return secondOpcode is >= 0xF0 and <= 0xF7;
     }
     
     /// <summary>
@@ -53,25 +51,11 @@ public class FdivRegisterHandler : InstructionHandler
             return false;
         }
 
-        // Read the ModR/M byte
-        var (mod, reg, rm, _) = ModRMDecoder.ReadModRM();
+        // Read the ModR/M byte and calculate ST(i) index
+        var stIndex = (FpuRegisterIndex)(Decoder.ReadByte() - 0xF0);
         
         // Set the instruction type
         instruction.Type = InstructionType.Fdiv;
-
-        // Map rm field to FPU register index
-        FpuRegisterIndex stIndex = rm switch
-        {
-            RegisterIndex.A => FpuRegisterIndex.ST0,
-            RegisterIndex.C => FpuRegisterIndex.ST1,
-            RegisterIndex.D => FpuRegisterIndex.ST2,
-            RegisterIndex.B => FpuRegisterIndex.ST3,
-            RegisterIndex.Sp => FpuRegisterIndex.ST4,
-            RegisterIndex.Bp => FpuRegisterIndex.ST5,
-            RegisterIndex.Si => FpuRegisterIndex.ST6,
-            RegisterIndex.Di => FpuRegisterIndex.ST7,
-            _ => FpuRegisterIndex.ST0 // Default case, should not happen
-        };
         
         // Create the FPU register operands
         var stiOperand = OperandFactory.CreateFPURegisterOperand(stIndex);

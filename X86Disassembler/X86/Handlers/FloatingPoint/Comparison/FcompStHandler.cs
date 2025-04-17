@@ -34,7 +34,7 @@ public class FcompStHandler : InstructionHandler
         var opcodeSecond = Decoder.PeakByte();
 
         // this is a special case of a handler, only handling FCOMP with ST(i)
-        if (opcodeSecond < 0xD8 || opcodeSecond > 0xDF)
+        if (opcodeSecond is < 0xD8 or > 0xDF)
             return false;
 
         return true;
