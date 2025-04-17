@@ -3,15 +3,15 @@ namespace X86Disassembler.X86.Handlers.FloatingPoint.Arithmetic;
 using X86Disassembler.X86.Operands;
 
 /// <summary>
-/// Handler for FDIVR ST(i), ST(0) instruction (DC F8-FF)
+/// Handler for FDIVR ST, ST(i) instruction (D8 F8-FF)
 /// </summary>
-public class FdivrRegisterHandler : InstructionHandler
+public class FdivrStStiHandler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the FdivrRegisterHandler class
+    /// Initializes a new instance of the FdivrStStHandler class
     /// </summary>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    public FdivrRegisterHandler(InstructionDecoder decoder)
+    public FdivrStStiHandler(InstructionDecoder decoder)
         : base(decoder)
     {
     }
@@ -23,8 +23,8 @@ public class FdivrRegisterHandler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        // FDIVR ST(i), ST(0) is DC F8-FF
-        if (opcode != 0xDC) return false;
+        // FDIVR ST, ST(i) is D8 F8-FF
+        if (opcode != 0xD8) return false;
 
         if (!Decoder.CanReadByte())
         {
@@ -39,7 +39,7 @@ public class FdivrRegisterHandler : InstructionHandler
     }
     
     /// <summary>
-    /// Decodes a FDIVR ST(i), ST(0) instruction
+    /// Decodes a FDIVR ST, ST(i) instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -58,14 +58,14 @@ public class FdivrRegisterHandler : InstructionHandler
         instruction.Type = InstructionType.Fdivr;
         
         // Create the FPU register operands
-        var stiOperand = OperandFactory.CreateFPURegisterOperand(stIndex);
         var st0Operand = OperandFactory.CreateFPURegisterOperand(FpuRegisterIndex.ST0);
+        var stiOperand = OperandFactory.CreateFPURegisterOperand(stIndex);
         
         // Set the structured operands
         instruction.StructuredOperands = 
         [
-            stiOperand,
-            st0Operand
+            st0Operand,
+            stiOperand
         ];
 
         return true;

@@ -38,7 +38,10 @@ public class InstructionHandlerFactoryTests
         
         foreach (var handlerType in handlerTypes)
         {
-            Assert.Contains(handlers, x => x.GetType() == handlerType);
+            if (handlers.All(x => x.GetType() != handlerType))
+            {
+                Assert.Fail($"{handlerType.Name} not found");
+            }
         }
 
         var uniqueRegisteredHandlers = new HashSet<string>();

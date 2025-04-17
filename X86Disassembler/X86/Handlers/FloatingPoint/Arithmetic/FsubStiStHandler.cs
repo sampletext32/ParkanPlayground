@@ -3,15 +3,15 @@ namespace X86Disassembler.X86.Handlers.FloatingPoint.Arithmetic;
 using X86Disassembler.X86.Operands;
 
 /// <summary>
-/// Handler for FDIV float64 instruction (DC /6)
+/// Handler for FSUB ST(i), ST instruction (DC E0-E7)
 /// </summary>
-public class FdivFloat64Handler : InstructionHandler
+public class FsubStiStHandler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the FdivFloat64Handler class
+    /// Initializes a new instance of the FsubStiStHandler class
     /// </summary>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    public FdivFloat64Handler(InstructionDecoder decoder)
+    public FsubStiStHandler(InstructionDecoder decoder)
         : base(decoder)
     {
     }
@@ -23,7 +23,7 @@ public class FdivFloat64Handler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        // FDIV is DC /6
+        // FSUB ST(i), ST is DC E0-E7
         if (opcode != 0xDC) return false;
 
         if (!Decoder.CanReadByte())
@@ -31,17 +31,15 @@ public class FdivFloat64Handler : InstructionHandler
             return false;
         }
 
-        // Check if the ModR/M byte has reg field = 6 and mod != 3 (memory operand)
-        byte modRm = Decoder.PeakByte();
-        byte reg = (byte)((modRm >> 3) & 0x7);
-        byte mod = (byte)((modRm >> 6) & 0x3);
+        // Check second opcode byte
+        byte secondOpcode = Decoder.PeakByte();
         
-        // Only handle memory operands (mod != 3) with reg = 6
-        return reg == 6 && mod != 3;
+        // Only handle E0-E7
+        return secondOpcode is >= 0xE0 and <= 0xE7;
     }
     
     /// <summary>
-    /// Decodes a FDIV float64 instruction
+    /// Decodes a FSUB ST(i), ST instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -53,19 +51,21 @@ public class FdivFloat64Handler : InstructionHandler
             return false;
         }
 
-        // Read the ModR/M byte using the specialized FPU method for 64-bit operands
-        var (mod, reg, fpuRm, rawOperand) = ModRMDecoder.ReadModRMFpu64();
-        
-        // We've already verified reg field is 6 (FDIV) in CanHandle
-        // and we only handle memory operands (mod != 3)
+        // Read the ModR/M byte and calculate ST(i) index
+        var stIndex = (FpuRegisterIndex)(Decoder.ReadByte() - 0xE0);
         
         // Set the instruction type
-        instruction.Type = InstructionType.Fdiv;
-
-        // Set the structured operands - the operand already has the correct size from ReadModRMFpu64
+        instruction.Type = InstructionType.Fsub;
+        
+        // Create the FPU register operands
+        var stiOperand = OperandFactory.CreateFPURegisterOperand(stIndex);
+        var st0Operand = OperandFactory.CreateFPURegisterOperand(FpuRegisterIndex.ST0);
+        
+        // Set the structured operands
         instruction.StructuredOperands = 
         [
-            rawOperand
+            stiOperand,
+            st0Operand
         ];
 
         return true;

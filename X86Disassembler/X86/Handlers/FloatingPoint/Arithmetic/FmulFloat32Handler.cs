@@ -31,11 +31,13 @@ public class FmulFloat32Handler : InstructionHandler
             return false;
         }
 
-        // Check if the ModR/M byte has reg field = 1
+        // Check if the ModR/M byte has reg field = 1 and mod != 3 (memory operand)
         byte modRm = Decoder.PeakByte();
         byte reg = (byte)((modRm >> 3) & 0x7);
+        byte mod = (byte)((modRm >> 6) & 0x3);
         
-        return reg == 1;
+        // Only handle memory operands (mod != 3) with reg = 1
+        return reg == 1 && mod != 3;
     }
     
     /// <summary>
@@ -51,36 +53,20 @@ public class FmulFloat32Handler : InstructionHandler
             return false;
         }
 
-        // Read the ModR/M byte using the specialized FPU method
+        // Read the ModR/M byte using the specialized FPU method for 32-bit operands
         var (mod, reg, fpuRm, rawOperand) = ModRMDecoder.ReadModRMFpu();
+        
+        // We've already verified reg field is 1 (FMUL) in CanHandle
+        // and we only handle memory operands (mod != 3)
         
         // Set the instruction type
         instruction.Type = InstructionType.Fmul;
 
-        // For memory operands, set the operand
-        if (mod != 3) // Memory operand
-        {
-            // Set the structured operands - the operand already has the correct size from ReadModRM
-            
-            // Set the structured operands
-            instruction.StructuredOperands = 
-            [
-                rawOperand
-            ];
-        }
-        else // Register operand (ST(i))
-        {
-            // For register operands, we need to handle the stack registers
-            var st0Operand = OperandFactory.CreateFPURegisterOperand(FpuRegisterIndex.ST0); // ST(0)
-            var stiOperand = OperandFactory.CreateFPURegisterOperand(fpuRm); // ST(i)
-            
-            // Set the structured operands
-            instruction.StructuredOperands = 
-            [
-                st0Operand,
-                stiOperand
-            ];
-        }
+        // Set the structured operands - the operand already has the correct size from ReadModRMFpu
+        instruction.StructuredOperands = 
+        [
+            rawOperand
+        ];
 
         return true;
     }
