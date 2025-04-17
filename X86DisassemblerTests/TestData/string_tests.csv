@@ -5,12 +5,12 @@ RawBytes;Instructions
 # MOVS - Move string
 A4;[{ "Type": "MovsB", "Operands": ["byte ptr es:[edi]", "byte ptr ds:[esi]"] }]
 A5;[{ "Type": "MovsD", "Operands": ["dword ptr es:[edi]", "dword ptr ds:[esi]"] }]
-66A5;[{ "Type": "MovsW", "Operands": ["word ptr es:[edi]", "byte ptr es:[esi]"] }]
+66A5;[{ "Type": "MovsW", "Operands": ["word ptr es:[edi]", "word ptr ds:[esi]"] }]
 
 # CMPS - Compare string
-A6;[{ "Type": "CmpsB", "Operands": ["byte ptr es:[esi]", "byte ptr es:[edi]"] }]
-A7;[{ "Type": "CmpsD", "Operands": ["dword ptr es:[esi]", "dword ptr es:[edi]"] }]
-66A7;[{ "Type": "CmpsW", "Operands": ["word ptr es:[esi]", "word ptr es:[edi]"] }]
+A6;[{ "Type": "CmpsB", "Operands": ["byte ptr ds:[esi]", "byte ptr es:[edi]"] }]
+A7;[{ "Type": "CmpsD", "Operands": ["dword ptr ds:[esi]", "dword ptr es:[edi]"] }]
+66A7;[{ "Type": "CmpsW", "Operands": ["word ptr ds:[esi]", "word ptr es:[edi]"] }]
 
 # SCAS - Scan string
 AE;[{ "Type": "ScasB", "Operands": ["al", "byte ptr es:[edi]"] }]
@@ -20,7 +20,7 @@ AF;[{ "Type": "ScasD", "Operands": ["eax", "dword ptr es:[edi]"] }]
 # LODS - Load string
 AC;[{ "Type": "LodsB", "Operands": ["al", "byte ptr ds:[esi]"] }]
 AD;[{ "Type": "LodsD", "Operands": ["eax", "dword ptr ds:[esi]"] }]
-66AD;[{ "Type": "LodsW", "Operands": ["ax", "byte ptr ds:[esi]"] }]
+66AD;[{ "Type": "LodsW", "Operands": ["ax", "word ptr ds:[esi]"] }]
 
 # STOS - Store string
 AA;[{ "Type": "StosB", "Operands": ["byte ptr es:[edi]", "al"] }]
@@ -36,17 +36,17 @@ F3AB;[{ "Type": "RepStosD", "Operands": ["dword ptr es:[edi]", "eax"] }]
 F366AB;[{ "Type": "RepStosW", "Operands": ["word ptr es:[edi]", "ax"] }]
 
 # REPE/REPZ prefix with string instructions
-F3A6;[{ "Type": "RepeCmpsB", "Operands": ["byte ptr es:[esi]", "byte ptr es:[edi]"] }]
-F3A7;[{ "Type": "RepeCmpsD", "Operands": ["dword ptr es:[esi]", "byte ptr es:[edi]"] }]
-F366A7;[{ "Type": "RepeCmpsW", "Operands": ["word ptr es:[esi]", "word ptr es:[edi]"] }]
+F3A6;[{ "Type": "RepeCmpsB", "Operands": ["byte ptr ds:[esi]", "byte ptr es:[edi]"] }]
+F3A7;[{ "Type": "RepeCmpsD", "Operands": ["dword ptr ds:[esi]", "dword ptr es:[edi]"] }]
+F366A7;[{ "Type": "RepeCmpsW", "Operands": ["word ptr ds:[esi]", "word ptr es:[edi]"] }]
 F3AE;[{ "Type": "RepScasB", "Operands": ["al", "byte ptr es:[edi]"] }]
 F3AF;[{ "Type": "RepScasD", "Operands": ["eax", "dword ptr es:[edi]"] }]
 F366AF;[{ "Type": "RepScasW", "Operands": ["ax", "word ptr es:[edi]"] }]
 
 # REPNE/REPNZ prefix with string instructions
-F2A6;[{ "Type": "RepneCmpsB", "Operands": ["byte ptr es:[esi]", "byte ptr es:[edi]"] }]
-F2A7;[{ "Type": "RepneCmpsD", "Operands": ["dword ptr es:[esi]", "dword ptr es:[edi]"] }]
-F266A7;[{ "Type": "RepneCmpsW", "Operands": ["word ptr es:[esi]", "word ptr es:[edi]"] }]
+F2A6;[{ "Type": "RepneCmpsB", "Operands": ["byte ptr ds:[esi]", "byte ptr es:[edi]"] }]
+F2A7;[{ "Type": "RepneCmpsD", "Operands": ["dword ptr ds:[esi]", "dword ptr es:[edi]"] }]
+F266A7;[{ "Type": "RepneCmpsW", "Operands": ["word ptr ds:[esi]", "word ptr es:[edi]"] }]
 F2AE;[{ "Type": "RepneScasB", "Operands": ["al", "byte ptr es:[edi]"] }]
-F2AF;[{ "Type": "RepneScasD", "Operands": ["eax", "byte ptr es:[edi]"] }]
-F266AF;[{ "Type": "RepneScasW", "Operands": ["eax", "byte ptr es:[edi]"] }]
+F2AF;[{ "Type": "RepneScasD", "Operands": ["eax", "dword ptr es:[edi]"] }]
+F266AF;[{ "Type": "RepneScasW", "Operands": ["ax", "word ptr es:[edi]"] }]

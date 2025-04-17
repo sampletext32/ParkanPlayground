@@ -437,12 +437,85 @@ public class InstructionHandlerFactory
         // Other floating point handlers
         _handlers.Add(new FloatingPoint.Control.FnstswHandler(_decoder));         // FNSTSW AX (DF E0)
         
-        // Keep the existing handlers for operations not yet migrated to specialized handlers
-        _handlers.Add(new LoadStoreInt32Handler(_decoder));   // Load and store 32-bit values
-        _handlers.Add(new Float64OperationHandler(_decoder)); // Remaining float64 operations
-        _handlers.Add(new LoadStoreFloat64Handler(_decoder)); // Load and store 64-bit values
-        _handlers.Add(new Int16OperationHandler(_decoder));   // Integer operations on 16-bit values
-        _handlers.Add(new LoadStoreInt16Handler(_decoder));   // Load and store 16-bit values
+        // DB opcode handlers (int32 operations and extended precision)
+        _handlers.Add(new FloatingPoint.LoadStore.FildInt32Handler(_decoder));     // FILD int32 (DB /0)
+        _handlers.Add(new FloatingPoint.LoadStore.FistInt32Handler(_decoder));     // FIST int32 (DB /2)
+        _handlers.Add(new FloatingPoint.LoadStore.FistpInt32Handler(_decoder));    // FISTP int32 (DB /3)
+        _handlers.Add(new FloatingPoint.LoadStore.FldExtendedHandler(_decoder));   // FLD extended-precision (DB /5)
+        _handlers.Add(new FloatingPoint.LoadStore.FstpExtendedHandler(_decoder));  // FSTP extended-precision (DB /7)
+        
+        // DB opcode handlers (conditional move instructions)
+        _handlers.Add(new FloatingPoint.Conditional.FcmovnbHandler(_decoder));     // FCMOVNB (DB C0-C7)
+        _handlers.Add(new FloatingPoint.Conditional.FcmovneHandler(_decoder));     // FCMOVNE (DB C8-CF)
+        _handlers.Add(new FloatingPoint.Conditional.FcmovnbeHandler(_decoder));    // FCMOVNBE (DB D0-D7)
+        _handlers.Add(new FloatingPoint.Conditional.FcmovnuHandler(_decoder));     // FCMOVNU (DB D8-DF)
+        
+        // DB opcode handlers (control instructions)
+        _handlers.Add(new FloatingPoint.Control.FclexHandler(_decoder));           // FCLEX (DB E2)
+        _handlers.Add(new FloatingPoint.Control.FinitHandler(_decoder));           // FINIT (DB E3)
+        
+        // DB opcode handlers (comparison instructions)
+        _handlers.Add(new FloatingPoint.Comparison.FucomiHandler(_decoder));       // FUCOMI (DB E8-EF)
+        _handlers.Add(new FloatingPoint.Comparison.FcomiHandler(_decoder));        // FCOMI (DB F0-F7)
+        
+        // DC opcode handlers (register-register operations)
+        _handlers.Add(new FloatingPoint.Arithmetic.FaddRegisterHandler(_decoder));     // FADD ST(i), ST(0) (DC C0-C7)
+        _handlers.Add(new FloatingPoint.Arithmetic.FmulRegisterHandler(_decoder));     // FMUL ST(i), ST(0) (DC C8-CF)
+        _handlers.Add(new FloatingPoint.Comparison.FcomRegisterHandler(_decoder));     // FCOM ST(i), ST(0) (DC D0-D7)
+        _handlers.Add(new FloatingPoint.Comparison.FcompRegisterHandler(_decoder));    // FCOMP ST(i), ST(0) (DC D8-DF)
+        _handlers.Add(new FloatingPoint.Arithmetic.FsubRegisterHandler(_decoder));     // FSUB ST(i), ST(0) (DC E0-E7)
+        _handlers.Add(new FloatingPoint.Arithmetic.FsubrRegisterHandler(_decoder));    // FSUBR ST(i), ST(0) (DC E8-EF)
+        _handlers.Add(new FloatingPoint.Arithmetic.FdivRegisterHandler(_decoder));     // FDIV ST(i), ST(0) (DC F0-F7)
+        _handlers.Add(new FloatingPoint.Arithmetic.FdivrRegisterHandler(_decoder));    // FDIVR ST(i), ST(0) (DC F8-FF)
+        
+        // DD opcode handlers (register operations)
+        _handlers.Add(new FloatingPoint.Control.FfreeHandler(_decoder));           // FFREE ST(i) (DD C0-C7)
+        _handlers.Add(new FloatingPoint.LoadStore.FstRegisterHandler(_decoder));    // FST ST(i) (DD D0-D7)
+        _handlers.Add(new FloatingPoint.LoadStore.FstpRegisterHandler(_decoder));   // FSTP ST(i) (DD D8-DF)
+        _handlers.Add(new FloatingPoint.Comparison.FucomHandler(_decoder));        // FUCOM ST(i) (DD E0-E7)
+        _handlers.Add(new FloatingPoint.Comparison.FucompHandler(_decoder));       // FUCOMP ST(i) (DD E8-EF)
+        
+        // DD opcode handlers (memory operations)
+        _handlers.Add(new FloatingPoint.Control.FrstorHandler(_decoder));          // FRSTOR (DD /4)
+        _handlers.Add(new FloatingPoint.Control.FnsaveHandler(_decoder));          // FNSAVE (DD /6)
+        _handlers.Add(new FloatingPoint.Control.FnstswMemoryHandler(_decoder));    // FNSTSW memory (DD /7)
+        
+        // DE opcode handlers (memory operations)
+        _handlers.Add(new FloatingPoint.Arithmetic.FiaddInt16Handler(_decoder));    // FIADD int16 (DE /0)
+        _handlers.Add(new FloatingPoint.Arithmetic.FimulInt16Handler(_decoder));    // FIMUL int16 (DE /1)
+        _handlers.Add(new FloatingPoint.Comparison.FicomInt16Handler(_decoder));    // FICOM int16 (DE /2)
+        _handlers.Add(new FloatingPoint.Comparison.FicompInt16Handler(_decoder));   // FICOMP int16 (DE /3)
+        _handlers.Add(new FloatingPoint.Arithmetic.FisubInt16Handler(_decoder));    // FISUB int16 (DE /4)
+        _handlers.Add(new FloatingPoint.Arithmetic.FisubrInt16Handler(_decoder));   // FISUBR int16 (DE /5)
+        _handlers.Add(new FloatingPoint.Arithmetic.FidivInt16Handler(_decoder));    // FIDIV int16 (DE /6)
+        _handlers.Add(new FloatingPoint.Arithmetic.FidivrInt16Handler(_decoder));   // FIDIVR int16 (DE /7)
+        
+        // DE opcode handlers (register operations)
+        _handlers.Add(new FloatingPoint.Arithmetic.FaddpHandler(_decoder));         // FADDP ST(i), ST(0) (DE C0-C7)
+        _handlers.Add(new FloatingPoint.Arithmetic.FmulpHandler(_decoder));         // FMULP ST(i), ST(0) (DE C8-CF)
+        _handlers.Add(new FloatingPoint.Comparison.FcompStHandler(_decoder));       // FCOMP ST(0) (DE D3)
+        _handlers.Add(new FloatingPoint.Comparison.FcomppHandler(_decoder));        // FCOMPP (DE D9)
+        _handlers.Add(new FloatingPoint.Arithmetic.FsubpHandler(_decoder));         // FSUBP ST(i), ST(0) (DE E0-E7)
+        _handlers.Add(new FloatingPoint.Arithmetic.FsubrpHandler(_decoder));        // FSUBRP ST(i), ST(0) (DE E8-EF)
+        _handlers.Add(new FloatingPoint.Arithmetic.FdivpHandler(_decoder));         // FDIVP ST(i), ST(0) (DE F0-F7)
+        _handlers.Add(new FloatingPoint.Arithmetic.FdivrpHandler(_decoder));        // FDIVRP ST(i), ST(0) (DE F8-FF)
+        
+        // DF opcode handlers (memory operations)
+        _handlers.Add(new FloatingPoint.LoadStore.FildInt16Handler(_decoder));     // FILD int16 (DF /0)
+        _handlers.Add(new FloatingPoint.LoadStore.FisttpInt16Handler(_decoder));   // FISTTP int16 (DF /1)
+        _handlers.Add(new FloatingPoint.LoadStore.FistInt16Handler(_decoder));     // FIST int16 (DF /2)
+        _handlers.Add(new FloatingPoint.LoadStore.FistpInt16Handler(_decoder));    // FISTP int16 (DF /3)
+        _handlers.Add(new FloatingPoint.LoadStore.FbldHandler(_decoder));          // FBLD packed BCD (DF /4)
+        _handlers.Add(new FloatingPoint.LoadStore.FildInt64Handler(_decoder));     // FILD int64 (DF /5)
+        _handlers.Add(new FloatingPoint.LoadStore.FbstpHandler(_decoder));         // FBSTP packed BCD (DF /6)
+        _handlers.Add(new FloatingPoint.LoadStore.FistpInt64Handler(_decoder));    // FISTP int64 (DF /7)
+        
+        // DF opcode handlers (register operations)
+        _handlers.Add(new FloatingPoint.Control.FfreepHandler(_decoder));          // FFREEP ST(i) (DF C0-C7)
+        _handlers.Add(new FloatingPoint.LoadStore.FxchDfHandler(_decoder));        // FXCH (DF C8)
+        _handlers.Add(new FloatingPoint.LoadStore.FstpDfHandler(_decoder));        // FSTP ST(1) (DF D0, DF D8)
+        _handlers.Add(new FloatingPoint.Comparison.FucomipHandler(_decoder));      // FUCOMIP ST(0), ST(i) (DF E8-EF)
+        _handlers.Add(new FloatingPoint.Comparison.FcomipHandler(_decoder));       // FCOMIP ST(0), ST(i) (DF F0-F7)
     }
 
     /// <summary>
