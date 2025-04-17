@@ -18,9 +18,9 @@ AF;[{ "Type": "ScasD", "Operands": ["eax", "dword ptr es:[edi]"] }]
 66AF;[{ "Type": "ScasW", "Operands": ["ax", "word ptr es:[edi]"] }]
 
 # LODS - Load string
-AC;[{ "Type": "LodsB", "Operands": ["al", "byte ptr es:[esi]"] }]
-AD;[{ "Type": "LodsD", "Operands": ["eax", "dword ptr es:[esi]"] }]
-66AD;[{ "Type": "LodsW", "Operands": ["ax", "byte ptr es:[esi]"] }]
+AC;[{ "Type": "LodsB", "Operands": ["al", "byte ptr ds:[esi]"] }]
+AD;[{ "Type": "LodsD", "Operands": ["eax", "dword ptr ds:[esi]"] }]
+66AD;[{ "Type": "LodsW", "Operands": ["ax", "byte ptr ds:[esi]"] }]
 
 # STOS - Store string
 AA;[{ "Type": "StosB", "Operands": ["byte ptr es:[edi]", "al"] }]

@@ -34,8 +34,8 @@ public class SIBDecoder
         int baseIndex = sib & Constants.SIB_BASE_MASK;
         
         // Map the SIB register indices to RegisterIndex enum values
-        RegisterIndex index = RegisterMapper.MapModRMToRegisterIndex(indexIndex);
-        RegisterIndex @base = RegisterMapper.MapModRMToRegisterIndex(baseIndex);
+        RegisterIndex index = (RegisterIndex)indexIndex;
+        RegisterIndex @base = (RegisterIndex)baseIndex;
 
         // Special case: ESP/SP (4) in index field means no index register
         if (index == RegisterIndex.Sp)

@@ -24,7 +24,7 @@ public class Int3InstructionTests
         
         // Assert
         Assert.NotNull(instruction);
-        Assert.Equal(InstructionType.Int, instruction.Type);
+        Assert.Equal(InstructionType.Int3, instruction.Type);
         
         // Check that we have no operands
         Assert.Empty(instruction.StructuredOperands);

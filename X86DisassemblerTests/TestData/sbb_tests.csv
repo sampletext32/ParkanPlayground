@@ -12,7 +12,7 @@ RawBytes;Instructions
 83D842;[{ "Type": "Sbb", "Operands": ["eax", "0x42"] }]
 
 # SBB with memory operands
-811C2578563412;[{ "Type": "Sbb", "Operands": ["dword ptr [eax]", "0x12345678"] }]
+811878563412;[{ "Type": "Sbb", "Operands": ["dword ptr [eax]", "0x12345678"] }]
 
 # SBB r/m32, r32 (opcode 19)
 19D8;[{ "Type": "Sbb", "Operands": ["eax", "ebx"] }]

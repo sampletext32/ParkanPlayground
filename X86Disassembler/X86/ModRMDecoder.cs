@@ -271,8 +271,8 @@ public class ModRMDecoder
         byte rmIndex = (byte)(modRM & Constants.RM_MASK);
         
         // Map the ModR/M register indices to RegisterIndex enum values
-        RegisterIndex reg = RegisterMapper.MapModRMToRegisterIndex(regIndex);
-        RegisterIndex rm = RegisterMapper.MapModRMToRegisterIndex(rmIndex);
+        RegisterIndex reg = (RegisterIndex)regIndex;
+        RegisterIndex rm = (RegisterIndex)rmIndex;
 
         // Create the operand based on the mod and rm fields
         Operand operand = DecodeModRM(mod, rm, is64Bit);
@@ -299,8 +299,8 @@ public class ModRMDecoder
         byte rmIndex = (byte)(modRM & Constants.RM_MASK);
         
         // Map the ModR/M register indices to RegisterIndex8 enum values
-        RegisterIndex8 reg = RegisterMapper.MapModRMToRegisterIndex8(regIndex);
-        RegisterIndex8 rm = RegisterMapper.MapModRMToRegisterIndex8(rmIndex);
+        RegisterIndex8 reg = (RegisterIndex8)regIndex;
+        RegisterIndex8 rm = (RegisterIndex8)rmIndex;
 
         // Create the operand based on the mod and rm fields
         Operand operand;
@@ -315,7 +315,7 @@ public class ModRMDecoder
             // For memory operands, we need to map the RegisterIndex8 to RegisterIndex for base registers
             // The rmIndex is the raw value from the ModR/M byte, not the mapped RegisterIndex8
             // This is important because we need to check if it's 4 (ESP) for SIB byte
-            RegisterIndex rmRegIndex = RegisterMapper.MapModRMToRegisterIndex(rmIndex);
+            RegisterIndex rmRegIndex = (RegisterIndex)rmIndex;
             
             // Use the DecodeModRM8 method to get an 8-bit memory operand
             operand = DecodeModRM8(mod, rmRegIndex);

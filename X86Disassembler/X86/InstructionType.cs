@@ -101,9 +101,6 @@ public enum InstructionType
     // Lods = LodsD, // Alias for LodsD - removed alias to avoid switch expression issues
     
     // REP prefixed instructions
-    Rep,        // REP prefix
-    RepE,       // REPE/REPZ prefix
-    RepNE,      // REPNE/REPNZ prefix
     // RepneScas = RepNE, // Alias for RepNE - removed alias to avoid switch expression issues
     RepMovsB,   // REP MOVSB
     RepMovsW,   // REP MOVSW

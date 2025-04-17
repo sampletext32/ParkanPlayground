@@ -3,47 +3,67 @@ namespace X86Disassembler.X86.Handlers.String;
 using Operands;
 
 /// <summary>
-/// Handler for string instructions (MOVS, STOS, LODS, SCAS) with and without REP/REPNE prefixes
+/// Handler for string instructions (MOVS, CMPS, STOS, LODS, SCAS)
+/// The REP/REPNE prefixes are handled by the InstructionDecoder class
 /// </summary>
 public class StringInstructionHandler : InstructionHandler
 {
-    // Dictionary mapping opcodes to their instruction types and operand factories
-    private static readonly Dictionary<byte, (InstructionType Type, Func<Operand[]> CreateOperands)> StringInstructions = new()
+    // Dictionary mapping opcodes to their instruction types and operand factories for 32-bit mode (default)
+    private static readonly Dictionary<byte, (InstructionType Type, Func<Operand[]> CreateOperands)> StringInstructions32 = new()
     {
+        // MOVS instructions
         { 0xA4, (InstructionType.MovsB, () =>
         [
-            OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Di, 8, "es"),
-            OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Si, 8, "ds")
+            OperandFactory.CreateBaseRegisterMemoryOperand8(RegisterIndex.Di, "es"),
+            OperandFactory.CreateBaseRegisterMemoryOperand8(RegisterIndex.Si, "ds")
         ]) },  // MOVSB
         { 0xA5, (InstructionType.MovsD, () =>
         [
             OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Di, 32, "es"),
             OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Si, 32, "ds")
-        ]) }, // MOVSD
+        ]) },  // MOVSD
+        
+        // CMPS instructions
+        { 0xA6, (InstructionType.CmpsB, () =>
+        [
+            OperandFactory.CreateBaseRegisterMemoryOperand8(RegisterIndex.Si, "ds"),
+            OperandFactory.CreateBaseRegisterMemoryOperand8(RegisterIndex.Di, "es")
+        ]) },  // CMPSB
+        { 0xA7, (InstructionType.CmpsD, () =>
+        [
+            OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Si, 32, "ds"),
+            OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Di, 32, "es")
+        ]) },  // CMPSD
+        
+        // STOS instructions
         { 0xAA, (InstructionType.StosB, () =>
         [
-            OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Di, 8, "es"),
-            OperandFactory.CreateRegisterOperand(RegisterIndex.A, 8)
+            OperandFactory.CreateBaseRegisterMemoryOperand8(RegisterIndex.Di, "es"),
+            OperandFactory.CreateRegisterOperand8(RegisterIndex8.AL)
         ]) },  // STOSB
         { 0xAB, (InstructionType.StosD, () =>
         [
             OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Di, 32, "es"),
             OperandFactory.CreateRegisterOperand(RegisterIndex.A, 32)
         ]) },  // STOSD
+        
+        // LODS instructions
         { 0xAC, (InstructionType.LodsB, () =>
         [
-            OperandFactory.CreateRegisterOperand(RegisterIndex.A, 8),
-            OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Si, 8, "ds")
+            OperandFactory.CreateRegisterOperand8(RegisterIndex8.AL),
+            OperandFactory.CreateBaseRegisterMemoryOperand8(RegisterIndex.Si, "ds")
         ]) },  // LODSB
         { 0xAD, (InstructionType.LodsD, () =>
         [
             OperandFactory.CreateRegisterOperand(RegisterIndex.A, 32),
             OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Si, 32, "ds")
         ]) },  // LODSD
+        
+        // SCAS instructions
         { 0xAE, (InstructionType.ScasB, () =>
         [
-            OperandFactory.CreateRegisterOperand(RegisterIndex.A, 8),
-            OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Di, 8, "es")
+            OperandFactory.CreateRegisterOperand8(RegisterIndex8.AL),
+            OperandFactory.CreateBaseRegisterMemoryOperand8(RegisterIndex.Di, "es")
         ]) },  // SCASB
         { 0xAF, (InstructionType.ScasD, () =>
         [
@@ -52,28 +72,68 @@ public class StringInstructionHandler : InstructionHandler
         ]) }   // SCASD
     };
     
-    // REP/REPNE prefix opcodes
-    private const byte REP_PREFIX = 0xF3;
-    private const byte REPNE_PREFIX = 0xF2;
-
-    // Dictionary mapping base instruction types to their REP-prefixed versions
-    private static readonly Dictionary<InstructionType, InstructionType> RepPrefixMap = new()
+    // Dictionary mapping opcodes to their instruction types and operand factories for 16-bit mode (with operand size prefix)
+    private static readonly Dictionary<byte, (InstructionType Type, Func<Operand[]> CreateOperands)> StringInstructions16 = new()
     {
-        { InstructionType.MovsB, InstructionType.RepMovsB },
-        { InstructionType.MovsD, InstructionType.RepMovsD },
-        { InstructionType.StosB, InstructionType.RepStosB },
-        { InstructionType.StosD, InstructionType.RepStosD },
-        { InstructionType.LodsB, InstructionType.RepLodsB },
-        { InstructionType.LodsD, InstructionType.RepLodsD },
-        { InstructionType.ScasB, InstructionType.RepScasB },
-        { InstructionType.ScasD, InstructionType.RepScasD }
-    };
-
-    // Dictionary mapping base instruction types to their REPNE-prefixed versions
-    private static readonly Dictionary<InstructionType, InstructionType> RepnePrefixMap = new()
-    {
-        { InstructionType.ScasB, InstructionType.RepneScasB },
-        { InstructionType.ScasD, InstructionType.RepneScasD }
+        // MOVS instructions
+        { 0xA4, (InstructionType.MovsB, () =>
+        [
+            OperandFactory.CreateBaseRegisterMemoryOperand8(RegisterIndex.Di, "es"),
+            OperandFactory.CreateBaseRegisterMemoryOperand8(RegisterIndex.Si, "ds")
+        ]) },  // MOVSB (same for 16-bit)
+        { 0xA5, (InstructionType.MovsW, () =>
+        [
+            OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Di, 16, "es"),
+            OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Si, 16, "ds")
+        ]) },  // MOVSW
+        
+        // CMPS instructions
+        { 0xA6, (InstructionType.CmpsB, () =>
+        [
+            OperandFactory.CreateBaseRegisterMemoryOperand8(RegisterIndex.Si, "ds"),
+            OperandFactory.CreateBaseRegisterMemoryOperand8(RegisterIndex.Di, "es")
+        ]) },  // CMPSB (same for 16-bit)
+        { 0xA7, (InstructionType.CmpsW, () =>
+        [
+            OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Si, 16, "ds"),
+            OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Di, 16, "es")
+        ]) },  // CMPSW
+        
+        // STOS instructions
+        { 0xAA, (InstructionType.StosB, () =>
+        [
+            OperandFactory.CreateBaseRegisterMemoryOperand8(RegisterIndex.Di, "es"),
+            OperandFactory.CreateRegisterOperand8(RegisterIndex8.AL)
+        ]) },  // STOSB (same for 16-bit)
+        { 0xAB, (InstructionType.StosW, () =>
+        [
+            OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Di, 16, "es"),
+            OperandFactory.CreateRegisterOperand(RegisterIndex.A, 16)
+        ]) },  // STOSW
+        
+        // LODS instructions
+        { 0xAC, (InstructionType.LodsB, () =>
+        [
+            OperandFactory.CreateRegisterOperand8(RegisterIndex8.AL),
+            OperandFactory.CreateBaseRegisterMemoryOperand8(RegisterIndex.Si, "ds")
+        ]) },  // LODSB (same for 16-bit)
+        { 0xAD, (InstructionType.LodsW, () =>
+        [
+            OperandFactory.CreateRegisterOperand(RegisterIndex.A, 16),
+            OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Si, 16, "ds")
+        ]) },  // LODSW
+        
+        // SCAS instructions
+        { 0xAE, (InstructionType.ScasB, () =>
+        [
+            OperandFactory.CreateRegisterOperand8(RegisterIndex8.AL),
+            OperandFactory.CreateBaseRegisterMemoryOperand8(RegisterIndex.Di, "es")
+        ]) },  // SCASB (same for 16-bit)
+        { 0xAF, (InstructionType.ScasW, () =>
+        [
+            OperandFactory.CreateRegisterOperand(RegisterIndex.A, 16),
+            OperandFactory.CreateBaseRegisterMemoryOperand(RegisterIndex.Di, 16, "es")
+        ]) }   // SCASW
     };
 
     /// <summary>
@@ -92,27 +152,8 @@ public class StringInstructionHandler : InstructionHandler
     /// <returns>True if this handler can handle the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        // Check if the opcode is a string instruction
-        if (StringInstructions.ContainsKey(opcode))
-        {
-            return true;
-        }
-        
-        // Check if the opcode is a REP/REPNE prefix followed by a string instruction
-        if (opcode != REP_PREFIX && opcode != REPNE_PREFIX)
-        {
-            return false;
-        }
-        
-        // Check if we can read the next byte
-        if (!Decoder.CanReadByte())
-        {
-            return false;
-        }
-        
-        // Check if the next byte is a string instruction
-        byte nextByte = Decoder.PeakByte();
-        return StringInstructions.ContainsKey(nextByte);
+        // Check if the opcode is a string instruction in either 16-bit or 32-bit mode
+        return StringInstructions32.ContainsKey(opcode);
     }
     
     /// <summary>
@@ -123,59 +164,19 @@ public class StringInstructionHandler : InstructionHandler
     /// <returns>True if the instruction was successfully decoded</returns>
     public override bool Decode(byte opcode, Instruction instruction)
     {
-        // Check if this is a REP/REPNE prefix
-        bool hasRepPrefix = opcode == REP_PREFIX || opcode == REPNE_PREFIX;
+        // Select the appropriate dictionary based on operand size prefix
+        var instructionsDict = Decoder.HasOperandSizePrefix() 
+            ? StringInstructions16 
+            : StringInstructions32;
         
-        // If this is a REP/REPNE prefix, get the actual string instruction opcode
-        byte stringOpcode = opcode;
-        
-        if (hasRepPrefix)
-        {
-            // Read the next byte (the actual string instruction opcode)
-            if (!Decoder.CanReadByte())
-            {
-                return false;
-            }
-
-            stringOpcode = Decoder.ReadByte();
-
-            if (!StringInstructions.ContainsKey(stringOpcode))
-            {
-                return false;
-            }
-        }
-
         // Get the instruction type and operands for the string instruction
-        if (StringInstructions.TryGetValue(stringOpcode, out var instructionInfo))
+        if (instructionsDict.TryGetValue(opcode, out var instructionInfo))
         {
-            // Set the instruction type based on whether there's a REP/REPNE prefix
-            if (hasRepPrefix)
-            {
-                // Determine the appropriate prefixed instruction type based on the prefix
-                if (opcode == REP_PREFIX)
-                {
-                    // Use the REP prefix map to get the prefixed instruction type
-                    instruction.Type = RepPrefixMap.TryGetValue(instructionInfo.Type, out var repType) 
-                        ? repType 
-                        : instructionInfo.Type;
-                }
-                else // REPNE prefix
-                {
-                    // Use the REPNE prefix map to get the prefixed instruction type
-                    instruction.Type = RepnePrefixMap.TryGetValue(instructionInfo.Type, out var repneType) 
-                        ? repneType 
-                        : instructionInfo.Type;
-                }
-            }
-            else
-            {
-                // No prefix, use the original instruction type
-                instruction.Type = instructionInfo.Type;
-            }
+            // Set the instruction type
+            instruction.Type = instructionInfo.Type;
 
             // Create and set the structured operands
             instruction.StructuredOperands = instructionInfo.CreateOperands().ToList();
-
             return true;
         }
 
