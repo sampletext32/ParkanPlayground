@@ -100,6 +100,18 @@ public class InstructionHandlerFactory
     /// </summary>
     private void RegisterSbbHandlers()
     {
+        // SBB register-register and register-memory handlers for 8-bit operands
+        _handlers.Add(new SbbRm8R8Handler(_decoder));              // SBB r/m8, r8 (opcode 18)
+        _handlers.Add(new SbbR8Rm8Handler(_decoder));              // SBB r8, r/m8 (opcode 1A)
+
+        // SBB register-register and register-memory handlers for 16-bit operands (with 0x66 prefix)
+        _handlers.Add(new SbbRm16R16Handler(_decoder));            // SBB r/m16, r16 (opcode 19 with 0x66 prefix)
+        _handlers.Add(new SbbR16Rm16Handler(_decoder));            // SBB r16, r/m16 (opcode 1B with 0x66 prefix)
+
+        // SBB register-register and register-memory handlers for 32-bit operands
+        _handlers.Add(new SbbRm32R32Handler(_decoder));            // SBB r/m32, r32 (opcode 19)
+        _handlers.Add(new SbbR32Rm32Handler(_decoder));            // SBB r32, r/m32 (opcode 1B)
+
         // SBB immediate handlers for 8-bit operands
         _handlers.Add(new SbbImmFromRm8Handler(_decoder));           // SBB r/m8, imm8 (opcode 80 /3)
         _handlers.Add(new SbbAlImmHandler(_decoder));               // SBB AL, imm8 (opcode 1C)
