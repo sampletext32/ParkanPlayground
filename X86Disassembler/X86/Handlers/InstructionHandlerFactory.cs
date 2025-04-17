@@ -297,6 +297,10 @@ public class InstructionHandlerFactory
         _handlers.Add(new AddRm32R32Handler(_decoder));    // ADD r/m32, r32 (opcode 01)
         _handlers.Add(new AddEaxImmHandler(_decoder));     // ADD EAX, imm32 (opcode 05)
         
+        // Add ADD register-to-register handlers (16-bit)
+        _handlers.Add(new AddR16Rm16Handler(_decoder));    // ADD r16, r/m16 (opcode 03 with 0x66 prefix)
+        _handlers.Add(new AddRm16R16Handler(_decoder));    // ADD r/m16, r16 (opcode 01 with 0x66 prefix)
+        
         // Add ADD register-to-register handlers (8-bit)
         _handlers.Add(new AddRm8R8Handler(_decoder));      // ADD r/m8, r8 (opcode 00)
         _handlers.Add(new AddR8Rm8Handler(_decoder));      // ADD r8, r/m8 (opcode 02)
