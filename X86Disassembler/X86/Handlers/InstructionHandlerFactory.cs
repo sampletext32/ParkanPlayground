@@ -373,16 +373,38 @@ public class InstructionHandlerFactory
     /// </summary>
     private void RegisterFloatingPointHandlers()
     {
-        // Add Floating Point handlers
-        _handlers.Add(new FnstswHandler(_decoder)); // FSTSW (opcode DF /7)
-        _handlers.Add(new Float32OperationHandler(_decoder)); // Floating Point operations on 32-bit values
-        _handlers.Add(new LoadStoreControlHandler(_decoder)); // Load and store control words (opcode D9 /0)
-        _handlers.Add(new Int32OperationHandler(_decoder)); // Integer operations on 32-bit values
-        _handlers.Add(new LoadStoreInt32Handler(_decoder)); // Load and store 32-bit values
-        _handlers.Add(new Float64OperationHandler(_decoder)); // Floating Point operations on 64-bit values
+        // Add specialized Floating Point handlers
+        
+        // D8 opcode handlers (float32 operations)
+        _handlers.Add(new FaddFloat32Handler(_decoder));  // FADD float32 (D8 /0)
+        _handlers.Add(new FmulFloat32Handler(_decoder));  // FMUL float32 (D8 /1)
+        _handlers.Add(new FcomFloat32Handler(_decoder));  // FCOM float32 (D8 /2)
+        _handlers.Add(new FcompFloat32Handler(_decoder)); // FCOMP float32 (D8 /3)
+        _handlers.Add(new FsubFloat32Handler(_decoder));  // FSUB float32 (D8 /4)
+        _handlers.Add(new FsubrFloat32Handler(_decoder)); // FSUBR float32 (D8 /5)
+        _handlers.Add(new FdivFloat32Handler(_decoder));  // FDIV float32 (D8 /6)
+        _handlers.Add(new FdivrFloat32Handler(_decoder)); // FDIVR float32 (D8 /7)
+        
+        // D9 opcode handlers (load/store float32 and control operations)
+        _handlers.Add(new FldFloat32Handler(_decoder));   // FLD float32 (D9 /0)
+        _handlers.Add(new FstFloat32Handler(_decoder));   // FST float32 (D9 /2)
+        _handlers.Add(new FstpFloat32Handler(_decoder));  // FSTP float32 (D9 /3)
+        
+        // DC opcode handlers (float64 operations)
+        _handlers.Add(new FaddFloat64Handler(_decoder));  // FADD float64 (DC /0)
+        _handlers.Add(new FmulFloat64Handler(_decoder));  // FMUL float64 (DC /1)
+        
+        // Other floating point handlers
+        _handlers.Add(new FnstswHandler(_decoder));        // FNSTSW AX (DF E0)
+        
+        // Keep the existing handlers for operations not yet migrated to specialized handlers
+        _handlers.Add(new LoadStoreControlHandler(_decoder)); // Load and store control words (D9 /4-/7)
+        _handlers.Add(new Int32OperationHandler(_decoder));   // Integer operations on 32-bit values
+        _handlers.Add(new LoadStoreInt32Handler(_decoder));   // Load and store 32-bit values
+        _handlers.Add(new Float64OperationHandler(_decoder)); // Remaining float64 operations
         _handlers.Add(new LoadStoreFloat64Handler(_decoder)); // Load and store 64-bit values
-        _handlers.Add(new Int16OperationHandler(_decoder)); // Integer operations on 16-bit values
-        _handlers.Add(new LoadStoreInt16Handler(_decoder)); // Load and store 16-bit values
+        _handlers.Add(new Int16OperationHandler(_decoder));   // Integer operations on 16-bit values
+        _handlers.Add(new LoadStoreInt16Handler(_decoder));   // Load and store 16-bit values
     }
 
     /// <summary>

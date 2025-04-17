@@ -205,6 +205,20 @@ public class ModRMDecoder
     /// </summary>
     /// <returns>A tuple containing the mod, reg, rm fields and the decoded operand</returns>
     public (byte mod, RegisterIndex reg, RegisterIndex rm, Operand operand) ReadModRM64() => ReadModRMInternal(true);
+    
+    /// <summary>
+    /// Reads and decodes a ModR/M byte for FPU instructions
+    /// </summary>
+    /// <returns>A tuple containing the mod, reg, rm fields (with rm as FpuRegisterIndex) and the decoded operand</returns>
+    public (byte mod, RegisterIndex reg, FpuRegisterIndex fpuRm, Operand operand) ReadModRMFpu()
+    {
+        var (mod, reg, rm, operand) = ReadModRMInternal(false);
+        
+        // Convert the RegisterIndex rm to FpuRegisterIndex
+        FpuRegisterIndex fpuRm = (FpuRegisterIndex)(int)rm;
+        
+        return (mod, reg, fpuRm, operand);
+    }
 
     /// <summary>
     /// Reads and decodes a ModR/M byte for 8-bit operands
