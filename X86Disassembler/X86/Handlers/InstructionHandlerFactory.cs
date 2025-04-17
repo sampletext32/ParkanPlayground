@@ -389,6 +389,20 @@ public class InstructionHandlerFactory
         _handlers.Add(new FloatingPoint.LoadStore.FldFloat32Handler(_decoder));   // FLD float32 (D9 /0)
         _handlers.Add(new FloatingPoint.LoadStore.FstFloat32Handler(_decoder));   // FST float32 (D9 /2)
         _handlers.Add(new FloatingPoint.LoadStore.FstpFloat32Handler(_decoder));  // FSTP float32 (D9 /3)
+        _handlers.Add(new FloatingPoint.Control.FldenvHandler(_decoder));         // FLDENV (D9 /4)
+        _handlers.Add(new FloatingPoint.Control.FldcwHandler(_decoder));          // FLDCW (D9 /5)
+        _handlers.Add(new FloatingPoint.Control.FnstenvHandler(_decoder));        // FNSTENV (D9 /6)
+        _handlers.Add(new FloatingPoint.Control.FnstcwHandler(_decoder));         // FNSTCW (D9 /7)
+        
+        // DA opcode handlers (int32 operations)
+        _handlers.Add(new FloatingPoint.Arithmetic.FiaddInt32Handler(_decoder));   // FIADD int32 (DA /0)
+        _handlers.Add(new FloatingPoint.Arithmetic.FimulInt32Handler(_decoder));   // FIMUL int32 (DA /1)
+        _handlers.Add(new FloatingPoint.Comparison.FicomInt32Handler(_decoder));   // FICOM int32 (DA /2)
+        _handlers.Add(new FloatingPoint.Comparison.FicompInt32Handler(_decoder));  // FICOMP int32 (DA /3)
+        _handlers.Add(new FloatingPoint.Arithmetic.FisubInt32Handler(_decoder));   // FISUB int32 (DA /4)
+        _handlers.Add(new FloatingPoint.Arithmetic.FisubrInt32Handler(_decoder));  // FISUBR int32 (DA /5)
+        _handlers.Add(new FloatingPoint.Arithmetic.FidivInt32Handler(_decoder));   // FIDIV int32 (DA /6)
+        _handlers.Add(new FloatingPoint.Arithmetic.FidivrInt32Handler(_decoder));  // FIDIVR int32 (DA /7)
         
         // DC opcode handlers (float64 operations)
         _handlers.Add(new FloatingPoint.Arithmetic.FaddFloat64Handler(_decoder));  // FADD float64 (DC /0)
@@ -405,12 +419,25 @@ public class InstructionHandlerFactory
         _handlers.Add(new FloatingPoint.LoadStore.FstFloat64Handler(_decoder));   // FST float64 (DD /2)
         _handlers.Add(new FloatingPoint.LoadStore.FstpFloat64Handler(_decoder));  // FSTP float64 (DD /3)
         
+        // Register-register operations
+        _handlers.Add(new FloatingPoint.Control.FxchHandler(_decoder));           // FXCH (D9 C8-CF)
+        
+        // Special floating point instructions
+        _handlers.Add(new FloatingPoint.Arithmetic.FchsHandler(_decoder));        // FCHS (D9 E0)
+        _handlers.Add(new FloatingPoint.Arithmetic.FabsHandler(_decoder));        // FABS (D9 E1)
+        _handlers.Add(new FloatingPoint.Comparison.FtstHandler(_decoder));        // FTST (D9 E4)
+        _handlers.Add(new FloatingPoint.Control.FxamHandler(_decoder));           // FXAM (D9 E5)
+        
+        // Transcendental functions
+        _handlers.Add(new FloatingPoint.Transcendental.F2xm1Handler(_decoder));   // F2XM1 (D9 F0)
+        _handlers.Add(new FloatingPoint.Transcendental.Fyl2xHandler(_decoder));   // FYL2X (D9 F1)
+        _handlers.Add(new FloatingPoint.Transcendental.FptanHandler(_decoder));   // FPTAN (D9 F2)
+        _handlers.Add(new FloatingPoint.Transcendental.FpatanHandler(_decoder));  // FPATAN (D9 F3)
+        
         // Other floating point handlers
-        _handlers.Add(new FloatingPoint.Control.FnstswHandler(_decoder));        // FNSTSW AX (DF E0)
+        _handlers.Add(new FloatingPoint.Control.FnstswHandler(_decoder));         // FNSTSW AX (DF E0)
         
         // Keep the existing handlers for operations not yet migrated to specialized handlers
-        _handlers.Add(new LoadStoreControlHandler(_decoder)); // Load and store control words (D9 /4-/7)
-        _handlers.Add(new Int32OperationHandler(_decoder));   // Integer operations on 32-bit values
         _handlers.Add(new LoadStoreInt32Handler(_decoder));   // Load and store 32-bit values
         _handlers.Add(new Float64OperationHandler(_decoder)); // Remaining float64 operations
         _handlers.Add(new LoadStoreFloat64Handler(_decoder)); // Load and store 64-bit values
