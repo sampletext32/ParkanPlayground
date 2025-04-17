@@ -100,9 +100,20 @@ public class InstructionHandlerFactory
     /// </summary>
     private void RegisterSbbHandlers()
     {
-        // SBB immediate handlers
+        // SBB immediate handlers for 8-bit operands
+        _handlers.Add(new SbbImmFromRm8Handler(_decoder));           // SBB r/m8, imm8 (opcode 80 /3)
+        _handlers.Add(new SbbAlImmHandler(_decoder));               // SBB AL, imm8 (opcode 1C)
+
+        // SBB immediate handlers for 16-bit operands (with 0x66 prefix)
+        _handlers.Add(new SbbImmFromRm16Handler(_decoder));          // SBB r/m16, imm16 (opcode 81 /3 with 0x66 prefix)
+        _handlers.Add(new SbbImmFromRm16SignExtendedHandler(_decoder)); // SBB r/m16, imm8 (opcode 83 /3 with 0x66 prefix)
+
+        // SBB immediate handlers for 32-bit operands
         _handlers.Add(new SbbImmFromRm32Handler(_decoder));         // SBB r/m32, imm32 (opcode 81 /3)
         _handlers.Add(new SbbImmFromRm32SignExtendedHandler(_decoder)); // SBB r/m32, imm8 (opcode 83 /3)
+
+        // SBB accumulator handlers
+        _handlers.Add(new SbbAccumulatorImmHandler(_decoder));     // SBB AX/EAX, imm16/32 (opcode 1D)
     }
     
     /// <summary>
@@ -140,6 +151,15 @@ public class InstructionHandlerFactory
         // Add Return handlers
         _handlers.Add(new RetHandler(_decoder));
         _handlers.Add(new RetImmHandler(_decoder));
+
+        // Add Far Return handlers
+        // 16-bit handlers with operand size prefix (must come first)
+        _handlers.Add(new Retf16Handler(_decoder));       // RETF (16-bit) (opcode 0xCB with 0x66 prefix)
+        _handlers.Add(new RetfImm16Handler(_decoder));    // RETF imm16 (16-bit) (opcode 0xCA with 0x66 prefix)
+
+        // 32-bit handlers (default)
+        _handlers.Add(new RetfHandler(_decoder));         // RETF (32-bit) (opcode 0xCB)
+        _handlers.Add(new RetfImmHandler(_decoder));      // RETF imm16 (32-bit) (opcode 0xCA)
     }
 
     /// <summary>
