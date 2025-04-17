@@ -15,16 +15,16 @@ D8D7;[{ "Type": "Fcom", "Operands": ["ST(7)"] }]
 # Memory operands
 D8142510000000;[{ "Type": "Fcom", "Operands": ["dword ptr [0x10]"] }]
 DC142510000000;[{ "Type": "Fcom", "Operands": ["qword ptr [0x10]"] }]
-D81425;[{ "Type": "Fcom", "Operands": ["dword ptr [eax]"] }]
-DC1425;[{ "Type": "Fcom", "Operands": ["qword ptr [eax]"] }]
+D810;[{ "Type": "Fcom", "Operands": ["dword ptr [eax]"] }]
+DC10;[{ "Type": "Fcom", "Operands": ["qword ptr [eax]"] }]
 
 # With segment override prefixes
-26D81425;[{ "Type": "Fcom", "Operands": ["dword ptr es:[eax]"] }]
-2ED81425;[{ "Type": "Fcom", "Operands": ["dword ptr cs:[eax]"] }]
-36D81425;[{ "Type": "Fcom", "Operands": ["dword ptr ss:[eax]"] }]
-3ED81425;[{ "Type": "Fcom", "Operands": ["dword ptr ds:[eax]"] }]
-64D81425;[{ "Type": "Fcom", "Operands": ["dword ptr fs:[eax]"] }]
-65D81425;[{ "Type": "Fcom", "Operands": ["dword ptr gs:[eax]"] }]
+26D810;[{ "Type": "Fcom", "Operands": ["dword ptr es:[eax]"] }]
+2ED810;[{ "Type": "Fcom", "Operands": ["dword ptr cs:[eax]"] }]
+36D810;[{ "Type": "Fcom", "Operands": ["dword ptr ss:[eax]"] }]
+3ED810;[{ "Type": "Fcom", "Operands": ["dword ptr ds:[eax]"] }]
+64D810;[{ "Type": "Fcom", "Operands": ["dword ptr fs:[eax]"] }]
+65D810;[{ "Type": "Fcom", "Operands": ["dword ptr gs:[eax]"] }]
 
 # FCOMP - Compare floating point values and pop
 D8D8;[{ "Type": "Fcomp", "Operands": ["ST(0)"] }]

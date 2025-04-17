@@ -3,7 +3,7 @@ namespace X86Disassembler.X86.Handlers.FloatingPoint.Comparison;
 using X86Disassembler.X86.Operands;
 
 /// <summary>
-/// Handler for FCOMP ST(0) instruction (DE D3)
+/// Handler for FCOMP ST(i) instruction (D8 D8-DF) - compares ST(0) with ST(i) and pops the register stack
 /// </summary>
 public class FcompStHandler : InstructionHandler
 {
@@ -23,21 +23,25 @@ public class FcompStHandler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        // FCOMP ST(0) is DE D3
-        if (opcode != 0xDE) return false;
+        // FCOMP ST(i) is D8 D8-DF (compares ST(0) with ST(i) and pops the register stack)
+        if (opcode != 0xD8) return false;
 
         if (!Decoder.CanReadByte())
         {
             return false;
         }
 
-        // Check if the ModR/M byte is exactly D3 (reg = 2, rm = 3, mod = 3)
-        byte modRm = Decoder.PeakByte();
-        return modRm == 0xD3;
+        var opcodeSecond = Decoder.PeakByte();
+
+        // this is a special case of a handler, only handling FCOMP with ST(i)
+        if (opcodeSecond < 0xD8 || opcodeSecond > 0xDF)
+            return false;
+
+        return true;
     }
     
     /// <summary>
-    /// Decodes a FCOMP ST(0) instruction
+    /// Decodes a FCOMP ST(i) instruction - compares ST(0) with ST(i) and pops the register stack
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -48,20 +52,19 @@ public class FcompStHandler : InstructionHandler
         {
             return false;
         }
-
-        // Read the ModR/M byte
-        var (mod, reg, rm, _) = ModRMDecoder.ReadModRM();
         
+        var stIndex = (FpuRegisterIndex)(Decoder.ReadByte() - 0xD8);
+
         // Set the instruction type
         instruction.Type = InstructionType.Fcomp;
-
-        // Create the FPU register operand
-        var fpuRegisterOperand = OperandFactory.CreateFPURegisterOperand(FpuRegisterIndex.ST0);
+        
+        // Create the FPU register operands
+        var stiOperand = OperandFactory.CreateFPURegisterOperand(stIndex);
         
         // Set the structured operands
         instruction.StructuredOperands = 
         [
-            fpuRegisterOperand
+            stiOperand  // The instruction is FCOMP ST(i), which compares ST(0) with ST(i) and pops the register stack
         ];
 
         return true;

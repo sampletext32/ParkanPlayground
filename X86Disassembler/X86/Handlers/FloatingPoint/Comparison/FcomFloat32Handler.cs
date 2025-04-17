@@ -35,7 +35,8 @@ public class FcomFloat32Handler : InstructionHandler
         byte modRm = Decoder.PeakByte();
         byte reg = (byte)((modRm >> 3) & 0x7);
         
-        return reg == 2;
+        // special handling of modRM for D8 D0+i	FCOM ST(i)
+        return reg == 2 && modRm is < 0xD0 or > 0xD7;
     }
     
     /// <summary>
