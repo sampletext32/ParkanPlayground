@@ -1,17 +1,17 @@
-namespace X86Disassembler.X86.Handlers.FloatingPoint;
+using X86Disassembler.X86.Operands;
 
-using Operands;
+namespace X86Disassembler.X86.Handlers.FloatingPoint.LoadStore;
 
 /// <summary>
-/// Handler for FADD float64 instruction (DC /0)
+/// Handler for FLD float32 instruction (D9 /0)
 /// </summary>
-public class FaddFloat64Handler : InstructionHandler
+public class FldFloat32Handler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the FaddFloat64Handler class
+    /// Initializes a new instance of the FldFloat32Handler class
     /// </summary>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    public FaddFloat64Handler(InstructionDecoder decoder)
+    public FldFloat32Handler(InstructionDecoder decoder)
         : base(decoder)
     {
     }
@@ -23,8 +23,8 @@ public class FaddFloat64Handler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        // FADD is DC /0
-        if (opcode != 0xDC) return false;
+        // FLD is D9 /0
+        if (opcode != 0xD9) return false;
 
         if (!Decoder.CanReadByte())
         {
@@ -39,7 +39,7 @@ public class FaddFloat64Handler : InstructionHandler
     }
     
     /// <summary>
-    /// Decodes a FADD float64 instruction
+    /// Decodes an FLD float32 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -54,19 +54,19 @@ public class FaddFloat64Handler : InstructionHandler
         // Read the ModR/M byte using the specialized FPU method
         var (mod, reg, fpuRm, rawOperand) = ModRMDecoder.ReadModRMFpu();
 
-        // Verify reg field is 0 (FADD)
+        // Verify reg field is 0 (FLD)
         if (reg != 0)
         {
             return false;
         }
         
         // Set the instruction type
-        instruction.Type = InstructionType.Fadd;
+        instruction.Type = InstructionType.Fld;
 
-        // For memory operands, set the operand
+        // Handle based on addressing mode
         if (mod != 3) // Memory operand
         {
-            // Set the structured operands - the operand already has the correct size from ReadModRM64
+            // Set the structured operands - the operand already has the correct size from ReadModRM
             instruction.StructuredOperands = 
             [
                 rawOperand
@@ -74,15 +74,13 @@ public class FaddFloat64Handler : InstructionHandler
         }
         else // Register operand (ST(i))
         {
-            // For DC C0-DC FF, the operands are reversed: ST(i), ST(0)
+            // For register operands with mod=3, this is FLD ST(i)
             var stiOperand = OperandFactory.CreateFPURegisterOperand(fpuRm); // ST(i)
-            var st0Operand = OperandFactory.CreateFPURegisterOperand(FpuRegisterIndex.ST0); // ST(0)
             
             // Set the structured operands
             instruction.StructuredOperands = 
             [
-                stiOperand,
-                st0Operand
+                stiOperand
             ];
         }
 

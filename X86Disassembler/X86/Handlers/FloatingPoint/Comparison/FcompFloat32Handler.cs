@@ -1,17 +1,17 @@
-namespace X86Disassembler.X86.Handlers.FloatingPoint;
+using X86Disassembler.X86.Operands;
 
-using Operands;
+namespace X86Disassembler.X86.Handlers.FloatingPoint.Comparison;
 
 /// <summary>
-/// Handler for FSUB float32 instruction (D8 /4)
+/// Handler for FCOMP float32 instruction (D8 /3)
 /// </summary>
-public class FsubFloat32Handler : InstructionHandler
+public class FcompFloat32Handler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the FsubFloat32Handler class
+    /// Initializes a new instance of the FcompFloat32Handler class
     /// </summary>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    public FsubFloat32Handler(InstructionDecoder decoder)
+    public FcompFloat32Handler(InstructionDecoder decoder)
         : base(decoder)
     {
     }
@@ -23,7 +23,7 @@ public class FsubFloat32Handler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        // FSUB is D8 /4
+        // FCOMP is D8 /3
         if (opcode != 0xD8) return false;
 
         if (!Decoder.CanReadByte())
@@ -31,15 +31,15 @@ public class FsubFloat32Handler : InstructionHandler
             return false;
         }
 
-        // Check if the ModR/M byte has reg field = 4
+        // Check if the ModR/M byte has reg field = 3
         byte modRm = Decoder.PeakByte();
         byte reg = (byte)((modRm >> 3) & 0x7);
         
-        return reg == 4;
+        return reg == 3;
     }
     
     /// <summary>
-    /// Decodes a FSUB float32 instruction
+    /// Decodes a FCOMP float32 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -55,7 +55,7 @@ public class FsubFloat32Handler : InstructionHandler
         var (mod, reg, fpuRm, rawOperand) = ModRMDecoder.ReadModRMFpu();
         
         // Set the instruction type
-        instruction.Type = InstructionType.Fsub;
+        instruction.Type = InstructionType.Fcomp;
 
         // For memory operands, set the operand
         if (mod != 3) // Memory operand

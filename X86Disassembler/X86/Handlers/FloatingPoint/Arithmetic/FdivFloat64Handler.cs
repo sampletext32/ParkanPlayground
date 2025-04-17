@@ -1,17 +1,17 @@
-namespace X86Disassembler.X86.Handlers.FloatingPoint;
+namespace X86Disassembler.X86.Handlers.FloatingPoint.Arithmetic;
 
-using Operands;
+using X86Disassembler.X86.Operands;
 
 /// <summary>
-/// Handler for FDIV float32 instruction (D8 /6)
+/// Handler for FDIV float64 instruction (DC /6)
 /// </summary>
-public class FdivFloat32Handler : InstructionHandler
+public class FdivFloat64Handler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the FdivFloat32Handler class
+    /// Initializes a new instance of the FdivFloat64Handler class
     /// </summary>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    public FdivFloat32Handler(InstructionDecoder decoder)
+    public FdivFloat64Handler(InstructionDecoder decoder)
         : base(decoder)
     {
     }
@@ -23,8 +23,8 @@ public class FdivFloat32Handler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        // FDIV is D8 /6
-        if (opcode != 0xD8) return false;
+        // FDIV is DC /6
+        if (opcode != 0xDC) return false;
 
         if (!Decoder.CanReadByte())
         {
@@ -39,7 +39,7 @@ public class FdivFloat32Handler : InstructionHandler
     }
     
     /// <summary>
-    /// Decodes a FDIV float32 instruction
+    /// Decodes a FDIV float64 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -68,15 +68,15 @@ public class FdivFloat32Handler : InstructionHandler
         }
         else // Register operand (ST(i))
         {
-            // For register operands, we need to handle the stack registers
-            var st0Operand = OperandFactory.CreateFPURegisterOperand(FpuRegisterIndex.ST0); // ST(0)
+            // For DC F0-DC F7, the operands are reversed: ST(i), ST(0)
             var stiOperand = OperandFactory.CreateFPURegisterOperand(fpuRm); // ST(i)
+            var st0Operand = OperandFactory.CreateFPURegisterOperand(FpuRegisterIndex.ST0); // ST(0)
             
             // Set the structured operands
             instruction.StructuredOperands = 
             [
-                st0Operand,
-                stiOperand
+                stiOperand,
+                st0Operand
             ];
         }
 

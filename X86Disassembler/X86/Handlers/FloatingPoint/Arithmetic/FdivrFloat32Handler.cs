@@ -1,17 +1,17 @@
-namespace X86Disassembler.X86.Handlers.FloatingPoint;
+using X86Disassembler.X86.Operands;
 
-using Operands;
+namespace X86Disassembler.X86.Handlers.FloatingPoint.Arithmetic;
 
 /// <summary>
-/// Handler for FCOMP float32 instruction (D8 /3)
+/// Handler for FDIVR float32 instruction (D8 /7)
 /// </summary>
-public class FcompFloat32Handler : InstructionHandler
+public class FdivrFloat32Handler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the FcompFloat32Handler class
+    /// Initializes a new instance of the FdivrFloat32Handler class
     /// </summary>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    public FcompFloat32Handler(InstructionDecoder decoder)
+    public FdivrFloat32Handler(InstructionDecoder decoder)
         : base(decoder)
     {
     }
@@ -23,7 +23,7 @@ public class FcompFloat32Handler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        // FCOMP is D8 /3
+        // FDIVR is D8 /7
         if (opcode != 0xD8) return false;
 
         if (!Decoder.CanReadByte())
@@ -31,15 +31,15 @@ public class FcompFloat32Handler : InstructionHandler
             return false;
         }
 
-        // Check if the ModR/M byte has reg field = 3
+        // Check if the ModR/M byte has reg field = 7
         byte modRm = Decoder.PeakByte();
         byte reg = (byte)((modRm >> 3) & 0x7);
         
-        return reg == 3;
+        return reg == 7;
     }
     
     /// <summary>
-    /// Decodes a FCOMP float32 instruction
+    /// Decodes a FDIVR float32 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -55,7 +55,7 @@ public class FcompFloat32Handler : InstructionHandler
         var (mod, reg, fpuRm, rawOperand) = ModRMDecoder.ReadModRMFpu();
         
         // Set the instruction type
-        instruction.Type = InstructionType.Fcomp;
+        instruction.Type = InstructionType.Fdivr;
 
         // For memory operands, set the operand
         if (mod != 3) // Memory operand

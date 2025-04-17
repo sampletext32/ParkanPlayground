@@ -1,17 +1,17 @@
-namespace X86Disassembler.X86.Handlers.FloatingPoint;
+using X86Disassembler.X86.Operands;
 
-using Operands;
+namespace X86Disassembler.X86.Handlers.FloatingPoint.Arithmetic;
 
 /// <summary>
-/// Handler for FSTP float32 instruction (D9 /3)
+/// Handler for FSUBR float32 instruction (D8 /5)
 /// </summary>
-public class FstpFloat32Handler : InstructionHandler
+public class FsubrFloat32Handler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the FstpFloat32Handler class
+    /// Initializes a new instance of the FsubrFloat32Handler class
     /// </summary>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    public FstpFloat32Handler(InstructionDecoder decoder)
+    public FsubrFloat32Handler(InstructionDecoder decoder)
         : base(decoder)
     {
     }
@@ -23,23 +23,23 @@ public class FstpFloat32Handler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        // FSTP is D9 /3
-        if (opcode != 0xD9) return false;
+        // FSUBR is D8 /5
+        if (opcode != 0xD8) return false;
 
         if (!Decoder.CanReadByte())
         {
             return false;
         }
 
-        // Check if the ModR/M byte has reg field = 3
+        // Check if the ModR/M byte has reg field = 5
         byte modRm = Decoder.PeakByte();
         byte reg = (byte)((modRm >> 3) & 0x7);
         
-        return reg == 3;
+        return reg == 5;
     }
     
     /// <summary>
-    /// Decodes an FSTP float32 instruction
+    /// Decodes a FSUBR float32 instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -55,9 +55,9 @@ public class FstpFloat32Handler : InstructionHandler
         var (mod, reg, fpuRm, rawOperand) = ModRMDecoder.ReadModRMFpu();
         
         // Set the instruction type
-        instruction.Type = InstructionType.Fstp;
+        instruction.Type = InstructionType.Fsubr;
 
-        // Handle based on addressing mode
+        // For memory operands, set the operand
         if (mod != 3) // Memory operand
         {
             // Set the structured operands - the operand already has the correct size from ReadModRM
@@ -68,12 +68,14 @@ public class FstpFloat32Handler : InstructionHandler
         }
         else // Register operand (ST(i))
         {
-            // For register operands with mod=3, this is FSTP ST(i)
+            // For register operands, we need to handle the stack registers
+            var st0Operand = OperandFactory.CreateFPURegisterOperand(FpuRegisterIndex.ST0); // ST(0)
             var stiOperand = OperandFactory.CreateFPURegisterOperand(fpuRm); // ST(i)
             
             // Set the structured operands
             instruction.StructuredOperands = 
             [
+                st0Operand,
                 stiOperand
             ];
         }
