@@ -17,9 +17,9 @@ RawBytes;Instructions
 87CA;[{ "Type": "Xchg", "Operands": ["edx", "ecx"] }]
 
 # XCHG r/m32, reg32 (opcode 87) - memory operands
-874B10;[{ "Type": "Xchg", "Operands": ["ecx", "dword ptr [ebx+0x10]"] }]
-8711;[{ "Type": "Xchg", "Operands": ["edx", "dword ptr [ecx]"] }]
-8713;[{ "Type": "Xchg", "Operands": ["edx", "dword ptr [ebx]"] }]
+874B10;[{ "Type": "Xchg", "Operands": ["dword ptr [ebx+0x10]", "ecx"] }]
+8711;[{ "Type": "Xchg", "Operands": ["dword ptr [ecx]", "edx"] }]
+8713;[{ "Type": "Xchg", "Operands": ["dword ptr [ebx]", "edx"] }]
 
 # XCHG with 16-bit operand size prefix
 6687D9;[{ "Type": "Xchg", "Operands": ["ecx", "ebx"] }]
@@ -27,10 +27,10 @@ RawBytes;Instructions
 
 # XCHG with 8-bit registers (opcode 86)
 86D9;[{ "Type": "Xchg", "Operands": ["cl", "bl"] }]
-86C3;[{ "Type": "Xchg", "Operands": ["al", "bl"] }]
-86C1;[{ "Type": "Xchg", "Operands": ["al", "cl"] }]
-86D3;[{ "Type": "Xchg", "Operands": ["dl", "bl"] }]
+86C3;[{ "Type": "Xchg", "Operands": ["bl", "al"] }]
+86C1;[{ "Type": "Xchg", "Operands": ["cl", "al"] }]
+86D3;[{ "Type": "Xchg", "Operands": ["bl", "dl"] }]
 
 # XCHG r/m8, reg8 (opcode 86) - memory operands
-8601;[{ "Type": "Xchg", "Operands": ["al", "byte ptr [ecx]"] }]
-8603;[{ "Type": "Xchg", "Operands": ["al", "byte ptr [ebx]"] }]
+8601;[{ "Type": "Xchg", "Operands": ["byte ptr [ecx]", "al"] }]
+8603;[{ "Type": "Xchg", "Operands": ["byte ptr [ebx]", "al"] }]

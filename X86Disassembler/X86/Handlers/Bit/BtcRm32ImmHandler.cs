@@ -1,4 +1,4 @@
-namespace X86Disassembler.X86.Handlers.Bit;
+ namespace X86Disassembler.X86.Handlers.Bit;
 
 using Operands;
 

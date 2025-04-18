@@ -95,6 +95,7 @@ public class InstructionHandlerFactory
         RegisterMiscHandlers(); // Register miscellaneous instructions
         RegisterShiftHandlers(); // Register shift and rotate instructions
         RegisterFlagHandlers(); // Register flag manipulation instructions
+        RegisterStackHandlers(); // Register special stack frame instructions
     }
 
     /// <summary>
@@ -356,8 +357,13 @@ public class InstructionHandlerFactory
     /// </summary>
     private void RegisterXchgHandlers()
     {
-        // Add XCHG handlers
-        _handlers.Add(new XchgEaxRegHandler(_decoder)); // XCHG EAX, r32 (opcode 90 + register)
+        // Special case for XCHG with EAX (single-byte opcodes)
+        _handlers.Add(new Xchg.XchgEaxRegHandler(_decoder)); // XCHG EAX, r32 (opcode 90 + register)
+        _handlers.Add(new Xchg.XchgEaxReg16Handler(_decoder)); // XCHG EAX, r16 with 0x66 prefix (opcode 66 90 + register)
+        
+        // General XCHG handlers
+        _handlers.Add(new Xchg.XchgR32Rm32Handler(_decoder)); // XCHG r32, r/m32 (opcode 87)
+        _handlers.Add(new Xchg.XchgR8Rm8Handler(_decoder));   // XCHG r8, r/m8 (opcode 86)
     }
 
     /// <summary>
@@ -826,6 +832,19 @@ public class InstructionHandlerFactory
     {
         _handlers.Add(new IdivRm8Handler(_decoder)); // IDIV r/m8 handler (F6 /7)
         _handlers.Add(new IdivRm32Handler(_decoder)); // IDIV r/m32 handler (F7 /7)
+    }
+
+    /// <summary>
+    /// Registers all stack frame manipulation instruction handlers
+    /// </summary>
+    private void RegisterStackHandlers()
+    {
+        _handlers.Add(new Stack.PushadHandler(_decoder));     // PUSHA/PUSHAD (60)
+        _handlers.Add(new Stack.PopadHandler(_decoder));      // POPA/POPAD (61)
+        _handlers.Add(new Stack.PushfdHandler(_decoder));     // PUSHF/PUSHFD (9C)
+        _handlers.Add(new Stack.PopfdHandler(_decoder));      // POPF/POPFD (9D)
+        _handlers.Add(new Stack.EnterHandler(_decoder));      // ENTER (C8)
+        _handlers.Add(new Stack.LeaveHandler(_decoder));      // LEAVE (C9)
     }
 
     /// <summary>
