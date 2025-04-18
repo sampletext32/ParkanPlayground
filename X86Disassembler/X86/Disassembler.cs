@@ -128,9 +128,6 @@ public class Disassembler
         // The _baseAddress is the section's RVA (stored in Program.cs)
         // We need to calculate the offset within the section by subtracting the section's RVA from the start RVA
         int startOffset = (int)(startRva - _baseAddress);
-
-        // Debug output to verify addresses
-        Console.WriteLine($"Debug: startRva=0x{startRva:X8}, sectionRVA=0x{_baseAddress:X8}, calculated offset=0x{startOffset:X8}");
         
         // Validate the offset is within bounds
         if (startOffset < 0 || startOffset >= _length)
