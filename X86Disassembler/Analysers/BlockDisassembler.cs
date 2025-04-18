@@ -70,7 +70,7 @@ public class BlockDisassembler
             // Skip if we've already visited this address
             if (!visitedAddresses.Add(address))
             {
-                Console.WriteLine($"Already visited address {address}");
+                // Skip addresses we've already processed
                 continue;
             }
             
@@ -97,7 +97,7 @@ public class BlockDisassembler
                 // and stop processing this path (to avoid duplicating instructions)
                 if (blocksByAddress.TryGetValue(currentPosition, out var targetBlock) && currentPosition != address)
                 {
-                    Console.WriteLine("Stepped on to existing block. Creating in the middle");
+                    // We've stepped onto an existing block, create a new one up to this point
                     
                     // Register this block and establish the relationship with the target block
                     var newBlock = RegisterBlock(blocks, address, instructions, null, false, false);
@@ -185,9 +185,7 @@ public class BlockDisassembler
         foreach (var block in blocks)
         {
             // Convert from file offset to RVA by adding the base address
-            ulong rvaBlockAddress = block.Address + _baseAddress;
-            Console.WriteLine($"Converting block address from file offset 0x{block.Address:X8} to RVA 0x{rvaBlockAddress:X8}");
-            block.Address = rvaBlockAddress;
+            block.Address += _baseAddress;
         }
         
         // Create a new AsmFunction with the RVA address
@@ -197,23 +195,7 @@ public class BlockDisassembler
             Blocks = blocks,
         };
         
-        // Verify that the entry block exists
-        var entryBlock = asmFunction.EntryBlock;
-        if (entryBlock == null)
-        {
-            Console.WriteLine($"Warning: No entry block found at RVA 0x{entryPointRVA:X8}");
-            
-            // Try to find a block at the file offset address (for backward compatibility)
-            var fallbackBlock = blocks.FirstOrDefault(b => b.Address == (fileOffset + _baseAddress));
-            if (fallbackBlock != null)
-            {
-                Console.WriteLine($"Found fallback entry block at RVA 0x{fallbackBlock.Address:X8}");
-            }
-        }
-        else
-        {
-            Console.WriteLine($"Found entry block at RVA 0x{entryBlock.Address:X8}");
-        }
+        // Verify that the entry block exists (no need to log this information)
         
         return asmFunction;
     }
@@ -280,8 +262,7 @@ public class BlockDisassembler
             block.Predecessors.Add(currentBlock);
         }
 
-        // Log the created block for debugging
-        Console.WriteLine($"Created block:\n{block}");
+        // Block created successfully
         
         return block;
     }

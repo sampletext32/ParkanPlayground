@@ -153,32 +153,104 @@ public class PseudocodeGenerator
     private void GenerateRegularBlockCode(Function function, InstructionBlock block, StringBuilder result, int indentLevel, HashSet<ulong> processedBlocks)
     {
         // Add a comment with the block address
-        string indent = new string(' ', indentLevel * 4);
-        result.AppendLine($"{indent}// Block at 0x{block.Address:X8}");
+        result.AppendLine($"{new string(' ', indentLevel * 4)}// Block at 0x{block.Address:X8}");
         
-        // Generate pseudocode for the instructions in this block
-        foreach (var instruction in block.Instructions)
+        // Check if this block ends with a conditional jump
+        bool hasConditionalJump = block.Instructions.Count > 0 && 
+                                 IsConditionalJump(block.Instructions[^1].Type);
+        
+        // If this block has a conditional jump but wasn't detected as an if-else structure,
+        // we'll create an inline if statement for better readability
+        if (hasConditionalJump && block.Successors.Count == 2)
         {
-            // Skip function prologue/epilogue instructions
-            if (IsPrologueOrEpilogueInstruction(instruction))
+            // Get the last instruction (conditional jump)
+            var jumpInstruction = block.Instructions[^1];
+            
+            // Generate condition based on the jump type
+            string condition = GenerateConditionFromJump(jumpInstruction);
+            
+            // Generate code for all instructions except the last one (the jump)
+            for (int i = 0; i < block.Instructions.Count - 1; i++)
             {
-                continue;
+                var instruction = block.Instructions[i];
+                
+                // Skip prologue/epilogue instructions
+                if (IsPrologueOrEpilogueInstruction(instruction))
+                {
+                    continue;
+                }
+                
+                // Generate pseudocode for this instruction
+                var pseudocode = GenerateInstructionPseudocode(function, instruction);
+                if (!string.IsNullOrEmpty(pseudocode))
+                {
+                    result.AppendLine($"{new string(' ', indentLevel * 4)}{pseudocode}");
+                }
+                else
+                {
+                    // If we couldn't generate pseudocode, add the instruction as a comment
+                    result.AppendLine($"{new string(' ', indentLevel * 4)}/* {instruction} */;");
+                }
             }
             
-            // Generate pseudocode for this instruction
-            string pseudocode = GenerateInstructionPseudocode(function, instruction);
-            if (!string.IsNullOrEmpty(pseudocode))
+            // Generate the if statement
+            result.AppendLine($"{new string(' ', indentLevel * 4)}if ({condition})");
+            result.AppendLine($"{new string(' ', indentLevel * 4)}{{");
+            
+            // Find the target block (true branch)
+            var targetAddress = GetJumpTargetAddress(jumpInstruction);
+            var targetBlock = block.Successors.FirstOrDefault(s => s.Address == targetAddress);
+            
+            if (targetBlock != null)
             {
-                result.AppendLine($"{indent}{pseudocode};");
+                // Generate code for the target block
+                GenerateBlockCode(function, targetBlock, result, indentLevel + 1, processedBlocks);
+            }
+            
+            result.AppendLine($"{new string(' ', indentLevel * 4)}}}");
+            
+            // Find the fallthrough block (false branch)
+            var fallthroughBlock = block.Successors.FirstOrDefault(s => s.Address != targetAddress);
+            
+            if (fallthroughBlock != null && !processedBlocks.Contains(fallthroughBlock.Address))
+            {
+                // Generate code for the fallthrough block
+                GenerateBlockCode(function, fallthroughBlock, result, indentLevel, processedBlocks);
             }
         }
-        
-        // Process successors
-        foreach (var successor in block.Successors)
+        else
         {
-            if (!processedBlocks.Contains(successor.Address))
+            // Regular block processing
+            // Generate code for each instruction in the block
+            foreach (var instruction in block.Instructions)
             {
-                GenerateBlockCode(function, successor, result, indentLevel, processedBlocks);
+                // Skip prologue/epilogue instructions
+                if (IsPrologueOrEpilogueInstruction(instruction))
+                {
+                    continue;
+                }
+                
+                // Generate pseudocode for this instruction
+                var pseudocode = GenerateInstructionPseudocode(function, instruction);
+                if (!string.IsNullOrEmpty(pseudocode))
+                {
+                    result.AppendLine($"{new string(' ', indentLevel * 4)}{pseudocode}");
+                }
+                else
+                {
+                    // If we couldn't generate pseudocode, add the instruction as a comment
+                    result.AppendLine($"{new string(' ', indentLevel * 4)}/* {instruction} */;");
+                }
+            }
+            
+            // Process successors in order
+            foreach (var successor in block.Successors)
+            {
+                // Only process successors that haven't been processed yet
+                if (!processedBlocks.Contains(successor.Address))
+                {
+                    GenerateBlockCode(function, successor, result, indentLevel, processedBlocks);
+                }
             }
         }
     }
@@ -328,8 +400,171 @@ public class PseudocodeGenerator
     /// <returns>The generated pseudocode</returns>
     private string GenerateInstructionPseudocode(Function function, Instruction instruction)
     {
-        // For now, we'll just return a comment with the instruction
+        // Handle different instruction types
+        switch (instruction.Type)
+        {
+            case InstructionType.Mov:
+                // Handle MOV instruction
+                if (instruction.StructuredOperands.Count >= 2)
+                {
+                    var dest = instruction.StructuredOperands[0];
+                    var src = instruction.StructuredOperands[1];
+                    
+                    return $"{FormatOperand(dest)} = {FormatOperand(src)};";
+                }
+                break;
+                
+            case InstructionType.Add:
+                // Handle ADD instruction
+                if (instruction.StructuredOperands.Count >= 2)
+                {
+                    var dest = instruction.StructuredOperands[0];
+                    var src = instruction.StructuredOperands[1];
+                    
+                    return $"{FormatOperand(dest)} += {FormatOperand(src)};";
+                }
+                break;
+                
+            case InstructionType.Sub:
+                // Handle SUB instruction
+                if (instruction.StructuredOperands.Count >= 2)
+                {
+                    var dest = instruction.StructuredOperands[0];
+                    var src = instruction.StructuredOperands[1];
+                    
+                    return $"{FormatOperand(dest)} -= {FormatOperand(src)};";
+                }
+                break;
+                
+            case InstructionType.And:
+                // Handle AND instruction
+                if (instruction.StructuredOperands.Count >= 2)
+                {
+                    var dest = instruction.StructuredOperands[0];
+                    var src = instruction.StructuredOperands[1];
+                    
+                    return $"{FormatOperand(dest)} &= {FormatOperand(src)};";
+                }
+                break;
+                
+            case InstructionType.Or:
+                // Handle OR instruction
+                if (instruction.StructuredOperands.Count >= 2)
+                {
+                    var dest = instruction.StructuredOperands[0];
+                    var src = instruction.StructuredOperands[1];
+                    
+                    return $"{FormatOperand(dest)} |= {FormatOperand(src)};";
+                }
+                break;
+                
+            case InstructionType.Xor:
+                // Handle XOR instruction
+                if (instruction.StructuredOperands.Count >= 2)
+                {
+                    var dest = instruction.StructuredOperands[0];
+                    var src = instruction.StructuredOperands[1];
+                    
+                    // Special case: xor eax, eax is used to zero a register
+                    if (dest is RegisterOperand destReg && src is RegisterOperand srcReg && 
+                        destReg.Register == srcReg.Register)
+                    {
+                        return $"{FormatOperand(dest)} = 0;";
+                    }
+                    
+                    return $"{FormatOperand(dest)} ^= {FormatOperand(src)};";
+                }
+                break;
+                
+            case InstructionType.Test:
+                // Handle TEST instruction (used for condition testing)
+                if (instruction.StructuredOperands.Count >= 2)
+                {
+                    var op1 = instruction.StructuredOperands[0];
+                    var op2 = instruction.StructuredOperands[1];
+                    
+                    return $"// Test {FormatOperand(op1)} & {FormatOperand(op2)}";
+                }
+                break;
+                
+            case InstructionType.Cmp:
+                // Handle CMP instruction (used for condition testing)
+                if (instruction.StructuredOperands.Count >= 2)
+                {
+                    var op1 = instruction.StructuredOperands[0];
+                    var op2 = instruction.StructuredOperands[1];
+                    
+                    return $"// Compare {FormatOperand(op1)} with {FormatOperand(op2)}";
+                }
+                break;
+                
+            case InstructionType.Call:
+                // Handle CALL instruction
+                if (instruction.StructuredOperands.Count >= 1)
+                {
+                    var target = instruction.StructuredOperands[0];
+                    
+                    return $"call({FormatOperand(target)});";
+                }
+                break;
+                
+            case InstructionType.Push:
+                // Handle PUSH instruction
+                if (instruction.StructuredOperands.Count >= 1)
+                {
+                    var value = instruction.StructuredOperands[0];
+                    
+                    return $"push({FormatOperand(value)});";
+                }
+                break;
+                
+            case InstructionType.Pop:
+                // Handle POP instruction
+                if (instruction.StructuredOperands.Count >= 1)
+                {
+                    var dest = instruction.StructuredOperands[0];
+                    
+                    return $"{FormatOperand(dest)} = pop();";
+                }
+                break;
+        }
+        
+        // If we couldn't generate pseudocode, return a comment with the instruction
         return $"/* {instruction} */";
+    }
+    
+    /// <summary>
+    /// Formats an operand for display in pseudocode
+    /// </summary>
+    /// <param name="operand">The operand to format</param>
+    /// <returns>A string representation of the operand</returns>
+    private string FormatOperand(Operand operand)
+    {
+        if (operand is RegisterOperand regOp)
+        {
+            // Format register operand
+            return RegisterMapper.GetRegisterName(regOp.Register, 32);
+        }
+        else if (operand is ImmediateOperand immOp)
+        {
+            // Format immediate operand
+            return $"0x{immOp.Value:X}";
+        }
+        else if (operand is DisplacementMemoryOperand dispOp)
+        {
+            // Format displacement memory operand
+            string baseReg = RegisterMapper.GetRegisterName(dispOp.BaseRegister, 32);
+            return $"*({baseReg} + 0x{dispOp.Displacement:X})";
+        }
+        else if (operand is BaseRegisterMemoryOperand baseOp)
+        {
+            // Format base register memory operand
+            string baseReg = RegisterMapper.GetRegisterName(baseOp.BaseRegister, 32);
+            return $"*({baseReg})";
+        }
+        
+        // Default formatting
+        return operand.ToString();
     }
     
     /// <summary>
@@ -339,11 +574,11 @@ public class PseudocodeGenerator
     /// <returns>True if the instruction is part of the prologue or epilogue, false otherwise</returns>
     private bool IsPrologueOrEpilogueInstruction(Instruction instruction)
     {
-        // Check for common prologue instructions
+        // Check for common prologue/epilogue instructions
         if (instruction.Type == InstructionType.Push && 
             instruction.StructuredOperands.Count > 0 && 
-            instruction.StructuredOperands[0] is RegisterOperand regOp && 
-            regOp.Register == RegisterIndex.Bp)
+            instruction.StructuredOperands[0] is RegisterOperand reg && 
+            reg.Register == RegisterIndex.Bp)
         {
             return true; // push ebp
         }
@@ -358,15 +593,6 @@ public class PseudocodeGenerator
             return true; // mov ebp, esp
         }
         
-        if (instruction.Type == InstructionType.Sub && 
-            instruction.StructuredOperands.Count > 1 && 
-            instruction.StructuredOperands[0] is RegisterOperand subReg && 
-            subReg.Register == RegisterIndex.Sp)
-        {
-            return true; // sub esp, X
-        }
-        
-        // Check for common epilogue instructions
         if (instruction.Type == InstructionType.Pop && 
             instruction.StructuredOperands.Count > 0 && 
             instruction.StructuredOperands[0] is RegisterOperand popReg && 
@@ -381,5 +607,96 @@ public class PseudocodeGenerator
         }
         
         return false;
+    }
+    
+    /// <summary>
+    /// Checks if the given instruction type is a conditional jump
+    /// </summary>
+    /// <param name="type">The instruction type</param>
+    /// <returns>True if the instruction is a conditional jump, false otherwise</returns>
+    private bool IsConditionalJump(InstructionType type)
+    {
+        // Check for common conditional jumps
+        return type == InstructionType.Jz || 
+               type == InstructionType.Jnz || 
+               type == InstructionType.Jg || 
+               type == InstructionType.Jge || 
+               type == InstructionType.Jl || 
+               type == InstructionType.Jle || 
+               type == InstructionType.Ja || 
+               type == InstructionType.Jae || 
+               type == InstructionType.Jb || 
+               type == InstructionType.Jbe || 
+               type == InstructionType.Jo || 
+               type == InstructionType.Jno || 
+               type == InstructionType.Js || 
+               type == InstructionType.Jns;
+    }
+    
+    /// <summary>
+    /// Gets the target address of a jump instruction
+    /// </summary>
+    /// <param name="instruction">The jump instruction</param>
+    /// <returns>The target address of the jump</returns>
+    private ulong GetJumpTargetAddress(Instruction instruction)
+    {
+        // Jump instructions have the target address as their first operand
+        if (instruction.StructuredOperands.Count > 0)
+        {
+            return instruction.StructuredOperands[0].GetValue();
+        }
+        
+        // If we can't determine the target address, return 0
+        return 0;
+    }
+    
+    /// <summary>
+    /// Generates a condition expression based on a conditional jump instruction
+    /// </summary>
+    /// <param name="instruction">The conditional jump instruction</param>
+    /// <returns>A string representing the condition expression</returns>
+    private string GenerateConditionFromJump(Instruction instruction)
+    {
+        // Map jump types to their equivalent C-like conditions
+        // Note: These are inverted because the jump is taken when the condition is true,
+        // but in C-like code, the condition is for the 'if' statement
+        switch (instruction.Type)
+        {
+            case InstructionType.Jz:  // Jump if Zero (ZF=1)
+                return "condition == 0";
+                
+            case InstructionType.Jnz: // Jump if Not Zero (ZF=0)
+                return "condition != 0";
+                
+            case InstructionType.Jg:  // Jump if Greater (ZF=0 and SF=OF)
+                return "condition > 0";
+                
+            case InstructionType.Jge: // Jump if Greater or Equal (SF=OF)
+                return "condition >= 0";
+                
+            case InstructionType.Jl:  // Jump if Less (SF!=OF)
+                return "condition < 0";
+                
+            case InstructionType.Jle: // Jump if Less or Equal (ZF=1 or SF!=OF)
+                return "condition <= 0";
+                
+            case InstructionType.Ja:  // Jump if Above (CF=0 and ZF=0)
+                return "condition > 0 /* unsigned */";
+                
+            case InstructionType.Jae: // Jump if Above or Equal (CF=0)
+                return "condition >= 0 /* unsigned */";
+                
+            case InstructionType.Jb:  // Jump if Below (CF=1)
+                return "condition < 0 /* unsigned */";
+                
+            case InstructionType.Jbe: // Jump if Below or Equal (CF=1 or ZF=1)
+                return "condition <= 0 /* unsigned */";
+                
+            // Add more cases for other conditional jumps as needed
+                
+            default:
+                // For unknown jump types, use a generic condition
+                return "/* unknown condition */";
+        }
     }
 }

@@ -81,20 +81,34 @@ public class Program
             //     Console.WriteLine(linearInstructions[i]);
             // }
             //
-            // // Print a summary of how many more instructions there are
-            // if (linearInstructions.Count > linearCount)
-            // {
-            //     Console.WriteLine($"... ({linearInstructions.Count - linearCount} more instructions not shown)");
-            // }
-
-            
             // disassemble entry point
             var disassembler = new BlockDisassembler(codeBytes, section.VirtualAddress);
             
             var asmFunction = disassembler.DisassembleFromAddress(peFile.OptionalHeader.AddressOfEntryPoint);
-
-            Console.WriteLine(asmFunction);
-            _ = 5;
+            
+            // Run all analyzers on the function
+            asmFunction.Analyze();
+            
+            // Create a decompiler engine
+            var decompiler = new DecompilerEngine(peFile);
+            
+            try
+            {
+                // Decompile the entry point function
+                var function = decompiler.DecompileFunction(peFile.OptionalHeader.AddressOfEntryPoint);
+                
+                // Generate pseudocode
+                string pseudocode = decompiler.GeneratePseudocode(function);
+                
+                Console.WriteLine("\nGenerated Pseudocode:\n");
+                Console.WriteLine(pseudocode);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error decompiling function: {ex.Message}");
+            }
+            
+            // Skip displaying detailed loop information to keep output concise
         }
         
         // Console.WriteLine("\nPress Enter to exit...");
