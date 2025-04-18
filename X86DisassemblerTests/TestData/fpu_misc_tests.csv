@@ -38,23 +38,23 @@ DBE2;[{ "Type": "Fnclex", "Operands": [] }]
 
 # FLDCW - Load FPU control word
 D92C2510000000;[{ "Type": "Fldcw", "Operands": ["word ptr [0x10]"] }]
-D92C25;[{ "Type": "Fldcw", "Operands": ["word ptr [eax]"] }]
+D928;[{ "Type": "Fldcw", "Operands": ["word ptr [eax]"] }]
 
 # FNSTCW - Store FPU control word without checking for pending unmasked exceptions
 D93C2510000000;[{ "Type": "Fnstcw", "Operands": ["word ptr [0x10]"] }]
-D93C25;[{ "Type": "Fnstcw", "Operands": ["word ptr [eax]"] }]
+D938;[{ "Type": "Fnstcw", "Operands": ["word ptr [eax]"] }]
 
 # FLDENV - Load FPU environment
-D92425;[{ "Type": "Fldenv", "Operands": ["dword ptr [eax]"] }]
+D920;[{ "Type": "Fldenv", "Operands": ["dword ptr [eax]"] }]
 
 # FNSTENV - Store FPU environment without checking for pending unmasked exceptions
-D93425;[{ "Type": "Fnstenv", "Operands": ["dword ptr [eax]"] }]
+D930;[{ "Type": "Fnstenv", "Operands": ["dword ptr [eax]"] }]
 
 # FRSTOR - Restore FPU state
-DD2425;[{ "Type": "Frstor", "Operands": ["dword ptr [eax]"] }]
+DD20;[{ "Type": "Frstor", "Operands": ["dword ptr [eax]"] }]
 
 # FNSAVE - Save FPU state without checking for pending unmasked exceptions
-DD3425;[{ "Type": "Fnsave", "Operands": ["dword ptr [eax]"] }]
+DD30;[{ "Type": "Fnsave", "Operands": ["dword ptr [eax]"] }]
 
 # F2XM1 - 2^x - 1
 D9F0;[{ "Type": "F2xm1", "Operands": [] }]
