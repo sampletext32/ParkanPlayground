@@ -273,31 +273,52 @@ public class PseudocodeGenerator
         
         // Add the if statement
         string indent = new string(' ', indentLevel * 4);
-        result.AppendLine($"{indent}// If-else structure at 0x{ifElseStructure.ConditionBlock.Address:X8}")
-              .AppendLine($"{indent}if ({condition})");
+        result.AppendLine($"{indent}if ({condition})");
+        result.AppendLine($"{indent}{{");
         
-        // Add the then branch
-        result.AppendLine($"{indent}{{")
-              .AppendLine($"{indent}    // Then branch at 0x{ifElseStructure.ThenBlock.Address:X8}");
+        // Check if the 'then' branch contains a nested if-else structure
+        if (ifElseStructure.NestedThenStructure != null)
+        {
+            // Generate code for the nested if-else structure in the 'then' branch
+            GenerateIfElseCode(function, ifElseStructure.NestedThenStructure, result, indentLevel + 1, processedBlocks);
+        }
+        else
+        {
+            // Generate code for the 'then' branch normally
+            GenerateBlockCode(function, ifElseStructure.ThenBlock, result, indentLevel + 1, processedBlocks);
+        }
         
-        // Generate code for the then branch
-        GenerateBlockCode(function, ifElseStructure.ThenBlock, result, indentLevel + 1, processedBlocks);
-        
-        // Close the then branch
+        // Close the 'then' branch
         result.AppendLine($"{indent}}}");
         
-        // Add the else branch if it exists and is not already processed
+        // Add the 'else' branch if it exists and is not already processed
         if (ifElseStructure.ElseBlock != null && !processedBlocks.Contains(ifElseStructure.ElseBlock.Address))
         {
-            result.AppendLine($"{indent}else")
-                  .AppendLine($"{indent}{{")
-                  .AppendLine($"{indent}    // Else branch at 0x{ifElseStructure.ElseBlock.Address:X8}");
+            result.AppendLine($"{indent}else");
+            result.AppendLine($"{indent}{{");
             
-            // Generate code for the else branch
-            GenerateBlockCode(function, ifElseStructure.ElseBlock, result, indentLevel + 1, processedBlocks);
+            // Check if the 'else' branch contains a nested if-else structure (else-if)
+            if (ifElseStructure.NestedElseStructure != null)
+            {
+                // Generate code for the nested if-else structure in the 'else' branch
+                GenerateIfElseCode(function, ifElseStructure.NestedElseStructure, result, indentLevel + 1, processedBlocks);
+            }
+            else
+            {
+                // Generate code for the 'else' branch normally
+                GenerateBlockCode(function, ifElseStructure.ElseBlock, result, indentLevel + 1, processedBlocks);
+            }
             
-            // Close the else branch
+            // Close the 'else' branch
             result.AppendLine($"{indent}}}");
+        }
+        
+        // If this is a complete if-else structure with a merge point, and the merge point hasn't been processed yet
+        if (ifElseStructure.IsComplete && ifElseStructure.MergeBlock != null && 
+            !processedBlocks.Contains(ifElseStructure.MergeBlock.Address))
+        {
+            // Generate code for the merge block
+            GenerateBlockCode(function, ifElseStructure.MergeBlock, result, indentLevel, processedBlocks);
         }
     }
     
@@ -387,9 +408,47 @@ public class PseudocodeGenerator
     /// <returns>A string representing the condition expression</returns>
     private string GenerateConditionExpression(Function function, InstructionBlock conditionBlock)
     {
-        // For now, we'll just return a placeholder
-        // In a real implementation, we would analyze the instructions to determine the condition
-        return "/* condition */";
+        // If the block is empty, return a placeholder
+        if (conditionBlock.Instructions.Count == 0)
+        {
+            return "condition";
+        }
+        
+        // Get the last instruction (should be a conditional jump)
+        var lastInstruction = conditionBlock.Instructions[^1];
+        
+        // If it's not a conditional jump, return a placeholder
+        if (!IsConditionalJump(lastInstruction.Type))
+        {
+            return "condition";
+        }
+        
+        // Look for a CMP or TEST instruction that sets the flags for this jump
+        Instruction? comparisonInstruction = null;
+        
+        // Search backwards from the jump instruction to find a comparison
+        for (int i = conditionBlock.Instructions.Count - 2; i >= 0; i--)
+        {
+            var instruction = conditionBlock.Instructions[i];
+            if (instruction.Type == InstructionType.Cmp || instruction.Type == InstructionType.Test)
+            {
+                comparisonInstruction = instruction;
+                break;
+            }
+        }
+        
+        // If we found a comparison instruction, generate a condition based on it and the jump
+        if (comparisonInstruction != null && comparisonInstruction.StructuredOperands.Count >= 2)
+        {
+            var left = FormatOperand(comparisonInstruction.StructuredOperands[0]);
+            var right = FormatOperand(comparisonInstruction.StructuredOperands[1]);
+            
+            // Generate condition based on jump type
+            return GenerateConditionFromJump(lastInstruction, left, right);
+        }
+        
+        // If we couldn't find a comparison instruction, just use the jump condition
+        return GenerateConditionFromJump(lastInstruction, null, null);
     }
     
     /// <summary>
@@ -400,6 +459,21 @@ public class PseudocodeGenerator
     /// <returns>The generated pseudocode</returns>
     private string GenerateInstructionPseudocode(Function function, Instruction instruction)
     {
+        // Check for special cases first
+        if (instruction.Type == InstructionType.Xor && instruction.StructuredOperands.Count >= 2)
+        {
+            var dest = instruction.StructuredOperands[0];
+            var src = instruction.StructuredOperands[1];
+            
+            // Check for XOR with self (zeroing a register)
+            if (dest is RegisterOperand regDest && src is RegisterOperand regSrc && 
+                regDest.Register == regSrc.Register)
+            {
+                // This is a common idiom to zero a register
+                return $"{FormatOperand(dest)} = 0; // XOR with self to zero register";
+            }
+        }
+        
         // Handle different instruction types
         switch (instruction.Type)
         {
@@ -409,6 +483,12 @@ public class PseudocodeGenerator
                 {
                     var dest = instruction.StructuredOperands[0];
                     var src = instruction.StructuredOperands[1];
+                    
+                    // Special case for moving 0 (common initialization pattern)
+                    if (src is ImmediateOperand immSrc && immSrc.Value == 0)
+                    {
+                        return $"{FormatOperand(dest)} = 0; // Initialize to zero";
+                    }
                     
                     return $"{FormatOperand(dest)} = {FormatOperand(src)};";
                 }
@@ -421,6 +501,12 @@ public class PseudocodeGenerator
                     var dest = instruction.StructuredOperands[0];
                     var src = instruction.StructuredOperands[1];
                     
+                    // Special case for adding 1 (increment)
+                    if (src is ImmediateOperand immSrc && immSrc.Value == 1)
+                    {
+                        return $"{FormatOperand(dest)}++; // Increment";
+                    }
+                    
                     return $"{FormatOperand(dest)} += {FormatOperand(src)};";
                 }
                 break;
@@ -431,6 +517,12 @@ public class PseudocodeGenerator
                 {
                     var dest = instruction.StructuredOperands[0];
                     var src = instruction.StructuredOperands[1];
+                    
+                    // Special case for subtracting 1 (decrement)
+                    if (src is ImmediateOperand immSrc && immSrc.Value == 1)
+                    {
+                        return $"{FormatOperand(dest)}--; // Decrement";
+                    }
                     
                     return $"{FormatOperand(dest)} -= {FormatOperand(src)};";
                 }
@@ -446,7 +538,7 @@ public class PseudocodeGenerator
                     return $"{FormatOperand(dest)} &= {FormatOperand(src)};";
                 }
                 break;
-                
+            
             case InstructionType.Or:
                 // Handle OR instruction
                 if (instruction.StructuredOperands.Count >= 2)
@@ -465,36 +557,39 @@ public class PseudocodeGenerator
                     var dest = instruction.StructuredOperands[0];
                     var src = instruction.StructuredOperands[1];
                     
-                    // Special case: xor eax, eax is used to zero a register
-                    if (dest is RegisterOperand destReg && src is RegisterOperand srcReg && 
-                        destReg.Register == srcReg.Register)
-                    {
-                        return $"{FormatOperand(dest)} = 0;";
-                    }
-                    
+                    // We already handled the special case of XOR with self above
                     return $"{FormatOperand(dest)} ^= {FormatOperand(src)};";
                 }
                 break;
                 
             case InstructionType.Test:
-                // Handle TEST instruction (used for condition testing)
+                // Handle TEST instruction (no assignment, just sets flags)
                 if (instruction.StructuredOperands.Count >= 2)
                 {
-                    var op1 = instruction.StructuredOperands[0];
-                    var op2 = instruction.StructuredOperands[1];
+                    var left = instruction.StructuredOperands[0];
+                    var right = instruction.StructuredOperands[1];
                     
-                    return $"// Test {FormatOperand(op1)} & {FormatOperand(op2)}";
+                    // Special case for TEST with self (checking if a register is zero)
+                    if (left is RegisterOperand regLeft && right is RegisterOperand regRight && 
+                        regLeft.Register == regRight.Register)
+                    {
+                        return $"// Check if {FormatOperand(left)} is zero";
+                    }
+                    
+                    return $"// Test {FormatOperand(left)} & {FormatOperand(right)}";
                 }
                 break;
                 
             case InstructionType.Cmp:
-                // Handle CMP instruction (used for condition testing)
+                // Handle CMP instruction (no assignment, just sets flags)
                 if (instruction.StructuredOperands.Count >= 2)
                 {
-                    var op1 = instruction.StructuredOperands[0];
-                    var op2 = instruction.StructuredOperands[1];
+                    var left = instruction.StructuredOperands[0];
+                    var right = instruction.StructuredOperands[1];
                     
-                    return $"// Compare {FormatOperand(op1)} with {FormatOperand(op2)}";
+                    // For CMP, we'll return a comment that explains what's being compared
+                    // This will help with understanding the following conditional jumps
+                    return $"// Compare {FormatOperand(left)} with {FormatOperand(right)}";
                 }
                 break;
                 
@@ -504,17 +599,21 @@ public class PseudocodeGenerator
                 {
                     var target = instruction.StructuredOperands[0];
                     
-                    return $"call({FormatOperand(target)});";
+                    // For function calls, we'll generate a proper function call expression
+                    return $"{FormatOperand(target)}(); // Function call";
                 }
                 break;
+                
+            case InstructionType.Ret:
+                // Handle RET instruction
+                return "return 0; // Placeholder return value";
                 
             case InstructionType.Push:
                 // Handle PUSH instruction
                 if (instruction.StructuredOperands.Count >= 1)
                 {
-                    var value = instruction.StructuredOperands[0];
-                    
-                    return $"push({FormatOperand(value)});";
+                    var src = instruction.StructuredOperands[0];
+                    return $"// Push {FormatOperand(src)} onto stack";
                 }
                 break;
                 
@@ -523,14 +622,64 @@ public class PseudocodeGenerator
                 if (instruction.StructuredOperands.Count >= 1)
                 {
                     var dest = instruction.StructuredOperands[0];
-                    
-                    return $"{FormatOperand(dest)} = pop();";
+                    return $"{FormatOperand(dest)} = pop(); // Pop from stack";
                 }
                 break;
+                
+            case InstructionType.Inc:
+                // Handle INC instruction
+                if (instruction.StructuredOperands.Count >= 1)
+                {
+                    var dest = instruction.StructuredOperands[0];
+                    return $"{FormatOperand(dest)}++;";
+                }
+                break;
+                
+            case InstructionType.Dec:
+                // Handle DEC instruction
+                if (instruction.StructuredOperands.Count >= 1)
+                {
+                    var dest = instruction.StructuredOperands[0];
+                    return $"{FormatOperand(dest)}--;";
+                }
+                break;
+                
+            case InstructionType.Shl:
+                // Handle SHL/SAL instruction (shift left)
+                if (instruction.StructuredOperands.Count >= 2)
+                {
+                    var dest = instruction.StructuredOperands[0];
+                    var count = instruction.StructuredOperands[1];
+                    return $"{FormatOperand(dest)} <<= {FormatOperand(count)};";
+                }
+                break;
+                
+            case InstructionType.Shr:
+                // Handle SHR instruction (shift right logical)
+                if (instruction.StructuredOperands.Count >= 2)
+                {
+                    var dest = instruction.StructuredOperands[0];
+                    var count = instruction.StructuredOperands[1];
+                    return $"{FormatOperand(dest)} >>>= {FormatOperand(count)}; // Logical shift right";
+                }
+                break;
+                
+            case InstructionType.Sar:
+                // Handle SAR instruction (shift right arithmetic)
+                if (instruction.StructuredOperands.Count >= 2)
+                {
+                    var dest = instruction.StructuredOperands[0];
+                    var count = instruction.StructuredOperands[1];
+                    return $"{FormatOperand(dest)} >>= {FormatOperand(count)}; // Arithmetic shift right";
+                }
+                break;
+                
+            default:
+                // For other instructions, just add a comment
+                return $"// {instruction}";
         }
         
-        // If we couldn't generate pseudocode, return a comment with the instruction
-        return $"/* {instruction} */";
+        return string.Empty;
     }
     
     /// <summary>
@@ -654,49 +803,28 @@ public class PseudocodeGenerator
     /// Generates a condition expression based on a conditional jump instruction
     /// </summary>
     /// <param name="instruction">The conditional jump instruction</param>
+    /// <param name="left">The left operand of the comparison, if available</param>
+    /// <param name="right">The right operand of the comparison, if available</param>
     /// <returns>A string representing the condition expression</returns>
-    private string GenerateConditionFromJump(Instruction instruction)
+    private string GenerateConditionFromJump(Instruction instruction, string? left = null, string? right = null)
     {
-        // Map jump types to their equivalent C-like conditions
-        // Note: These are inverted because the jump is taken when the condition is true,
-        // but in C-like code, the condition is for the 'if' statement
+        // If we don't have comparison operands, use a generic condition
+        if (left == null || right == null)
+        {
+            switch (instruction.Type)
+            {
+                case InstructionType.Jz:  return "zero flag is set";
+                case InstructionType.Jnz: return "zero flag is not set";
+                default: return "condition";
+            }
+        }
+        
+        // If we have comparison operands, generate a more specific condition
         switch (instruction.Type)
         {
-            case InstructionType.Jz:  // Jump if Zero (ZF=1)
-                return "condition == 0";
-                
-            case InstructionType.Jnz: // Jump if Not Zero (ZF=0)
-                return "condition != 0";
-                
-            case InstructionType.Jg:  // Jump if Greater (ZF=0 and SF=OF)
-                return "condition > 0";
-                
-            case InstructionType.Jge: // Jump if Greater or Equal (SF=OF)
-                return "condition >= 0";
-                
-            case InstructionType.Jl:  // Jump if Less (SF!=OF)
-                return "condition < 0";
-                
-            case InstructionType.Jle: // Jump if Less or Equal (ZF=1 or SF!=OF)
-                return "condition <= 0";
-                
-            case InstructionType.Ja:  // Jump if Above (CF=0 and ZF=0)
-                return "condition > 0 /* unsigned */";
-                
-            case InstructionType.Jae: // Jump if Above or Equal (CF=0)
-                return "condition >= 0 /* unsigned */";
-                
-            case InstructionType.Jb:  // Jump if Below (CF=1)
-                return "condition < 0 /* unsigned */";
-                
-            case InstructionType.Jbe: // Jump if Below or Equal (CF=1 or ZF=1)
-                return "condition <= 0 /* unsigned */";
-                
-            // Add more cases for other conditional jumps as needed
-                
-            default:
-                // For unknown jump types, use a generic condition
-                return "/* unknown condition */";
+            case InstructionType.Jz:  return $"{left} == 0";
+            case InstructionType.Jnz: return $"{left} != 0";
+            default: return $"{left} ? {right}";
         }
     }
 }

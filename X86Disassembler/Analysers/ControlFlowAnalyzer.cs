@@ -42,7 +42,7 @@ public class ControlFlowAnalyzer
     /// <param name="function">The function to analyze</param>
     private void IdentifyIfElseStructures(Function function)
     {
-        // For each block in the function
+        // First pass: identify basic if-else structures
         foreach (var block in function.AsmFunction.Blocks)
         {
             // Skip blocks that don't end with a conditional jump
@@ -70,16 +70,84 @@ public class ControlFlowAnalyzer
                     var fallthroughBlock = FindFallthroughBlock(block);
                     
                     if (fallthroughBlock != null)
-                    {                        
-                        // Store the if-else structure in the context
-                        var ifElseStructure = new IfElseStructure
+                    {
+                        // Check if the fallthrough block ends with an unconditional jump
+                        // This could indicate an if-else structure where the 'else' branch jumps to a common merge point
+                        InstructionBlock? mergeBlock = null;
+                        bool hasElseBlock = true;
+                        
+                        if (fallthroughBlock.Instructions.Count > 0 && 
+                            fallthroughBlock.Instructions[^1].Type == InstructionType.Jmp)
+                        {
+                            // Get the jump target address
+                            ulong mergeAddress = GetJumpTargetAddress(fallthroughBlock.Instructions[^1]);
+                            
+                            // Find the merge block
+                            if (_context.BlocksByAddress.TryGetValue(mergeAddress, out var potentialMergeBlock))
+                            {
+                                mergeBlock = potentialMergeBlock;
+                            }
+                        }
+                        
+                        // Check if the 'then' block also jumps to the same merge point
+                        if (mergeBlock != null && targetBlock.Instructions.Count > 0 && 
+                            targetBlock.Instructions[^1].Type == InstructionType.Jmp)
+                        {
+                            ulong thenJumpAddress = GetJumpTargetAddress(targetBlock.Instructions[^1]);
+                            
+                            if (thenJumpAddress == mergeBlock.Address)
+                            {
+                                // We have a classic if-else structure with a merge point
+                                // Store the if-else structure in the context
+                                var ifElseStructure = new IfElseStructure
+                                {
+                                    ConditionBlock = block,
+                                    ThenBlock = targetBlock,
+                                    ElseBlock = fallthroughBlock,
+                                    MergeBlock = mergeBlock,
+                                    IsComplete = true // Both branches merge back
+                                };
+                                
+                                _context.StoreAnalysisData(block.Address, "IfElseStructure", ifElseStructure);
+                                continue;
+                            }
+                        }
+                        
+                        // If we get here, we have a simple if-then or if-then-else without a clear merge point
+                        var simpleIfStructure = new IfElseStructure
                         {
                             ConditionBlock = block,
                             ThenBlock = targetBlock,
-                            ElseBlock = fallthroughBlock
+                            ElseBlock = hasElseBlock ? fallthroughBlock : null,
+                            IsComplete = false // No clear merge point
                         };
                         
-                        _context.StoreAnalysisData(block.Address, "IfElseStructure", ifElseStructure);
+                        _context.StoreAnalysisData(block.Address, "IfElseStructure", simpleIfStructure);
+                    }
+                }
+            }
+        }
+        
+        // Second pass: identify nested if-else structures
+        foreach (var block in function.AsmFunction.Blocks)
+        {
+            var ifElseStructure = _context.GetAnalysisData<IfElseStructure>(block.Address, "IfElseStructure");
+            if (ifElseStructure != null)
+            {
+                // Check if the 'then' block contains another if-else structure
+                var nestedThenIf = _context.GetAnalysisData<IfElseStructure>(ifElseStructure.ThenBlock.Address, "IfElseStructure");
+                if (nestedThenIf != null)
+                {
+                    ifElseStructure.NestedThenStructure = nestedThenIf;
+                }
+                
+                // Check if the 'else' block contains another if-else structure
+                if (ifElseStructure.ElseBlock != null)
+                {
+                    var nestedElseIf = _context.GetAnalysisData<IfElseStructure>(ifElseStructure.ElseBlock.Address, "IfElseStructure");
+                    if (nestedElseIf != null)
+                    {
+                        ifElseStructure.NestedElseStructure = nestedElseIf;
                     }
                 }
             }
@@ -233,14 +301,34 @@ public class ControlFlowAnalyzer
         public InstructionBlock ConditionBlock { get; set; } = null!;
         
         /// <summary>
-        /// The block containing the 'then' branch
+        /// The block representing the 'then' branch (taken when condition is true)
         /// </summary>
         public InstructionBlock ThenBlock { get; set; } = null!;
         
         /// <summary>
-        /// The block containing the 'else' branch (may be null for if-then structures)
+        /// The block representing the 'else' branch (taken when condition is false)
         /// </summary>
-        public InstructionBlock ElseBlock { get; set; } = null!;
+        public InstructionBlock? ElseBlock { get; set; }
+        
+        /// <summary>
+        /// The block where both branches merge back together (if applicable)
+        /// </summary>
+        public InstructionBlock? MergeBlock { get; set; }
+        
+        /// <summary>
+        /// Whether this is a complete if-else structure with a merge point
+        /// </summary>
+        public bool IsComplete { get; set; }
+        
+        /// <summary>
+        /// Nested if-else structure in the 'then' branch (if any)
+        /// </summary>
+        public IfElseStructure? NestedThenStructure { get; set; }
+        
+        /// <summary>
+        /// Nested if-else structure in the 'else' branch (if any)
+        /// </summary>
+        public IfElseStructure? NestedElseStructure { get; set; }
     }
     
     /// <summary>
