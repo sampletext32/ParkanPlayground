@@ -52,7 +52,7 @@ public class FldFloat64Handler : InstructionHandler
         }
 
         // Read the ModR/M byte using the specialized FPU method
-        var (mod, reg, fpuRm, rawOperand) = ModRMDecoder.ReadModRMFpu();
+        var (mod, reg, fpuRm, rawOperand) = ModRMDecoder.ReadModRMFpu64();
 
         // Verify reg field is 0 (FLD)
         if (reg != 0)

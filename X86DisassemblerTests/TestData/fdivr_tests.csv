@@ -26,8 +26,8 @@ DCF7;[{ "Type": "Fdivr", "Operands": ["ST(7)", "ST(0)"] }]
 # Memory operands
 D83C2510000000;[{ "Type": "Fdivr", "Operands": ["dword ptr [0x10]"] }]
 DC3C2510000000;[{ "Type": "Fdivr", "Operands": ["qword ptr [0x10]"] }]
-D83C25;[{ "Type": "Fdivr", "Operands": ["dword ptr [eax]"] }]
-DC3C25;[{ "Type": "Fdivr", "Operands": ["qword ptr [eax]"] }]
+D838;[{ "Type": "Fdivr", "Operands": ["dword ptr [eax]"] }]
+DC38;[{ "Type": "Fdivr", "Operands": ["qword ptr [eax]"] }]
 
 # FDIVRP - Divide floating point values (reversed) and pop
 DEF0;[{ "Type": "Fdivrp", "Operands": ["ST(0)", "ST(0)"] }]
@@ -42,5 +42,5 @@ DEF7;[{ "Type": "Fdivrp", "Operands": ["ST(7)", "ST(0)"] }]
 # FIDIVR - Divide floating point by integer (reversed)
 DA3C2510000000;[{ "Type": "Fidivr", "Operands": ["dword ptr [0x10]"] }]
 DE3C2510000000;[{ "Type": "Fidivr", "Operands": ["word ptr [0x10]"] }]
-DA3C25;[{ "Type": "Fidivr", "Operands": ["dword ptr [eax]"] }]
-DE3C25;[{ "Type": "Fidivr", "Operands": ["word ptr [eax]"] }]
+DA38;[{ "Type": "Fidivr", "Operands": ["dword ptr [eax]"] }]
+DE38;[{ "Type": "Fidivr", "Operands": ["word ptr [eax]"] }]

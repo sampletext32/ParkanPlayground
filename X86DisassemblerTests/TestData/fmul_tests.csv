@@ -26,8 +26,8 @@ DCCF;[{ "Type": "Fmul", "Operands": ["ST(7)", "ST(0)"] }]
 # Memory operands
 D80C2510000000;[{ "Type": "Fmul", "Operands": ["dword ptr [0x10]"] }]
 DC0C2510000000;[{ "Type": "Fmul", "Operands": ["qword ptr [0x10]"] }]
-D80C25;[{ "Type": "Fmul", "Operands": ["dword ptr [eax]"] }]
-DC0C25;[{ "Type": "Fmul", "Operands": ["qword ptr [eax]"] }]
+D808;[{ "Type": "Fmul", "Operands": ["dword ptr [eax]"] }]
+DC08;[{ "Type": "Fmul", "Operands": ["qword ptr [eax]"] }]
 
 # FMULP - Multiply floating point values and pop
 DEC8;[{ "Type": "Fmulp", "Operands": ["ST(0)", "ST(0)"] }]
@@ -42,5 +42,5 @@ DECF;[{ "Type": "Fmulp", "Operands": ["ST(7)", "ST(0)"] }]
 # FIMUL - Multiply integer with floating point
 DA0C2510000000;[{ "Type": "Fimul", "Operands": ["dword ptr [0x10]"] }]
 DE0C2510000000;[{ "Type": "Fimul", "Operands": ["word ptr [0x10]"] }]
-DA0C25;[{ "Type": "Fimul", "Operands": ["dword ptr [eax]"] }]
-DE0C25;[{ "Type": "Fimul", "Operands": ["word ptr [eax]"] }]
+DA08;[{ "Type": "Fimul", "Operands": ["dword ptr [eax]"] }]
+DE08;[{ "Type": "Fimul", "Operands": ["word ptr [eax]"] }]

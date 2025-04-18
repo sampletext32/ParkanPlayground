@@ -54,39 +54,15 @@ public class FistpInt64Handler : InstructionHandler
         }
 
         // Read the ModR/M byte
-        var (mod, reg, rm, rawMemoryOperand) = ModRMDecoder.ReadModRM();
+        var (mod, reg, rm, operand) = ModRMDecoder.ReadModRM64();
         
         // Set the instruction type
         instruction.Type = InstructionType.Fistp;
 
-        // Create a 64-bit memory operand
-        Operand memoryOperand;
-        
-        if (rawMemoryOperand is DirectMemoryOperand directMemory)
-        {
-            memoryOperand = OperandFactory.CreateDirectMemoryOperand(directMemory.Address, 64);
-        }
-        else if (rawMemoryOperand is BaseRegisterMemoryOperand baseMemory)
-        {
-            memoryOperand = OperandFactory.CreateBaseRegisterMemoryOperand(baseMemory.BaseRegister, 64);
-        }
-        else if (rawMemoryOperand is DisplacementMemoryOperand dispMemory)
-        {
-            memoryOperand = OperandFactory.CreateDisplacementMemoryOperand(dispMemory.BaseRegister, dispMemory.Displacement, 64);
-        }
-        else if (rawMemoryOperand is ScaledIndexMemoryOperand scaledMemory)
-        {
-            memoryOperand = OperandFactory.CreateScaledIndexMemoryOperand(scaledMemory.IndexRegister, scaledMemory.Scale, scaledMemory.BaseRegister, scaledMemory.Displacement, 64);
-        }
-        else
-        {
-            memoryOperand = rawMemoryOperand;
-        }
-
         // Set the structured operands
         instruction.StructuredOperands = 
         [
-            memoryOperand
+            operand
         ];
 
         return true;

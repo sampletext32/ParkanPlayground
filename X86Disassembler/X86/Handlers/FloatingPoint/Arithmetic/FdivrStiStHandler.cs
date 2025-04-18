@@ -3,15 +3,15 @@ namespace X86Disassembler.X86.Handlers.FloatingPoint.Arithmetic;
 using X86Disassembler.X86.Operands;
 
 /// <summary>
-/// Handler for FDIV ST(i), ST instruction (DC F0-F7)
+/// Handler for FDIVR ST(i), ST instruction (DC F0-F7)
 /// </summary>
-public class FdivStiStHandler_FDIVRStiSt : InstructionHandler
+public class FdivrStiStHandler : InstructionHandler
 {
     /// <summary>
     /// Initializes a new instance of the FdivStiStHandler class
     /// </summary>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
-    public FdivStiStHandler_FDIVRStiSt(InstructionDecoder decoder)
+    public FdivrStiStHandler(InstructionDecoder decoder)
         : base(decoder)
     {
     }
@@ -23,7 +23,7 @@ public class FdivStiStHandler_FDIVRStiSt : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        // FDIV ST(i), ST is DC F0-F7
+        // FDIVR ST(i), ST is DC F0-F7
         if (opcode != 0xDC) return false;
 
         if (!Decoder.CanReadByte())
@@ -39,7 +39,7 @@ public class FdivStiStHandler_FDIVRStiSt : InstructionHandler
     }
     
     /// <summary>
-    /// Decodes a FDIV ST(i), ST instruction
+    /// Decodes a FDIVR ST(i), ST instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -55,7 +55,7 @@ public class FdivStiStHandler_FDIVRStiSt : InstructionHandler
         var stIndex = (FpuRegisterIndex)(Decoder.ReadByte() - 0xF0);
         
         // Set the instruction type
-        instruction.Type = InstructionType.Fdiv;
+        instruction.Type = InstructionType.Fdivr;
         
         // Create the FPU register operands
         var stiOperand = OperandFactory.CreateFPURegisterOperand(stIndex);

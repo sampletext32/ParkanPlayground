@@ -32,8 +32,8 @@ F4;[{ "Type": "Hlt", "Operands": [] }]
 # WAIT/FWAIT - Wait
 9B;[{ "Type": "Wait", "Operands": [] }]
 
-# LOCK prefix
-F0;[{ "Type": "Lock", "Operands": [] }]
+# TODO: LOCK prefix
+# F0;[{ "Type": "Lock", "Operands": [] }]
 
 # IN - Input from Port
 E410;[{ "Type": "In", "Operands": ["al", "0x10"] }]

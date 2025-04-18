@@ -52,7 +52,7 @@ public class FstpFloat64Handler : InstructionHandler
         }
 
         // Read the ModR/M byte using the specialized FPU method
-        var (mod, reg, fpuRm, rawOperand) = ModRMDecoder.ReadModRMFpu();
+        var (mod, reg, fpuRm, rawOperand) = ModRMDecoder.ReadModRMFpu64();
         
         // Set the instruction type
         instruction.Type = InstructionType.Fstp;

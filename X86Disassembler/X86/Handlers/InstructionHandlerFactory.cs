@@ -418,6 +418,7 @@ public class InstructionHandlerFactory
         
         // Other floating point handlers
         _handlers.Add(new FloatingPoint.Control.FnstswHandler(_decoder));         // FNSTSW AX (DF E0)
+        _handlers.Add(new FloatingPoint.Control.FstswHandler(_decoder));           // FSTSW AX (9B DF E0)
         
         // DB opcode handlers (int32 operations and extended precision)
         _handlers.Add(new FloatingPoint.LoadStore.FildInt32Handler(_decoder));     // FILD int32 (DB /0)
