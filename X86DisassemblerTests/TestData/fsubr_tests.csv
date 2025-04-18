@@ -24,10 +24,10 @@ DCE6;[{ "Type": "Fsubr", "Operands": ["ST(6)", "ST(0)"] }]
 DCE7;[{ "Type": "Fsubr", "Operands": ["ST(7)", "ST(0)"] }]
 
 # Memory operands
-D82C2510000000;[{ "Type": "Fsubr", "Operands": ["dword ptr [0x10]"] }]
-DC2C2510000000;[{ "Type": "Fsubr", "Operands": ["qword ptr [0x10]"] }]
-D82C25;[{ "Type": "Fsubr", "Operands": ["dword ptr [eax]"] }]
-DC2C25;[{ "Type": "Fsubr", "Operands": ["qword ptr [eax]"] }]
+D82D10000000;[{ "Type": "Fsubr", "Operands": ["dword ptr [0x10]"] }]
+DC2D10000000;[{ "Type": "Fsubr", "Operands": ["qword ptr [0x10]"] }]
+D828;[{ "Type": "Fsubr", "Operands": ["dword ptr [eax]"] }]
+DC28;[{ "Type": "Fsubr", "Operands": ["qword ptr [eax]"] }]
 
 # FSUBRP - Subtract floating point values (reversed) and pop
 DEE0;[{ "Type": "Fsubrp", "Operands": ["ST(0)", "ST(0)"] }]
@@ -40,7 +40,7 @@ DEE6;[{ "Type": "Fsubrp", "Operands": ["ST(6)", "ST(0)"] }]
 DEE7;[{ "Type": "Fsubrp", "Operands": ["ST(7)", "ST(0)"] }]
 
 # FISUBR - Subtract floating point from integer (reversed)
-DA2C2510000000;[{ "Type": "Fisubr", "Operands": ["dword ptr [0x10]"] }]
-DE2C2510000000;[{ "Type": "Fisubr", "Operands": ["word ptr [0x10]"] }]
-DA2C25;[{ "Type": "Fisubr", "Operands": ["dword ptr [eax]"] }]
-DE2C25;[{ "Type": "Fisubr", "Operands": ["word ptr [eax]"] }]
+DA2D10000000;[{ "Type": "Fisubr", "Operands": ["dword ptr [0x10]"] }]
+DE2D10000000;[{ "Type": "Fisubr", "Operands": ["word ptr [0x10]"] }]
+DA28;[{ "Type": "Fisubr", "Operands": ["dword ptr [eax]"] }]
+DE28;[{ "Type": "Fisubr", "Operands": ["word ptr [eax]"] }]

@@ -24,10 +24,10 @@ DCEE;[{ "Type": "Fsub", "Operands": ["ST(6)", "ST(0)"] }]
 DCEF;[{ "Type": "Fsub", "Operands": ["ST(7)", "ST(0)"] }]
 
 # Memory operands
-D8242510000000;[{ "Type": "Fsub", "Operands": ["dword ptr [0x10]"] }]
-DC242510000000;[{ "Type": "Fsub", "Operands": ["qword ptr [0x10]"] }]
-D82425;[{ "Type": "Fsub", "Operands": ["dword ptr [eax]"] }]
-DC2425;[{ "Type": "Fsub", "Operands": ["qword ptr [eax]"] }]
+D82510000000;[{ "Type": "Fsub", "Operands": ["dword ptr [0x10]"] }]
+DC2510000000;[{ "Type": "Fsub", "Operands": ["qword ptr [0x10]"] }]
+D820;[{ "Type": "Fsub", "Operands": ["dword ptr [eax]"] }]
+DC20;[{ "Type": "Fsub", "Operands": ["qword ptr [eax]"] }]
 
 # FSUBP - Subtract floating point values and pop
 DEE8;[{ "Type": "Fsubp", "Operands": ["ST(0)", "ST(0)"] }]
@@ -40,7 +40,7 @@ DEEE;[{ "Type": "Fsubp", "Operands": ["ST(6)", "ST(0)"] }]
 DEEF;[{ "Type": "Fsubp", "Operands": ["ST(7)", "ST(0)"] }]
 
 # FISUB - Subtract integer from floating point
-DA242510000000;[{ "Type": "Fisub", "Operands": ["dword ptr [0x10]"] }]
-DE242510000000;[{ "Type": "Fisub", "Operands": ["word ptr [0x10]"] }]
-DA2425;[{ "Type": "Fisub", "Operands": ["dword ptr [eax]"] }]
-DE2425;[{ "Type": "Fisub", "Operands": ["word ptr [eax]"] }]
+DA2510000000;[{ "Type": "Fisub", "Operands": ["dword ptr [0x10]"] }]
+DE2510000000;[{ "Type": "Fisub", "Operands": ["word ptr [0x10]"] }]
+DA20;[{ "Type": "Fisub", "Operands": ["dword ptr [eax]"] }]
+DE20;[{ "Type": "Fisub", "Operands": ["word ptr [eax]"] }]
