@@ -1,10 +1,5 @@
-using System;
-using System.IO;
-using System.Text;
-using System.Collections.Generic;
 using X86Disassembler.PE;
 using X86Disassembler.X86;
-using X86Disassembler.Decompiler;
 
 namespace X86Disassembler;
 
@@ -68,56 +63,102 @@ public class Program
             var section = codeSections[0];
             byte[] codeBytes = peFile.GetSectionData(peFile.SectionHeaders.IndexOf(section));
             
-            Console.WriteLine($"Disassembling section {section.Name} at RVA 0x{section.VirtualAddress:X8}:");
+            // First demonstrate sequential disassembly
+            Console.WriteLine($"Sequential disassembly of section {section.Name} at RVA 0x{section.VirtualAddress:X8}:");
             
             // Create a disassembler for the code section
-            Disassembler disassembler = new Disassembler(codeBytes, peFile.OptionalHeader.ImageBase + section.VirtualAddress);
+            // Base address should be the section's virtual address, not the image base + VA
+            Disassembler disassembler = new Disassembler(codeBytes, section.VirtualAddress);
             
-            // Disassemble all instructions
-            var instructions = disassembler.Disassemble();
-
-            var unknownIndex = instructions.FindIndex(
-                x => x.ToString()
-                    .Contains("??") || x.ToString()
-                    .Contains("TODO")
-            );
-            if (unknownIndex != -1)
-            {
-                _ = 5;
-            }
+            // Disassemble sequentially (linear approach)
+            var linearInstructions = disassembler.Disassemble();
             
-            // Print the first 100 instructions
-            int count = Math.Min(100, instructions.Count);
-            for (int i = 0; i < count; i++)
+            // Print the first 30 instructions from linear disassembly
+            int linearCount = Math.Min(30, linearInstructions.Count);
+            for (int i = 0; i < linearCount; i++)
             {
-                Console.WriteLine(instructions[i]);
+                Console.WriteLine(linearInstructions[i]);
             }
             
             // Print a summary of how many more instructions there are
-            if (instructions.Count > count)
+            if (linearInstructions.Count > linearCount)
             {
-                Console.WriteLine($"... ({instructions.Count - count} more instructions not shown)");
+                Console.WriteLine($"... ({linearInstructions.Count - linearCount} more instructions not shown)");
             }
             
-            // Decompile the instructions
-            Console.WriteLine("\nDecompiling the first function:\n");
+            Console.WriteLine();
+            Console.WriteLine("====================================================");
+            Console.WriteLine();
             
-            // For demonstration, we'll decompile a small subset of instructions
-            // In a real scenario, you'd identify function boundaries first
-            int functionSize = Math.Min(50, instructions.Count);
-            List<Instruction> functionInstructions = instructions.GetRange(0, functionSize);
+            // Now demonstrate control flow-based disassembly from entry point
+            Console.WriteLine($"Control flow-based disassembly starting from entry point 0x{peFile.OptionalHeader.AddressOfEntryPoint:X8}:");
             
-            // Create a decompiler for the function
-            Decompiler.Decompiler decompiler = new Decompiler.Decompiler(
-                functionInstructions, 
-                functionInstructions[0].Address
-            );
-            
-            // Decompile the function
-            string decompiledCode = decompiler.Decompile();
-            
-            // Print the decompiled code
-            Console.WriteLine(decompiledCode);
+            try
+            {
+                // Get the entry point RVA from the PE header
+                uint entryPointRva = peFile.OptionalHeader.AddressOfEntryPoint;
+                
+                // Make sure the entry point is within this code section
+                if (entryPointRva >= section.VirtualAddress && 
+                    entryPointRva < section.VirtualAddress + section.VirtualSize)
+                {
+                    // Disassemble starting from the entry point (control flow-based)
+                    var cfgInstructions = disassembler.DisassembleFunction(entryPointRva);
+                    
+                    // Print the instructions from the entry point function
+                    int cfgCount = Math.Min(50, cfgInstructions.Count);
+                    for (int i = 0; i < cfgCount; i++)
+                    {
+                        Console.WriteLine(cfgInstructions[i]);
+                    }
+                    
+                    // Print a summary if there are more instructions
+                    if (cfgInstructions.Count > cfgCount)
+                    {
+                        Console.WriteLine($"... ({cfgInstructions.Count - cfgCount} more instructions in this function not shown)");
+                    }
+                    
+                    Console.WriteLine();
+                    Console.WriteLine($"Found {cfgInstructions.Count} instructions following control flow from entry point.");
+                }
+                else
+                {
+                    // Try one of the exported functions instead
+                    Console.WriteLine($"Entry point is not in the {section.Name} section. Trying the first exported function instead...");
+                    
+                    if (peFile.ExportDirectory != null && peFile.ExportedFunctions.Count > 0)
+                    {
+                        uint functionRva = peFile.ExportedFunctions[0].AddressRva;
+                        Console.WriteLine($"Disassembling exported function at RVA 0x{functionRva:X8} ({peFile.ExportedFunctions[0].Name}):");
+                        
+                        var cfgInstructions = disassembler.DisassembleFunction(functionRva);
+                        
+                        // Print the instructions from the function
+                        int cfgCount = Math.Min(50, cfgInstructions.Count);
+                        for (int i = 0; i < cfgCount; i++)
+                        {
+                            Console.WriteLine(cfgInstructions[i]);
+                        }
+                        
+                        // Print a summary if there are more instructions
+                        if (cfgInstructions.Count > cfgCount)
+                        {
+                            Console.WriteLine($"... ({cfgInstructions.Count - cfgCount} more instructions in this function not shown)");
+                        }
+                        
+                        Console.WriteLine();
+                        Console.WriteLine($"Found {cfgInstructions.Count} instructions following control flow from exported function.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("No exported functions found to disassemble.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during control flow disassembly: {ex.Message}");
+            }
         }
         
         // Console.WriteLine("\nPress Enter to exit...");
