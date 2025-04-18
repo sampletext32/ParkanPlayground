@@ -437,7 +437,8 @@ public class InstructionHandlerFactory
         // DB opcode handlers (control instructions)
         _handlers.Add(new FloatingPoint.Control.FclexHandler(_decoder));           // FNCLEX (DB E2)
         _handlers.Add(new FloatingPoint.Control.FclexWaitHandler(_decoder));       // FCLEX (9B DB E2)
-        _handlers.Add(new FloatingPoint.Control.FinitHandler(_decoder));           // FINIT (DB E3)
+        _handlers.Add(new FloatingPoint.Control.FninitHandler(_decoder));          // FNINIT (DB E3)
+        _handlers.Add(new FloatingPoint.Control.FinitHandler(_decoder));           // FINIT (9B DB E3)
         
         // DB opcode handlers (comparison instructions)
         _handlers.Add(new FloatingPoint.Comparison.FucomiHandler(_decoder));       // FUCOMI (DB E8-EF)
