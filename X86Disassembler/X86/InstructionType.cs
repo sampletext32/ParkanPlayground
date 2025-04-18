@@ -48,8 +48,6 @@ public enum InstructionType
     
     // Control flow
     Jmp,        // Jump unconditionally
-    Je,         // Jump if equal
-    Jne,        // Jump if not equal
     Jg,         // Jump if greater
     Jge,        // Jump if greater or equal
     Jl,         // Jump if less

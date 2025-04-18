@@ -221,51 +221,6 @@ public class InstructionDecoder
     }
 
     /// <summary>
-    /// Checks if the address size prefix is present
-    /// </summary>
-    /// <returns>True if the address size prefix is present</returns>
-    public bool HasAddressSizePrefix()
-    {
-        return _prefixDecoder.HasAddressSizePrefix();
-    }
-
-    /// <summary>
-    /// Checks if a segment override prefix is present
-    /// </summary>
-    /// <returns>True if a segment override prefix is present</returns>
-    public bool HasSegmentOverridePrefix()
-    {
-        return _prefixDecoder.HasSegmentOverridePrefix();
-    }
-
-    /// <summary>
-    /// Gets the segment override prefix
-    /// </summary>
-    /// <returns>The segment override prefix, or an empty string if none is present</returns>
-    public string GetSegmentOverride()
-    {
-        return _prefixDecoder.GetSegmentOverride();
-    }
-
-    /// <summary>
-    /// Checks if the LOCK prefix is present
-    /// </summary>
-    /// <returns>True if the LOCK prefix is present</returns>
-    public bool HasLockPrefix()
-    {
-        return _prefixDecoder.HasLockPrefix();
-    }
-
-    /// <summary>
-    /// Checks if the REP/REPNE prefix is present
-    /// </summary>
-    /// <returns>True if the REP/REPNE prefix is present</returns>
-    public bool HasRepPrefix()
-    {
-        return _prefixDecoder.HasRepPrefix();
-    }
-
-    /// <summary>
     /// Checks if the instruction has an operand size override prefix (0x66)
     /// </summary>
     /// <returns>True if the instruction has an operand size override prefix</returns>

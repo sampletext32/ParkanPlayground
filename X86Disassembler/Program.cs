@@ -1,3 +1,4 @@
+using X86Disassembler.Analysers;
 using X86Disassembler.PE;
 using X86Disassembler.X86;
 
@@ -63,102 +64,37 @@ public class Program
             var section = codeSections[0];
             byte[] codeBytes = peFile.GetSectionData(peFile.SectionHeaders.IndexOf(section));
             
-            // First demonstrate sequential disassembly
-            Console.WriteLine($"Sequential disassembly of section {section.Name} at RVA 0x{section.VirtualAddress:X8}:");
+            // // First demonstrate sequential disassembly
+            // Console.WriteLine($"Sequential disassembly of section {section.Name} at RVA 0x{section.VirtualAddress:X8}:");
+            //
+            // // Create a disassembler for the code section
+            // // Base address should be the section's virtual address, not the image base + VA
+            // Disassembler disassembler = new Disassembler(codeBytes, section.VirtualAddress);
+            //
+            // // Disassemble sequentially (linear approach)
+            // var linearInstructions = disassembler.Disassemble();
+            //
+            // // Print the first 30 instructions from linear disassembly
+            // int linearCount = Math.Min(30, linearInstructions.Count);
+            // for (int i = 0; i < linearCount; i++)
+            // {
+            //     Console.WriteLine(linearInstructions[i]);
+            // }
+            //
+            // // Print a summary of how many more instructions there are
+            // if (linearInstructions.Count > linearCount)
+            // {
+            //     Console.WriteLine($"... ({linearInstructions.Count - linearCount} more instructions not shown)");
+            // }
+
             
-            // Create a disassembler for the code section
-            // Base address should be the section's virtual address, not the image base + VA
-            Disassembler disassembler = new Disassembler(codeBytes, section.VirtualAddress);
+            // disassemble entry point
+            var disassembler = new BlockDisassembler(codeBytes, section.VirtualAddress);
             
-            // Disassemble sequentially (linear approach)
-            var linearInstructions = disassembler.Disassemble();
-            
-            // Print the first 30 instructions from linear disassembly
-            int linearCount = Math.Min(30, linearInstructions.Count);
-            for (int i = 0; i < linearCount; i++)
-            {
-                Console.WriteLine(linearInstructions[i]);
-            }
-            
-            // Print a summary of how many more instructions there are
-            if (linearInstructions.Count > linearCount)
-            {
-                Console.WriteLine($"... ({linearInstructions.Count - linearCount} more instructions not shown)");
-            }
-            
-            Console.WriteLine();
-            Console.WriteLine("====================================================");
-            Console.WriteLine();
-            
-            // Now demonstrate control flow-based disassembly from entry point
-            Console.WriteLine($"Control flow-based disassembly starting from entry point 0x{peFile.OptionalHeader.AddressOfEntryPoint:X8}:");
-            
-            try
-            {
-                // Get the entry point RVA from the PE header
-                uint entryPointRva = peFile.OptionalHeader.AddressOfEntryPoint;
-                
-                // Make sure the entry point is within this code section
-                if (entryPointRva >= section.VirtualAddress && 
-                    entryPointRva < section.VirtualAddress + section.VirtualSize)
-                {
-                    // Disassemble starting from the entry point (control flow-based)
-                    var cfgInstructions = disassembler.DisassembleFunction(entryPointRva);
-                    
-                    // Print the instructions from the entry point function
-                    int cfgCount = Math.Min(50, cfgInstructions.Count);
-                    for (int i = 0; i < cfgCount; i++)
-                    {
-                        Console.WriteLine(cfgInstructions[i]);
-                    }
-                    
-                    // Print a summary if there are more instructions
-                    if (cfgInstructions.Count > cfgCount)
-                    {
-                        Console.WriteLine($"... ({cfgInstructions.Count - cfgCount} more instructions in this function not shown)");
-                    }
-                    
-                    Console.WriteLine();
-                    Console.WriteLine($"Found {cfgInstructions.Count} instructions following control flow from entry point.");
-                }
-                else
-                {
-                    // Try one of the exported functions instead
-                    Console.WriteLine($"Entry point is not in the {section.Name} section. Trying the first exported function instead...");
-                    
-                    if (peFile.ExportDirectory != null && peFile.ExportedFunctions.Count > 0)
-                    {
-                        uint functionRva = peFile.ExportedFunctions[0].AddressRva;
-                        Console.WriteLine($"Disassembling exported function at RVA 0x{functionRva:X8} ({peFile.ExportedFunctions[0].Name}):");
-                        
-                        var cfgInstructions = disassembler.DisassembleFunction(functionRva);
-                        
-                        // Print the instructions from the function
-                        int cfgCount = Math.Min(50, cfgInstructions.Count);
-                        for (int i = 0; i < cfgCount; i++)
-                        {
-                            Console.WriteLine(cfgInstructions[i]);
-                        }
-                        
-                        // Print a summary if there are more instructions
-                        if (cfgInstructions.Count > cfgCount)
-                        {
-                            Console.WriteLine($"... ({cfgInstructions.Count - cfgCount} more instructions in this function not shown)");
-                        }
-                        
-                        Console.WriteLine();
-                        Console.WriteLine($"Found {cfgInstructions.Count} instructions following control flow from exported function.");
-                    }
-                    else
-                    {
-                        Console.WriteLine("No exported functions found to disassemble.");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error during control flow disassembly: {ex.Message}");
-            }
+            var asmFunction = disassembler.DisassembleFromAddress(peFile.OptionalHeader.AddressOfEntryPoint);
+
+            Console.WriteLine(asmFunction);
+            _ = 5;
         }
         
         // Console.WriteLine("\nPress Enter to exit...");
