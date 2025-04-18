@@ -415,6 +415,8 @@ public class InstructionHandlerFactory
         _handlers.Add(new FloatingPoint.Transcendental.Fyl2xHandler(_decoder));   // FYL2X (D9 F1)
         _handlers.Add(new FloatingPoint.Transcendental.FptanHandler(_decoder));   // FPTAN (D9 F2)
         _handlers.Add(new FloatingPoint.Transcendental.FpatanHandler(_decoder));  // FPATAN (D9 F3)
+        _handlers.Add(new FloatingPoint.Arithmetic.FxtractHandler(_decoder));    // FXTRACT (D9 F4)
+        _handlers.Add(new FloatingPoint.Arithmetic.Fprem1Handler(_decoder));     // FPREM1 (D9 F5)
         
         // Other floating point handlers
         _handlers.Add(new FloatingPoint.Control.FnstswHandler(_decoder));         // FNSTSW AX (DF E0)
