@@ -1,4 +1,4 @@
-﻿using X86Disassembler.X86;
+using X86Disassembler.X86;
 
 namespace X86Disassembler.Analysers;
 
@@ -47,11 +47,21 @@ public class BlockDisassembler
 
         // Queue of addresses to process (breadth-first approach)
         Queue<ulong> addressQueue = [];
+        
         // Calculate the file offset from the RVA by subtracting the base address
-        addressQueue.Enqueue(rvaAddress - _baseAddress);
+        // Store the file offset for processing, but we'll convert back to RVA when creating blocks
+        ulong fileOffset = rvaAddress - _baseAddress;
+        addressQueue.Enqueue(fileOffset);
+        
+        // Keep track of the original entry point RVA for the function
+        ulong entryPointRVA = rvaAddress;
 
         // List to store discovered basic blocks
         List<InstructionBlock> blocks = [];
+        
+        // Dictionary to track blocks by address for quick lookup
+        Dictionary<ulong, InstructionBlock> blocksByAddress = new Dictionary<ulong, InstructionBlock>();
+        
         while (addressQueue.Count > 0)
         {
             // Get the next address to process
@@ -69,16 +79,36 @@ public class BlockDisassembler
 
             // Collect instructions for this block
             List<Instruction> instructions = [];
+            
+            // Get the current block if it exists (for tracking predecessors)
+            InstructionBlock? currentBlock = null;
+            if (blocksByAddress.TryGetValue(address, out var existingBlock))
+            {
+                currentBlock = existingBlock;
+            }
 
             // Process instructions until we hit a control flow change
             while (true)
             {
+                // Get the current position
+                ulong currentPosition = (ulong)decoder.GetPosition();
+                
                 // If we've stepped onto an existing block, create a new block up to this point
                 // and stop processing this path (to avoid duplicating instructions)
-                if (blocks.Any(x => x.Address == (ulong) decoder.GetPosition()))
+                if (blocksByAddress.TryGetValue(currentPosition, out var targetBlock) && currentPosition != address)
                 {
                     Console.WriteLine("Stepped on to existing block. Creating in the middle");
-                    RegisterBlock(blocks, address, instructions);
+                    
+                    // Register this block and establish the relationship with the target block
+                    var newBlock = RegisterBlock(blocks, address, instructions, null, false, false);
+                    blocksByAddress[address] = newBlock;
+                    
+                    // Add the target block as a successor to the new block
+                    newBlock.Successors.Add(targetBlock);
+                    
+                    // Add the new block as a predecessor to the target block
+                    targetBlock.Predecessors.Add(newBlock);
+                    
                     break;
                 }
 
@@ -98,17 +128,22 @@ public class BlockDisassembler
                 // For conditional jumps, we need to follow both the jump target and the fall-through path
                 if (instruction.Type.IsConditionalJump())
                 {
+                    // Get the jump target address
+                    uint jumpTargetAddress = instruction.StructuredOperands[0].GetValue();
+                    
+                    // Get the fall-through address (next instruction after this jump)
+                    uint fallThroughAddress = (uint)decoder.GetPosition();
+                    
                     // Register this block (it ends with a conditional jump)
-                    RegisterBlock(blocks, address, instructions);
+                    var newBlock = RegisterBlock(blocks, address, instructions, currentBlock, false, false);
+                    blocksByAddress[address] = newBlock;
                     
                     // Queue the jump target address for processing
-                    addressQueue.Enqueue(
-                        instruction.StructuredOperands[0]
-                            .GetValue()
-                    );
+                    addressQueue.Enqueue(jumpTargetAddress);
                     
                     // Queue the fall-through address (next instruction after this jump)
-                    addressQueue.Enqueue((uint) decoder.GetPosition());
+                    addressQueue.Enqueue(fallThroughAddress);
+                    
                     break;
                 }
 
@@ -116,14 +151,16 @@ public class BlockDisassembler
                 // For unconditional jumps, we only follow the jump target
                 if (instruction.Type.IsRegularJump())
                 {
+                    // Get the jump target address
+                    uint jumpTargetAddress = instruction.StructuredOperands[0].GetValue();
+                    
                     // Register this block (it ends with an unconditional jump)
-                    RegisterBlock(blocks, address, instructions);
+                    var newBlock = RegisterBlock(blocks, address, instructions, currentBlock, false, false);
+                    blocksByAddress[address] = newBlock;
                     
                     // Queue the jump target address for processing
-                    addressQueue.Enqueue(
-                        instruction.StructuredOperands[0]
-                            .GetValue()
-                    );
+                    addressQueue.Enqueue(jumpTargetAddress);
+                    
                     break;
                 }
 
@@ -132,7 +169,9 @@ public class BlockDisassembler
                 if (instruction.Type.IsRet())
                 {
                     // Register this block (it ends with a return)
-                    RegisterBlock(blocks, address, instructions);
+                    var newBlock = RegisterBlock(blocks, address, instructions, currentBlock, false, false);
+                    blocksByAddress[address] = newBlock;
+                    
                     break;
                 }
             }
@@ -142,11 +181,41 @@ public class BlockDisassembler
         // we need to sort the blocks ourselves
         blocks.Sort((b1, b2) => b1.Address.CompareTo(b2.Address));
 
-        return new AsmFunction()
+        // Convert all block addresses from file offsets to RVA
+        foreach (var block in blocks)
         {
-            Address = rvaAddress,
+            // Convert from file offset to RVA by adding the base address
+            ulong rvaBlockAddress = block.Address + _baseAddress;
+            Console.WriteLine($"Converting block address from file offset 0x{block.Address:X8} to RVA 0x{rvaBlockAddress:X8}");
+            block.Address = rvaBlockAddress;
+        }
+        
+        // Create a new AsmFunction with the RVA address
+        var asmFunction = new AsmFunction()
+        {
+            Address = entryPointRVA,
             Blocks = blocks,
         };
+        
+        // Verify that the entry block exists
+        var entryBlock = asmFunction.EntryBlock;
+        if (entryBlock == null)
+        {
+            Console.WriteLine($"Warning: No entry block found at RVA 0x{entryPointRVA:X8}");
+            
+            // Try to find a block at the file offset address (for backward compatibility)
+            var fallbackBlock = blocks.FirstOrDefault(b => b.Address == (fileOffset + _baseAddress));
+            if (fallbackBlock != null)
+            {
+                Console.WriteLine($"Found fallback entry block at RVA 0x{fallbackBlock.Address:X8}");
+            }
+        }
+        else
+        {
+            Console.WriteLine($"Found entry block at RVA 0x{entryBlock.Address:X8}");
+        }
+        
+        return asmFunction;
     }
 
     /// <summary>
@@ -155,8 +224,42 @@ public class BlockDisassembler
     /// <param name="blocks">The list of blocks to add to</param>
     /// <param name="address">The starting address of the block</param>
     /// <param name="instructions">The instructions contained in the block</param>
-    public void RegisterBlock(List<InstructionBlock> blocks, ulong address, List<Instruction> instructions)
+    /// <param name="currentBlock">The current block being processed (null if this is the first block)</param>
+    /// <param name="isJumpTarget">Whether this block is a jump target</param>
+    /// <param name="isFallThrough">Whether this block is a fall-through from another block</param>
+    /// <returns>The newly created block</returns>
+    public InstructionBlock RegisterBlock(
+        List<InstructionBlock> blocks, 
+        ulong address, 
+        List<Instruction> instructions, 
+        InstructionBlock? currentBlock = null, 
+        bool isJumpTarget = false, 
+        bool isFallThrough = false)
     {
+        // Check if a block already exists at this address
+        var existingBlock = blocks.FirstOrDefault(b => b.Address == address);
+        
+        if (existingBlock != null)
+        {
+            // If the current block is not null, update the relationships
+            if (currentBlock != null)
+            {
+                // Add the existing block as a successor to the current block if not already present
+                if (!currentBlock.Successors.Contains(existingBlock))
+                {
+                    currentBlock.Successors.Add(existingBlock);
+                }
+                
+                // Add the current block as a predecessor to the existing block if not already present
+                if (!existingBlock.Predecessors.Contains(currentBlock))
+                {
+                    existingBlock.Predecessors.Add(currentBlock);
+                }
+            }
+            
+            return existingBlock;
+        }
+        
         // Create a new block with the provided address and instructions
         var block = new InstructionBlock()
         {
@@ -166,9 +269,21 @@ public class BlockDisassembler
         
         // Add the block to the collection
         blocks.Add(block);
+        
+        // If the current block is not null, update the relationships
+        if (currentBlock != null)
+        {
+            // Add the new block as a successor to the current block
+            currentBlock.Successors.Add(block);
+            
+            // Add the current block as a predecessor to the new block
+            block.Predecessors.Add(currentBlock);
+        }
 
         // Log the created block for debugging
         Console.WriteLine($"Created block:\n{block}");
+        
+        return block;
     }
 }
 
@@ -185,13 +300,34 @@ public class InstructionBlock
     /// <summary>
     /// The list of instructions contained in this block
     /// </summary>
-    public List<Instruction> Instructions { get; set; }
+    public List<Instruction> Instructions { get; set; } = [];
 
     /// <summary>
-    /// Returns a string representation of the block, including its address and instructions
+    /// The blocks that can transfer control to this block
+    /// </summary>
+    public List<InstructionBlock> Predecessors { get; set; } = [];
+
+    /// <summary>
+    /// The blocks that this block can transfer control to
+    /// </summary>
+    public List<InstructionBlock> Successors { get; set; } = [];
+
+    /// <summary>
+    /// Returns a string representation of the block, including its address, instructions, and control flow information
     /// </summary>
     public override string ToString()
     {
-        return $"Address: {Address:X8}\n{string.Join("\n", Instructions)}";
+        // Create a string for predecessors
+        string predecessorsStr = Predecessors.Count > 0 
+            ? $"Predecessors: {string.Join(", ", Predecessors.Select(p => $"0x{p.Address:X8}"))}"
+            : "No predecessors";
+            
+        // Create a string for successors
+        string successorsStr = Successors.Count > 0 
+            ? $"Successors: {string.Join(", ", Successors.Select(s => $"0x{s.Address:X8}"))}"
+            : "No successors";
+            
+        // Return the complete string representation
+        return $"Address: 0x{Address:X8}\n{predecessorsStr}\n{successorsStr}\n{string.Join("\n", Instructions)}";
     }
 }
