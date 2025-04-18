@@ -1,7 +1,7 @@
 namespace X86Disassembler.X86.Handlers.FloatingPoint.Control;
 
 /// <summary>
-/// Handler for FCLEX instruction with WAIT prefix (0x9B 0xDB 0xE2)
+/// Handler for FCLEX instruction with WAIT prefix (0x9B 0xDB 0xE2) - Clears floating-point exception flags after checking for pending unmasked floating-point exceptions
 /// </summary>
 public class FclexWaitHandler : InstructionHandler
 {
