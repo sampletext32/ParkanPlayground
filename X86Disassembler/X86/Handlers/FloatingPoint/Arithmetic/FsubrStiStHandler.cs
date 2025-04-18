@@ -3,7 +3,7 @@ namespace X86Disassembler.X86.Handlers.FloatingPoint.Arithmetic;
 using X86Disassembler.X86.Operands;
 
 /// <summary>
-/// Handler for FSUBR ST(i), ST instruction (DC E8-EF)
+/// Handler for FSUB ST(i), ST instruction (DC E8-EF)
 /// </summary>
 public class FsubrStiStHandler : InstructionHandler
 {
@@ -23,7 +23,7 @@ public class FsubrStiStHandler : InstructionHandler
     /// <returns>True if this handler can decode the opcode</returns>
     public override bool CanHandle(byte opcode)
     {
-        // FSUBR ST(i), ST is DC E8-EF
+        // FSUB ST(i), ST is DC E8-EF
         if (opcode != 0xDC) return false;
 
         if (!Decoder.CanReadByte())
@@ -39,7 +39,7 @@ public class FsubrStiStHandler : InstructionHandler
     }
     
     /// <summary>
-    /// Decodes a FSUBR ST(i), ST instruction
+    /// Decodes a FSUB ST(i), ST instruction
     /// </summary>
     /// <param name="opcode">The opcode of the instruction</param>
     /// <param name="instruction">The instruction object to populate</param>
@@ -55,7 +55,7 @@ public class FsubrStiStHandler : InstructionHandler
         var stIndex = (FpuRegisterIndex)(Decoder.ReadByte() - 0xE8);
         
         // Set the instruction type
-        instruction.Type = InstructionType.Fsubr;
+        instruction.Type = InstructionType.Fsub;
         
         // Create the FPU register operands
         var stiOperand = OperandFactory.CreateFPURegisterOperand(stIndex);

@@ -471,9 +471,9 @@ public class InstructionHandlerFactory
         _handlers.Add(new FloatingPoint.Arithmetic.FmulStiStHandler(_decoder));        // FMUL ST(i), ST (DC C8-CF)
         _handlers.Add(new FloatingPoint.Comparison.FcomRegisterHandler(_decoder));     // FCOM ST(i), ST(0) (DC D0-D7)
         _handlers.Add(new FloatingPoint.Arithmetic.FsubStiStHandler(_decoder));        // FSUB ST(i), ST (DC E0-E7)
-        _handlers.Add(new FloatingPoint.Arithmetic.FsubrStiStHandler(_decoder));       // FSUBR ST(i), ST (DC E8-EF)
-        _handlers.Add(new FloatingPoint.Arithmetic.FdivrStiStHandler(_decoder));        // FDIV ST(i), ST (DC F0-F7)
-        _handlers.Add(new FloatingPoint.Arithmetic.FdivStiStHandler(_decoder));       // FDIVR ST(i), ST (DC F8-FF)
+        _handlers.Add(new FloatingPoint.Arithmetic.FsubrStiStHandler(_decoder));       // FSUB ST(i), ST (DC E8-EF)
+        _handlers.Add(new FloatingPoint.Arithmetic.FdivrStiStHandler(_decoder));        // FDIVR ST(i), ST (DC F0-F7)
+        _handlers.Add(new FloatingPoint.Arithmetic.FdivStiStHandler(_decoder));       // FDIV ST(i), ST (DC F8-FF)
         _handlers.Add(new FloatingPoint.Comparison.FcompRegisterHandler(_decoder));    // FCOMP ST(i), ST(0) (DC D8-DF)
         
         // DD opcode handlers (register operations)
