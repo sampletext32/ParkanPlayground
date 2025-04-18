@@ -94,12 +94,25 @@ public class Program
             
             try
             {
+                // Find a suitable exported function to decompile
+                // Let's try to find a function that might have more complex control flow
+                var exportedFunctions = peFile.ExportedFunctions;
+                
+                // Print all exported functions to help us choose a better one
+                Console.WriteLine("Available exported functions:");
+                foreach (var func in exportedFunctions)
+                {
+                    Console.WriteLine($"  - {func.Name} (RVA=0x{func.AddressRva:X8})");
+                }
+                
+                // Decompile the entry point function
+                Console.WriteLine($"\nDecompiling entry point function at address 0x{peFile.OptionalHeader.AddressOfEntryPoint:X8}\n");
+                
                 // Decompile the entry point function
                 var function = decompiler.DecompileFunction(peFile.OptionalHeader.AddressOfEntryPoint);
-                
+
                 // Generate pseudocode
-                string pseudocode = decompiler.GeneratePseudocode(function);
-                
+                var pseudocode = decompiler.GeneratePseudocode(function);
                 Console.WriteLine("\nGenerated Pseudocode:\n");
                 Console.WriteLine(pseudocode);
             }

@@ -1,4 +1,5 @@
 using X86Disassembler.X86;
+using X86Disassembler.X86.Operands;
 
 namespace X86Disassembler.Analysers;
 
@@ -138,11 +139,45 @@ public class BlockDisassembler
                     var newBlock = RegisterBlock(blocks, address, instructions, currentBlock, false, false);
                     blocksByAddress[address] = newBlock;
                     
-                    // Queue the jump target address for processing
-                    addressQueue.Enqueue(jumpTargetAddress);
+                    // Register the target block if it doesn't exist yet
+                    InstructionBlock? jumpTargetBlock = null;
+                    if (blocksByAddress.TryGetValue(jumpTargetAddress, out var existingTargetBlock))
+                    {
+                        jumpTargetBlock = existingTargetBlock;
+                    }
+                    else
+                    {
+                        // We'll create this block later when we process the queue
+                        // For now, just queue it for processing
+                        addressQueue.Enqueue(jumpTargetAddress);
+                    }
                     
-                    // Queue the fall-through address (next instruction after this jump)
-                    addressQueue.Enqueue(fallThroughAddress);
+                    // Register the fall-through block if it doesn't exist yet
+                    InstructionBlock? fallThroughBlock = null;
+                    if (blocksByAddress.TryGetValue(fallThroughAddress, out var existingFallThroughBlock))
+                    {
+                        fallThroughBlock = existingFallThroughBlock;
+                    }
+                    else
+                    {
+                        // We'll create this block later when we process the queue
+                        // For now, just queue it for processing
+                        addressQueue.Enqueue(fallThroughAddress);
+                    }
+                    
+                    // If the jump target block exists, add it as a successor to the current block
+                    if (jumpTargetBlock != null)
+                    {
+                        newBlock.Successors.Add(jumpTargetBlock);
+                        jumpTargetBlock.Predecessors.Add(newBlock);
+                    }
+                    
+                    // If the fall-through block exists, add it as a successor to the current block
+                    if (fallThroughBlock != null)
+                    {
+                        newBlock.Successors.Add(fallThroughBlock);
+                        fallThroughBlock.Predecessors.Add(newBlock);
+                    }
                     
                     break;
                 }
@@ -158,8 +193,25 @@ public class BlockDisassembler
                     var newBlock = RegisterBlock(blocks, address, instructions, currentBlock, false, false);
                     blocksByAddress[address] = newBlock;
                     
-                    // Queue the jump target address for processing
-                    addressQueue.Enqueue(jumpTargetAddress);
+                    // Register the target block if it doesn't exist yet
+                    InstructionBlock? jumpTargetBlock = null;
+                    if (blocksByAddress.TryGetValue(jumpTargetAddress, out var existingTargetBlock))
+                    {
+                        jumpTargetBlock = existingTargetBlock;
+                    }
+                    else
+                    {
+                        // We'll create this block later when we process the queue
+                        // For now, just queue it for processing
+                        addressQueue.Enqueue(jumpTargetAddress);
+                    }
+                    
+                    // If the jump target block exists, add it as a successor to the current block
+                    if (jumpTargetBlock != null)
+                    {
+                        newBlock.Successors.Add(jumpTargetBlock);
+                        jumpTargetBlock.Predecessors.Add(newBlock);
+                    }
                     
                     break;
                 }
@@ -181,11 +233,201 @@ public class BlockDisassembler
         // we need to sort the blocks ourselves
         blocks.Sort((b1, b2) => b1.Address.CompareTo(b2.Address));
 
-        // Convert all block addresses from file offsets to RVA
+        // First, establish the successor and predecessor relationships based on file offsets
+        // This is done by analyzing the last instruction of each block
         foreach (var block in blocks)
         {
-            // Convert from file offset to RVA by adding the base address
-            block.Address += _baseAddress;
+            if (block.Instructions.Count == 0) continue;
+            
+            var lastInstruction = block.Instructions[^1];
+            
+            // Check if the last instruction is a conditional jump
+            if (lastInstruction.Type.IsConditionalJump())
+            {
+                // Get the jump target address (file offset)
+                ulong targetAddress = 0;
+                if (lastInstruction.StructuredOperands.Count > 0 && lastInstruction.StructuredOperands[0] is RelativeOffsetOperand relOp)
+                {
+                    targetAddress = relOp.TargetAddress;
+                }
+                
+                // Find the target block
+                var targetBlock = blocks.FirstOrDefault(b => b.Address == targetAddress);
+                if (targetBlock != null)
+                {
+                    // Add the target block as a successor to this block
+                    if (!block.Successors.Contains(targetBlock))
+                    {
+                        block.Successors.Add(targetBlock);
+                    }
+                    
+                    // Add this block as a predecessor to the target block
+                    if (!targetBlock.Predecessors.Contains(block))
+                    {
+                        targetBlock.Predecessors.Add(block);
+                    }
+                    
+                    // For conditional jumps, also add the fall-through block as a successor
+                    // The fall-through block is the one that immediately follows this block in memory
+                    // Find the next block in address order
+                    var nextBlock = blocks.OrderBy(b => b.Address).FirstOrDefault(b => b.Address > block.Address);
+                    if (nextBlock != null)
+                    {
+                        // The fall-through block is the one that immediately follows this block in memory
+                        var fallThroughBlock = nextBlock;
+                        
+                        // Add the fall-through block as a successor to this block
+                        if (!block.Successors.Contains(fallThroughBlock))
+                        {
+                            block.Successors.Add(fallThroughBlock);
+                        }
+                        
+                        // Add this block as a predecessor to the fall-through block
+                        if (!fallThroughBlock.Predecessors.Contains(block))
+                        {
+                            fallThroughBlock.Predecessors.Add(block);
+                        }
+                    }
+                }
+            }
+            // Check if the last instruction is an unconditional jump
+            else if (lastInstruction.Type == InstructionType.Jmp)
+            {
+                // Get the jump target address (file offset)
+                ulong targetAddress = 0;
+                if (lastInstruction.StructuredOperands.Count > 0 && lastInstruction.StructuredOperands[0] is RelativeOffsetOperand relOp)
+                {
+                    targetAddress = relOp.TargetAddress;
+                }
+                
+                // Find the target block
+                var targetBlock = blocks.FirstOrDefault(b => b.Address == targetAddress);
+                if (targetBlock != null)
+                {
+                    // Add the target block as a successor to this block
+                    if (!block.Successors.Contains(targetBlock))
+                    {
+                        block.Successors.Add(targetBlock);
+                    }
+                    
+                    // Add this block as a predecessor to the target block
+                    if (!targetBlock.Predecessors.Contains(block))
+                    {
+                        targetBlock.Predecessors.Add(block);
+                    }
+                }
+            }
+            // For non-jump instructions that don't end the function (like Ret), add the fall-through block
+            else if (!lastInstruction.Type.IsRet())
+            {
+                // The fall-through block is the one that immediately follows this block in memory
+                // Find the next block in address order
+                var nextBlock = blocks.OrderBy(b => b.Address).FirstOrDefault(b => b.Address > block.Address);
+                if (nextBlock != null)
+                {
+                    // The fall-through block is the one that immediately follows this block in memory
+                    var fallThroughBlock = nextBlock;
+                    
+                    // Add the fall-through block as a successor to this block
+                    if (!block.Successors.Contains(fallThroughBlock))
+                    {
+                        block.Successors.Add(fallThroughBlock);
+                    }
+                    
+                    // Add this block as a predecessor to the fall-through block
+                    if (!fallThroughBlock.Predecessors.Contains(block))
+                    {
+                        fallThroughBlock.Predecessors.Add(block);
+                    }
+                }
+            }
+        }
+
+        // Store the original file offset for each block in a dictionary
+        Dictionary<InstructionBlock, ulong> blockToFileOffset = new Dictionary<InstructionBlock, ulong>();
+        foreach (var block in blocks)
+        {
+            blockToFileOffset[block] = block.Address;
+        }
+
+        // Convert all block addresses from file offsets to RVA
+        // and update the block dictionary for quick lookup
+        Dictionary<ulong, InstructionBlock> rvaBlocksByAddress = new Dictionary<ulong, InstructionBlock>();
+        Dictionary<ulong, ulong> fileOffsetToRvaMap = new Dictionary<ulong, ulong>();
+        
+        // First pass: create a mapping from file offset to RVA for each block
+        foreach (var block in blocks)
+        {
+            // Get the original file offset address
+            ulong blockFileOffset = block.Address;
+            
+            // Calculate the RVA address
+            ulong blockRvaAddress = blockFileOffset + _baseAddress;
+            
+            // Store the mapping
+            fileOffsetToRvaMap[blockFileOffset] = blockRvaAddress;
+        }
+        
+        // Second pass: update all blocks to use RVA addresses
+        foreach (var block in blocks)
+        {
+            // Get the original file offset address
+            ulong blockFileOffset = block.Address;
+            
+            // Update the block's address to RVA
+            ulong blockRvaAddress = fileOffsetToRvaMap[blockFileOffset];
+            block.Address = blockRvaAddress;
+            
+            // Add to the dictionary for quick lookup
+            rvaBlocksByAddress[blockRvaAddress] = block;
+        }
+        
+        // Now update all successors and predecessors to use the correct RVA addresses
+        foreach (var block in blocks)
+        {
+            // Create new lists for successors and predecessors with the correct RVA addresses
+            List<InstructionBlock> updatedSuccessors = new List<InstructionBlock>();
+            List<InstructionBlock> updatedPredecessors = new List<InstructionBlock>();
+            
+            // Update successors
+            foreach (var successor in block.Successors)
+            {
+                // Get the original file offset of the successor
+                if (blockToFileOffset.TryGetValue(successor, out ulong successorFileOffset))
+                {
+                    // Look up the RVA address in our mapping
+                    if (fileOffsetToRvaMap.TryGetValue(successorFileOffset, out ulong successorRvaAddress))
+                    {
+                        // Find the block with this RVA address
+                        if (rvaBlocksByAddress.TryGetValue(successorRvaAddress, out var rvaSuccessor))
+                        {
+                            updatedSuccessors.Add(rvaSuccessor);
+                        }
+                    }
+                }
+            }
+            
+            // Update predecessors
+            foreach (var predecessor in block.Predecessors)
+            {
+                // Get the original file offset of the predecessor
+                if (blockToFileOffset.TryGetValue(predecessor, out ulong predecessorFileOffset))
+                {
+                    // Look up the RVA address in our mapping
+                    if (fileOffsetToRvaMap.TryGetValue(predecessorFileOffset, out ulong predecessorRvaAddress))
+                    {
+                        // Find the block with this RVA address
+                        if (rvaBlocksByAddress.TryGetValue(predecessorRvaAddress, out var rvaPredecessor))
+                        {
+                            updatedPredecessors.Add(rvaPredecessor);
+                        }
+                    }
+                }
+            }
+            
+            // Replace the old lists with the updated ones
+            block.Successors = updatedSuccessors;
+            block.Predecessors = updatedPredecessors;
         }
         
         // Create a new AsmFunction with the RVA address
@@ -246,7 +488,7 @@ public class BlockDisassembler
         var block = new InstructionBlock()
         {
             Address = address,
-            Instructions = instructions
+            Instructions = new List<Instruction>(instructions) // Create a copy of the instructions list
         };
         
         // Add the block to the collection
@@ -261,8 +503,6 @@ public class BlockDisassembler
             // Add the current block as a predecessor to the new block
             block.Predecessors.Add(currentBlock);
         }
-
-        // Block created successfully
         
         return block;
     }

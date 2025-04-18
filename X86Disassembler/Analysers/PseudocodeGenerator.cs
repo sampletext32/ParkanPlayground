@@ -157,7 +157,39 @@ public class PseudocodeGenerator
         
         // Check if this block ends with a conditional jump
         bool hasConditionalJump = block.Instructions.Count > 0 && 
-                                 IsConditionalJump(block.Instructions[^1].Type);
+                                  IsConditionalJump(block.Instructions[^1].Type);
+        
+        // Add debug info about conditional jumps
+        if (hasConditionalJump)
+        {
+            var jumpInstruction = block.Instructions[^1];
+            result.AppendLine($"{new string(' ', indentLevel * 4)}// DEBUG: Conditional jump {jumpInstruction} detected");
+            
+            // Get the jump target address
+            ulong targetAddress = GetJumpTargetAddress(jumpInstruction);
+            result.AppendLine($"{new string(' ', indentLevel * 4)}// DEBUG: Jump target: 0x{targetAddress:X8}");
+            
+            // Check if we can find a comparison instruction before the jump
+            Instruction? comparisonInstruction = null;
+            for (int i = block.Instructions.Count - 2; i >= 0 && i >= block.Instructions.Count - 5; i--)
+            {
+                var instruction = block.Instructions[i];
+                if (instruction.Type == InstructionType.Cmp || instruction.Type == InstructionType.Test)
+                {
+                    comparisonInstruction = instruction;
+                    break;
+                }
+            }
+            
+            if (comparisonInstruction != null)
+            {
+                result.AppendLine($"{new string(' ', indentLevel * 4)}// DEBUG: Found comparison: {comparisonInstruction}");
+            }
+            else
+            {
+                result.AppendLine($"{new string(' ', indentLevel * 4)}// DEBUG: No comparison instruction found");
+            }
+        }
         
         // If this block has a conditional jump but wasn't detected as an if-else structure,
         // we'll create an inline if statement for better readability

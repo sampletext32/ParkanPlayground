@@ -42,89 +42,61 @@ public class ControlFlowAnalyzer
     /// <param name="function">The function to analyze</param>
     private void IdentifyIfElseStructures(Function function)
     {
-        // First pass: identify basic if-else structures
+        // Now analyze each block for conditional jumps
         foreach (var block in function.AsmFunction.Blocks)
         {
-            // Skip blocks that don't end with a conditional jump
-            if (block.Instructions.Count == 0)
-            {
-                continue;
-            }
+            // Get the last instruction in the block
+            var lastInstruction = block.Instructions.LastOrDefault();
+            if (lastInstruction == null) continue;
             
-            var lastInstruction = block.Instructions[^1];
-            
-            // Look for conditional jumps (Jcc instructions)
-            if (IsConditionalJump(lastInstruction.Type))
+            // Check if the last instruction is a conditional jump
+            if (lastInstruction.Type.IsConditionalJump())
             {
-                // This is a potential if-then-else structure
-                // The true branch is the target of the jump
-                // The false branch is the fallthrough block
-                
                 // Get the jump target address
                 ulong targetAddress = GetJumpTargetAddress(lastInstruction);
                 
                 // Find the target block
-                if (_context.BlocksByAddress.TryGetValue(targetAddress, out var targetBlock))
+                InstructionBlock? targetBlock = null;
+                foreach (var b in function.AsmFunction.Blocks)
                 {
-                    // Find the fallthrough block (the block that follows this one in memory)
-                    var fallthroughBlock = FindFallthroughBlock(block);
-                    
-                    if (fallthroughBlock != null)
+                    if (b.Address == targetAddress)
                     {
-                        // Check if the fallthrough block ends with an unconditional jump
-                        // This could indicate an if-else structure where the 'else' branch jumps to a common merge point
-                        InstructionBlock? mergeBlock = null;
-                        bool hasElseBlock = true;
-                        
-                        if (fallthroughBlock.Instructions.Count > 0 && 
-                            fallthroughBlock.Instructions[^1].Type == InstructionType.Jmp)
-                        {
-                            // Get the jump target address
-                            ulong mergeAddress = GetJumpTargetAddress(fallthroughBlock.Instructions[^1]);
-                            
-                            // Find the merge block
-                            if (_context.BlocksByAddress.TryGetValue(mergeAddress, out var potentialMergeBlock))
-                            {
-                                mergeBlock = potentialMergeBlock;
-                            }
-                        }
-                        
-                        // Check if the 'then' block also jumps to the same merge point
-                        if (mergeBlock != null && targetBlock.Instructions.Count > 0 && 
-                            targetBlock.Instructions[^1].Type == InstructionType.Jmp)
-                        {
-                            ulong thenJumpAddress = GetJumpTargetAddress(targetBlock.Instructions[^1]);
-                            
-                            if (thenJumpAddress == mergeBlock.Address)
-                            {
-                                // We have a classic if-else structure with a merge point
-                                // Store the if-else structure in the context
-                                var ifElseStructure = new IfElseStructure
-                                {
-                                    ConditionBlock = block,
-                                    ThenBlock = targetBlock,
-                                    ElseBlock = fallthroughBlock,
-                                    MergeBlock = mergeBlock,
-                                    IsComplete = true // Both branches merge back
-                                };
-                                
-                                _context.StoreAnalysisData(block.Address, "IfElseStructure", ifElseStructure);
-                                continue;
-                            }
-                        }
-                        
-                        // If we get here, we have a simple if-then or if-then-else without a clear merge point
-                        var simpleIfStructure = new IfElseStructure
-                        {
-                            ConditionBlock = block,
-                            ThenBlock = targetBlock,
-                            ElseBlock = hasElseBlock ? fallthroughBlock : null,
-                            IsComplete = false // No clear merge point
-                        };
-                        
-                        _context.StoreAnalysisData(block.Address, "IfElseStructure", simpleIfStructure);
+                        targetBlock = b;
+                        break;
                     }
                 }
+                
+                if (targetBlock == null)
+                {
+                    continue;
+                }
+                
+                // Find the fall-through block (should be in the successors)
+                InstructionBlock? fallThroughBlock = null;
+                foreach (var successor in block.Successors)
+                {
+                    if (successor != targetBlock)
+                    {
+                        fallThroughBlock = successor;
+                        break;
+                    }
+                }
+                
+                if (fallThroughBlock == null)
+                {
+                    continue;
+                }
+                    
+                // Create an if-else structure
+                var ifElseStructure = new IfElseStructure
+                {
+                    ConditionBlock = block,
+                    ThenBlock = targetBlock,
+                    ElseBlock = fallThroughBlock
+                };
+                
+                // Store the if-else structure in the analysis context
+                function.AsmFunction.Context.StoreAnalysisData(block.Address, "IfElseStructure", ifElseStructure);
             }
         }
         
@@ -196,69 +168,35 @@ public class ControlFlowAnalyzer
     }
     
     /// <summary>
-    /// Checks if the given instruction type is a conditional jump
-    /// </summary>
-    /// <param name="type">The instruction type</param>
-    /// <returns>True if the instruction is a conditional jump, false otherwise</returns>
-    private bool IsConditionalJump(InstructionType type)
-    {
-        // Check for common conditional jumps
-        return type == InstructionType.Jz || 
-               type == InstructionType.Jnz || 
-               type == InstructionType.Jg || 
-               type == InstructionType.Jge || 
-               type == InstructionType.Jl || 
-               type == InstructionType.Jle || 
-               type == InstructionType.Ja || 
-               type == InstructionType.Jae || 
-               type == InstructionType.Jb || 
-               type == InstructionType.Jbe || 
-               type == InstructionType.Jo || 
-               type == InstructionType.Jno || 
-               type == InstructionType.Js || 
-               type == InstructionType.Jns || 
-               type == InstructionType.Jp || 
-               type == InstructionType.Jnp;
-    }
-    
-    /// <summary>
     /// Gets the target address of a jump instruction
     /// </summary>
     /// <param name="instruction">The jump instruction</param>
     /// <returns>The target address of the jump</returns>
     private ulong GetJumpTargetAddress(Instruction instruction)
     {
-        // The target address is usually the first operand of the jump instruction
-        if (instruction.StructuredOperands.Count > 0 && 
-            instruction.StructuredOperands[0] is ImmediateOperand immOp)
+        // Add debug output to see the instruction and its operands
+        
+        // For conditional jumps, the target address is the first operand
+        if (instruction.StructuredOperands.Count > 0)
         {
-            return (ulong)immOp.Value;
+            var operand = instruction.StructuredOperands[0];
+            
+            if (operand is ImmediateOperand immOp)
+            {
+                return (ulong)immOp.Value;
+            }
+            else if (operand is RelativeOffsetOperand relOp)
+            {
+                // For relative jumps, the target address is directly available in the operand
+                // We need to convert from file offset to RVA by adding 0x1000 (the section offset)
+                // This matches how the blocks are converted in BlockDisassembler.cs
+                ulong rvaTargetAddress = relOp.TargetAddress + 0x1000;
+                return rvaTargetAddress;
+            }
         }
         
         // If we can't determine the target, return 0
         return 0;
-    }
-    
-    /// <summary>
-    /// Finds the fallthrough block for a given block
-    /// </summary>
-    /// <param name="block">The block to find the fallthrough for</param>
-    /// <returns>The fallthrough block, or null if none found</returns>
-    private InstructionBlock? FindFallthroughBlock(InstructionBlock block)
-    {
-        // The fallthrough block is the one that follows this one in memory
-        // It should be a successor of this block
-        foreach (var successor in block.Successors)
-        {
-            // Check if this successor is the fallthrough block
-            // (its address should be immediately after this block)
-            if (successor.Address > block.Address)
-            {
-                return successor;
-            }
-        }
-        
-        return null;
     }
     
     /// <summary>
