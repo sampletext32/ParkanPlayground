@@ -10,8 +10,7 @@ DFE0;[{ "Type": "Fnstsw", "Operands": ["ax"] }]
 
 # FSTSW m2byte - Store FPU status word to memory
 9BDD38;[{ "Type": "Fstsw", "Operands": ["word ptr [eax]"] }]
-9BDD3C24;[{ "Type": "Fstsw", "Operands": ["word ptr [esp]"] }]
-9BDD3C24;[{ "Type": "Fstsw", "Operands": ["word ptr [esp]"] }]
+9BDD3C24;[{ "Type": "Fstsw", "Operands": ["word ptr [esp+0x00]"] }]
 9BDD3B;[{ "Type": "Fstsw", "Operands": ["word ptr [ebx]"] }]
 9BDD39;[{ "Type": "Fstsw", "Operands": ["word ptr [ecx]"] }]
 9BDD3A;[{ "Type": "Fstsw", "Operands": ["word ptr [edx]"] }]

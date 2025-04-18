@@ -8,7 +8,7 @@ using X86Disassembler.X86.Operands;
 public class FdivpStiStHandler : InstructionHandler
 {
     /// <summary>
-    /// Initializes a new instance of the FdivrpStiStHandler class
+    /// Initializes a new instance of the FdivpStiStHandler class
     /// </summary>
     /// <param name="decoder">The instruction decoder that owns this handler</param>
     public FdivpStiStHandler(InstructionDecoder decoder)
