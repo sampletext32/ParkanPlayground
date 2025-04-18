@@ -435,7 +435,8 @@ public class InstructionHandlerFactory
         _handlers.Add(new FloatingPoint.Conditional.FcmovnuHandler(_decoder));     // FCMOVNU (DB D8-DF)
         
         // DB opcode handlers (control instructions)
-        _handlers.Add(new FloatingPoint.Control.FclexHandler(_decoder));           // FCLEX (DB E2)
+        _handlers.Add(new FloatingPoint.Control.FclexHandler(_decoder));           // FNCLEX (DB E2)
+        _handlers.Add(new FloatingPoint.Control.FclexWaitHandler(_decoder));       // FCLEX (9B DB E2)
         _handlers.Add(new FloatingPoint.Control.FinitHandler(_decoder));           // FINIT (DB E3)
         
         // DB opcode handlers (comparison instructions)
