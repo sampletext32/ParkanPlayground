@@ -29,6 +29,7 @@ using X86Disassembler.X86.Handlers.Sub;
 using X86Disassembler.X86.Handlers.Test;
 using X86Disassembler.X86.Handlers.Xchg;
 using X86Disassembler.X86.Handlers.Xor;
+using X86Disassembler.X86.Handlers.Flags;
 
 namespace X86Disassembler.X86.Handlers;
 
@@ -93,6 +94,7 @@ public class InstructionHandlerFactory
         RegisterBitHandlers(); // Register bit manipulation handlers
         RegisterMiscHandlers(); // Register miscellaneous instructions
         RegisterShiftHandlers(); // Register shift and rotate instructions
+        RegisterFlagHandlers(); // Register flag manipulation instructions
     }
 
     /// <summary>
@@ -464,8 +466,8 @@ public class InstructionHandlerFactory
         _handlers.Add(new FloatingPoint.Comparison.FcomRegisterHandler(_decoder));     // FCOM ST(i), ST(0) (DC D0-D7)
         _handlers.Add(new FloatingPoint.Arithmetic.FsubStiStHandler(_decoder));        // FSUB ST(i), ST (DC E0-E7)
         _handlers.Add(new FloatingPoint.Arithmetic.FsubrStiStHandler(_decoder));       // FSUBR ST(i), ST (DC E8-EF)
-        _handlers.Add(new FloatingPoint.Arithmetic.FdivStiStHandler(_decoder));        // FDIV ST(i), ST (DC F0-F7)
-        _handlers.Add(new FloatingPoint.Arithmetic.FdivrStiStHandler(_decoder));       // FDIVR ST(i), ST (DC F8-FF)
+        _handlers.Add(new FloatingPoint.Arithmetic.FdivrStiStHandler(_decoder));        // FDIV ST(i), ST (DC F0-F7)
+        _handlers.Add(new FloatingPoint.Arithmetic.FdivStiStHandler(_decoder));       // FDIVR ST(i), ST (DC F8-FF)
         _handlers.Add(new FloatingPoint.Comparison.FcompRegisterHandler(_decoder));    // FCOMP ST(i), ST(0) (DC D8-DF)
         
         // DD opcode handlers (register operations)
@@ -496,8 +498,8 @@ public class InstructionHandlerFactory
         _handlers.Add(new FloatingPoint.Comparison.FcomppHandler(_decoder));        // FCOMPP (DE D9)
         _handlers.Add(new FloatingPoint.Arithmetic.FsubpStiStHandler(_decoder));     // FSUBP ST(i), ST (DE E0-E7)
         _handlers.Add(new FloatingPoint.Arithmetic.FsubrpStiStHandler(_decoder));    // FSUBRP ST(i), ST (DE E8-EF)
-        _handlers.Add(new FloatingPoint.Arithmetic.FdivpStiStHandler(_decoder));     // FDIVP ST(i), ST (DE F0-F7)
-        _handlers.Add(new FloatingPoint.Arithmetic.FdivrpStiStHandler(_decoder));    // FDIVRP ST(i), ST (DE F8-FF)
+        _handlers.Add(new FloatingPoint.Arithmetic.FdivrpStiStHandler(_decoder));     // FDIVP ST(i), ST (DE F0-F7)
+        _handlers.Add(new FloatingPoint.Arithmetic.FdivpStiStHandler(_decoder));    // FDIVRP ST(i), ST (DE F8-FF)
         
         // DF opcode handlers (memory operations)
         _handlers.Add(new FloatingPoint.LoadStore.FildInt16Handler(_decoder));     // FILD int16 (DF /0)
@@ -656,7 +658,7 @@ public class InstructionHandlerFactory
     }
 
     /// <summary>
-    /// Registers all shift and rotate instruction handlers
+    /// Registers all Shift instruction handlers
     /// </summary>
     private void RegisterShiftHandlers()
     {
@@ -715,6 +717,23 @@ public class InstructionHandlerFactory
         _handlers.Add(new RcrRm32By1Handler(_decoder));      // RCR r/m32, 1 (0xD1 /3)
         _handlers.Add(new RcrRm32ByClHandler(_decoder));     // RCR r/m32, CL (0xD3 /3)
         _handlers.Add(new RcrRm32ByImmHandler(_decoder));    // RCR r/m32, imm8 (0xC1 /3)
+    }
+    
+    /// <summary>
+    /// Registers all Flag manipulation instruction handlers
+    /// </summary>
+    private void RegisterFlagHandlers()
+    {
+        // Register flag manipulation handlers
+        _handlers.Add(new StcHandler(_decoder));            // STC (Set Carry Flag) - opcode F9
+        _handlers.Add(new ClcHandler(_decoder));            // CLC (Clear Carry Flag) - opcode F8
+        _handlers.Add(new CmcHandler(_decoder));            // CMC (Complement Carry Flag) - opcode F5
+        _handlers.Add(new StdHandler(_decoder));            // STD (Set Direction Flag) - opcode FD
+        _handlers.Add(new CldHandler(_decoder));            // CLD (Clear Direction Flag) - opcode FC
+        _handlers.Add(new StiHandler(_decoder));            // STI (Set Interrupt Flag) - opcode FB
+        _handlers.Add(new CliHandler(_decoder));            // CLI (Clear Interrupt Flag) - opcode FA
+        _handlers.Add(new SahfHandler(_decoder));           // SAHF (Store AH into Flags) - opcode 9E
+        _handlers.Add(new LahfHandler(_decoder));           // LAHF (Load Flags into AH) - opcode 9F
     }
 
     /// <summary>
