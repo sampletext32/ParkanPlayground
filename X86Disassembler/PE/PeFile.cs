@@ -1,4 +1,5 @@
 using X86Disassembler.PE.Parsers;
+using X86Disassembler.PE.Types;
 
 namespace X86Disassembler.PE;
 
@@ -69,9 +70,9 @@ public class PeFile
     public PeFile(byte[] fileData)
     {
         _fileData = fileData;
-        SectionHeaders = new List<SectionHeader>();
-        ExportedFunctions = new List<ExportedFunction>();
-        ImportDescriptors = new List<ImportDescriptor>();
+        SectionHeaders = [];
+        ExportedFunctions = [];
+        ImportDescriptors = [];
 
         // Initialize parsers
         _dosHeaderParser = new DOSHeaderParser();
@@ -94,150 +95,64 @@ public class PeFile
     /// <summary>
     /// Parses the PE file structure
     /// </summary>
-    /// <returns>True if parsing was successful, false otherwise</returns>
-    public bool Parse()
+    public void Parse()
     {
-        try
+        using var stream = new MemoryStream(_fileData);
+        using var reader = new BinaryReader(stream);
+
+        // Parse DOS header
+        DosHeader = _dosHeaderParser.Parse(reader);
+
+        // Move to PE header
+        reader.BaseStream.Seek(DosHeader.e_lfanew, SeekOrigin.Begin);
+
+        // Verify PE signature
+        uint peSignature = reader.ReadUInt32();
+        if (peSignature != PE_SIGNATURE)
         {
-            using (MemoryStream stream = new MemoryStream(_fileData))
-            using (BinaryReader reader = new BinaryReader(stream))
-            {
-                // Parse DOS header
-                DosHeader = _dosHeaderParser.Parse(reader);
-
-                // Move to PE header
-                reader.BaseStream.Seek(DosHeader.e_lfanew, SeekOrigin.Begin);
-
-                // Verify PE signature
-                uint peSignature = reader.ReadUInt32();
-                if (peSignature != PE_SIGNATURE)
-                {
-                    throw new InvalidDataException("Invalid PE signature");
-                }
-
-                // Parse File Header
-                FileHeader = _fileHeaderParser.Parse(reader);
-
-                // Parse Optional Header
-                OptionalHeader = _optionalHeaderParser.Parse(reader);
-                Is64Bit = OptionalHeader.Is64Bit();
-
-                // Parse Section Headers
-                for (int i = 0; i < FileHeader.NumberOfSections; i++)
-                {
-                    SectionHeaders.Add(_sectionHeaderParser.Parse(reader));
-                }
-
-                // Initialize utility after section headers are parsed
-                _peUtility = new PEUtility(SectionHeaders, OptionalHeader.SizeOfHeaders);
-                _exportDirectoryParser = new ExportDirectoryParser(_peUtility);
-                _importDescriptorParser = new ImportDescriptorParser(_peUtility);
-
-                // Parse Export Directory
-                if (OptionalHeader.DataDirectories.Length > IMAGE_DIRECTORY_ENTRY_EXPORT &&
-                    OptionalHeader.DataDirectories[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress != 0)
-                {
-                    uint exportDirRva = OptionalHeader.DataDirectories[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
-                    uint exportDirSize = OptionalHeader.DataDirectories[IMAGE_DIRECTORY_ENTRY_EXPORT].Size;
-
-                    ExportDirectory = _exportDirectoryParser.Parse(reader, exportDirRva);
-                    ExportedFunctions = _exportDirectoryParser.ParseExportedFunctions(
-                        reader,
-                        ExportDirectory,
-                        exportDirRva,
-                        exportDirSize
-                    );
-                }
-
-                // Parse Import Descriptors
-                if (OptionalHeader.DataDirectories.Length > IMAGE_DIRECTORY_ENTRY_IMPORT &&
-                    OptionalHeader.DataDirectories[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress != 0)
-                {
-                    uint importDirRva = OptionalHeader.DataDirectories[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
-                    ImportDescriptors = _importDescriptorParser.Parse(reader, importDirRva);
-                }
-            }
-
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error parsing PE file: {ex.Message}");
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// Gets the raw data for a specific section
-    /// </summary>
-    /// <param name="sectionIndex">Index of the section</param>
-    /// <returns>Byte array containing the section data</returns>
-    public byte[] GetSectionData(int sectionIndex)
-    {
-        if (sectionIndex < 0 || sectionIndex >= SectionHeaders.Count)
-        {
-            throw new ArgumentOutOfRangeException(nameof(sectionIndex));
+            throw new InvalidDataException("Invalid PE signature");
         }
 
-        SectionHeader section = SectionHeaders[sectionIndex];
-        byte[] sectionData = new byte[section.SizeOfRawData];
+        // Parse File Header
+        FileHeader = _fileHeaderParser.Parse(reader);
 
-        Array.Copy(
-            _fileData,
-            section.PointerToRawData,
-            sectionData,
-            0,
-            section.SizeOfRawData
-        );
+        // Parse Optional Header
+        OptionalHeader = _optionalHeaderParser.Parse(reader);
+        Is64Bit = OptionalHeader.Is64Bit();
 
-        return sectionData;
-    }
-
-    /// <summary>
-    /// Gets the raw data for a section by name
-    /// </summary>
-    /// <param name="sectionName">Name of the section</param>
-    /// <returns>Byte array containing the section data</returns>
-    public byte[] GetSectionData(string sectionName)
-    {
-        for (int i = 0; i < SectionHeaders.Count; i++)
+        // Parse Section Headers
+        for (int i = 0; i < FileHeader.NumberOfSections; i++)
         {
-            if (SectionHeaders[i].Name == sectionName)
-            {
-                return GetSectionData(i);
-            }
+            SectionHeaders.Add(_sectionHeaderParser.Parse(reader));
         }
 
-        throw new ArgumentException($"Section '{sectionName}' not found");
-    }
+        // Initialize utility after section headers are parsed
+        _peUtility = new PEUtility(SectionHeaders, OptionalHeader.SizeOfHeaders);
+        _exportDirectoryParser = new ExportDirectoryParser(_peUtility);
+        _importDescriptorParser = new ImportDescriptorParser(_peUtility);
 
-    /// <summary>
-    /// Gets all code sections
-    /// </summary>
-    /// <returns>List of section indices that contain code</returns>
-    public List<int> GetCodeSections()
-    {
-        List<int> codeSections = new List<int>();
-
-        for (int i = 0; i < SectionHeaders.Count; i++)
+        // Parse Export Directory
+        if (OptionalHeader.DataDirectories.Length > IMAGE_DIRECTORY_ENTRY_EXPORT &&
+            OptionalHeader.DataDirectories[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress != 0)
         {
-            if (SectionHeaders[i]
-                .ContainsCode())
-            {
-                codeSections.Add(i);
-            }
+            uint exportDirRva = OptionalHeader.DataDirectories[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+            uint exportDirSize = OptionalHeader.DataDirectories[IMAGE_DIRECTORY_ENTRY_EXPORT].Size;
+
+            ExportDirectory = _exportDirectoryParser.Parse(reader, exportDirRva);
+            ExportedFunctions = _exportDirectoryParser.ParseExportedFunctions(
+                reader,
+                ExportDirectory,
+                exportDirRva,
+                exportDirSize
+            );
         }
 
-        return codeSections;
-    }
-
-    /// <summary>
-    /// Checks if a section contains code
-    /// </summary>
-    /// <param name="section">The section to check</param>
-    /// <returns>True if the section contains code, false otherwise</returns>
-    public bool IsSectionContainsCode(SectionHeader section)
-    {
-        return section.ContainsCode();
+        // Parse Import Descriptors
+        if (OptionalHeader.DataDirectories.Length > IMAGE_DIRECTORY_ENTRY_IMPORT &&
+            OptionalHeader.DataDirectories[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress != 0)
+        {
+            uint importDirRva = OptionalHeader.DataDirectories[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
+            ImportDescriptors = _importDescriptorParser.Parse(reader, importDirRva);
+        }
     }
 }

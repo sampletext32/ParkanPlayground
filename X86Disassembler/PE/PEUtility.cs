@@ -1,3 +1,5 @@
+using X86Disassembler.PE.Types;
+
 namespace X86Disassembler.PE;
 
 /// <summary>
@@ -7,7 +9,7 @@ public class PEUtility
 {
     private readonly List<SectionHeader> _sectionHeaders;
     private readonly uint _sizeOfHeaders;
-        
+
     /// <summary>
     /// Initialize a new instance of the PEUtility class
     /// </summary>
@@ -18,7 +20,7 @@ public class PEUtility
         _sectionHeaders = sectionHeaders;
         _sizeOfHeaders = sizeOfHeaders;
     }
-        
+
     /// <summary>
     /// Converts a Relative Virtual Address (RVA) to a file offset
     /// </summary>
@@ -30,7 +32,7 @@ public class PEUtility
         {
             return 0;
         }
-            
+
         foreach (var section in _sectionHeaders)
         {
             // Check if the RVA is within this section
@@ -38,7 +40,7 @@ public class PEUtility
             {
                 // Calculate the offset within the section
                 uint offsetInSection = rva - section.VirtualAddress;
-                    
+
                 // Make sure we don't exceed the raw data size
                 if (offsetInSection < section.SizeOfRawData)
                 {
@@ -46,13 +48,13 @@ public class PEUtility
                 }
             }
         }
-            
+
         // If the RVA is not within any section, it might be in the headers
         if (rva < _sizeOfHeaders)
         {
             return rva;
         }
-            
+
         throw new ArgumentException($"RVA {rva:X8} is not within any section");
     }
 }

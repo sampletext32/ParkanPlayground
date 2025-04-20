@@ -1,3 +1,5 @@
+using X86Disassembler.PE.Types;
+
 namespace X86Disassembler.PE.Parsers;
 
 /// <summary>
@@ -12,7 +14,7 @@ public class FileHeaderParser : IParser<FileHeader>
     /// <returns>The parsed File header</returns>
     public FileHeader Parse(BinaryReader reader)
     {
-        FileHeader header = new FileHeader();
+        var header = new FileHeader();
 
         header.Machine = reader.ReadUInt16();
         header.NumberOfSections = reader.ReadUInt16();

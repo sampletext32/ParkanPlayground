@@ -1,4 +1,5 @@
 using System.Text;
+using X86Disassembler.PE.Types;
 
 namespace X86Disassembler.PE.Parsers;
 
@@ -8,12 +9,12 @@ namespace X86Disassembler.PE.Parsers;
 public class ExportDirectoryParser
 {
     private readonly PEUtility _utility;
-    
+
     public ExportDirectoryParser(PEUtility utility)
     {
         _utility = utility;
     }
-    
+
     /// <summary>
     /// Parse the Export Directory from the binary reader
     /// </summary>
@@ -23,9 +24,9 @@ public class ExportDirectoryParser
     public ExportDirectory Parse(BinaryReader reader, uint rva)
     {
         ExportDirectory directory = new ExportDirectory();
-        
+
         reader.BaseStream.Seek(_utility.RvaToOffset(rva), SeekOrigin.Begin);
-        
+
         directory.Characteristics = reader.ReadUInt32();
         directory.TimeDateStamp = reader.ReadUInt32();
         directory.MajorVersion = reader.ReadUInt16();
@@ -37,33 +38,24 @@ public class ExportDirectoryParser
         directory.AddressOfFunctions = reader.ReadUInt32();
         directory.AddressOfNames = reader.ReadUInt32();
         directory.AddressOfNameOrdinals = reader.ReadUInt32();
-        
-        // Read the DLL name
-        try
+
+        uint dllNameOffset = _utility.RvaToOffset(directory.DllNameRva);
+        reader.BaseStream.Seek(dllNameOffset, SeekOrigin.Begin);
+
+        // Read the null-terminated ASCII string
+        var nameBuilder = new StringBuilder();
+        byte b;
+
+        while ((b = reader.ReadByte()) != 0)
         {
-            uint dllNameRVA = directory.DllNameRva;
-            uint dllNameOffset = _utility.RvaToOffset(dllNameRVA);
-            reader.BaseStream.Seek(dllNameOffset, SeekOrigin.Begin);
-            
-            // Read the null-terminated ASCII string
-            StringBuilder nameBuilder = new StringBuilder();
-            byte b;
-            
-            while ((b = reader.ReadByte()) != 0)
-            {
-                nameBuilder.Append((char)b);
-            }
-            
-            directory.DllName = nameBuilder.ToString();
+            nameBuilder.Append((char) b);
         }
-        catch (Exception)
-        {
-            directory.DllName = "Unknown";
-        }
-        
+
+        directory.DllName = nameBuilder.ToString();
+
         return directory;
     }
-    
+
     /// <summary>
     /// Parse the exported functions using the export directory information
     /// </summary>
@@ -75,12 +67,7 @@ public class ExportDirectoryParser
     public List<ExportedFunction> ParseExportedFunctions(BinaryReader reader, ExportDirectory directory, uint exportDirRva, uint exportDirSize)
     {
         List<ExportedFunction> exportedFunctions = new List<ExportedFunction>();
-        
-        if (directory == null)
-        {
-            return exportedFunctions;
-        }
-        
+
         // Read the array of function addresses (RVAs)
         uint[] functionRVAs = new uint[directory.NumberOfFunctions];
         reader.BaseStream.Seek(_utility.RvaToOffset(directory.AddressOfFunctions), SeekOrigin.Begin);
@@ -88,7 +75,7 @@ public class ExportDirectoryParser
         {
             functionRVAs[i] = reader.ReadUInt32();
         }
-        
+
         // Read the array of name RVAs
         uint[] nameRVAs = new uint[directory.NumberOfNames];
         reader.BaseStream.Seek(_utility.RvaToOffset(directory.AddressOfNames), SeekOrigin.Begin);
@@ -96,7 +83,7 @@ public class ExportDirectoryParser
         {
             nameRVAs[i] = reader.ReadUInt32();
         }
-        
+
         // Read the array of name ordinals
         ushort[] nameOrdinals = new ushort[directory.NumberOfNames];
         reader.BaseStream.Seek(_utility.RvaToOffset(directory.AddressOfNameOrdinals), SeekOrigin.Begin);
@@ -104,25 +91,26 @@ public class ExportDirectoryParser
         {
             nameOrdinals[i] = reader.ReadUInt16();
         }
-        
+
         // Create a dictionary to map ordinals to names
         Dictionary<ushort, string> ordinalToName = new Dictionary<ushort, string>();
         for (int i = 0; i < directory.NumberOfNames; i++)
         {
             // Read the function name
             reader.BaseStream.Seek(_utility.RvaToOffset(nameRVAs[i]), SeekOrigin.Begin);
-            List<byte> nameBytes = new List<byte>();
+            var nameBuilder = new StringBuilder();
             byte b;
             while ((b = reader.ReadByte()) != 0)
             {
-                nameBytes.Add(b);
+                nameBuilder.Append((char) b);
             }
-            string name = Encoding.ASCII.GetString(nameBytes.ToArray());
-            
+
+            string name = nameBuilder.ToString();
+
             // Map the ordinal to the name
             ordinalToName[nameOrdinals[i]] = name;
         }
-        
+
         // Create the exported functions
         for (ushort i = 0; i < directory.NumberOfFunctions; i++)
         {
@@ -131,42 +119,43 @@ public class ExportDirectoryParser
             {
                 continue; // Skip empty entries
             }
-            
+
             ExportedFunction function = new ExportedFunction();
-            function.Ordinal = (ushort)(i + directory.Base);
+            function.Ordinal = (ushort) (i + directory.Base);
             function.AddressRva = functionRVA;
-            
+
             // Check if this function has a name
             if (ordinalToName.TryGetValue(i, out string? name))
             {
-                function.Name = name ?? $"Ordinal_{function.Ordinal}";
+                function.Name = name;
             }
             else
             {
                 function.Name = $"Ordinal_{function.Ordinal}";
             }
-            
+
             // Check if this is a forwarder
             uint exportDirEnd = exportDirRva + exportDirSize;
-            
+
             if (functionRVA >= exportDirRva && functionRVA < exportDirEnd)
             {
                 function.IsForwarder = true;
-                
+
                 // Read the forwarder string
                 reader.BaseStream.Seek(_utility.RvaToOffset(functionRVA), SeekOrigin.Begin);
-                List<byte> forwarderBytes = new List<byte>();
+                var forwarderBuilder = new StringBuilder();
                 byte b;
                 while ((b = reader.ReadByte()) != 0)
                 {
-                    forwarderBytes.Add(b);
+                    forwarderBuilder.Append((char) b);
                 }
-                function.ForwarderName = Encoding.ASCII.GetString(forwarderBytes.ToArray());
+
+                function.ForwarderName = forwarderBuilder.ToString();
             }
-            
+
             exportedFunctions.Add(function);
         }
-        
+
         return exportedFunctions;
     }
 }

@@ -1,3 +1,5 @@
+using X86Disassembler.PE.Types;
+
 namespace X86Disassembler.PE.Parsers;
 
 /// <summary>
@@ -6,9 +8,9 @@ namespace X86Disassembler.PE.Parsers;
 public class OptionalHeaderParser : IParser<OptionalHeader>
 {
     // Optional Header Magic values
-    private const ushort PE32_MAGIC = 0x10B;           // 32-bit executable
-    private const ushort PE32PLUS_MAGIC = 0x20B;       // 64-bit executable
-        
+    private const ushort PE32_MAGIC = 0x10B; // 32-bit executable
+    private const ushort PE32PLUS_MAGIC = 0x20B; // 64-bit executable
+
     /// <summary>
     /// Parse the Optional header from the binary reader
     /// </summary>
@@ -16,15 +18,14 @@ public class OptionalHeaderParser : IParser<OptionalHeader>
     /// <returns>The parsed Optional header</returns>
     public OptionalHeader Parse(BinaryReader reader)
     {
-        OptionalHeader header = new OptionalHeader();
-        bool is64Bit;
-            
+        var header = new OptionalHeader();
+
         // Standard fields
         header.Magic = reader.ReadUInt16();
-            
+
         // Determine if this is a PE32 or PE32+ file
-        is64Bit = header.Magic == PE32PLUS_MAGIC;
-            
+        var is64Bit = header.Magic == PE32PLUS_MAGIC;
+
         header.MajorLinkerVersion = reader.ReadByte();
         header.MinorLinkerVersion = reader.ReadByte();
         header.SizeOfCode = reader.ReadUInt32();
@@ -32,23 +33,18 @@ public class OptionalHeaderParser : IParser<OptionalHeader>
         header.SizeOfUninitializedData = reader.ReadUInt32();
         header.AddressOfEntryPoint = reader.ReadUInt32();
         header.BaseOfCode = reader.ReadUInt32();
-            
+
         // PE32 has BaseOfData, PE32+ doesn't
         if (!is64Bit)
         {
             header.BaseOfData = reader.ReadUInt32();
         }
-            
+
         // Windows-specific fields
-        if (is64Bit)
-        {
-            header.ImageBase = reader.ReadUInt64();
-        }
-        else
-        {
-            header.ImageBase = reader.ReadUInt32();
-        }
-            
+        header.ImageBase = is64Bit
+            ? reader.ReadUInt64()
+            : reader.ReadUInt32();
+
         header.SectionAlignment = reader.ReadUInt32();
         header.FileAlignment = reader.ReadUInt32();
         header.MajorOperatingSystemVersion = reader.ReadUInt16();
@@ -63,7 +59,7 @@ public class OptionalHeaderParser : IParser<OptionalHeader>
         header.CheckSum = reader.ReadUInt32();
         header.Subsystem = reader.ReadUInt16();
         header.DllCharacteristics = reader.ReadUInt16();
-            
+
         // Size fields differ between PE32 and PE32+
         if (is64Bit)
         {
@@ -79,32 +75,21 @@ public class OptionalHeaderParser : IParser<OptionalHeader>
             header.SizeOfHeapReserve = reader.ReadUInt32();
             header.SizeOfHeapCommit = reader.ReadUInt32();
         }
-            
+
         header.LoaderFlags = reader.ReadUInt32();
         header.NumberOfRvaAndSizes = reader.ReadUInt32();
-            
+
         // Data directories
-        int numDirectories = (int)Math.Min(header.NumberOfRvaAndSizes, 16); // Maximum of 16 directories
-        header.DataDirectories = new DataDirectory[numDirectories];
-            
-        for (int i = 0; i < numDirectories; i++)
+        header.DataDirectories = new DataDirectory[header.NumberOfRvaAndSizes];
+
+        for (int i = 0; i < header.NumberOfRvaAndSizes; i++)
         {
-            DataDirectory dir = new DataDirectory();
+            var dir = new DataDirectory();
             dir.VirtualAddress = reader.ReadUInt32();
             dir.Size = reader.ReadUInt32();
             header.DataDirectories[i] = dir;
         }
-            
+
         return header;
-    }
-        
-    /// <summary>
-    /// Determines if the PE file is 64-bit based on the Optional header
-    /// </summary>
-    /// <param name="header">The Optional header</param>
-    /// <returns>True if the PE file is 64-bit, false otherwise</returns>
-    public bool Is64Bit(OptionalHeader header)
-    {
-        return header.Magic == PE32PLUS_MAGIC;
     }
 }

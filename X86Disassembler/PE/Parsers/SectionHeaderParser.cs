@@ -1,4 +1,5 @@
 using System.Text;
+using X86Disassembler.PE.Types;
 
 namespace X86Disassembler.PE.Parsers;
 
@@ -14,13 +15,14 @@ public class SectionHeaderParser : IParser<SectionHeader>
     /// <returns>The parsed section header</returns>
     public SectionHeader Parse(BinaryReader reader)
     {
-        SectionHeader header = new SectionHeader();
-        
+        var header = new SectionHeader();
+
         // Read section name (8 bytes)
-        byte[] nameBytes = reader.ReadBytes(8);
+        var nameBytes = reader.ReadBytes(8);
         // Convert to string, removing any null characters
-        header.Name = Encoding.ASCII.GetString(nameBytes).TrimEnd('\0');
-        
+        header.Name = Encoding.ASCII.GetString(nameBytes)
+            .TrimEnd('\0');
+
         header.VirtualSize = reader.ReadUInt32();
         header.VirtualAddress = reader.ReadUInt32();
         header.SizeOfRawData = reader.ReadUInt32();
@@ -30,7 +32,7 @@ public class SectionHeaderParser : IParser<SectionHeader>
         header.NumberOfRelocations = reader.ReadUInt16();
         header.NumberOfLinenumbers = reader.ReadUInt16();
         header.Characteristics = reader.ReadUInt32();
-        
+
         return header;
     }
 }
