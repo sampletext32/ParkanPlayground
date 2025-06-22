@@ -32,6 +32,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "X86Disassembler", "X86Disas
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "X86DisassemblerTests", "X86DisassemblerTests\X86DisassemblerTests.csproj", "{D6A1F5A9-0C7A-4F8F-B8C5-83E9D3F3A1D5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LandscapeExplorer", "LandscapeExplorer\LandscapeExplorer.csproj", "{2700BD3F-DC67-4B58-8F73-F790AA68E4FE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -94,5 +96,9 @@ Global
 		{D6A1F5A9-0C7A-4F8F-B8C5-83E9D3F3A1D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D6A1F5A9-0C7A-4F8F-B8C5-83E9D3F3A1D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D6A1F5A9-0C7A-4F8F-B8C5-83E9D3F3A1D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2700BD3F-DC67-4B58-8F73-F790AA68E4FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2700BD3F-DC67-4B58-8F73-F790AA68E4FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2700BD3F-DC67-4B58-8F73-F790AA68E4FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2700BD3F-DC67-4B58-8F73-F790AA68E4FE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

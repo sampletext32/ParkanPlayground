@@ -138,6 +138,34 @@ namespace NResUI.ImGuiUI
                         }
                     }
 
+                    if (nResExplorerViewModel.HasFile)
+                    {
+                        if (ImGui.MenuItem("Запаковать NRes"))
+                        {
+                            messageBox.Show("Выберите папку с контентом NRES");
+                            var contentDirectoryPicker = Dialog.FolderPicker();
+
+                            if (contentDirectoryPicker.IsOk)
+                            {
+                                var contentDirectoryPath = contentDirectoryPicker.Path;
+                                
+                                var targetFileDirectoryPicker = Dialog.FolderPicker();
+
+                                if (targetFileDirectoryPicker.IsOk)
+                                {
+                                    var targetFileDirectory = targetFileDirectoryPicker.Path;
+
+                                    var packResult = NResPacker.Pack(
+                                        nResExplorerViewModel.Archive!, 
+                                        nResExplorerViewModel.Path!,
+                                        contentDirectoryPath, targetFileDirectory);
+
+                                    messageBox.Show(packResult);
+                                }
+                            }
+                        }
+                    }
+
                     ImGui.EndMenu();
                 }
 

@@ -82,8 +82,8 @@ public class NResExplorerPanel : IImGuiPanel
                             );
                             ImGui.TableNextColumn();
                             ImGui.Text(
-                                _viewModel.Archive.Files[i]
-                                    .ElementSize.ToString()
+                                "0x" + _viewModel.Archive.Files[i]
+                                    .ElementSize.ToString("X2")
                             );
                             ImGui.TableNextColumn();
                             ImGui.Text(_viewModel.Archive.Files[i].FileName);
