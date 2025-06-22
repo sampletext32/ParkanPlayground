@@ -1,0 +1,42 @@
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+# 8-bit AND
+24AA;[{ "Type": "And", "Operands": ["al", "0xAA"] }]
+# Alternate encoding
+80E0AA;[{ "Type": "And", "Operands": ["al", "0xAA"] }]
+80E1AA;[{ "Type": "And", "Operands": ["cl", "0xAA"] }]
+8020AA;[{ "Type": "And", "Operands": ["byte ptr [eax]", "0xAA"] }]
+806310AA;[{ "Type": "And", "Operands": ["byte ptr [ebx+0x10]", "0xAA"] }]
+20D8;[{ "Type": "And", "Operands": ["al", "bl"] }]
+2018;[{ "Type": "And", "Operands": ["byte ptr [eax]", "bl"] }]
+2218;[{ "Type": "And", "Operands": ["bl", "byte ptr [eax]"] }]
+802488AA;[{ "Type": "And", "Operands": ["byte ptr [eax+ecx*4]", "0xAA"] }]
+
+# 16-bit AND (with 66 prefix)
+6625AA00;[{ "Type": "And", "Operands": ["ax", "0xAA"] }]
+# Alternate encoding
+6681E0AA00;[{ "Type": "And", "Operands": ["ax", "0xAA"] }]
+6681E1AA00;[{ "Type": "And", "Operands": ["cx", "0xAA"] }]
+668120AA00;[{ "Type": "And", "Operands": ["word ptr [eax]", "0xAA"] }]
+66816310AA00;[{ "Type": "And", "Operands": ["word ptr [ebx+0x10]", "0xAA"] }]
+6621D8;[{ "Type": "And", "Operands": ["ax", "bx"] }]
+662118;[{ "Type": "And", "Operands": ["word ptr [eax]", "bx"] }]
+662318;[{ "Type": "And", "Operands": ["bx", "word ptr [eax]"] }]
+66812488AA00;[{ "Type": "And", "Operands": ["word ptr [eax+ecx*4]", "0xAA"] }]
+
+# 32-bit AND
+25AA000000;[{ "Type": "And", "Operands": ["eax", "0xAA"] }]
+# Alternate encoding
+81E0AA000000;[{ "Type": "And", "Operands": ["eax", "0xAA"] }]
+81E1AA000000;[{ "Type": "And", "Operands": ["ecx", "0xAA"] }]
+8120AA000000;[{ "Type": "And", "Operands": ["dword ptr [eax]", "0xAA"] }]
+816310AA000000;[{ "Type": "And", "Operands": ["dword ptr [ebx+0x10]", "0xAA"] }]
+21D8;[{ "Type": "And", "Operands": ["eax", "ebx"] }]
+2118;[{ "Type": "And", "Operands": ["dword ptr [eax]", "ebx"] }]
+2318;[{ "Type": "And", "Operands": ["ebx", "dword ptr [eax]"] }]
+812488AA000000;[{ "Type": "And", "Operands": ["dword ptr [eax+ecx*4]", "0xAA"] }]
+
+# Complex addressing modes
+20A314285600;[{ "Type": "And", "Operands": ["byte ptr [ebx+0x00562814]", "ah"] }]
+6621B310203040;[{ "Type": "And", "Operands": ["word ptr [ebx+0x40302010]", "si"] }]
+230CAD10203040;[{ "Type": "And", "Operands": ["ecx", "dword ptr [ebp*4+0x40302010]"] }]

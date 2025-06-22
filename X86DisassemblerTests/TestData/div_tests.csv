@@ -1,0 +1,55 @@
+# DIV instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# DIV r/m8 (opcode F6 /6)
+F6F0;[{ "Type": "Div", "Operands": ["al"] }]
+F6F3;[{ "Type": "Div", "Operands": ["bl"] }]
+F6F1;[{ "Type": "Div", "Operands": ["cl"] }]
+F6F2;[{ "Type": "Div", "Operands": ["dl"] }]
+F6F4;[{ "Type": "Div", "Operands": ["ah"] }]
+F6F5;[{ "Type": "Div", "Operands": ["ch"] }]
+F6F6;[{ "Type": "Div", "Operands": ["dh"] }]
+F6F7;[{ "Type": "Div", "Operands": ["bh"] }]
+
+# DIV r/m32 (opcode F7 /6)
+F7F0;[{ "Type": "Div", "Operands": ["eax"] }]
+F7F3;[{ "Type": "Div", "Operands": ["ebx"] }]
+F7F1;[{ "Type": "Div", "Operands": ["ecx"] }]
+F7F2;[{ "Type": "Div", "Operands": ["edx"] }]
+F7F4;[{ "Type": "Div", "Operands": ["esp"] }]
+F7F5;[{ "Type": "Div", "Operands": ["ebp"] }]
+F7F6;[{ "Type": "Div", "Operands": ["esi"] }]
+F7F7;[{ "Type": "Div", "Operands": ["edi"] }]
+
+# Basic memory addressing
+
+F630;[{ "Type": "Div", "Operands": ["byte ptr [eax]"] }]
+
+F630;[{ "Type": "Div", "Operands": ["byte ptr [eax]"] }]
+
+F730;[{ "Type": "Div", "Operands": ["dword ptr [eax]"] }]
+
+F77500;[{ "Type": "Div", "Operands": ["dword ptr [ebp+0x00]"] }]
+
+F730;[{ "Type": "Div", "Operands": ["dword ptr [eax]"] }]
+
+F77010;[{ "Type": "Div", "Operands": ["dword ptr [eax+0x10]"] }]
+
+F77020;[{ "Type": "Div", "Operands": ["dword ptr [eax+0x20]"] }]
+
+F77030;[{ "Type": "Div", "Operands": ["dword ptr [eax+0x30]"] }]
+
+# With SIB addressing
+F7341C;[{ "Type": "Div", "Operands": ["dword ptr [esp+ebx*1]"] }]
+F7345C;[{ "Type": "Div", "Operands": ["dword ptr [esp+ebx*2]"] }]
+F7349C;[{ "Type": "Div", "Operands": ["dword ptr [esp+ebx*4]"] }]
+F734DC;[{ "Type": "Div", "Operands": ["dword ptr [esp+ebx*8]"] }]
+
+# With segment override prefixes
+26F730;[{ "Type": "Div", "Operands": ["dword ptr es:[eax]"] }]
+2EF730;[{ "Type": "Div", "Operands": ["dword ptr cs:[eax]"] }]
+36F730;[{ "Type": "Div", "Operands": ["dword ptr ss:[eax]"] }]
+3EF730;[{ "Type": "Div", "Operands": ["dword ptr ds:[eax]"] }]
+64F730;[{ "Type": "Div", "Operands": ["dword ptr fs:[eax]"] }]
+65F730;[{ "Type": "Div", "Operands": ["dword ptr gs:[eax]"] }]

@@ -1,0 +1,96 @@
+# CALL instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# CALL rel32 (opcode E8)
+E810000000;[{ "Type": "Call", "Operands": ["0x00000015"] }]
+E8FEFFFFFF;[{ "Type": "Call", "Operands": ["0x00000003"] }]
+E800000000;[{ "Type": "Call", "Operands": ["0x00000005"] }]
+E8FFFFFFFF;[{ "Type": "Call", "Operands": ["0x00000004"] }]
+
+# CALL r/m32 (opcode FF /2) with register operands
+FFD0;[{ "Type": "Call", "Operands": ["eax"] }]
+FFD1;[{ "Type": "Call", "Operands": ["ecx"] }]
+FFD2;[{ "Type": "Call", "Operands": ["edx"] }]
+FFD3;[{ "Type": "Call", "Operands": ["ebx"] }]
+FFD4;[{ "Type": "Call", "Operands": ["esp"] }]
+FFD5;[{ "Type": "Call", "Operands": ["ebp"] }]
+FFD6;[{ "Type": "Call", "Operands": ["esi"] }]
+FFD7;[{ "Type": "Call", "Operands": ["edi"] }]
+
+# CALL m32 (opcode FF /2) with memory operands
+FF10;[{ "Type": "Call", "Operands": ["dword ptr [eax]"] }]
+FF11;[{ "Type": "Call", "Operands": ["dword ptr [ecx]"] }]
+FF12;[{ "Type": "Call", "Operands": ["dword ptr [edx]"] }]
+FF13;[{ "Type": "Call", "Operands": ["dword ptr [ebx]"] }]
+# SPECIAL CASES in x86 encoding:
+# 1. When Mod=00 and R/M=100 (ESP), a SIB byte is required. The instruction FF14 is invalid because
+#    it's missing the required SIB byte. The correct encoding would use a SIB byte (e.g., FF1424).
+# 2. When Mod=00 and R/M=101 (EBP), this doesn't actually refer to [EBP] but instead indicates
+#    a 32-bit displacement-only addressing mode. The correct encoding for "Call [disp32]" would be
+#    FF1578563412 which is "Call dword ptr [0x12345678]"
+# FF14;[{ "Type": "Call", "Operands": ["dword ptr [esp]"] }]
+# FF15;[{ "Type": "Call", "Operands": ["dword ptr [ebp]"] }]
+FF16;[{ "Type": "Call", "Operands": ["dword ptr [esi]"] }]
+FF17;[{ "Type": "Call", "Operands": ["dword ptr [edi]"] }]
+
+# CALL m32 (opcode FF /2) with SIB addressing
+FF1400;[{ "Type": "Call", "Operands": ["dword ptr [eax+eax*1]"] }]
+FF14C0;[{ "Type": "Call", "Operands": ["dword ptr [eax+eax*8]"] }]
+FF1444;[{ "Type": "Call", "Operands": ["dword ptr [esp+eax*2]"] }]
+# SPECIAL CASE: SIB byte with EBP as base register
+# When the SIB byte has Base=101 (EBP) and Mod=00, the base register is not used.
+# Instead, a 32-bit displacement follows the SIB byte (similar to the Mod=00, R/M=101 special case).
+# This instruction is commented out because it's not correctly recognized by many disassemblers.
+# FF1485;[{ "Type": "Call", "Operands": ["dword ptr [ebp+eax*4]"] }]
+FF1498;[{ "Type": "Call", "Operands": ["dword ptr [eax+ebx*4]"] }]
+FF14D9;[{ "Type": "Call", "Operands": ["dword ptr [ecx+ebx*8]"] }]
+# SPECIAL CASE: Another SIB byte with EBP as base register
+# When the SIB byte has Base=101 (EBP) and Mod=00, the base register is not used.
+# Instead, a 32-bit displacement follows the SIB byte (similar to the Mod=00, R/M=101 special case).
+# This instruction is commented out because it's not correctly recognized by many disassemblers.
+# FF149D;[{ "Type": "Call", "Operands": ["dword ptr [ebp+ebx*4]"] }]
+
+# CALL m32 (opcode FF /2) with displacement
+FF5000;[{ "Type": "Call", "Operands": ["dword ptr [eax+0x00]"] }]
+FF5010;[{ "Type": "Call", "Operands": ["dword ptr [eax+0x10]"] }]
+FF90FFFFFF7F;[{ "Type": "Call", "Operands": ["dword ptr [eax+0x7FFFFFFF]"] }]
+FF9000000080;[{ "Type": "Call", "Operands": ["dword ptr [eax+0x80000000]"] }]
+
+# CALL m32 (opcode FF /2) with SIB and displacement
+FF5400FF;[{ "Type": "Call", "Operands": ["dword ptr [eax+eax*1-0x01]"] }]
+FF54C0FF;[{ "Type": "Call", "Operands": ["dword ptr [eax+eax*8-0x01]"] }]
+FF5444FF;[{ "Type": "Call", "Operands": ["dword ptr [esp+eax*2-0x01]"] }]
+FF5485FF;[{ "Type": "Call", "Operands": ["dword ptr [ebp+eax*4-0x01]"] }]
+FF5498FF;[{ "Type": "Call", "Operands": ["dword ptr [eax+ebx*4-0x01]"] }]
+FF54D9FF;[{ "Type": "Call", "Operands": ["dword ptr [ecx+ebx*8-0x01]"] }]
+FF549DFF;[{ "Type": "Call", "Operands": ["dword ptr [ebp+ebx*4-0x01]"] }]
+
+# CALL m16:32 (opcode FF /3) - Far call with memory operand
+FF1C;[{ "Type": "Call", "Operands": ["fword ptr [esp]"] }]
+# SPECIAL CASE in x86 encoding:
+# When Mod=00 and R/M=101 (EBP), this doesn't actually refer to [EBP] but instead indicates
+# a 32-bit displacement-only addressing mode. The correct encoding for "Call fword ptr [ebp]"
+# would be FF5D00 which is "Call fword ptr [ebp+0x0]"
+# FF1D;[{ "Type": "Call", "Operands": ["fword ptr [ebp]"] }]
+
+# Correct encoding for "Call fword ptr [ebp]" with displacement 0
+FF5D00;[{ "Type": "Call", "Operands": ["fword ptr [ebp+0x0]"] }]
+FF1E;[{ "Type": "Call", "Operands": ["fword ptr [esi]"] }]
+FF1F;[{ "Type": "Call", "Operands": ["fword ptr [edi]"] }]
+FF18;[{ "Type": "Call", "Operands": ["fword ptr [eax]"] }]
+FF19;[{ "Type": "Call", "Operands": ["fword ptr [ecx]"] }]
+FF1A;[{ "Type": "Call", "Operands": ["fword ptr [edx]"] }]
+FF1B;[{ "Type": "Call", "Operands": ["fword ptr [ebx]"] }]
+
+# CALL m32 (opcode FF /2) with direct memory operand
+FF1578563412;[{ "Type": "Call", "Operands": ["dword ptr [0x12345678]"] }]
+FF1534127856;[{ "Type": "Call", "Operands": ["dword ptr [0x56781234]"] }]
+
+# CALL m32 (opcode FF /2) with segment override prefixes
+26FF5510;[{ "Type": "Call", "Operands": ["dword ptr es:[ebp+0x10]"] }]
+2EFF5510;[{ "Type": "Call", "Operands": ["dword ptr cs:[ebp+0x10]"] }]
+36FF5510;[{ "Type": "Call", "Operands": ["dword ptr ss:[ebp+0x10]"] }]
+3EFF5510;[{ "Type": "Call", "Operands": ["dword ptr ds:[ebp+0x10]"] }]
+64FF5510;[{ "Type": "Call", "Operands": ["dword ptr fs:[ebp+0x10]"] }]
+65FF5510;[{ "Type": "Call", "Operands": ["dword ptr gs:[ebp+0x10]"] }]

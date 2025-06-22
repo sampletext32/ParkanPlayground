@@ -1,0 +1,13 @@
+# PUSH register tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# PUSH r32 (opcodes 50-57)
+50;[{ "Type": "Push", "Operands": ["eax"] }]
+51;[{ "Type": "Push", "Operands": ["ecx"] }]
+52;[{ "Type": "Push", "Operands": ["edx"] }]
+53;[{ "Type": "Push", "Operands": ["ebx"] }]
+54;[{ "Type": "Push", "Operands": ["esp"] }]
+55;[{ "Type": "Push", "Operands": ["ebp"] }]
+56;[{ "Type": "Push", "Operands": ["esi"] }]
+57;[{ "Type": "Push", "Operands": ["edi"] }]

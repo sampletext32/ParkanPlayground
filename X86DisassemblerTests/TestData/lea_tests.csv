@@ -1,0 +1,83 @@
+# LEA instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# LEA r32, m (opcode 8D) with basic addressing modes
+8D00;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [eax]"] }]
+8D01;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ecx]"] }]
+8D02;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [edx]"] }]
+8D03;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebx]"] }]
+
+# SPECIAL CASE: When Mod=00 and R/M=101 (EBP), this doesn't actually refer to [EBP].
+# Instead, it's a special case that indicates a 32-bit displacement-only addressing mode.
+# The correct encoding for "LEA eax, [ebp]" would be 8D4500 (with Mod=01 and a zero displacement).
+# 8D05;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebp]"] }]
+# Adding the correct test case:
+8D4500;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebp+0x00]"] }]
+
+8D06;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [esi]"] }]
+8D07;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [edi]"] }]
+
+# LEA r32, m (opcode 8D) with displacement
+8D4010;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [eax+0x10]"] }]
+8D4110;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ecx+0x10]"] }]
+8D4210;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [edx+0x10]"] }]
+8D4310;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebx+0x10]"] }]
+8D4510;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebp+0x10]"] }]
+8D4610;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [esi+0x10]"] }]
+8D4710;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [edi+0x10]"] }]
+
+# LEA r32, m (opcode 8D) with negative displacement
+8D40F0;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [eax-0x10]"] }]
+8D41F0;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ecx-0x10]"] }]
+8D42F0;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [edx-0x10]"] }]
+8D43F0;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebx-0x10]"] }]
+8D45F0;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebp-0x10]"] }]
+8D46F0;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [esi-0x10]"] }]
+8D47F0;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [edi-0x10]"] }]
+
+# LEA r32, m (opcode 8D) with SIB byte (no displacement)
+8D0424;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [esp+0x00]"] }]
+
+# SPECIAL CASE: The following encodings with EBP as base register have special rules.
+# When the SIB byte has Base=101 (EBP) and Mod=00, the base register is not used.
+# Instead, a 32-bit displacement follows the SIB byte (similar to the Mod=00, R/M=101 special case).
+# These instructions are commented out because they're invalid without the 32-bit displacement.
+# The correct encoding would include a 32-bit displacement after the SIB byte.
+# 8D04CD;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ecx*8+ebp]"] }]
+# 8D04D5;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [edx*8+ebp]"] }]
+# 8D04DD;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebx*8+ebp]"] }]
+
+# LEA r32, m (opcode 8D) with SIB byte and displacement
+8D442410;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [esp+0x10]"] }]
+8D44CD10;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebp+ecx*8+0x10]"] }]
+8D44D510;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebp+edx*8+0x10]"] }]
+8D44DD10;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebp+ebx*8+0x10]"] }]
+
+# LEA r32, m (opcode 8D) with direct memory operand
+8D0578563412;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [0x12345678]"] }]
+8D1D78563412;[{ "Type": "Lea", "Operands": ["ebx", "dword ptr [0x12345678]"] }]
+8D0D78563412;[{ "Type": "Lea", "Operands": ["ecx", "dword ptr [0x12345678]"] }]
+8D1578563412;[{ "Type": "Lea", "Operands": ["edx", "dword ptr [0x12345678]"] }]
+
+# LEA with different destination registers
+
+# SPECIAL CASE: The following encodings are invalid for LEA instructions.
+# When Mod=11 (bits 7-6 of the ModR/M byte), the R/M field specifies a register, not a memory location.
+# LEA requires a memory operand as its second operand
+
+# Valid LEA instructions with different destination registers (using Mod=00)
+8D03;[{ "Type": "Lea", "Operands": ["eax", "dword ptr [ebx]"] }]
+8D0B;[{ "Type": "Lea", "Operands": ["ecx", "dword ptr [ebx]"] }]
+8D13;[{ "Type": "Lea", "Operands": ["edx", "dword ptr [ebx]"] }]
+8D1B;[{ "Type": "Lea", "Operands": ["ebx", "dword ptr [ebx]"] }]
+8D23;[{ "Type": "Lea", "Operands": ["esp", "dword ptr [ebx]"] }]
+8D2B;[{ "Type": "Lea", "Operands": ["ebp", "dword ptr [ebx]"] }]
+8D33;[{ "Type": "Lea", "Operands": ["esi", "dword ptr [ebx]"] }]
+8D3B;[{ "Type": "Lea", "Operands": ["edi", "dword ptr [ebx]"] }]
+
+# LEA with complex addressing modes
+8D8C8D78563412;[{ "Type": "Lea", "Operands": ["ecx", "dword ptr [ebp+ecx*4+0x12345678]"] }]
+8D942D78563412;[{ "Type": "Lea", "Operands": ["edx", "dword ptr [ebp+ebp*1+0x12345678]"] }]
+8D9C1D78563412;[{ "Type": "Lea", "Operands": ["ebx", "dword ptr [ebp+ebx*1+0x12345678]"] }]
+8DA41D78563412;[{ "Type": "Lea", "Operands": ["esp", "dword ptr [ebp+ebx*1+0x12345678]"] }]

@@ -1,0 +1,57 @@
+# FNSTSW instruction tests
+# Format: RawBytes;Instructions
+RawBytes;Instructions
+
+# FNSTSW AX - Store FPU status word in AX without checking for pending unmasked exceptions
+DFE0;[{ "Type": "Fnstsw", "Operands": ["ax"] }]
+
+# FSTSW AX - Store FPU status word in AX
+9BDFE0;[{ "Type": "Fstsw", "Operands": ["ax"] }]
+
+# FSTSW m2byte - Store FPU status word to memory
+9BDD38;[{ "Type": "Fstsw", "Operands": ["word ptr [eax]"] }]
+9BDD3C24;[{ "Type": "Fstsw", "Operands": ["word ptr [esp+0x00]"] }]
+9BDD3B;[{ "Type": "Fstsw", "Operands": ["word ptr [ebx]"] }]
+9BDD39;[{ "Type": "Fstsw", "Operands": ["word ptr [ecx]"] }]
+9BDD3A;[{ "Type": "Fstsw", "Operands": ["word ptr [edx]"] }]
+9BDD3E;[{ "Type": "Fstsw", "Operands": ["word ptr [esi]"] }]
+9BDD3F;[{ "Type": "Fstsw", "Operands": ["word ptr [edi]"] }]
+
+# FNSTSW m2byte - Store FPU status word to memory without checking for pending unmasked exceptions
+DD38;[{ "Type": "Fnstsw", "Operands": ["word ptr [eax]"] }]
+DD3C24;[{ "Type": "Fnstsw", "Operands": ["word ptr [esp+0x00]"] }]
+DD3B;[{ "Type": "Fnstsw", "Operands": ["word ptr [ebx]"] }]
+DD39;[{ "Type": "Fnstsw", "Operands": ["word ptr [ecx]"] }]
+DD3A;[{ "Type": "Fnstsw", "Operands": ["word ptr [edx]"] }]
+DD3E;[{ "Type": "Fnstsw", "Operands": ["word ptr [esi]"] }]
+DD3F;[{ "Type": "Fnstsw", "Operands": ["word ptr [edi]"] }]
+
+# FSTSW/FNSTSW with displacement
+9BDDB810000000;[{ "Type": "Fstsw", "Operands": ["word ptr [eax+0x10]"] }]
+9BDDB820000000;[{ "Type": "Fstsw", "Operands": ["word ptr [eax+0x20]"] }]
+DDB810000000;[{ "Type": "Fnstsw", "Operands": ["word ptr [eax+0x10]"] }]
+DDB820000000;[{ "Type": "Fnstsw", "Operands": ["word ptr [eax+0x20]"] }]
+
+# FSTSW/FNSTSW with SIB addressing
+9BDD3C04;[{ "Type": "Fstsw", "Operands": ["word ptr [esp+eax*1]"] }]
+9BDD3C4C;[{ "Type": "Fstsw", "Operands": ["word ptr [esp+ecx*2]"] }]
+9BDD3C94;[{ "Type": "Fstsw", "Operands": ["word ptr [esp+edx*4]"] }]
+9BDD3CDC;[{ "Type": "Fstsw", "Operands": ["word ptr [esp+ebx*8]"] }]
+DD3C04;[{ "Type": "Fnstsw", "Operands": ["word ptr [esp+eax*1]"] }]
+DD3C4C;[{ "Type": "Fnstsw", "Operands": ["word ptr [esp+ecx*2]"] }]
+DD3C94;[{ "Type": "Fnstsw", "Operands": ["word ptr [esp+edx*4]"] }]
+DD3CDC;[{ "Type": "Fnstsw", "Operands": ["word ptr [esp+ebx*8]"] }]
+
+# FSTSW/FNSTSW with segment override prefixes
+269BDD38;[{ "Type": "Fstsw", "Operands": ["word ptr es:[eax]"] }]
+2E9BDD38;[{ "Type": "Fstsw", "Operands": ["word ptr cs:[eax]"] }]
+369BDD38;[{ "Type": "Fstsw", "Operands": ["word ptr ss:[eax]"] }]
+3E9BDD38;[{ "Type": "Fstsw", "Operands": ["word ptr ds:[eax]"] }]
+649BDD38;[{ "Type": "Fstsw", "Operands": ["word ptr fs:[eax]"] }]
+659BDD38;[{ "Type": "Fstsw", "Operands": ["word ptr gs:[eax]"] }]
+26DD38;[{ "Type": "Fnstsw", "Operands": ["word ptr es:[eax]"] }]
+2EDD38;[{ "Type": "Fnstsw", "Operands": ["word ptr cs:[eax]"] }]
+36DD38;[{ "Type": "Fnstsw", "Operands": ["word ptr ss:[eax]"] }]
+3EDD38;[{ "Type": "Fnstsw", "Operands": ["word ptr ds:[eax]"] }]
+64DD38;[{ "Type": "Fnstsw", "Operands": ["word ptr fs:[eax]"] }]
+65DD38;[{ "Type": "Fnstsw", "Operands": ["word ptr gs:[eax]"] }]
