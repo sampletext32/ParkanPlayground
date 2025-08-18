@@ -1,7 +1,40 @@
-﻿using System.Buffers.Binary;
+using System.Buffers.Binary;
+using System.Text;
 
-var fileBytes = File.ReadAllBytes("C:\\Program Files (x86)\\Nikita\\Iron Strategy\\gamefont.rlb");
+var fileBytes = File.ReadAllBytes("C:\\Program Files (x86)\\Nikita\\Iron Strategy\\gamefont-1.rlb");
 
+var header = fileBytes.AsSpan().Slice(0, 32);
+
+var nlHeaderBytes = header.Slice(0, 2);
+var mustBeZero = header[2];
+var mustBeOne = header[3];
+var numberOfEntriesBytes = header.Slice(4, 2);
+var sortingFlagBytes = header.Slice(14, 2);
+var decryptionKeyBytes = header.Slice(20, 2);
+
+var numberOfEntries = BinaryPrimitives.ReadInt16LittleEndian(numberOfEntriesBytes);
+var sortingFlag = BinaryPrimitives.ReadInt16LittleEndian(sortingFlagBytes);
+var decryptionKey = BinaryPrimitives.ReadInt16LittleEndian(decryptionKeyBytes);
+
+var headerSize = numberOfEntries * 32;
+
+var decryptedHeader = new byte[headerSize];
+
+var keyLow = decryptionKeyBytes[0];
+var keyHigh = decryptionKeyBytes[1];
+for (var i = 0; i < headerSize; i++)
+{
+    byte tmp = (byte)((keyLow << 1) ^ keyHigh);
+    keyLow = tmp;
+    keyHigh = (byte)((keyHigh >> 1) ^ tmp);
+    decryptedHeader[i] = (byte)(fileBytes[32 + i] ^ tmp);
+}
+
+var decryptedHeaderString = Encoding.ASCII.GetString(decryptedHeader, 0, headerSize);
+var entries = decryptedHeader.Chunk(32).ToArray();
+var entriesStrings = entries.Select(x => Encoding.ASCII.GetString(x, 0, x.Length)).ToArray();
+
+File.WriteAllBytes("export.nl", decryptedHeader);
 var fileCount = BinaryPrimitives.ReadInt16LittleEndian(fileBytes.AsSpan().Slice(4, 2));
 
 var decodedHeader = new byte[fileCount * 32];

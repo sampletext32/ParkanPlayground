@@ -1,0 +1,19 @@
+<Project>
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+        <!-- Enable Central Package Management -->
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+        <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+
+        <!-- Enforce package version consistency -->
+        <EnablePackageVersionOverride>false</EnablePackageVersionOverride>
+
+        <!-- Suppress package version warnings -->
+        <NoWarn>$(NoWarn);NU1507</NoWarn>
+    </PropertyGroup>
+</Project>

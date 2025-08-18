@@ -2,7 +2,6 @@
 using System.Numerics;
 using System.Text.Json;
 using ScrLib;
-using SharpDisasm;
 using VarsetLib;
 
 

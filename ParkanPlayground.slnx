@@ -1,0 +1,19 @@
+<Solution>
+  <Folder Name="/meta/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="MeshUnpacker/MeshUnpacker.csproj" />
+  <Project Path="MissionDataUnpacker/MissionDataUnpacker.csproj" />
+  <Project Path="MissionTmaLib/MissionTmaLib.csproj" />
+  <Project Path="NLUnpacker/NLUnpacker.csproj" />
+  <Project Path="NResLib/NResLib.csproj" />
+  <Project Path="NResUI/NResUI.csproj" />
+  <Project Path="ParkanPlayground/ParkanPlayground.csproj" />
+  <Project Path="ScrLib/ScrLib.csproj" />
+  <Project Path="TexmLib/TexmLib.csproj" />
+  <Project Path="TextureDecoder/TextureDecoder.csproj" />
+  <Project Path="VarsetLib/VarsetLib.csproj" />
+  <Project Path="Visualisator/Visualisator.csproj" />
+</Solution>
