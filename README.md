@@ -2,7 +2,9 @@
 
 <div align="center">
   <img width="300" height="300" src="https://github.com/user-attachments/assets/dcd9ac8f-7d30-491c-ae6c-537267beb7dc" alt="x86 Registers" />
+  <img width="817" height="376" alt="Image" src="https://github.com/user-attachments/assets/c4959106-9da4-4c78-a2b7-6c94e360a89e" />
 </div>
+
 
 ## Сборка проекта
 
