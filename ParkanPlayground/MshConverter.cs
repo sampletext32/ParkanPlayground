@@ -1,4 +1,5 @@
 ﻿using System.Buffers.Binary;
+using System.Text;
 using Common;
 using NResLib;
 
@@ -25,6 +26,8 @@ public class MshConverter
         }
         
         using var mshFs = new FileStream(mshPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+        
+        ReadComponent01(mshFs, mshNres);
 
         var vertices = ReadVertices(verticesFileEntry, mshFs);
 
@@ -50,6 +53,71 @@ public class MshConverter
 
         Export($"{Path.GetFileNameWithoutExtension(mshPath)}.obj", vertices, edges);
 
+    }
+
+    private static List<string> TryRead0AComponent(FileStream mshFs, NResArchive archive)
+    {
+        var aFileEntry = archive.Files.FirstOrDefault(x => x.FileType == "0A 00 00 00");
+
+        if (aFileEntry is null)
+        {
+            return [];
+        }
+        var data = new byte[aFileEntry.FileLength];
+        mshFs.Seek(aFileEntry.OffsetInFile, SeekOrigin.Begin);
+        mshFs.ReadExactly(data, 0, data.Length);
+
+        int pos = 0;
+        var strings = new List<string>();
+        while (pos < data.Length)
+        {
+            var len = BinaryPrimitives.ReadInt32LittleEndian(data.AsSpan(pos));
+            if (len == 0)
+            {
+                pos += 4; // empty entry, no string attached
+                strings.Add(""); // add empty string
+            }
+            else
+            {
+                // len is not 0, we need to read it
+                var strBytes = data.AsSpan(pos + 4, len);
+                var str = Encoding.UTF8.GetString(strBytes);
+                strings.Add(str);
+                pos += len + 4 + 1; // skip length prefix and string itself, +1, because it's null-terminated
+            }
+        }
+        if (strings.Count != aFileEntry.ElementCount)
+        {
+            throw new Exception("String count mismatch in 0A component");
+        }
+
+        return strings;
+    }
+
+    private static void ReadComponent01(FileStream mshFs, NResArchive archive)
+    {
+        var headerFileEntry = archive.Files.FirstOrDefault(x => x.FileType == "01 00 00 00");
+
+        if (headerFileEntry is null)
+        {
+            throw new Exception("Archive doesn't contain header file (01)");
+        }
+        var headerData = new byte[headerFileEntry.ElementCount * headerFileEntry.ElementSize];
+        mshFs.Seek(headerFileEntry.OffsetInFile, SeekOrigin.Begin);
+        mshFs.ReadExactly(headerData, 0, headerData.Length);
+        
+        var descriptions = TryRead0AComponent(mshFs, archive);
+        
+        var chunks = headerData.Chunk(headerFileEntry.ElementSize).ToList();
+
+        var converted = chunks.Select(x => new
+        {
+            Byte00 = x[0],
+            Byte01 = x[1],
+            Bytes0204 = BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(2)),
+        }).ToList();
+        
+        _ = 5;
     }
 
     private static List<Vector3> ReadVertices(ListMetadataItem verticesFileEntry, FileStream mshFs)

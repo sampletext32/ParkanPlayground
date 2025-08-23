@@ -196,20 +196,51 @@ grep -rlU $'\x73\x5f\x74\x72\x65\x65\x5f\x30\x35' .
 |     11     |   Research    | `misload.dll LoadResearch`     |
 |     12     |     Agent     | `animesh.dll LoadAgent`        |
 
-Будет дополняться по мере реверса/
+Будет дополняться по мере реверса.
+
+Всем этим функциям передаётся `nres_file_name, nres_entry_name, 0, player_id`
+
+## `fr FORT` файл
+
+Всегда 0x80 байт
+Содержит 2 ссылки на файлы:
+- `.bas`
+- `.ctl` - вызывается `LoadAgent`
 
 ## `.msh`
+
+Загружается в `AniMesh.dll/LoadAniMesh`
 
 - Тип 03 - это вершины (vertex)
 - Тип 06 - это рёбра (edge)
 - Тип 04 - скорее всего какие-то цвета RGBA или типа того
 - Тип 12 - microtexture mapping
+- Тип 0A
+  ```
+  Не имеет фиксированной длины. Хранит какие-то строки в следующем формате.
+  Игра обращается по индексу, пропуская суммарную длину и пропуская 4 байта на каждую строку (длина).
+  т.е. буквально файл выглядит так
+  00 00 00 00 - пустая строка
+  03 00 00 00 - длина строки 1
+  73 74 72 00 - строка "str" + null terminator
+  .. и повторяется до конца файла
+  Кол-во элементов из NRes должно быть равно кол-ву строк в этом файле, хотя игра это не проверяет.
+  ```
 
-Тип 02 имеет какой-то заголовок. 
+Тип 02 имеет заголовок 140 байт.
 Игра сначала читает из него первые 96 байт. А затем пропускает с начала 148 байт
+
+## `.wea`
+
+Загружается в `World3D.dll/LoadMatManager`
+
+## `.wea`
+
+Загружается в `World3D.dll/LoadMatManager`
 
 # Внутренняя система ID
 
+- `1` - IMesh2 ???
 - `4` - IShader
 - `5` - ITerrain
 - `6` - IGameObject (0x138)
@@ -226,7 +257,7 @@ grep -rlU $'\x73\x5f\x74\x72\x65\x65\x5f\x30\x35' .
 - `0x16` - ILifeSystem
 - `0x17` - IBuilding
 - `0x18` - IMesh2
-- `0x19` - unknown (implemented by Wizard in Wizard.dll)
+- `0x19` - unknown (implemented by Wizard in Wizard.dll, also by Agent in AniMesh.dll)
 - `0x20` - IJointMesh
 - `0x21` - IShade
 - `0x24` - IGameObject2
