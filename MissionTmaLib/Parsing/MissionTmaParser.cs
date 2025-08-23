@@ -1,10 +1,12 @@
-﻿namespace MissionTmaLib.Parsing;
+﻿using Common;
+
+namespace MissionTmaLib.Parsing;
 
 public class MissionTmaParser
 {
     public static MissionTmaParseResult ReadFile(string filePath)
     {
-        var fs = new FileStream(filePath, FileMode.Open);
+        using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
         var arealData = LoadAreals(fs);
 

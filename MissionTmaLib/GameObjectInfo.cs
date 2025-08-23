@@ -1,4 +1,6 @@
-﻿namespace MissionTmaLib;
+﻿using Common;
+
+namespace MissionTmaLib;
 
 public class GameObjectInfo
 {

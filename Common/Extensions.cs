@@ -1,7 +1,7 @@
 ﻿using System.Buffers.Binary;
 using System.Text;
 
-namespace ScrLib;
+namespace Common;
 
 public static class Extensions
 {
@@ -13,12 +13,38 @@ public static class Extensions
         return BinaryPrimitives.ReadInt32LittleEndian(buf);
     }
 
+    public static uint ReadUInt32LittleEndian(this FileStream fs)
+    {
+        Span<byte> buf = stackalloc byte[4];
+        fs.ReadExactly(buf);
+
+        return BinaryPrimitives.ReadUInt32LittleEndian(buf);
+    }
+
     public static float ReadFloatLittleEndian(this FileStream fs)
     {
         Span<byte> buf = stackalloc byte[4];
         fs.ReadExactly(buf);
 
         return BinaryPrimitives.ReadSingleLittleEndian(buf);
+    }
+
+    public static string ReadNullTerminatedString(this FileStream fs)
+    {
+        var sb = new StringBuilder();
+
+        while (true)
+        {
+            var b = fs.ReadByte();
+            if (b == 0)
+            {
+                break;
+            }
+
+            sb.Append((char)b);
+        }
+
+        return sb.ToString();
     }
 
     public static string ReadLengthPrefixedString(this FileStream fs)

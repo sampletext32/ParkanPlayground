@@ -7,7 +7,7 @@ public static class NResParser
 {
     public static NResParseResult ReadFile(string path)
     {
-        using FileStream nResFs = new FileStream(path, FileMode.Open);
+        using FileStream nResFs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
 
         if (nResFs.Length < 16)
         {

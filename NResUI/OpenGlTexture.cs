@@ -137,9 +137,9 @@ namespace NResUI
 
         public void SetLod(int @base, int min, int max)
         {
-            _gl.TexParameterI(GLEnum.Texture2D, TextureParameterName.TextureLodBias, @base);
-            _gl.TexParameterI(GLEnum.Texture2D, TextureParameterName.TextureMinLod, min);
-            _gl.TexParameterI(GLEnum.Texture2D, TextureParameterName.TextureMaxLod, max);
+            _gl.TexParameterI(GLEnum.Texture2D, TextureParameterName.TextureLodBias, in @base);
+            _gl.TexParameterI(GLEnum.Texture2D, TextureParameterName.TextureMinLod, in min);
+            _gl.TexParameterI(GLEnum.Texture2D, TextureParameterName.TextureMaxLod, in max);
         }
 
         public void SetWrap(TextureCoordinate coord, TextureWrapMode mode)

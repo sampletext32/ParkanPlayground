@@ -1,4 +1,6 @@
-﻿namespace ScrLib;
+﻿using Common;
+
+namespace ScrLib;
 
 public class ScrParser
 {
