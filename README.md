@@ -183,18 +183,18 @@ grep -rlU $'\x73\x5f\x74\x72\x65\x65\x5f\x30\x35' .
 
 На основе файла `Comp.ini` и первом вызове внутри функции `World3D.dll/CreateObject` ремаппинг id:
 
-|  Class ID  |   ClassName   |
-|:----------:|:-------------:|
-|     1      |   Landscape   |
-|     2      |     Agent     |
-|     3      |   Building    |
-|     4      |     Agent     |
-|     5      |    Camera     |
-|     7      |  Atmospehere  |
-|     9      |     Agent     |
-|     10     |     Agent     |
-|     11     |   Research    |
-|     12     |     Agent     |
+|  Class ID  |   ClassName   | Function                       |
+|:----------:|:-------------:|--------------------------------|
+|     1      |   Landscape   | `terrain.dll LoadLandscape`    |
+|     2      |     Agent     | `animesh.dll LoadAgent`        |
+|     3      |   Building    | `terrain.dll LoadBuilding`     |
+|     4      |     Agent     | `animesh.dll LoadAgent`        |
+|     5      |    Camera     | `terrain.dll LoadCamera`       |
+|     7      |  Atmospehere  | `terrain.dll CreateAtmosphere` |
+|     9      |     Agent     | `animesh.dll LoadAgent`        |
+|     10     |     Agent     | `animesh.dll LoadAgent`        |
+|     11     |   Research    | `misload.dll LoadResearch`     |
+|     12     |     Agent     | `animesh.dll LoadAgent`        |
 
 Будет дополняться по мере реверса/
 
