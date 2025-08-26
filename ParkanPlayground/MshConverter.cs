@@ -10,9 +10,188 @@ public class MshConverter
     public void Convert(string mshPath)
     {
         var mshNresResult = NResParser.ReadFile(mshPath);
-
         var mshNres = mshNresResult.Archive!;
 
+        using var mshFs = new FileStream(mshPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+        var component01 = Msh01.ReadComponent(mshFs, mshNres);
+        var component02 = Msh02.ReadComponent(mshFs, mshNres);
+        var component0A = Msh0A.ReadComponent(mshFs, mshNres);
+        var component07 = Msh07.ReadComponent(mshFs, mshNres);
+        var component0D = Msh0D.ReadComponent(mshFs, mshNres);
+        var component06 = Msh06.ReadComponent(mshFs, mshNres);
+        var component03 = Read03Component(mshFs, mshNres);
+        
+        // --- Write OBJ ---
+        using var sw = new StreamWriter("test.obj", false, Encoding.UTF8);
+
+        foreach (var v in component03)
+            sw.WriteLine($"v {v.X:F8} {v.Y:F8} {v.Z:F8}");
+
+        var vertices = new List<Vector3>();
+        var faces = new List<(int, int, int)>(); // store indices into vertices list
+
+        for (var pieceIndex = 0; pieceIndex < component01.Elements.Count; pieceIndex++)
+        {
+            var piece = component01.Elements[pieceIndex];
+            var state = (piece.State00 == 0xffff) ? 0 : piece.State00;
+
+            var mesh02Element = component02.Elements[state];
+
+            int indexInto07 = mesh02Element.StartIndexIn07;
+
+            var element0Dstart = mesh02Element.StartOffsetIn0d;
+            var element0Dcount = mesh02Element.ByteLengthIn0D;
+
+            Console.WriteLine($"Started piece {pieceIndex}. State={state}. 0D start={element0Dstart}, count={element0Dcount}");
+
+            for (var comp0Dindex = 0; comp0Dindex < element0Dcount; comp0Dindex++)
+            {
+                var element0D = component0D[element0Dstart + comp0Dindex];
+
+                var indexInto03 = element0D.IndexInto03;
+                var indexInto06 = element0D.IndexInto06;
+
+                var count = (uint)element0D.number_of_triangles;
+
+                // Convert IndexInto06 to ushort array index (3 ushorts per triangle)
+                Console.WriteLine(
+                    $"Processing 0D element[{element0Dstart + comp0Dindex}]. IndexInto03={indexInto03}, IndexInto06={indexInto06}. Number of triangles={count}");
+
+                if (count != 0)
+                {
+                    sw.WriteLine($"o piece_{pieceIndex++}_of_mesh_{comp0Dindex}");
+                    if (count % 3 != 0)
+                    {
+                        Console.WriteLine("Number of triangles is not multiple of 3");
+                        _ = 5;
+                    }
+
+                    count = (count + 2) / 3; // number of triangles
+
+                    for (int tri = 0; tri < count; tri++)
+                    {
+                        // Each triangle uses 3 consecutive ushorts in component06
+
+                        var comp07 = component07[indexInto07];
+
+                        var i1 = indexInto03 + component06[indexInto06];
+                        var i2 = indexInto03 + component06[indexInto06 + 1];
+                        var i3 = indexInto03 + component06[indexInto06 + 2];
+
+                        var v1 = component03[i1];
+                        var v2 = component03[i2];
+                        var v3 = component03[i3];
+
+                        sw.WriteLine($"f {i1 + 1} {i2 + 1} {i3 + 1}");
+
+                        // push vertices to global list
+                        vertices.Add(v1);
+                        vertices.Add(v2);
+                        vertices.Add(v3);
+
+                        int baseIndex = vertices.Count;
+                        // record face (OBJ is 1-based indexing!)
+                        faces.Add((baseIndex - 2, baseIndex - 1, baseIndex));
+
+                        indexInto07++;
+                        indexInto06 += 3; // step by 3 since each triangle uses 3 ushorts
+                    }
+
+                    _ = 5;
+                }
+            }
+        }
+    }
+
+    public record Face(Vector3 P1, Vector3 P2, Vector3 P3);
+
+    public static void ExportCube(string filePath, Vector3[] points)
+    {
+        if (points.Length != 8)
+            throw new ArgumentException("Cube must have exactly 8 points.");
+
+        using (StreamWriter writer = new StreamWriter(filePath))
+        {
+            // Write vertices
+            foreach (var p in points)
+            {
+                writer.WriteLine($"v {p.X} {p.Y} {p.Z}");
+            }
+
+            // Write faces (each face defined by 4 vertices, using 1-based indices)
+            int[][] faces = new int[][]
+            {
+                new int[] { 1, 2, 3, 4 }, // bottom
+                new int[] { 5, 6, 7, 8 }, // top
+                new int[] { 1, 2, 6, 5 }, // front
+                new int[] { 2, 3, 7, 6 }, // right
+                new int[] { 3, 4, 8, 7 }, // back
+                new int[] { 4, 1, 5, 8 } // left
+            };
+
+            foreach (var f in faces)
+            {
+                writer.WriteLine($"f {f[0]} {f[1]} {f[2]} {f[3]}");
+            }
+        }
+    }
+
+    public static void ExportCubesAtPositions(string filePath, List<Vector3> centers, float size = 2f)
+    {
+        float half = size / 2f;
+        using (StreamWriter writer = new StreamWriter(filePath))
+        {
+            int vertexOffset = 0;
+
+            foreach (var c in centers)
+            {
+                // Generate 8 vertices for this cube
+                Vector3[] vertices = new Vector3[]
+                {
+                    new Vector3(c.X - half, c.Y - half, c.Z - half),
+                    new Vector3(c.X + half, c.Y - half, c.Z - half),
+                    new Vector3(c.X + half, c.Y - half, c.Z + half),
+                    new Vector3(c.X - half, c.Y - half, c.Z + half),
+
+                    new Vector3(c.X - half, c.Y + half, c.Z - half),
+                    new Vector3(c.X + half, c.Y + half, c.Z - half),
+                    new Vector3(c.X + half, c.Y + half, c.Z + half),
+                    new Vector3(c.X - half, c.Y + half, c.Z + half)
+                };
+
+                // Write vertices
+                foreach (var v in vertices)
+                {
+                    writer.WriteLine($"v {v.X} {v.Y} {v.Z}");
+                }
+
+                // Define faces (1-based indices, counter-clockwise)
+                int[][] faces = new int[][]
+                {
+                    new int[] { 1, 2, 3, 4 }, // bottom
+                    new int[] { 5, 6, 7, 8 }, // top
+                    new int[] { 1, 2, 6, 5 }, // front
+                    new int[] { 2, 3, 7, 6 }, // right
+                    new int[] { 3, 4, 8, 7 }, // back
+                    new int[] { 4, 1, 5, 8 } // left
+                };
+
+                // Write faces with offset
+                foreach (var f in faces)
+                {
+                    writer.WriteLine(
+                        $"f {f[0] + vertexOffset} {f[1] + vertexOffset} {f[2] + vertexOffset} {f[3] + vertexOffset}");
+                }
+
+                vertexOffset += 8;
+            }
+        }
+    }
+
+
+    private static List<Vector3> Read03Component(FileStream mshFs, NResArchive mshNres)
+    {
         var verticesFileEntry = mshNres.Files.FirstOrDefault(x => x.FileType == "03 00 00 00");
 
         if (verticesFileEntry is null)
@@ -24,104 +203,7 @@ public class MshConverter
         {
             throw new Exception("Vertices file (03) element size is not 12");
         }
-        
-        using var mshFs = new FileStream(mshPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-        
-        ReadComponent01(mshFs, mshNres);
 
-        var vertices = ReadVertices(verticesFileEntry, mshFs);
-
-        var edgesFileEntry = mshNres.Files.FirstOrDefault(x => x.FileType == "06 00 00 00");
-
-        if (edgesFileEntry is null)
-        {
-            throw new Exception("Archive doesn't contain edges file (06)");
-        }
-        
-        var edgesFile = new byte[edgesFileEntry.ElementCount * edgesFileEntry.ElementSize];
-        mshFs.Seek(edgesFileEntry.OffsetInFile, SeekOrigin.Begin);
-        mshFs.ReadExactly(edgesFile, 0, edgesFile.Length);
-
-        var edges = new List<IndexedEdge>((int)edgesFileEntry.ElementCount / 2);
-
-        for (int i = 0; i < edgesFileEntry.ElementCount / 2; i++)
-        {
-            var index1 = BinaryPrimitives.ReadUInt16LittleEndian(edgesFile.AsSpan().Slice(i * 2));
-            var index2 = BinaryPrimitives.ReadUInt16LittleEndian(edgesFile.AsSpan().Slice(i * 2 + 2));
-            edges.Add(new IndexedEdge(index1, index2));
-        }
-
-        Export($"{Path.GetFileNameWithoutExtension(mshPath)}.obj", vertices, edges);
-
-    }
-
-    private static List<string> TryRead0AComponent(FileStream mshFs, NResArchive archive)
-    {
-        var aFileEntry = archive.Files.FirstOrDefault(x => x.FileType == "0A 00 00 00");
-
-        if (aFileEntry is null)
-        {
-            return [];
-        }
-        var data = new byte[aFileEntry.FileLength];
-        mshFs.Seek(aFileEntry.OffsetInFile, SeekOrigin.Begin);
-        mshFs.ReadExactly(data, 0, data.Length);
-
-        int pos = 0;
-        var strings = new List<string>();
-        while (pos < data.Length)
-        {
-            var len = BinaryPrimitives.ReadInt32LittleEndian(data.AsSpan(pos));
-            if (len == 0)
-            {
-                pos += 4; // empty entry, no string attached
-                strings.Add(""); // add empty string
-            }
-            else
-            {
-                // len is not 0, we need to read it
-                var strBytes = data.AsSpan(pos + 4, len);
-                var str = Encoding.UTF8.GetString(strBytes);
-                strings.Add(str);
-                pos += len + 4 + 1; // skip length prefix and string itself, +1, because it's null-terminated
-            }
-        }
-        if (strings.Count != aFileEntry.ElementCount)
-        {
-            throw new Exception("String count mismatch in 0A component");
-        }
-
-        return strings;
-    }
-
-    private static void ReadComponent01(FileStream mshFs, NResArchive archive)
-    {
-        var headerFileEntry = archive.Files.FirstOrDefault(x => x.FileType == "01 00 00 00");
-
-        if (headerFileEntry is null)
-        {
-            throw new Exception("Archive doesn't contain header file (01)");
-        }
-        var headerData = new byte[headerFileEntry.ElementCount * headerFileEntry.ElementSize];
-        mshFs.Seek(headerFileEntry.OffsetInFile, SeekOrigin.Begin);
-        mshFs.ReadExactly(headerData, 0, headerData.Length);
-        
-        var descriptions = TryRead0AComponent(mshFs, archive);
-        
-        var chunks = headerData.Chunk(headerFileEntry.ElementSize).ToList();
-
-        var converted = chunks.Select(x => new
-        {
-            Byte00 = x[0],
-            Byte01 = x[1],
-            Bytes0204 = BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(2)),
-        }).ToList();
-        
-        _ = 5;
-    }
-
-    private static List<Vector3> ReadVertices(ListMetadataItem verticesFileEntry, FileStream mshFs)
-    {
         var verticesFile = new byte[verticesFileEntry.ElementCount * verticesFileEntry.ElementSize];
         mshFs.Seek(verticesFileEntry.OffsetInFile, SeekOrigin.Begin);
         mshFs.ReadExactly(verticesFile, 0, verticesFile.Length);
@@ -135,7 +217,7 @@ public class MshConverter
         return vertices;
     }
 
-    void Export(string filePath, List<Vector3> vertices, List<IndexedEdge> edges)
+    void Export(string filePath, IEnumerable<Vector3> vertices, List<IndexedEdge> edges)
     {
         using (var writer = new StreamWriter(filePath))
         {

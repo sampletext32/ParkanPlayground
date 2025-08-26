@@ -10,3 +10,6 @@ using ParkanPlayground;
 var converter = new MshConverter();
 
 converter.Convert("E:\\ParkanUnpacked\\fortif.rlb\\133_fr_m_bunker.msh");
+// converter.Convert("E:\\ParkanUnpacked\\intsys.rlb\\277_MESH_o_pws_l_01.msh");
+// converter.Convert("E:\\ParkanUnpacked\\static.rlb\\2_MESH_s_stn_0_01.msh");
+// converter.Convert("E:\\ParkanUnpacked\\bases.rlb\\25_MESH_R_H_02.msh");

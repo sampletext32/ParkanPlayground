@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace MissionTmaLib;
+namespace Common;
 
 [DebuggerDisplay("AsInt = {AsInt}, AsFloat = {AsFloat}")]
 public class IntFloatValue(Span<byte> span)

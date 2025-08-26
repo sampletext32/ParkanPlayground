@@ -26,7 +26,7 @@ namespace ParkanPlayground;
 public class CpDatEntryConverter
 {
     const string gameRoot = "C:\\Program Files (x86)\\Nikita\\Iron Strategy";
-    const string missionTmaPath = $"{gameRoot}\\MISSIONS\\Single.01\\data.tma";
+    const string missionTmaPath = $"{gameRoot}\\MISSIONS\\Campaign\\Campaign.01\\Mission.01\\data.tma";
     const string staticRlbPath = $"{gameRoot}\\static.rlb";
     const string objectsRlbPath = $"{gameRoot}\\objects.rlb";
 
