@@ -211,10 +211,51 @@ grep -rlU $'\x73\x5f\x74\x72\x65\x65\x5f\x30\x35' .
 
 Загружается в `AniMesh.dll/LoadAniMesh`
 
+- Тип 01 - заголовок
+  ```
+  нулевому элементу добавляется флаг 0x1000000
+  Хранит куски меша.
+  Содержит 2 ссылки на файлы анимаций (короткие - файл 13, длинные - файл 08)
+  Если интерполируется анимация -0.5s короче чем magic1 у файла 13
+  И у файла есть OffsetIntoFile13
+  И ushort значение в файле 13 по этому оффсету > IndexInFile08 (это по-моему выполняется всегда)
+  Тогда вместо IndexInFile08 используется значение из файла 13 по этому оффсету (второй байт)
+  ```
+- Тип 02
+  ```
+  Вначале идёт заголовок 0x8C (140) байт
+  В заголовке:
+  8 Vector3 (x,y,z) - bounding box
+  1 Vector4 - center
+  1 Vector3 - bottom
+  1 Vector3 - top
+  1 float - xy_radius
+  ```
 - Тип 03 - это вершины (vertex)
-- Тип 06 - это рёбра (edge)
+- Тип 06 - это то ли рёбра, то ли треугольники - не понятно
 - Тип 04 - скорее всего какие-то цвета RGBA или типа того
+- Тип 08 - меш-анимации (см файл 01)
+  ```
+  Индексируется по IndexInFile08 из файла 01 либо по файлу 13 через OffsetIntoFile13
+  Структура:
+  Vector3 position;
+  float time; // содержит только целые секунды
+  short rotation_x; // делится на 32767
+  short rotation_y; // делится на 32767
+  short rotation_z; // делится на 32767
+  short rotation_w; // делится на 32767
+  ---
+  Игра интерполирует анимацию между текущим стейтом и следующим по time.
+  Если время интерполяции совпадает с исходным time, жёстко берётся первый стейт из 0x13.
+  Если время интерполяции совпадает с конечным time, жёстко берётся второй стейт из 0x13.
+  Если ни то и ни другое, тогда t = (time - souce.time) / (dest.time - source.time)
+  ```
 - Тип 12 - microtexture mapping
+- Тип 13 - короткие меш-анимации
+  ```
+  Буквально (hex)
+  00 01 01 02 ...
+  ```
 - Тип 0A
   ```
   Не имеет фиксированной длины. Хранит какие-то строки в следующем формате.
@@ -225,10 +266,10 @@ grep -rlU $'\x73\x5f\x74\x72\x65\x65\x5f\x30\x35' .
   73 74 72 00 - строка "str" + null terminator
   .. и повторяется до конца файла
   Кол-во элементов из NRes должно быть равно кол-ву строк в этом файле, хотя игра это не проверяет.
+  Если у элемента эта строка равна "central", ему выставляется флаг (flag |= 1)
   ```
 
 Тип 02 имеет заголовок 140 байт.
-Игра сначала читает из него первые 96 байт. А затем пропускает с начала 148 байт
 
 ## `.wea`
 
@@ -260,6 +301,7 @@ grep -rlU $'\x73\x5f\x74\x72\x65\x65\x5f\x30\x35' .
 - `0x19` - unknown (implemented by Wizard in Wizard.dll, also by Agent in AniMesh.dll)
 - `0x20` - IJointMesh
 - `0x21` - IShade
+- `0x23` - IGameSettings
 - `0x24` - IGameObject2
 - `0x101` - 3DRender
 - `0x201` - IWizard
@@ -276,6 +318,37 @@ grep -rlU $'\x73\x5f\x74\x72\x65\x65\x5f\x30\x35' .
 - `0x700` - NetWatcher
 - `0x701` - INetworkInterface
 - `0x10d` - CreateVertexBufferData
+
+
+## Опции
+
+World3D.dll содержит функцию CreateGameSettings.
+Она создаёт объект настроек и далее вызывает методы в соседних библиотеках.
+- Terrain.dll - InitializeSettings
+- Effect.dll - InitializeSettings
+- Control.dll - InitializeSettings
+
+Остальные наверное не трогают настройки.
+
+| Resource ID |    wOptionID    |            Name            | Default | Description |
+|:-----------:|:---------------:|:--------------------------:|:-------:|-------------|
+|      1      |   100 (0x64)    |      "Texture detail"      |         |             |
+|      2      |   101 (0x65)    |         "3D Sound"         |         |             |
+|      3      |   102 (0x66)    |    "Mouse sensitivity"     |         |             |
+|      4      |   103 (0x67)    |   "Joystick sensitivity"   |         |             |
+|      5      | !not a setting! |    "Illegal wOptionID"     |         |             |
+|      6      |   104 (0x68)    |     "Wait for retrace"     |         |             |
+|      7      |   105 (0x69)    |     "Inverse mouse X"      |         |             |
+|      8      |   106 (0x6a)    |     "Inverse mouse Y"      |         |             |
+|      9      |   107 (0x6b)    |    "Inverse joystick X"    |         |             |
+|     10      |   108 (0x6c)    |    "Inverse joystick Y"    |         |             |
+|     11      |   109 (0x6d)    |     "Use BumpMapping"      |         |             |
+|     12      |   110 (0x6e)    |     "3D Sound quality"     |         |             |
+|     13      |    90 (0x5a)    |      "Reverse sound"       |         |             |
+|     14      |    91 (0x5b)    |  "Sound buffer frequency"  |         |             |
+|     15      |    92 (0x5c)    | "Play sound buffer always" |         |             |
+|     16      |    93 (0x5d)    | "Select best sound device" |         |             |
+
 
 ## Контакты
 
