@@ -278,15 +278,17 @@ grep -rlU $'\x73\x5f\x74\x72\x65\x65\x5f\x30\x35' .
 
 # Внутренняя система ID
 
-- `1` - IMesh2 ???
+- `1` - 
 - `4` - IShader
 - `5` - ITerrain
 - `6` - IGameObject (0x138)
+- `7` - IShadeConfig (у меня в папке с игрой его не оказалось)
 - `8` - ICamera
 - `9` - Queue
 - `10` - IControl
 - `0xb` - IAnimation
 - `0xd` - IMatManager
+- `0xe` - ILightManager
 - `0x10` - unknown (implemented by Wizard in Wizard.dll, also by Hallway in ArealMap.dll)
 - `0x11` - IBasement
 - `0x12` - ICamera2 - BufferingCamera
@@ -327,24 +329,25 @@ World3D.dll содержит функцию CreateGameSettings.
 
 Остальные наверное не трогают настройки.
 
-| Resource ID |    wOptionID    |            Name            | Default | Description |
-|:-----------:|:---------------:|:--------------------------:|:-------:|-------------|
-|      1      |   100 (0x64)    |      "Texture detail"      |         |             |
-|      2      |   101 (0x65)    |         "3D Sound"         |         |             |
-|      3      |   102 (0x66)    |    "Mouse sensitivity"     |         |             |
-|      4      |   103 (0x67)    |   "Joystick sensitivity"   |         |             |
-|      5      | !not a setting! |    "Illegal wOptionID"     |         |             |
-|      6      |   104 (0x68)    |     "Wait for retrace"     |         |             |
-|      7      |   105 (0x69)    |     "Inverse mouse X"      |         |             |
-|      8      |   106 (0x6a)    |     "Inverse mouse Y"      |         |             |
-|      9      |   107 (0x6b)    |    "Inverse joystick X"    |         |             |
-|     10      |   108 (0x6c)    |    "Inverse joystick Y"    |         |             |
-|     11      |   109 (0x6d)    |     "Use BumpMapping"      |         |             |
-|     12      |   110 (0x6e)    |     "3D Sound quality"     |         |             |
-|     13      |    90 (0x5a)    |      "Reverse sound"       |         |             |
-|     14      |    91 (0x5b)    |  "Sound buffer frequency"  |         |             |
-|     15      |    92 (0x5c)    | "Play sound buffer always" |         |             |
-|     16      |    93 (0x5d)    | "Select best sound device" |         |             |
+| Resource ID |    wOptionID    |            Name            | Default | Description         |
+|:-----------:|:---------------:|:--------------------------:|:-------:|---------------------|
+|      1      |   100 (0x64)    |      "Texture detail"      |         |                     |
+|      2      |   101 (0x65)    |         "3D Sound"         |         |                     |
+|      3      |   102 (0x66)    |    "Mouse sensitivity"     |         |                     |
+|      4      |   103 (0x67)    |   "Joystick sensitivity"   |         |                     |
+|      5      | !not a setting! |    "Illegal wOptionID"     |         |                     |
+|      6      |   104 (0x68)    |     "Wait for retrace"     |         |                     |
+|      7      |   105 (0x69)    |     "Inverse mouse X"      |         |                     |
+|      8      |   106 (0x6a)    |     "Inverse mouse Y"      |         |                     |
+|      9      |   107 (0x6b)    |    "Inverse joystick X"    |         |                     |
+|     10      |   108 (0x6c)    |    "Inverse joystick Y"    |         |                     |
+|     11      |   109 (0x6d)    |     "Use BumpMapping"      |         |                     |
+|     12      |   110 (0x6e)    |     "3D Sound quality"     |         |                     |
+|     13      |    90 (0x5a)    |      "Reverse sound"       |         |                     |
+|     14      |    91 (0x5b)    |  "Sound buffer frequency"  |         |                     |
+|     15      |    92 (0x5c)    | "Play sound buffer always" |         |                     |
+|     16      |    93 (0x5d)    | "Select best sound device" |         |                     |
+|    ----     |    30 (0x1e)    |        ShadeConfig         |         | из файла shade.cfg  |
 
 
 ## Контакты
