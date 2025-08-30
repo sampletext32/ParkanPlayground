@@ -26,11 +26,12 @@ public static class Msh0D
         var elements = elementBytes.Select(x => new Msh0DElement()
         {
             Flags = BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0)),
-            Magic04 = BinaryPrimitives.ReadUInt32LittleEndian(x.AsSpan(4)),
-            number_of_triangles = BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(8)),
-            IndexInto06 = BinaryPrimitives.ReadInt32LittleEndian(x.AsSpan(10)),
-            Magic0C = BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(14)),
-            IndexInto03 = BinaryPrimitives.ReadInt32LittleEndian(x.AsSpan(16)),
+            Magic04 = BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(4)),
+            Magic06 = BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(6)),
+            CountOf06 = BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(8)),
+            IndexInto06 = BinaryPrimitives.ReadInt32LittleEndian(x.AsSpan(0xA)),
+            CountOf03 = BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0xE)),
+            IndexInto03 = BinaryPrimitives.ReadInt32LittleEndian(x.AsSpan(0x10)),
         }).ToList();
 
         return elements;
@@ -39,10 +40,14 @@ public static class Msh0D
     public class Msh0DElement
     {
         public uint Flags { get; set; }
-        public uint Magic04 { get; set; }
-        public ushort number_of_triangles { get; set; }
+        
+        // Magic04 и Magic06 обрабатываются вместе
+
+        public ushort Magic04 { get; set; }
+        public ushort Magic06 { get; set; }
+        public ushort CountOf06 { get; set; }
         public int IndexInto06 { get; set; }
-        public ushort Magic0C { get; set; }
+        public ushort CountOf03 { get; set; }
         public int IndexInto03 { get; set; }
     }
 }

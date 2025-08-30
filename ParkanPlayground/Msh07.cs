@@ -25,7 +25,8 @@ public static class Msh07
         {
             Flags = BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0)),
             Magic02 = BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(2)),
-            Magic04 = BinaryPrimitives.ReadUInt32LittleEndian(x.AsSpan(4)),
+            Magic04 = BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(4)),
+            Magic06 = BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(6)),
             OffsetX = BinaryPrimitives.ReadInt16LittleEndian(x.AsSpan(8)),
             OffsetY = BinaryPrimitives.ReadInt16LittleEndian(x.AsSpan(10)),
             OffsetZ = BinaryPrimitives.ReadInt16LittleEndian(x.AsSpan(12)),
@@ -39,7 +40,8 @@ public static class Msh07
     {
         public ushort Flags { get; set; }
         public ushort Magic02 { get; set; }
-        public uint Magic04 { get; set; }
+        public ushort Magic04 { get; set; }
+        public ushort Magic06 { get; set; }
         // normalized vector X, need to divide by 32767 to get float in range -1..1
         public short OffsetX { get; set; }
         // normalized vector Y, need to divide by 32767 to get float in range -1..1

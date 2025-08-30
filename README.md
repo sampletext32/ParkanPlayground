@@ -87,6 +87,10 @@ grep -rlU $'\x73\x5f\x74\x72\x65\x65\x5f\x30\x35' .
 
 Затем `Comp.ini` - тут системные функции, которые используются для загрузки объектов.
 
+```
+IComponent ** LoadSomething(undefined4, undefined4, undefined4, undefined4)
+```
+
 - `Host.url` - этого файла нет
 - `palettes.lib` - тут палитры, но этот NRes пустой
 - `system.rlb` - не понятно что
@@ -211,17 +215,16 @@ grep -rlU $'\x73\x5f\x74\x72\x65\x65\x5f\x30\x35' .
 
 Загружается в `AniMesh.dll/LoadAniMesh`
 
-- Тип 01 - заголовок
+- Тип 01 - заголовок. Он хранит список деталей (submesh) в разных LOD
   ```
   нулевому элементу добавляется флаг 0x1000000
-  Хранит стейты меша (в один стейт может входить несколько submesh)
   Содержит 2 ссылки на файлы анимаций (короткие - файл 13, длинные - файл 08)
   Если интерполируется анимация -0.5s короче чем magic1 у файла 13
   И у файла есть OffsetIntoFile13
   И ushort значение в файле 13 по этому оффсету > IndexInFile08 (это по-моему выполняется всегда)
   Тогда вместо IndexInFile08 используется значение из файла 13 по этому оффсету (второй байт)
   ```
-- Тип 02 - описание submesh
+- Тип 02 - описание одного LOD Submesh
   ```
   Вначале идёт заголовок 0x8C (140) байт
   В заголовке:
@@ -233,7 +236,7 @@ grep -rlU $'\x73\x5f\x74\x72\x65\x65\x5f\x30\x35' .
   Далее инфа про куски меша
   ```
 - Тип 03 - это вершины (vertex)
-- Тип 06 - 
+- Тип 06 - индексы треугольников в файле 03
 - Тип 04 - скорее всего какие-то цвета RGBA или типа того
 - Тип 08 - меш-анимации (см файл 01)
   ```
@@ -257,20 +260,18 @@ grep -rlU $'\x73\x5f\x74\x72\x65\x65\x5f\x30\x35' .
   Буквально (hex)
   00 01 01 02 ...
   ```
-- Тип 0A
+- Тип 0A - ссылка на части меша, не упакованные в текущий меш (например у бункера 4 и 5 части хранятся в parts.rlb)
   ```
-  Не имеет фиксированной длины. Хранит какие-то строки в следующем формате.
+  Не имеет фиксированной длины. Хранит строки в следующем формате.
   Игра обращается по индексу, пропуская суммарную длину и пропуская 4 байта на каждую строку (длина).
   т.е. буквально файл выглядит так
   00 00 00 00 - пустая строка
   03 00 00 00 - длина строки 1
   73 74 72 00 - строка "str" + null terminator
   .. и повторяется до конца файла
-  Кол-во элементов из NRes должно быть равно кол-ву строк в этом файле, хотя игра это не проверяет.
+  Кол-во элементов из файла 01 должно быть равно кол-ву строк в этом файле, хотя игра это не проверяет.
   Если у элемента эта строка равна "central", ему выставляется флаг (flag |= 1)
   ```
-
-Тип 02 имеет заголовок 140 байт.
 
 ## `.wea`
 
@@ -289,26 +290,32 @@ grep -rlU $'\x73\x5f\x74\x72\x65\x65\x5f\x30\x35' .
 - `0xb` - IAnimation
 - `0xd` - IMatManager
 - `0xe` - ILightManager
-- `0x10` - unknown (implemented by Wizard in Wizard.dll, also by Hallway in ArealMap.dll)
+- `0x10` - IBehavior
 - `0x11` - IBasement
-- `0x12` - ICamera2 - BufferingCamera
+- `0x12` - ICamera2 или IBufferingCamera
 - `0x13` - IEffectManager
 - `0x14` - IPosition
+- `0x15` - IAgent
 - `0x16` - ILifeSystem
-- `0x17` - IBuilding
+- `0x17` - IBuilding - точно он, т.к. ArealMap.CreateObject на него проверяет
 - `0x18` - IMesh2
-- `0x19` - unknown (implemented by Wizard in Wizard.dll, also by Agent in AniMesh.dll)
+- `0x19` - IManManager
 - `0x20` - IJointMesh
 - `0x21` - IShade
 - `0x23` - IGameSettings
 - `0x24` - IGameObject2
+- `0x25` - unknown (implemented by AniMesh)
+- `0x26` - unknown (implemented by AniMesh)
+- `0x28` - ICollObject
 - `0x101` - 3DRender
+- `0x105` - NResFile
 - `0x201` - IWizard
 - `0x202` - IItemManager
 - `0x203` - ICollManager
 - `0x301` - IArealMap
 - `0x302` - ISystemArealMap
 - `0x303` - IHallway
+- `0x304` - Distributor
 - `0x401` - ISuperAI
 - `0x105` - NResFile
 - `0x106` - NResFileMetadata
@@ -329,25 +336,26 @@ World3D.dll содержит функцию CreateGameSettings.
 
 Остальные наверное не трогают настройки.
 
-| Resource ID |    wOptionID    |            Name            | Default | Description         |
-|:-----------:|:---------------:|:--------------------------:|:-------:|---------------------|
-|      1      |   100 (0x64)    |      "Texture detail"      |         |                     |
-|      2      |   101 (0x65)    |         "3D Sound"         |         |                     |
-|      3      |   102 (0x66)    |    "Mouse sensitivity"     |         |                     |
-|      4      |   103 (0x67)    |   "Joystick sensitivity"   |         |                     |
-|      5      | !not a setting! |    "Illegal wOptionID"     |         |                     |
-|      6      |   104 (0x68)    |     "Wait for retrace"     |         |                     |
-|      7      |   105 (0x69)    |     "Inverse mouse X"      |         |                     |
-|      8      |   106 (0x6a)    |     "Inverse mouse Y"      |         |                     |
-|      9      |   107 (0x6b)    |    "Inverse joystick X"    |         |                     |
-|     10      |   108 (0x6c)    |    "Inverse joystick Y"    |         |                     |
-|     11      |   109 (0x6d)    |     "Use BumpMapping"      |         |                     |
-|     12      |   110 (0x6e)    |     "3D Sound quality"     |         |                     |
-|     13      |    90 (0x5a)    |      "Reverse sound"       |         |                     |
-|     14      |    91 (0x5b)    |  "Sound buffer frequency"  |         |                     |
-|     15      |    92 (0x5c)    | "Play sound buffer always" |         |                     |
-|     16      |    93 (0x5d)    | "Select best sound device" |         |                     |
-|    ----     |    30 (0x1e)    |        ShadeConfig         |         | из файла shade.cfg  |
+| Resource ID |    wOptionID    |            Name            | Default | Description        |
+|:-----------:|:---------------:|:--------------------------:|:-------:|--------------------|
+|      1      |   100 (0x64)    |      "Texture detail"      |         |                    |
+|      2      |   101 (0x65)    |         "3D Sound"         |         |                    |
+|      3      |   102 (0x66)    |    "Mouse sensitivity"     |         |                    |
+|      4      |   103 (0x67)    |   "Joystick sensitivity"   |         |                    |
+|      5      | !not a setting! |    "Illegal wOptionID"     |         |                    |
+|      6      |   104 (0x68)    |     "Wait for retrace"     |         |                    |
+|      7      |   105 (0x69)    |     "Inverse mouse X"      |         |                    |
+|      8      |   106 (0x6a)    |     "Inverse mouse Y"      |         |                    |
+|      9      |   107 (0x6b)    |    "Inverse joystick X"    |         |                    |
+|     10      |   108 (0x6c)    |    "Inverse joystick Y"    |         |                    |
+|     11      |   109 (0x6d)    |     "Use BumpMapping"      |         |                    |
+|     12      |   110 (0x6e)    |     "3D Sound quality"     |         |                    |
+|     13      |    90 (0x5a)    |      "Reverse sound"       |         |                    |
+|     14      |    91 (0x5b)    |  "Sound buffer frequency"  |         |                    |
+|     15      |    92 (0x5c)    | "Play sound buffer always" |         |                    |
+|     16      |    93 (0x5d)    | "Select best sound device" |         |                    |
+|    ----     |    30 (0x1e)    |        ShadeConfig         |         | из файла shade.cfg |
+|    ----     |    (0x8001e)    |                            |         | добавляет AniMesh  |
 
 
 ## Контакты

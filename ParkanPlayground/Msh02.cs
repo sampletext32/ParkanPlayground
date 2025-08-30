@@ -159,18 +159,6 @@ public static class Msh02
         public float XYRadius { get; set; }
     }
 
-    public class BoundingBox
-    {
-        public Vector3 Vec1 { get; set; }
-        public Vector3 Vec2 { get; set; }
-        public Vector3 Vec3 { get; set; }
-        public Vector3 Vec4 { get; set; }
-        public Vector3 Vec5 { get; set; }
-        public Vector3 Vec6 { get; set; }
-        public Vector3 Vec7 { get; set; }
-        public Vector3 Vec8 { get; set; }
-    }
-
     public class Msh02Element
     {
         public ushort StartIndexIn07 { get; set; }
@@ -182,5 +170,17 @@ public static class Msh02
         public Vector3 Center { get; set; }
         public Vector3 Vector4 { get; set; }
         public Vector3 Vector5 { get; set; }
+    }
+
+    public class BoundingBox
+    {
+        public Vector3 Vec1 { get; set; }
+        public Vector3 Vec2 { get; set; }
+        public Vector3 Vec3 { get; set; }
+        public Vector3 Vec4 { get; set; }
+        public Vector3 Vec5 { get; set; }
+        public Vector3 Vec6 { get; set; }
+        public Vector3 Vec7 { get; set; }
+        public Vector3 Vec8 { get; set; }
     }
 }

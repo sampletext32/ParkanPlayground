@@ -32,23 +32,24 @@ public static class Msh01
                 OffsetIntoFile13 =
                     BinaryPrimitives.ReadInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 4)),
                 IndexInFile08 =
-                    BinaryPrimitives.ReadInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 6)),
-                State00 = BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 8)),
-                State01 = BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 10)),
-                State10 = BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 12)),
-                State11 = BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 14)),
-                State20 = BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 16)),
-                State21 = BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 18)),
-                S20 = BinaryPrimitives.ReadInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 20)),
-                S22 = BinaryPrimitives.ReadInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 22)),
-                S24 = BinaryPrimitives.ReadInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 24)),
-                S26 = BinaryPrimitives.ReadInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 26)),
-                S28 = BinaryPrimitives.ReadInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 28)),
-                S30 = BinaryPrimitives.ReadInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 30)),
-                S32 = BinaryPrimitives.ReadInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 32)),
-                S34 = BinaryPrimitives.ReadInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 34)),
-                S36 = BinaryPrimitives.ReadInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 36))
+                    BinaryPrimitives.ReadInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 6))
             };
+            
+            element.Lod[0] = BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 8));
+            element.Lod[1] = BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 10));
+            element.Lod[2] = BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 12));
+            element.Lod[3] = BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 14));
+            element.Lod[4] = BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 16));
+            element.Lod[5] = BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 18));
+            element.Lod[6] = BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 20));
+            element.Lod[7] = BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 22));
+            element.Lod[8] = BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 24));
+            element.Lod[9] = BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 26));
+            element.Lod[10] = BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 28));
+            element.Lod[11] = BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 30));
+            element.Lod[12] = BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 32));
+            element.Lod[13] = BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 34));
+            element.Lod[14] = BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(i * headerFileEntry.ElementSize + 36));
             elements.Add(element);
         }
 
@@ -71,20 +72,6 @@ public static class Msh01
         public short ParentIndex { get; set; }
         public short OffsetIntoFile13 { get; set; }
         public short IndexInFile08 { get; set; }
-        public ushort State00 { get; set; }
-        public ushort State01 { get; set; }
-        public ushort State10 { get; set; }
-        public ushort State11 { get; set; }
-        public ushort State20 { get; set; }
-        public ushort State21 { get; set; }
-        public short S20 { get; set; }
-        public short S22 { get; set; }
-        public short S24 { get; set; }
-        public short S26 { get; set; }
-        public short S28 { get; set; }
-        public short S30 { get; set; }
-        public short S32 { get; set; }
-        public short S34 { get; set; }
-        public short S36 { get; set; }
+        public ushort[] Lod { get; set; } = new ushort[15];
     }
 }
