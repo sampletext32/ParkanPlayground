@@ -1,5 +1,3 @@
-using System.Buffers.Binary;
-using System.Globalization;
 using System.Text;
 using Common;
 using NResLib;
@@ -41,6 +39,7 @@ public class MshConverter
         // 01 - это части меша (Piece)
         for (var pieceIndex = 0; pieceIndex < component01.Elements.Count; pieceIndex++)
         {
+            Console.WriteLine($"Piece {pieceIndex}");
             var piece01 = component01.Elements[pieceIndex];
             // var state = (piece.State00 == 0xffff) ? 0 : piece.State00;
 
@@ -49,7 +48,7 @@ public class MshConverter
                 var lod = piece01.Lod[lodIndex];
                 if (lod == 0xffff)
                 {
-                    Console.WriteLine($"Piece {pieceIndex} has lod -1 at {lodIndex}. Skipping");
+                    // Console.WriteLine($"Piece {pieceIndex} has lod -1 at {lodIndex}. Skipping");
                     continue;
                 }
 
@@ -58,6 +57,9 @@ public class MshConverter
                 var part02 = component02.Elements[lod];
 
                 int indexInto07 = part02.StartIndexIn07;
+                var comp07 = component07[indexInto07];
+                Console.WriteLine($"Lod {lodIndex}");
+                Console.WriteLine($"Comp07: {comp07.OffsetX}, {comp07.OffsetY}, {comp07.OffsetZ}");
 
                 var element0Dstart = part02.StartOffsetIn0d;
                 var element0Dcount = part02.ByteLengthIn0D;
@@ -88,7 +90,6 @@ public class MshConverter
 
                             // sw.WriteLine($"o piece_{pieceIndex}_of_mesh_{comp0Dindex}_tri_{ind}");
 
-                            var comp07 = component07[indexInto07];
 
                             var i1 = indexInto03 + component06[indexInto06];
                             var i2 = indexInto03 + component06[indexInto06 + 1];
@@ -116,86 +117,6 @@ public class MshConverter
                         _ = 5;
                     }
                 }
-            }
-        }
-    }
-
-    public void Convert2(string mshPath)
-    {
-        var mshNresResult = NResParser.ReadFile(mshPath);
-        var mshNres = mshNresResult.Archive!;
-
-        using var mshFs = new FileStream(mshPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-
-        var component01 = Msh01.ReadComponent(mshFs, mshNres);
-        var component02 = Msh02.ReadComponent(mshFs, mshNres);
-        var component0A = Msh0A.ReadComponent(mshFs, mshNres);
-        var component07 = Msh07.ReadComponent(mshFs, mshNres);
-        var component0D = Msh0D.ReadComponent(mshFs, mshNres);
-
-        // Triangle Vertex Indices
-        var component06 = Msh06.ReadComponent(mshFs, mshNres);
-
-        // vertices
-        var component03 = Msh03.ReadComponent(mshFs, mshNres);
-
-        var csv06 = new StreamWriter("06.csv", false, Encoding.UTF8);
-
-        for (var i = 0; i < component06.Count; i += 3)
-        {
-            // csv06.WriteLine($"{component06[i]}");
-            csv06.WriteLine($"{component06[i]}, {component06[i + 1]}, {component06[i + 2]}");
-        }
-
-        csv06.Dispose();
-
-        var csv03 = new StreamWriter("03.obj", false, Encoding.UTF8);
-
-        csv03.WriteLine();
-        for (var i = 7525; i < component03.Count; i++)
-        {
-            // csv06.WriteLine($"{component06[i]}");
-            // csv03.WriteAsync($"o {i - 7525}");
-            csv03.WriteLine(
-                $"v {component03[i].X.ToString("F2", CultureInfo.InvariantCulture)} {component03[i].Y.ToString("F2", CultureInfo.InvariantCulture)} {component03[i].Z.ToString("F2", CultureInfo.InvariantCulture)}");
-        }
-
-        for (var i = 10485; i < component06.Count; i += 3)
-        {
-            csv03.WriteLine($"f {component06[i] + 1} {component06[i + 1] + 1} {component06[i + 2] + 1}");
-        }
-
-        csv03.Dispose();
-
-        // --- Write OBJ ---
-        using var sw = new StreamWriter("test.obj", false, Encoding.UTF8);
-
-        for (var index = 0; index < component03.Count; index++)
-        {
-            var v = component03[index];
-            sw.WriteLine($"v {v.X:F8} {v.Y:F8} {v.Z:F8}");
-        }
-
-        for (var i = 0; i < 1; i++)
-        {
-            sw.WriteLine($"o elem_0d_{i}");
-            var element0D = component0D[i];
-
-            Console.WriteLine($"Processing element 0D [{i}]:");
-
-            var elementsOf06 = component06
-                .Skip(element0D.IndexInto06)
-                .Take(element0D.CountOf06)
-                .ToList();
-
-            Console.WriteLine($"\tCount of 06: {elementsOf06.Count}, starting from {element0D.IndexInto06}");
-            var indexInto03 = element0D.IndexInto03;
-
-            Console.WriteLine($"\tIndexInto03: {indexInto03}");
-
-            if (elementsOf06.Count < 3)
-            {
-                throw new Exception("Less than 3 points");
             }
         }
     }

@@ -213,6 +213,9 @@ IComponent ** LoadSomething(undefined4, undefined4, undefined4, undefined4)
 
 ## `.msh`
 
+### Описание ниже валидно только для моделей роботов и зданий.
+##### Land.msh использует другой формат, хотя 03 файл это всё ещё точки.
+
 Загружается в `AniMesh.dll/LoadAniMesh`
 
 - Тип 01 - заголовок. Он хранит список деталей (submesh) в разных LOD
@@ -277,6 +280,22 @@ IComponent ** LoadSomething(undefined4, undefined4, undefined4, undefined4)
 
 Загружается в `World3D.dll/LoadMatManager`
 
+По сути это текстовый файл состоящий из 2 частей:
+- Материалы
+  ```
+  {count}
+  {id} {name}
+  ```
+- Карты освещения
+  ```
+  LIGHTMAPS
+  {count}
+  {id} {name}
+  ```
+
+Может как-то анимироваться. Как - пока не понятно.
+
+
 # Внутренняя система ID
 
 - `1` - 
@@ -309,6 +328,7 @@ IComponent ** LoadSomething(undefined4, undefined4, undefined4, undefined4)
 - `0x28` - ICollObject
 - `0x101` - 3DRender
 - `0x105` - NResFile
+- `0x106` - NResFileMetadata
 - `0x201` - IWizard
 - `0x202` - IItemManager
 - `0x203` - ICollManager
@@ -317,8 +337,6 @@ IComponent ** LoadSomething(undefined4, undefined4, undefined4, undefined4)
 - `0x303` - IHallway
 - `0x304` - Distributor
 - `0x401` - ISuperAI
-- `0x105` - NResFile
-- `0x106` - NResFileMetadata
 - `0x501` - MissionData
 - `0x502` - ResTree
 - `0x700` - NetWatcher
