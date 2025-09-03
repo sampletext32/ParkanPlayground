@@ -16,6 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\CpDatLib\CpDatLib.csproj" />
       <ProjectReference Include="..\MissionTmaLib\MissionTmaLib.csproj" />
       <ProjectReference Include="..\NResLib\NResLib.csproj" />
       <ProjectReference Include="..\ScrLib\ScrLib.csproj" />

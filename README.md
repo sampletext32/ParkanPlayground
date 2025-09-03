@@ -304,7 +304,7 @@ IComponent ** LoadSomething(undefined4, undefined4, undefined4, undefined4)
 - `6` - IGameObject (0x138)
 - `7` - IShadeConfig (у меня в папке с игрой его не оказалось)
 - `8` - ICamera
-- `9` - Queue
+- `9` - IQueue
 - `10` - IControl
 - `0xb` - IAnimation
 - `0xd` - IMatManager

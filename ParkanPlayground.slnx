@@ -5,6 +5,7 @@
     <File Path="README.md" />
   </Folder>
   <Project Path="Common\Common.csproj" Type="Classic C#" />
+  <Project Path="CpDatLib\CpDatLib.csproj" Type="Classic C#" />
   <Project Path="MeshUnpacker/MeshUnpacker.csproj" />
   <Project Path="MissionDataUnpacker/MissionDataUnpacker.csproj" />
   <Project Path="MissionTmaLib/MissionTmaLib.csproj" />

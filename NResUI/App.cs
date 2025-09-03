@@ -56,6 +56,7 @@ public class App
             serviceCollection.AddSingleton(new BinaryExplorerViewModel());
             serviceCollection.AddSingleton(new ScrViewModel());
             serviceCollection.AddSingleton(new VarsetViewModel());
+            serviceCollection.AddSingleton(new CpDatSchemeViewModel());
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
 

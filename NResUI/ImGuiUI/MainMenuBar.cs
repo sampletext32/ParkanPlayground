@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using CpDatLib;
 using ImGuiNET;
 using MissionTmaLib;
 using MissionTmaLib.Parsing;
@@ -18,6 +19,7 @@ namespace NResUI.ImGuiUI
         ScrViewModel scrViewModel,
         MissionTmaViewModel missionTmaViewModel,
         VarsetViewModel varsetViewModel,
+        CpDatSchemeViewModel cpDatSchemeViewModel,
         MessageBoxModalPanel messageBox)
         : IImGuiPanel
     {
@@ -118,6 +120,21 @@ namespace NResUI.ImGuiUI
                             varsetViewModel.Items = parseResult;
 
                             Console.WriteLine("Read VARSET");
+                        }
+                    }
+
+                    if (ImGui.MenuItem("Open cp .dat Scheme File"))
+                    {
+                        var result = Dialog.FileOpen("dat");
+
+                        if (result.IsOk)
+                        {
+                            var path = result.Path;
+                            var parseResult = CpDatParser.Parse(path);
+
+                            cpDatSchemeViewModel.SetParseResult(parseResult, path);
+
+                            Console.WriteLine("Read cp .dat");
                         }
                     }
 
