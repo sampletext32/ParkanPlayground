@@ -18,6 +18,9 @@ public class ScrExplorer : IImGuiPanel
     {
         if (ImGui.Begin("SCR Explorer"))
         {
+            ImGui.Text("scr - это файл AI скриптов. Их можно найти в папке MISSIONS/SCRIPTS");
+            ImGui.Separator();
+            
             var scr = _viewModel.Scr;
             if (_viewModel.HasFile && scr is not null)
             {

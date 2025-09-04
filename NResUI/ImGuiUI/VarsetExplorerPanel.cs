@@ -17,6 +17,9 @@ public class VarsetExplorerPanel : IImGuiPanel
     {
         if (ImGui.Begin("VARSET Explorer"))
         {
+            ImGui.Text(".var - это файл динамических настроек. Можно найти в MISSIONS/SCRIPTS/varset.var, а также внутри behpsp.res");
+            ImGui.Separator();
+
             if (_viewModel.Items.Count == 0)
             {
                 ImGui.Text("VARSET не загружен");

@@ -21,6 +21,9 @@ public class TexmExplorer : IImGuiPanel
     {
         if (ImGui.Begin("TEXM Explorer"))
         {
+            ImGui.Text("TEXM - это файл текстуры. Их можно найти внутри NRes архивов, например Textures.lib");
+            ImGui.Separator();
+            
             if (!_viewModel.HasFile)
             {
                 ImGui.Text("No TEXM opened");

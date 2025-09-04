@@ -18,6 +18,9 @@ public class MissionTmaExplorer : IImGuiPanel
     {
         if (ImGui.Begin("Mission TMA Explorer"))
         {
+            ImGui.Text("data.tma - это файл миссии. Его можно найти в папке MISSIONS");
+            ImGui.Separator();
+            
             var mission = _viewModel.Mission;
             if (_viewModel.HasFile && mission is not null)
             {

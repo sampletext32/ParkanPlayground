@@ -1,8 +1,7 @@
-﻿using CpDatLib;
+using CpDatLib;
 using ImGuiNET;
 using NResUI.Abstractions;
 using NResUI.Models;
-using ScrLib;
 
 namespace NResUI.ImGuiUI;
 
@@ -19,6 +18,9 @@ public class CpDatSchemeExplorer : IImGuiPanel
     {
         if (ImGui.Begin("cp .dat Scheme Explorer"))
         {
+            ImGui.Text("cp .dat - это файл схема здания или робота. Их можно найти в папке UNITS");
+            ImGui.Separator();
+            
             var cpDat = _viewModel.CpDatScheme;
             if (_viewModel.HasFile && cpDat is not null)
             {
@@ -32,8 +34,7 @@ public class CpDatSchemeExplorer : IImGuiPanel
 
                 ImGui.Separator();
 
-                if (ImGui.BeginTable("content", 7,
-                        ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoHostExtendX))
+                if (ImGui.BeginTable("content", 7, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoHostExtendX))
                 {
                     ImGui.TableSetupColumn("Уровень вложенности");
                     ImGui.TableSetupColumn("Архив");
@@ -69,8 +70,7 @@ public class CpDatSchemeExplorer : IImGuiPanel
 
                 void DrawEntry(CpDatEntry entry, int index)
                 {
-                    if (ImGui.TreeNodeEx(
-                            $"Элемент: \"{entry.ArchiveFile}/{entry.ArchiveEntryName}\" - {entry.Description}##entry_{index}"))
+                    if (ImGui.TreeNodeEx($"Элемент: \"{entry.ArchiveFile}/{entry.ArchiveEntryName}\" - {entry.Description}##entry_{index}"))
                     {
                         ImGui.Text("Magic1: ");
                         ImGui.SameLine();
@@ -88,17 +88,9 @@ public class CpDatSchemeExplorer : IImGuiPanel
                         ImGui.SameLine();
                         ImGui.Text(entry.ChildCount.ToString());
 
-                        if (entry.Children.Count > 0)
+                        foreach (var child in entry.Children)
                         {
-                            if (ImGui.TreeNodeEx("Дочерние элементы"))
-                            {
-                                foreach (var child in entry.Children)
-                                {
-                                    DrawEntry(child, ++index);
-                                }
-
-                                ImGui.TreePop();
-                            }
+                            DrawEntry(child, ++index);
                         }
 
                         ImGui.TreePop();
@@ -113,8 +105,8 @@ public class CpDatSchemeExplorer : IImGuiPanel
             {
                 ImGui.Text("cp .dat не открыт");
             }
-
-            ImGui.End();
         }
+        
+        ImGui.End();
     }
 }

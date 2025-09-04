@@ -17,6 +17,9 @@ public class NResExplorerPanel : IImGuiPanel
     {
         if (ImGui.Begin("NRes Explorer"))
         {
+            ImGui.Text("NRes - это файл-архив. Они имеют разные расширения. Примеры - Textures.lib, weapon.rlb, object.dlb, behpsp.res");
+            ImGui.Separator();
+
             if (!_viewModel.HasFile)
             {
                 ImGui.Text("No NRes is opened");
