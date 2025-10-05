@@ -29,42 +29,42 @@ public static class Msh02
         var centerW = BinaryPrimitives.ReadSingleLittleEndian(header.Slice(0x6c));
 
         var bb = new BoundingBox();
-        bb.Vec1 = new Vector3(
+        bb.BottomFrontLeft = new Vector3(
             BinaryPrimitives.ReadSingleLittleEndian(header.Slice(0)),
             BinaryPrimitives.ReadSingleLittleEndian(header.Slice(4)),
             BinaryPrimitives.ReadSingleLittleEndian(header.Slice(8))
         );
-        bb.Vec2 = new Vector3(
+        bb.BottomFrontRight = new Vector3(
             BinaryPrimitives.ReadSingleLittleEndian(header.Slice(12)),
             BinaryPrimitives.ReadSingleLittleEndian(header.Slice(16)),
             BinaryPrimitives.ReadSingleLittleEndian(header.Slice(20))
         );
-        bb.Vec3 = new Vector3(
+        bb.BottomBackRight = new Vector3(
             BinaryPrimitives.ReadSingleLittleEndian(header.Slice(24)),
             BinaryPrimitives.ReadSingleLittleEndian(header.Slice(28)),
             BinaryPrimitives.ReadSingleLittleEndian(header.Slice(32))
         );
-        bb.Vec4 = new Vector3(
+        bb.BottomBackLeft = new Vector3(
             BinaryPrimitives.ReadSingleLittleEndian(header.Slice(36)),
             BinaryPrimitives.ReadSingleLittleEndian(header.Slice(40)),
             BinaryPrimitives.ReadSingleLittleEndian(header.Slice(44))
         );
-        bb.Vec5 = new Vector3(
+        bb.TopFrontLeft = new Vector3(
             BinaryPrimitives.ReadSingleLittleEndian(header.Slice(48)),
             BinaryPrimitives.ReadSingleLittleEndian(header.Slice(52)),
             BinaryPrimitives.ReadSingleLittleEndian(header.Slice(56))
         );
-        bb.Vec6 = new Vector3(
+        bb.TopFrontRight = new Vector3(
             BinaryPrimitives.ReadSingleLittleEndian(header.Slice(60)),
             BinaryPrimitives.ReadSingleLittleEndian(header.Slice(64)),
             BinaryPrimitives.ReadSingleLittleEndian(header.Slice(68))
         );
-        bb.Vec7 = new Vector3(
+        bb.TopBackRight = new Vector3(
             BinaryPrimitives.ReadSingleLittleEndian(header.Slice(72)),
             BinaryPrimitives.ReadSingleLittleEndian(header.Slice(76)),
             BinaryPrimitives.ReadSingleLittleEndian(header.Slice(80))
         );
-        bb.Vec8 = new Vector3(
+        bb.TopBackLeft = new Vector3(
             BinaryPrimitives.ReadSingleLittleEndian(header.Slice(84)),
             BinaryPrimitives.ReadSingleLittleEndian(header.Slice(88)),
             BinaryPrimitives.ReadSingleLittleEndian(header.Slice(92))
@@ -149,6 +149,9 @@ public static class Msh02
         public List<Msh02Element> Elements { get; set; }
     }
 
+    /// <summary>
+    /// 140 байт в начале файла
+    /// </summary>
     public class Msh02Header
     {
         public BoundingBox BoundingBox { get; set; }
@@ -172,15 +175,19 @@ public static class Msh02
         public Vector3 Vector5 { get; set; }
     }
 
+    /// <summary>
+    /// 96 bytes - bounding box (8 points each 3 float = 96 bytes)
+    /// 0x60 bytes or 0x18 by 4 bytes
+    /// </summary>
     public class BoundingBox
     {
-        public Vector3 Vec1 { get; set; }
-        public Vector3 Vec2 { get; set; }
-        public Vector3 Vec3 { get; set; }
-        public Vector3 Vec4 { get; set; }
-        public Vector3 Vec5 { get; set; }
-        public Vector3 Vec6 { get; set; }
-        public Vector3 Vec7 { get; set; }
-        public Vector3 Vec8 { get; set; }
+        public Vector3 BottomFrontLeft { get; set; }
+        public Vector3 BottomFrontRight { get; set; }
+        public Vector3 BottomBackRight { get; set; }
+        public Vector3 BottomBackLeft { get; set; }
+        public Vector3 TopFrontLeft { get; set; }
+        public Vector3 TopFrontRight { get; set; }
+        public Vector3 TopBackRight { get; set; }
+        public Vector3 TopBackLeft { get; set; }
     }
 }

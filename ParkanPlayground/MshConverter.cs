@@ -15,6 +15,8 @@ public class MshConverter
 
         var component01 = Msh01.ReadComponent(mshFs, mshNres);
         var component02 = Msh02.ReadComponent(mshFs, mshNres);
+        var component15 = Msh15.ReadComponent(mshFs, mshNres);
+        
         var component0A = Msh0A.ReadComponent(mshFs, mshNres);
         var component07 = Msh07.ReadComponent(mshFs, mshNres);
         var component0D = Msh0D.ReadComponent(mshFs, mshNres);

@@ -9,8 +9,8 @@ public class CpDatSchemeViewModel
     public string? Error { get; set; }
 
     public CpDatScheme? CpDatScheme { get; set; }
-    
-    public List<(int Level, CpDatEntry Entry)> FlatList { get; set; }
+
+    public List<(int Level, CpDatEntry Entry)> FlatList { get; set; } = [];
 
     public string? Path { get; set; }
 
@@ -23,17 +23,27 @@ public class CpDatSchemeViewModel
 
         if (CpDatScheme is not null)
         {
-            FlatList = [];
+            RebuildFlatList();
+        }
+    }
+
+    public void RebuildFlatList()
+    {
+        FlatList = [];
+
+        if (CpDatScheme is null)
+        {
+            return;
+        }
             
-            CollectEntries(CpDatScheme.Root, 0);
+        CollectEntries(CpDatScheme.Root, 0);
             
-            void CollectEntries(CpDatEntry entry, int level)
+        void CollectEntries(CpDatEntry entry, int level)
+        {
+            FlatList.Add((level, entry));
+            foreach (var child in entry.Children)
             {
-                FlatList.Add((level, entry));
-                foreach (var child in entry.Children)
-                {
-                    CollectEntries(child, level + 1);
-                }
+                CollectEntries(child, level + 1);
             }
         }
     }

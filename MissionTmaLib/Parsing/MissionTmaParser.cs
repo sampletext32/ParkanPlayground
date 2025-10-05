@@ -8,6 +8,11 @@ public class MissionTmaParser
     {
         using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
+        return ReadFile(fs);
+    }
+
+    public static MissionTmaParseResult ReadFile(Stream fs)
+    {
         var arealData = LoadAreals(fs);
 
         var clansData = LoadClans(fs);
@@ -20,7 +25,7 @@ public class MissionTmaParser
         return new MissionTmaParseResult(missionDat, null);
     }
 
-    private static ArealsFileData LoadAreals(FileStream fileStream)
+    private static ArealsFileData LoadAreals(Stream fileStream)
     {
         var unusedHeader = fileStream.ReadInt32LittleEndian();
         var arealCount = fileStream.ReadInt32LittleEndian();
@@ -56,7 +61,7 @@ public class MissionTmaParser
         return new ArealsFileData(unusedHeader, arealCount, infos);
     }
 
-    private static ClansFileData? LoadClans(FileStream fileStream)
+    private static ClansFileData? LoadClans(Stream fileStream)
     {
         var clanFeatureSet = fileStream.ReadInt32LittleEndian();
 
@@ -158,7 +163,7 @@ public class MissionTmaParser
         return clanInfo;
     }
 
-    private static GameObjectsFileData LoadGameObjects(FileStream fileStream)
+    private static GameObjectsFileData LoadGameObjects(Stream fileStream)
     {
         var gameObjectsFeatureSet = fileStream.ReadInt32LittleEndian();
 

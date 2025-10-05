@@ -302,7 +302,7 @@ IComponent ** LoadSomething(undefined4, undefined4, undefined4, undefined4)
 - `4` - IShader
 - `5` - ITerrain
 - `6` - IGameObject (0x138)
-- `7` - IShadeConfig (у меня в папке с игрой его не оказалось)
+- `7` - IAtmosphereObject
 - `8` - ICamera
 - `9` - IQueue
 - `10` - IControl
@@ -329,6 +329,7 @@ IComponent ** LoadSomething(undefined4, undefined4, undefined4, undefined4)
 - `0x101` - 3DRender
 - `0x105` - NResFile
 - `0x106` - NResFileMetadata
+- `0x107` - 3DSound
 - `0x201` - IWizard
 - `0x202` - IItemManager
 - `0x203` - ICollManager

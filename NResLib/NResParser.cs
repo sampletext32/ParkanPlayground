@@ -9,6 +9,11 @@ public static class NResParser
     {
         using FileStream nResFs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
 
+        return ReadFile(nResFs);
+    }
+    
+    public static NResParseResult ReadFile(Stream nResFs)
+    {
         if (nResFs.Length < 16)
         {
             return new NResParseResult(null, "Файл не может быть NRes, менее 16 байт");

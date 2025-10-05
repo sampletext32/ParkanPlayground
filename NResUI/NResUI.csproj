@@ -1,7 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
+        <OutputType Condition="'$(OS)' == 'Windows_NT'">WinExe</OutputType>
+        <OutputType Condition="'$(OS)' != 'Windows_NT'">Exe</OutputType>
     </PropertyGroup>
 
     <ItemGroup>

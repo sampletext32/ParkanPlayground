@@ -6,10 +6,15 @@ public class ScrParser
 {
     public static ScrFile ReadFile(string filePath)
     {
-        var fs = new FileStream(filePath, FileMode.Open);
+        using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
+        return ReadFile(fs);
+    }
+
+    public static ScrFile ReadFile(Stream fs)
+    {
         var scrFile = new ScrFile();
-        
+
         scrFile.Magic = fs.ReadInt32LittleEndian();
 
         scrFile.EntryCount = fs.ReadInt32LittleEndian();
@@ -19,7 +24,7 @@ public class ScrParser
         {
             var entry = new ScrEntry();
             entry.Title = fs.ReadLengthPrefixedString();
-    
+
             // тут игра дополнительно вычитывает ещё 1 байт, видимо как \0 для char*
             fs.ReadByte();
 
@@ -30,12 +35,12 @@ public class ScrParser
             {
                 var entryInner = new ScrEntryInner();
                 entryInner.ScriptIndex = fs.ReadInt32LittleEndian();
-                
+
                 entryInner.UnkInner2 = fs.ReadInt32LittleEndian();
                 entryInner.UnkInner3 = fs.ReadInt32LittleEndian();
                 entryInner.Type = (ScrEntryInnerType)fs.ReadInt32LittleEndian();
                 entryInner.UnkInner5 = fs.ReadInt32LittleEndian();
-        
+
                 entryInner.ArgumentsCount = fs.ReadInt32LittleEndian();
 
                 entryInner.Arguments = [];
@@ -48,7 +53,7 @@ public class ScrParser
                 entryInner.UnkInner7 = fs.ReadInt32LittleEndian();
                 entry.Inners.Add(entryInner);
             }
-            
+
             scrFile.Entries.Add(entry);
         }
 

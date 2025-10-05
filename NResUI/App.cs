@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Text;
 using ImGuiNET;
 using Microsoft.Extensions.DependencyInjection;
 using NResUI.Abstractions;
@@ -33,6 +34,8 @@ public class App
 
         public void Init(IWindow window, GL openGl, ImFontPtr openSansFont)
         {
+            // Call this once at program startup
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             ImGui.StyleColorsLight();
 
             IServiceCollection serviceCollection = new ServiceCollection();
