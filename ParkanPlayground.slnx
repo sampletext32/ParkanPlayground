@@ -12,6 +12,7 @@
   <Project Path="NLUnpacker/NLUnpacker.csproj" />
   <Project Path="NResLib/NResLib.csproj" />
   <Project Path="NResUI/NResUI.csproj" />
+  <Project Path="PalLib\PalLib.csproj" Type="Classic C#" />
   <Project Path="ParkanPlayground/ParkanPlayground.csproj" />
   <Project Path="ScrLib/ScrLib.csproj" />
   <Project Path="TexmLib/TexmLib.csproj" />

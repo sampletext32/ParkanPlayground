@@ -344,6 +344,9 @@ IComponent ** LoadSomething(undefined4, undefined4, undefined4, undefined4)
 - `0x701` - INetworkInterface
 - `0x10d` - CreateVertexBufferData
 
+## SuperAI = Clan с точки зрения индексации
+
+Т.е. у каждого клана свой SuperAI
 
 ## Опции
 
