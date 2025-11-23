@@ -1,6 +1,8 @@
 using System.Buffers.Binary;
 using System.Text;
 
+// Unfinished
+
 var fileBytes = File.ReadAllBytes("C:\\Program Files (x86)\\Nikita\\Iron Strategy\\gamefont-1.rlb");
 
 var header = fileBytes.AsSpan().Slice(0, 32);

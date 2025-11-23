@@ -6,8 +6,6 @@
   </Folder>
   <Project Path="Common\Common.csproj" Type="Classic C#" />
   <Project Path="CpDatLib\CpDatLib.csproj" Type="Classic C#" />
-  <Project Path="MeshUnpacker/MeshUnpacker.csproj" />
-  <Project Path="MissionDataUnpacker/MissionDataUnpacker.csproj" />
   <Project Path="MissionTmaLib/MissionTmaLib.csproj" />
   <Project Path="NLUnpacker/NLUnpacker.csproj" />
   <Project Path="NResLib/NResLib.csproj" />
@@ -16,7 +14,5 @@
   <Project Path="ParkanPlayground/ParkanPlayground.csproj" />
   <Project Path="ScrLib/ScrLib.csproj" />
   <Project Path="TexmLib/TexmLib.csproj" />
-  <Project Path="TextureDecoder/TextureDecoder.csproj" />
   <Project Path="VarsetLib/VarsetLib.csproj" />
-  <Project Path="Visualisator/Visualisator.csproj" />
 </Solution>
