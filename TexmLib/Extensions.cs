@@ -6,10 +6,10 @@ public static class Extensions
     {
         return format switch
         {
-            8888 => 32,
-            4444 => 16,
-            565 => 16,
-            888 => 32,
+            0x22B8 => 32,
+            0x115C => 16,
+            0x235 => 16,
+            0x378 => 32,
             0 => 32
         };
     }

@@ -298,18 +298,19 @@ IComponent ** LoadSomething(undefined4, undefined4, undefined4, undefined4)
 
 # Внутренняя система ID
 
-- `1` - 
+- `1` - unknown (implemented by CLandscape)
+- `3` - unknown (implemented by CAtmosphere)
 - `4` - IShader
 - `5` - ITerrain
 - `6` - IGameObject (0x138)
-- `7` - IAtmosphereObject
+- `7` - unknown (contained in CAgent)
 - `8` - ICamera
 - `9` - IQueue
 - `10` - IControl
 - `0xb` - IAnimation
 - `0xd` - IMatManager
 - `0xe` - ILightManager
-- `0x10` - IBehavior
+- `0x10` - IBehaviour
 - `0x11` - IBasement
 - `0x12` - ICamera2 или IBufferingCamera
 - `0x13` - IEffectManager
@@ -321,26 +322,36 @@ IComponent ** LoadSomething(undefined4, undefined4, undefined4, undefined4)
 - `0x19` - IManManager
 - `0x20` - IJointMesh
 - `0x21` - IShade
+- `0x22` - unknown (implement by CLandscape)
 - `0x23` - IGameSettings
 - `0x24` - IGameObject2
-- `0x25` - unknown (implemented by AniMesh)
-- `0x26` - unknown (implemented by AniMesh)
+- `0x25` - unknown (implemented by CAniMesh)
+- `0x26` - unknown (implemented by CAniMesh and CControl)
 - `0x28` - ICollObject
-- `0x101` - 3DRender
-- `0x105` - NResFile
+- `0x29` - IPhysicalModel
+- `0x101` - I3DRender
+- `0x102` - ITexture
+- `0x103` - IColorLookup
+- `0x104` - IBitmapFont
+- `0x105` - INResFile
 - `0x106` - NResFileMetadata
-- `0x107` - 3DSound
+- `0x107` - I3DSound
+- `0x107` - IListenerTransform
+- `0x109` - ISoundPool
+- `0x10a` - ISoundBuffer
+- `0x10d` - ICDPlayer
+- `0x10d` - IVertexBuffer
 - `0x201` - IWizard
 - `0x202` - IItemManager
 - `0x203` - ICollManager
 - `0x301` - IArealMap
 - `0x302` - ISystemArealMap
 - `0x303` - IHallway
-- `0x304` - Distributor
+- `0x304` - IDistributor
 - `0x401` - ISuperAI
 - `0x501` - MissionData
 - `0x502` - ResTree
-- `0x700` - NetWatcher
+- `0x700` - INetWatcher
 - `0x701` - INetworkInterface
 - `0x10d` - CreateVertexBufferData
 
