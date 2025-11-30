@@ -442,24 +442,40 @@ World3D.dll содержит функцию CreateGameSettings.
 ## Goodies
 
 ```c++
-// Тип положения объекта в пространстве, применяется для расчёта эффектов, расположения объектов и для сотни получений местоположения объектов 
-// объяснение от ChatGPT но это лучше чем ничего
+// Тип положения объекта в пространстве. Используется при расчёте эффектов,
+// расстановке объектов и для получения/выдачи их матриц трансформации.
 enum EPlacementType
 {
-    // 0: Full world-space placement used for look-at / target-based alignment.
-    //    Passed-in matrix is a world transform; engine converts to local/joint as needed.
+    // 0: Полная мировая матрица, ориентированная "смотрю на цель".
+    //    Входная matrix — это мировая матрица (look-at к какой-то цели).
+    //    Движок при необходимости переводит её в локальное/костное пространство
+    //    (через inverse(parent/joint) * world и т.п.).
+    // Смысл: "Построй мне мировую матрицу так, чтобы я смотрел на цель;
+    //         если я привязан к кости — учти это."
     Placement_WorldLookAtTarget              = 0,
 
-    // 1: World-space placement where the object's 'direction' is aligned toward the target.
-    //    Passed-in matrix is world; alignment logic uses internal direction + target.
+    // 1: Мировая матрица, где основная ось объекта (this->direction)
+    //    выровнена по направлению к цели.
+    //    Входная matrix — мировая; логика выравнивания использует внутренний
+    //    вектор direction и целевую точку/направление.
+    // Смысл: "Используй мой внутренний direction как основную ось
+    //         и как можно лучше направь её в сторону цели."
     Placement_WorldAlignDirectionToTarget    = 1,
 
-    // 2: World-space placement defined purely by the object's own stored transform.
-    //    Passed-in matrix is “standalone world”; engine stores it as internal local/joint.
+    // 2: Мировая матрица, полностью задаётся внутренним состоянием объекта.
+    //    Входная matrix трактуется как "standalone world" — готовая мировая
+    //    матрица объекта. Движок лишь переводит её во внутреннее локальное/
+    //    костное пространство (inverse(parent/joint) * world), без look-at
+    //    и без выравнивания по цели.
+    // Смысл: "Вот моя конечная мировая матрица. Просто встрои её в иерархию,
+    //         не трогая ориентацию дополнительной логикой."
     Placement_WorldFromStoredTransform       = 2,
 
-    // 3: World-space placement aligned along motion, also constrained toward target.
-    //    Uses previous world position + current + target.
+    // 3: Мировая матрица, ориентированная вдоль вектора движения, но с учётом цели.
+    //    Используется предыдущая мировая позиция + текущая + target, чтобы
+    //    построить базис: основная ось — направление движения, вспомогательная —
+    //    направление к цели.
+    // Смысл: "Ориентируй меня по вектору моего движения, но также учитывай цель."
     Placement_WorldAlignMotionToTarget       = 3
 };
 ```
