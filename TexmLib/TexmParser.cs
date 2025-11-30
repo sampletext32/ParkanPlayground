@@ -22,7 +22,7 @@ public class TexmParser
         var mipmapCountBytes = headerBytes[12..16];
         var strideBytes = headerBytes[16..20];
         var magic1Bytes = headerBytes[20..24];
-        var magic2Bytes = headerBytes[24..28];
+        var formatOptionFlagsBytes = headerBytes[24..28];
         var formatBytes = headerBytes[28..32];
 
         var texmAscii = Encoding.ASCII.GetString(texmHeader).Trim('\0');
@@ -31,7 +31,7 @@ public class TexmParser
         var mipmapCount = BinaryPrimitives.ReadInt32LittleEndian(mipmapCountBytes);
         var stride = BinaryPrimitives.ReadInt32LittleEndian(strideBytes);
         var magic1 = BinaryPrimitives.ReadInt32LittleEndian(magic1Bytes);
-        var magic2 = BinaryPrimitives.ReadInt32LittleEndian(magic2Bytes);
+        var formatOptionFlags = BinaryPrimitives.ReadInt32LittleEndian(formatOptionFlagsBytes);
         var format = BinaryPrimitives.ReadInt32LittleEndian(formatBytes);
 
         if (texmAscii != "Texm")
@@ -51,7 +51,7 @@ public class TexmParser
             mipmapCount,
             stride,
             magic1,
-            magic2,
+            formatOptionFlags,
             format
         );
 

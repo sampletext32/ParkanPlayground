@@ -62,7 +62,7 @@ public class TexmExplorer : IImGuiPanel
 
                     ImGui.Text("Magic2: ");
                     ImGui.SameLine();
-                    ImGui.Text(_viewModel.TexmFile.Header.Magic2.ToString());
+                    ImGui.Text(_viewModel.TexmFile.Header.FormatOptionFlags.ToString());
 
                     ImGui.Text("Format: ");
                     ImGui.SameLine();

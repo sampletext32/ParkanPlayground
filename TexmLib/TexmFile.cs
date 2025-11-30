@@ -14,7 +14,7 @@ namespace TexmLib;
 /// <param name="MipmapCount">Кол-во мипмапов (уменьшенные копии текстуры)</param>
 /// <param name="Stride">Сколько БИТ занимает 1 пиксель</param>
 /// <param name="Magic1">Неизвестно</param>
-/// <param name="Magic2">Неизвестно</param>
+/// <param name="FormatOptionFlags">Дополнительные флаги для текстуры</param>
 /// <param name="Format">Формат пикселя(4444, 8888, 888)</param>
 public record TexmHeader(
     string TexmAscii,
@@ -23,7 +23,7 @@ public record TexmHeader(
     int MipmapCount,
     int Stride,
     int Magic1,
-    int Magic2,
+    int FormatOptionFlags,
     int Format
 );
 

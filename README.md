@@ -295,21 +295,70 @@ IComponent ** LoadSomething(undefined4, undefined4, undefined4, undefined4)
 
 Может как-то анимироваться. Как - пока не понятно.
 
+## `FXID` - файл эффектов
+
+По сути представляет собой последовательный список саб-эффектов идущих друг за другом.
+
+Всего существует 9 (1..9) видов эффектов: !описать по мере реверса
+
+Выглядит так, словно весь файл это тоже эффект сам по себе.
+
+```
+0x00-0x04 Type (игра обрезает 1 байт, и поддерживает только значения 1-9)
+0x04-0x08 unknown
+0x08-0x0C unknown
+0x0C-0x10 unknown
+0x10-0x14 EffectTemplateFlags
+...
+0x30-0x34 ScaleX
+0x34-0x38 ScaleY
+0x38-0x3C ScaleZ
+
+enum EffectTemplateFlags : uint32_t
+{
+    EffectTemplateFlag_RandomizeStrength   = 0x0001,  // used in UpdateDust
+    EffectTemplateFlag_RandomOffset        = 0x0008,  // random worldTransform offset
+    EffectTemplateFlag_TriangularShape     = 0x0020,  // post-process strength as 0→1→0
+    EffectTemplateFlag_OnlyWhenEnvBit0Off  = 0x0080,  // gating in ComputeEffectStrength
+    EffectTemplateFlag_OnlyWhenEnvBit0On   = 0x0100,  // gating in ComputeEffectStrength
+    EffectTemplateFlag_MultiplyByLife      = 0x0200,  // multiply strength by life progress
+    EffectTemplateFlag_EnvFlag2_IfNotSet   = 0x0800,  // if NOT set → envFlags |= 0x02
+    EffectTemplateFlag_EnvFlag10_IfSet     = 0x1000,  // if set  → envFlags |= 0x10
+    EffectTemplateFlag_AlwaysEmitDust      = 0x0010,  // ignore piece state / flags
+    EffectTemplateFlag_IgnorePieceState    = 0x8000,  // treat piece default state as OK
+    EffectTemplateFlag_AutoDeleteAtFull    = 0x0002,  // delete when strength >= 1
+    EffectTemplateFlag_DetachAfterEmit     = 0x0004,  // detach from attachment after update
+};
+
+```
+
+
+
+
+# ЕСЛИ ГДЕ-ТО ВИДИШЬ PTR_func_ret1_no_args, ТО ЭТО ShaderConfig
+
+В рендеринге порядок дата-стримов такой
+
+position
+normal
+color
 
 # Внутренняя система ID
 
-- `1` - unknown (implemented by CLandscape)
-- `3` - unknown (implemented by CAtmosphere)
+- `1` - unknown (implemented by CLandscape) видимо ILandscape
+- `3` - unknown (implemented by CAtmosphere) видимо IAtmosphere
 - `4` - IShader
 - `5` - ITerrain
-- `6` - IGameObject (0x138)
-- `7` - unknown (contained in CAgent)
+- `6` - IGameObject
+- `7` - ISettings скорее всего 
 - `8` - ICamera
 - `9` - IQueue
 - `10` - IControl
 - `0xb` - IAnimation
+- `0xc` - IShadeStatsBuilder (придумал сам implemented by CShade)
 - `0xd` - IMatManager
 - `0xe` - ILightManager
+- `0xf` - IShade
 - `0x10` - IBehaviour
 - `0x11` - IBasement
 - `0x12` - ICamera2 или IBufferingCamera
@@ -321,7 +370,7 @@ IComponent ** LoadSomething(undefined4, undefined4, undefined4, undefined4)
 - `0x18` - IMesh2
 - `0x19` - IManManager
 - `0x20` - IJointMesh
-- `0x21` - IShade
+- `0x21` - IShadowProcessor (придумал сам implemented by CShade)
 - `0x22` - unknown (implement by CLandscape)
 - `0x23` - IGameSettings
 - `0x24` - IGameObject2
@@ -336,10 +385,10 @@ IComponent ** LoadSomething(undefined4, undefined4, undefined4, undefined4)
 - `0x105` - INResFile
 - `0x106` - NResFileMetadata
 - `0x107` - I3DSound
-- `0x107` - IListenerTransform
+- `0x108` - IListenerTransform
 - `0x109` - ISoundPool
 - `0x10a` - ISoundBuffer
-- `0x10d` - ICDPlayer
+- `0x10c` - ICDPlayer
 - `0x10d` - IVertexBuffer
 - `0x201` - IWizard
 - `0x202` - IItemManager
@@ -353,7 +402,6 @@ IComponent ** LoadSomething(undefined4, undefined4, undefined4, undefined4)
 - `0x502` - ResTree
 - `0x700` - INetWatcher
 - `0x701` - INetworkInterface
-- `0x10d` - CreateVertexBufferData
 
 ## SuperAI = Clan с точки зрения индексации
 
@@ -390,6 +438,31 @@ World3D.dll содержит функцию CreateGameSettings.
 |    ----     |    30 (0x1e)    |        ShadeConfig         |         | из файла shade.cfg |
 |    ----     |    (0x8001e)    |                            |         | добавляет AniMesh  |
 
+
+## Goodies
+
+```c++
+// Тип положения объекта в пространстве, применяется для расчёта эффектов, расположения объектов и для сотни получений местоположения объектов 
+// объяснение от ChatGPT но это лучше чем ничего
+enum EPlacementType
+{
+    // 0: Full world-space placement used for look-at / target-based alignment.
+    //    Passed-in matrix is a world transform; engine converts to local/joint as needed.
+    Placement_WorldLookAtTarget              = 0,
+
+    // 1: World-space placement where the object's 'direction' is aligned toward the target.
+    //    Passed-in matrix is world; alignment logic uses internal direction + target.
+    Placement_WorldAlignDirectionToTarget    = 1,
+
+    // 2: World-space placement defined purely by the object's own stored transform.
+    //    Passed-in matrix is “standalone world”; engine stores it as internal local/joint.
+    Placement_WorldFromStoredTransform       = 2,
+
+    // 3: World-space placement aligned along motion, also constrained toward target.
+    //    Uses previous world position + current + target.
+    Placement_WorldAlignMotionToTarget       = 3
+};
+```
 
 ## Контакты
 
