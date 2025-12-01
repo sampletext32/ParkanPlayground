@@ -20,7 +20,7 @@ public record NResArchiveHeader(string NRes, int Version, int FileCount, int Tot
 /// найти начало можно как (Header.TotalFileLengthBytes - Header.FileCount * 64)
 /// </summary>
 /// <param name="FileType">[0..4] ASCII описание типа файла, например TEXM или MAT0</param>
-/// <param name="ElementCount">[4..8] Количество элементов в файле (если файл составной, например .trf) </param>
+/// <param name="ElementCount">[4..8] Количество элементов в файле (если файл составной, например .trf) или версия, например у материалов или флаги</param>
 /// <param name="Magic1">[8..12] Неизвестное число</param>
 /// <param name="FileLength">[12..16] Длина файла в байтах</param>
 /// <param name="ElementSize">[16..20] Размер элемента в файле (если файл составной, например .trf) </param>

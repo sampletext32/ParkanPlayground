@@ -307,6 +307,10 @@ IComponent ** LoadSomething(undefined4, undefined4, undefined4, undefined4)
 All lightmaps named whatever.0 → they all end up with no DirectDraw palette attached.
 ```
 
+## Люблю разработчиков
+
+У них получилось сделать LightSource и MaterialDescriptor чётко одинаковыми по размеру (0x5c) из-за чего я потерял 3 дня прыгая по указателям
+
 ## `FXID` - файл эффектов
 
 По сути представляет собой последовательный список саб-эффектов идущих друг за другом.
