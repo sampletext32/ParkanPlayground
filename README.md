@@ -295,6 +295,18 @@ IComponent ** LoadSomething(undefined4, undefined4, undefined4, undefined4)
 
 Может как-то анимироваться. Как - пока не понятно.
 
+## Lightmap (TEXM)
+
+У текстур использующихся как карты освещения специальные имена.
+
+`some_name.00` или `some_name.0`
+
+Первая цифра после `.` это группа палет (всего 0x11), вторая цифра индекс в этой группе.
+
+```
+All lightmaps named whatever.0 → they all end up with no DirectDraw palette attached.
+```
+
 ## `FXID` - файл эффектов
 
 По сути представляет собой последовательный список саб-эффектов идущих друг за другом.
