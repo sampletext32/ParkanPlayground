@@ -26,6 +26,7 @@ public record BinaryVarsetItem<TValue>(
 
 public enum BinaryVarsetValueType
 {
+    Float0 = 0,
     Int = 1,
     Bool = 2,
     Float = 3,

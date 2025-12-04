@@ -60,6 +60,7 @@ public class App
             serviceCollection.AddSingleton(new ScrViewModel());
             serviceCollection.AddSingleton(new VarsetViewModel());
             serviceCollection.AddSingleton(new CpDatSchemeViewModel());
+            serviceCollection.AddSingleton(new MaterialViewModel());
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
 

@@ -18,9 +18,10 @@ public class NResExplorerPanel : IImGuiPanel
     private readonly CpDatSchemeViewModel _cpDatSchemeViewModel;
     private readonly MissionTmaViewModel _missionTmaViewModel;
     private readonly ScrViewModel _scrViewModel;
+    private readonly MaterialViewModel _materialViewModel;
 
     public NResExplorerPanel(NResExplorerViewModel viewModel, TexmExplorerViewModel texmExplorerViewModel,
-        VarsetViewModel varsetViewModel, CpDatSchemeViewModel cpDatSchemeViewModel, MissionTmaViewModel missionTmaViewModel, ScrViewModel scrViewModel)
+        VarsetViewModel varsetViewModel, CpDatSchemeViewModel cpDatSchemeViewModel, MissionTmaViewModel missionTmaViewModel, ScrViewModel scrViewModel, MaterialViewModel materialViewModel)
     {
         _viewModel = viewModel;
         _texmExplorerViewModel = texmExplorerViewModel;
@@ -28,6 +29,7 @@ public class NResExplorerPanel : IImGuiPanel
         _cpDatSchemeViewModel = cpDatSchemeViewModel;
         _missionTmaViewModel = missionTmaViewModel;
         _scrViewModel = scrViewModel;
+        _materialViewModel = materialViewModel;
     }
 
     int contextMenuRow = -1;
@@ -271,6 +273,28 @@ public class NResExplorerPanel : IImGuiPanel
 
                                     _scrViewModel.SetParseResult(parseResult, Path.Combine(_viewModel.Path!, file.FileName));
                                     Console.WriteLine("Read .scr from context menu");
+                                }
+
+                                if (ImGui.MenuItem("Open as Material"))
+                                {
+                                    using var fs = new FileStream(_viewModel.Path!, FileMode.Open, FileAccess.Read, FileShare.Read);
+                                    fs.Seek(file.OffsetInFile, SeekOrigin.Begin);
+                                    
+                                    var buffer = new byte[file.FileLength];
+                                    fs.ReadExactly(buffer, 0, file.FileLength);
+                                    using var ms = new MemoryStream(buffer);
+
+                                    try 
+                                    {
+                                        var parseResult = MaterialLib.MaterialParser.ReadFromStream(ms, file.FileName, (int)file.ElementCount, file.Magic1);
+                                        _materialViewModel.SetParseResult(parseResult, Path.Combine(_viewModel.Path!, file.FileName));
+                                        Console.WriteLine("Read Material from context menu");
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Console.WriteLine($"Error reading material: {ex}");
+                                        _materialViewModel.SetError(ex.Message);
+                                    }
                                 }
                             }
 

@@ -185,9 +185,9 @@ public static class Msh02
         public Vector3 BottomFrontRight { get; set; }
         public Vector3 BottomBackRight { get; set; }
         public Vector3 BottomBackLeft { get; set; }
-        public Vector3 TopFrontLeft { get; set; }
-        public Vector3 TopFrontRight { get; set; }
         public Vector3 TopBackRight { get; set; }
+        public Vector3 TopFrontRight { get; set; }
         public Vector3 TopBackLeft { get; set; }
+        public Vector3 TopFrontLeft { get; set; }
     }
 }

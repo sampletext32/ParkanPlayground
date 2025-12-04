@@ -21,6 +21,14 @@ public static class Extensions
         return BinaryPrimitives.ReadUInt32LittleEndian(buf);
     }
 
+    public static ushort ReadUInt16LittleEndian(this Stream fs)
+    {
+        Span<byte> buf = stackalloc byte[2];
+        fs.ReadExactly(buf);
+
+        return BinaryPrimitives.ReadUInt16LittleEndian(buf);
+    }
+
     public static float ReadFloatLittleEndian(this Stream fs)
     {
         Span<byte> buf = stackalloc byte[4];

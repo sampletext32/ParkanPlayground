@@ -187,18 +187,20 @@ IComponent ** LoadSomething(undefined4, undefined4, undefined4, undefined4)
 
 На основе файла `Comp.ini` и первом вызове внутри функции `World3D.dll/CreateObject` ремаппинг id:
 
-|  Class ID  |   ClassName   | Function                       |
-|:----------:|:-------------:|--------------------------------|
-|     1      |   Landscape   | `terrain.dll LoadLandscape`    |
-|     2      |     Agent     | `animesh.dll LoadAgent`        |
-|     3      |   Building    | `terrain.dll LoadBuilding`     |
-|     4      |     Agent     | `animesh.dll LoadAgent`        |
-|     5      |    Camera     | `terrain.dll LoadCamera`       |
-|     7      |  Atmospehere  | `terrain.dll CreateAtmosphere` |
-|     9      |     Agent     | `animesh.dll LoadAgent`        |
-|     10     |     Agent     | `animesh.dll LoadAgent`        |
-|     11     |   Research    | `misload.dll LoadResearch`     |
-|     12     |     Agent     | `animesh.dll LoadAgent`        |
+
+
+| Logic ID |  ClassName   | Function                       |
+|:--------:|:------------:|--------------------------------|
+|    1     |  Landscape   | `terrain.dll LoadLandscape`    |
+|    2     |    Agent     | `animesh.dll LoadAgent`        |
+|    3     |   Building   | `terrain.dll LoadBuilding`     |
+|    4     |    Agent     | `animesh.dll LoadAgent`        |
+|    5     |    Camera    | `terrain.dll LoadCamera`       |
+|    7     |  Atmosphere  | `terrain.dll CreateAtmosphere` |
+|    9     |    Agent     | `animesh.dll LoadAgent`        |
+|    10    |    Agent     | `animesh.dll LoadAgent`        |
+|    11    |   Research   | `misload.dll LoadResearch`     |
+|    12    |    Agent     | `animesh.dll LoadAgent`        |
 
 Будет дополняться по мере реверса.
 
@@ -366,7 +368,7 @@ color
 - `4` - IShader
 - `5` - ITerrain
 - `6` - IGameObject
-- `7` - ISettings скорее всего 
+- `7` - ISettings
 - `8` - ICamera
 - `9` - IQueue
 - `10` - IControl
@@ -388,14 +390,14 @@ color
 - `0x20` - IJointMesh
 - `0x21` - IShadowProcessor (придумал сам implemented by CShade)
 - `0x22` - unknown (implement by CLandscape)
-- `0x23` - IGameSettings
+- `0x23` - IGameSettingsRoot
 - `0x24` - IGameObject2
 - `0x25` - unknown (implemented by CAniMesh)
-- `0x26` - unknown (implemented by CAniMesh and CControl)
+- `0x26` - unknown (implemented by CAniMesh and CControl and CWizard)
 - `0x28` - ICollObject
 - `0x29` - IPhysicalModel
 - `0x101` - I3DRender
-- `0x102` - ITexture
+- `0x102` - ITexture (writable)
 - `0x103` - IColorLookup
 - `0x104` - IBitmapFont
 - `0x105` - INResFile

@@ -6,6 +6,7 @@
   </Folder>
   <Project Path="Common\Common.csproj" Type="Classic C#" />
   <Project Path="CpDatLib\CpDatLib.csproj" Type="Classic C#" />
+  <Project Path="MaterialLib\MaterialLib.csproj" Type="Classic C#" />
   <Project Path="MissionTmaLib/MissionTmaLib.csproj" />
   <Project Path="NLUnpacker/NLUnpacker.csproj" />
   <Project Path="NResLib/NResLib.csproj" />
