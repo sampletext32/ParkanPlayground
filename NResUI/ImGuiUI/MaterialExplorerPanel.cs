@@ -19,6 +19,9 @@ public class MaterialExplorerPanel : IImGuiPanel
     {
         if (ImGui.Begin("Material Explorer"))
         {
+            ImGui.Text("Материал это бинарный файл, который можно найти в materials.lib."); 
+            ImGui.Text("Его можно открыть только из открытого NRes архива, т.к. чтение полагается на флаги из архива");
+            
             if (!_viewModel.HasFile)
             {
                 ImGui.Text("No Material file opened");
@@ -87,7 +90,7 @@ public class MaterialExplorerPanel : IImGuiPanel
                     ImGui.TextDisabled("(1 byte)");
                     
                     ImGui.Separator();
-                    ImGui.TextDisabled($"(Read if Magic1 > 2)");
+                    ImGui.TextDisabled("(Read if Magic1 > 2)");
                     ImGui.Text($"Global Alpha Multiplier: {mat.GlobalAlphaMultiplier:F3}");
                     if (ImGui.IsItemHovered())
                     {
@@ -97,7 +100,7 @@ public class MaterialExplorerPanel : IImGuiPanel
                     ImGui.TextDisabled("(4 bytes, float)");
                     
                     ImGui.Separator();
-                    ImGui.TextDisabled($"(Read if Magic1 > 3)");
+                    ImGui.TextDisabled("(Read if Magic1 > 3)");
                     ImGui.Text($"Global Emissive Intensity: {mat.GlobalEmissiveIntensity:F3}");
                     if (ImGui.IsItemHovered())
                     {
@@ -268,13 +271,6 @@ public class MaterialExplorerPanel : IImGuiPanel
             BlendMode.Unknown => "Unknown/Default (0xFF): No blending or opaque",
             _ => "Unknown blend mode"
         };
-    }
-
-    private static string GetAnimationTargetDescription(AnimationTarget target)
-    {
-        // NOTE: This method is now only used for fallback/debugging
-        // The actual UI uses MaterialAnimation.TargetDescription which is precomputed during parsing
-        return $"Target flags: 0x{(int)target:X}";
     }
 
     private static string GetAnimationLoopModeDescription(AnimationLoopMode mode)
