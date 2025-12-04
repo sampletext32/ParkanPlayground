@@ -255,20 +255,34 @@ public class MaterialExplorerPanel : IImGuiPanel
     {
         return mode switch
         {
-            BlendMode.Zero => "D3DBLEND_ZERO: Blend factor is (0, 0, 0, 0)",
-            BlendMode.One => "D3DBLEND_ONE: Blend factor is (1, 1, 1, 1)",
-            BlendMode.SrcColor => "D3DBLEND_SRCCOLOR: Blend factor is (Rs, Gs, Bs, As)",
-            BlendMode.InvSrcColor => "D3DBLEND_INVSRCCOLOR: Blend factor is (1-Rs, 1-Gs, 1-Bs, 1-As)",
-            BlendMode.SrcAlpha => "D3DBLEND_SRCALPHA: Blend factor is (As, As, As, As)",
-            BlendMode.InvSrcAlpha => "D3DBLEND_INVSRCALPHA: Blend factor is (1-As, 1-As, 1-As, 1-As)",
-            BlendMode.DestAlpha => "D3DBLEND_DESTALPHA: Blend factor is (Ad, Ad, Ad, Ad)",
-            BlendMode.InvDestAlpha => "D3DBLEND_INVDESTALPHA: Blend factor is (1-Ad, 1-Ad, 1-Ad, 1-Ad)",
-            BlendMode.DestColor => "D3DBLEND_DESTCOLOR: Blend factor is (Rd, Gd, Bd, Ad)",
-            BlendMode.InvDestColor => "D3DBLEND_INVDESTCOLOR: Blend factor is (1-Rd, 1-Gd, 1-Bd, 1-Ad)",
-            BlendMode.SrcAlphaSat => "D3DBLEND_SRCALPHASAT: Blend factor is (f, f, f, 1); f = min(As, 1-Ad)",
-            BlendMode.BothSrcAlpha => "D3DBLEND_BOTHSRCALPHA: Source blend factor is (As, As, As, As) and destination blend factor is (1-As, 1-As, 1-As, 1-As)",
-            BlendMode.BothInvSrcAlpha => "D3DBLEND_BOTHINVSRCALPHA: Source blend factor is (1-As, 1-As, 1-As, 1-As) and destination blend factor is (As, As, As, As)",
-            BlendMode.Unknown => "Unknown/Default (0xFF): No blending or opaque",
+            BlendMode.Zero => "D3DBLEND_ZERO\nBlend factor is (0, 0, 0, 0)\nResults in black/transparent",
+            
+            BlendMode.One => "D3DBLEND_ONE\nBlend factor is (1, 1, 1, 1)\nUses full color value (no blending)",
+            
+            BlendMode.SrcColor => "D3DBLEND_SRCCOLOR\nBlend factor is (Rs, Gs, Bs, As)\nUses source color",
+            
+            BlendMode.InvSrcColor => "D3DBLEND_INVSRCCOLOR\nBlend factor is (1-Rs, 1-Gs, 1-Bs, 1-As)\nUses inverted source color",
+            
+            BlendMode.SrcAlpha => "D3DBLEND_SRCALPHA\nBlend factor is (As, As, As, As)\nUses source alpha for all channels\n Standard transparency (common with InvSrcAlpha for dest)",
+            
+            BlendMode.InvSrcAlpha => "D3DBLEND_INVSRCALPHA\nBlend factor is (1-As, 1-As, 1-As, 1-As)\nUses inverted source alpha\n Standard transparency (common with SrcAlpha for source)",
+            
+            BlendMode.DestAlpha => "D3DBLEND_DESTALPHA\nBlend factor is (Ad, Ad, Ad, Ad)\nUses destination alpha",
+            
+            BlendMode.InvDestAlpha => "D3DBLEND_INVDESTALPHA\nBlend factor is (1-Ad, 1-Ad, 1-Ad, 1-Ad)\nUses inverted destination alpha",
+            
+            BlendMode.DestColor => "D3DBLEND_DESTCOLOR\nBlend factor is (Rd, Gd, Bd, Ad)\nUses destination color",
+            
+            BlendMode.InvDestColor => "D3DBLEND_INVDESTCOLOR\nBlend factor is (1-Rd, 1-Gd, 1-Bd, 1-Ad)\nUses inverted destination color",
+            
+            BlendMode.SrcAlphaSat => "D3DBLEND_SRCALPHASAT\nBlend factor is (f, f, f, 1) where f = min(As, 1-Ad)\nSaturates source alpha",
+            
+            BlendMode.BothSrcAlpha => "D3DBLEND_BOTHSRCALPHA (Obsolete in D3D9+)\nBlend factor is (As, As, As, As) for both source and dest\nSource: (As, As, As, As), Dest: (1-As, 1-As, 1-As, 1-As)",
+            
+            BlendMode.BothInvSrcAlpha => "D3DBLEND_BOTHINVSRCALPHA (Obsolete in D3D9+)\nBlend factor is (1-As, 1-As, 1-As, 1-As) for both source and dest\nSource: (1-As, 1-As, 1-As, 1-As), Dest: (As, As, As, As)",
+            
+            BlendMode.Unknown => "Unknown/Default (0xFF)\nUninitialized or opaque rendering",
+            
             _ => "Unknown blend mode"
         };
     }

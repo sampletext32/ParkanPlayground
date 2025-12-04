@@ -1,4 +1,4 @@
-﻿namespace MaterialLib;
+namespace MaterialLib;
 
 public class MaterialFile
 {
@@ -27,23 +27,53 @@ public class MaterialFile
     public List<MaterialAnimation> Animations { get; set; } = new();
 }
 
+/// <summary>
+/// Blend modes for material rendering. These control how source and destination colors are combined.
+/// Formula: FinalColor = (SourceColor * SourceBlend) [operation] (DestColor * DestBlend)
+/// Maps to Direct3D D3DBLEND values.
+/// </summary>
 public enum BlendMode : byte
 {
+    /// <summary>Blend factor is (0, 0, 0, 0) - results in black/transparent</summary>
     Zero = 1,
+    
+    /// <summary>Blend factor is (1, 1, 1, 1) - uses full color value</summary>
     One = 2,
+    
+    /// <summary>Blend factor is (Rs, Gs, Bs, As) - uses source color</summary>
     SrcColor = 3,
+    
+    /// <summary>Blend factor is (1-Rs, 1-Gs, 1-Bs, 1-As) - uses inverted source color</summary>
     InvSrcColor = 4,
+    
+    /// <summary>Blend factor is (As, As, As, As) - uses source alpha for all channels (standard transparency)</summary>
     SrcAlpha = 5,
+    
+    /// <summary>Blend factor is (1-As, 1-As, 1-As, 1-As) - uses inverted source alpha</summary>
     InvSrcAlpha = 6,
+    
+    /// <summary>Blend factor is (Ad, Ad, Ad, Ad) - uses destination alpha</summary>
     DestAlpha = 7,
+    
+    /// <summary>Blend factor is (1-Ad, 1-Ad, 1-Ad, 1-Ad) - uses inverted destination alpha</summary>
     InvDestAlpha = 8,
+    
+    /// <summary>Blend factor is (Rd, Gd, Bd, Ad) - uses destination color</summary>
     DestColor = 9,
+    
+    /// <summary>Blend factor is (1-Rd, 1-Gd, 1-Bd, 1-Ad) - uses inverted destination color</summary>
     InvDestColor = 10,
+    
+    /// <summary>Blend factor is (f, f, f, 1) where f = min(As, 1-Ad) - saturates source alpha</summary>
     SrcAlphaSat = 11,
+    
+    /// <summary>Blend factor is (As, As, As, As) for both source and dest - obsolete in D3D9+</summary>
     BothSrcAlpha = 12,
+    
+    /// <summary>Blend factor is (1-As, 1-As, 1-As, 1-As) for both source and dest - obsolete in D3D9+</summary>
     BothInvSrcAlpha = 13,
     
-    // Custom or Unknown
+    /// <summary>Unknown or uninitialized blend mode (0xFF default value)</summary>
     Unknown = 0xFF
 }
 
