@@ -4,123 +4,206 @@ using NResLib;
 
 namespace ParkanPlayground;
 
+public enum MshType
+{
+    Unknown,
+    Model,      // Has component 06 (indices), 0D (batches), 07
+    Landscape   // Has component 0B (per-triangle material), uses 15 directly
+}
+
 public class MshConverter
 {
-    public void Convert(string mshPath)
+    /// <summary>
+    /// Detects mesh type based on which components are present in the archive.
+    /// </summary>
+    public static MshType DetectMeshType(NResArchive archive)
+    {
+        bool hasComponent06 = archive.Files.Any(f => f.FileType == "06 00 00 00");
+        bool hasComponent0B = archive.Files.Any(f => f.FileType == "0B 00 00 00");
+        bool hasComponent0D = archive.Files.Any(f => f.FileType == "0D 00 00 00");
+        
+        // Model: Uses indexed triangles via component 06 and batches via 0D
+        if (hasComponent06 && hasComponent0D)
+            return MshType.Model;
+        
+        // Landscape: Uses direct triangles in component 15, with material data in 0B
+        if (hasComponent0B && !hasComponent06)
+            return MshType.Landscape;
+        
+        return MshType.Unknown;
+    }
+
+    /// <summary>
+    /// Converts a .msh file to OBJ format, auto-detecting mesh type.
+    /// </summary>
+    /// <param name="mshPath">Path to the .msh file</param>
+    /// <param name="outputPath">Output OBJ path (optional, defaults to input name + .obj)</param>
+    /// <param name="lodLevel">LOD level to export (0 = highest detail)</param>
+    public void Convert(string mshPath, string? outputPath = null, int lodLevel = 0)
     {
         var mshNresResult = NResParser.ReadFile(mshPath);
-        var mshNres = mshNresResult.Archive!;
-
-        using var mshFs = new FileStream(mshPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-
-        var component01 = Msh01.ReadComponent(mshFs, mshNres);
-        var component02 = Msh02.ReadComponent(mshFs, mshNres);
-        var component15 = Msh15.ReadComponent(mshFs, mshNres);
+        if (mshNresResult.Archive is null)
+        {
+            Console.WriteLine($"ERROR: Failed to read NRes archive: {mshNresResult.Error}");
+            return;
+        }
         
-        var component0A = Msh0A.ReadComponent(mshFs, mshNres);
-        var component07 = Msh07.ReadComponent(mshFs, mshNres);
-        var component0D = Msh0D.ReadComponent(mshFs, mshNres);
+        var archive = mshNresResult.Archive;
+        var meshType = DetectMeshType(archive);
+        
+        outputPath ??= Path.ChangeExtension(mshPath, ".obj");
+        
+        Console.WriteLine($"Converting: {Path.GetFileName(mshPath)}");
+        Console.WriteLine($"Detected type: {meshType}");
+        
+        using var fs = new FileStream(mshPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+        
+        switch (meshType)
+        {
+            case MshType.Model:
+                ConvertModel(fs, archive, outputPath, lodLevel);
+                break;
+            case MshType.Landscape:
+                ConvertLandscape(fs, archive, outputPath, lodLevel);
+                break;
+            default:
+                Console.WriteLine("ERROR: Unknown mesh type, cannot convert.");
+                break;
+        }
+    }
 
-        // Triangle Vertex Indices
-        var component06 = Msh06.ReadComponent(mshFs, mshNres);
+    /// <summary>
+    /// Converts a model mesh (robots, buildings, etc.) to OBJ.
+    /// Uses indexed triangles: 01 → 02 → 0D → 06 → 03
+    /// </summary>
+    private void ConvertModel(FileStream fs, NResArchive archive, string outputPath, int lodLevel)
+    {
+        var component01 = Msh01.ReadComponent(fs, archive);
+        var component02 = Msh02.ReadComponent(fs, archive);
+        var component03 = Msh03.ReadComponent(fs, archive);
+        var component06 = Msh06.ReadComponent(fs, archive);
+        var component07 = Msh07.ReadComponent(fs, archive);
+        var component0D = Msh0D.ReadComponent(fs, archive);
 
-        // vertices
-        var component03 = Msh03.ReadComponent(mshFs, mshNres);
+        Console.WriteLine($"Vertices: {component03.Count}");
+        Console.WriteLine($"Pieces: {component01.Elements.Count}");
+        Console.WriteLine($"Submeshes: {component02.Elements.Count}");
+        
+        using var sw = new StreamWriter(outputPath, false, new UTF8Encoding(false));
+        sw.WriteLine($"# Model mesh converted from {Path.GetFileName(outputPath)}");
+        sw.WriteLine($"# LOD level: {lodLevel}");
 
-        _ = 5;
-
-        // --- Write OBJ ---
-        using var sw = new StreamWriter("test.obj", false, new UTF8Encoding(false));
-
+        // Write all vertices
         foreach (var v in component03)
-            sw.WriteLine($"v {v.X:F8} {v.Y:F8} {v.Z:F8}");
+            sw.WriteLine($"v {v.X:F6} {v.Y:F6} {v.Z:F6}");
 
-        var vertices = new List<Vector3>();
-        var faces = new List<(int, int, int)>(); // store indices into vertices list
-
-        // 01 - это части меша (Piece)
+        int exportedFaces = 0;
+        
         for (var pieceIndex = 0; pieceIndex < component01.Elements.Count; pieceIndex++)
         {
-            Console.WriteLine($"Piece {pieceIndex}");
-            var piece01 = component01.Elements[pieceIndex];
-            // var state = (piece.State00 == 0xffff) ? 0 : piece.State00;
+            var piece = component01.Elements[pieceIndex];
+            
+            // Get submesh index for requested LOD
+            if (lodLevel >= piece.Lod.Length)
+                continue;
+                
+            var submeshIdx = piece.Lod[lodLevel];
+            if (submeshIdx == 0xFFFF || submeshIdx >= component02.Elements.Count)
+                continue;
 
-            for (var lodIndex = 0; lodIndex < piece01.Lod.Length; lodIndex++)
+            sw.WriteLine($"g piece_{pieceIndex}");
+            
+            var submesh = component02.Elements[submeshIdx];
+            var batchStart = submesh.StartOffsetIn0d;
+            var batchCount = submesh.ByteLengthIn0D;
+
+            for (var batchIdx = 0; batchIdx < batchCount; batchIdx++)
             {
-                var lod = piece01.Lod[lodIndex];
-                if (lod == 0xffff)
+                var batch = component0D[batchStart + batchIdx];
+                var baseVertex = batch.IndexInto03;
+                var indexStart = batch.IndexInto06;
+                var indexCount = batch.CountOf06;
+
+                for (int i = 0; i < indexCount; i += 3)
                 {
-                    // Console.WriteLine($"Piece {pieceIndex} has lod -1 at {lodIndex}. Skipping");
-                    continue;
-                }
+                    var i1 = baseVertex + component06[indexStart + i];
+                    var i2 = baseVertex + component06[indexStart + i + 1];
+                    var i3 = baseVertex + component06[indexStart + i + 2];
 
-                sw.WriteLine($"o piece_{pieceIndex}_lod_{lodIndex}");
-                // 02 - Submesh
-                var part02 = component02.Elements[lod];
-
-                int indexInto07 = part02.StartIndexIn07;
-                var comp07 = component07[indexInto07];
-                Console.WriteLine($"Lod {lodIndex}");
-                Console.WriteLine($"Comp07: {comp07.OffsetX}, {comp07.OffsetY}, {comp07.OffsetZ}");
-
-                var element0Dstart = part02.StartOffsetIn0d;
-                var element0Dcount = part02.ByteLengthIn0D;
-
-                // Console.WriteLine($"Started piece {pieceIndex}. LOD={lod}. 0D start={element0Dstart}, count={element0Dcount}");
-
-                for (var comp0Dindex = 0; comp0Dindex < element0Dcount; comp0Dindex++)
-                {
-                    var element0D = component0D[element0Dstart + comp0Dindex];
-
-                    var indexInto03 = element0D.IndexInto03;
-                    var indexInto06 = element0D.IndexInto06; // indices
-
-                    uint maxIndex = element0D.CountOf03;
-                    uint indicesCount = element0D.CountOf06;
-
-
-                    // Convert IndexInto06 to ushort array index (3 ushorts per triangle)
-                    // Console.WriteLine($"Processing 0D element[{element0Dstart + comp0Dindex}]. IndexInto03={indexInto03}, IndexInto06={indexInto06}. Number of triangles={indicesCount}");
-
-                    if (indicesCount != 0)
-                    {
-                        // sw.WriteLine($"o piece_{pieceIndex}_of_mesh_{comp0Dindex}");
-
-                        for (int ind = 0; ind < indicesCount; ind += 3)
-                        {
-                            // Each triangle uses 3 consecutive ushorts in component06
-
-                            // sw.WriteLine($"o piece_{pieceIndex}_of_mesh_{comp0Dindex}_tri_{ind}");
-
-
-                            var i1 = indexInto03 + component06[indexInto06];
-                            var i2 = indexInto03 + component06[indexInto06 + 1];
-                            var i3 = indexInto03 + component06[indexInto06 + 2];
-
-                            var v1 = component03[i1];
-                            var v2 = component03[i2];
-                            var v3 = component03[i3];
-
-                            sw.WriteLine($"f {i1 + 1} {i2 + 1} {i3 + 1}");
-
-                            // push vertices to global list
-                            vertices.Add(v1);
-                            vertices.Add(v2);
-                            vertices.Add(v3);
-
-                            int baseIndex = vertices.Count;
-                            // record face (OBJ is 1-based indexing!)
-                            faces.Add((baseIndex - 2, baseIndex - 1, baseIndex));
-
-                            indexInto07++;
-                            indexInto06 += 3; // step by 3 since each triangle uses 3 ushorts
-                        }
-
-                        _ = 5;
-                    }
+                    sw.WriteLine($"f {i1 + 1} {i2 + 1} {i3 + 1}");
+                    exportedFaces++;
                 }
             }
         }
+        
+        Console.WriteLine($"Exported: {component03.Count} vertices, {exportedFaces} faces");
+        Console.WriteLine($"Output: {outputPath}");
+    }
+
+    /// <summary>
+    /// Converts a landscape mesh (terrain) to OBJ.
+    /// Uses direct triangles: 01 → 02 → 15 (via StartIndexIn07/CountIn07)
+    /// </summary>
+    private void ConvertLandscape(FileStream fs, NResArchive archive, string outputPath, int lodLevel)
+    {
+        var component01 = Msh01.ReadComponent(fs, archive);
+        var component02 = Msh02.ReadComponent(fs, archive);
+        var component03 = Msh03.ReadComponent(fs, archive);
+        var component15 = Msh15.ReadComponent(fs, archive);
+
+        Console.WriteLine($"Vertices: {component03.Count}");
+        Console.WriteLine($"Triangles: {component15.Count}");
+        Console.WriteLine($"Tiles: {component01.Elements.Count}");
+        Console.WriteLine($"Submeshes: {component02.Elements.Count}");
+        
+        using var sw = new StreamWriter(outputPath, false, new UTF8Encoding(false));
+        sw.WriteLine($"# Landscape mesh converted from {Path.GetFileName(outputPath)}");
+        sw.WriteLine($"# LOD level: {lodLevel}");
+        sw.WriteLine($"# Tile grid: {(int)Math.Sqrt(component01.Elements.Count)}x{(int)Math.Sqrt(component01.Elements.Count)}");
+
+        // Write all vertices
+        foreach (var v in component03)
+            sw.WriteLine($"v {v.X:F6} {v.Y:F6} {v.Z:F6}");
+
+        int exportedFaces = 0;
+        
+        for (var tileIdx = 0; tileIdx < component01.Elements.Count; tileIdx++)
+        {
+            var tile = component01.Elements[tileIdx];
+            
+            // Get submesh index for requested LOD
+            if (lodLevel >= tile.Lod.Length)
+                continue;
+                
+            var submeshIdx = tile.Lod[lodLevel];
+            if (submeshIdx == 0xFFFF || submeshIdx >= component02.Elements.Count)
+                continue;
+
+            sw.WriteLine($"g tile_{tileIdx}");
+            
+            var submesh = component02.Elements[submeshIdx];
+            
+            // For landscape, StartIndexIn07 = triangle start index, CountIn07 = triangle count
+            var triangleStart = submesh.StartIndexIn07;
+            var triangleCount = submesh.CountIn07;
+
+            for (var triOffset = 0; triOffset < triangleCount; triOffset++)
+            {
+                var triIdx = triangleStart + triOffset;
+                if (triIdx >= component15.Count)
+                {
+                    Console.WriteLine($"WARNING: Triangle index {triIdx} out of range for tile {tileIdx}");
+                    continue;
+                }
+
+                var tri = component15[triIdx];
+                sw.WriteLine($"f {tri.Vertex1Index + 1} {tri.Vertex2Index + 1} {tri.Vertex3Index + 1}");
+                exportedFaces++;
+            }
+        }
+        
+        Console.WriteLine($"Exported: {component03.Count} vertices, {exportedFaces} faces");
+        Console.WriteLine($"Output: {outputPath}");
     }
 
     public record Face(Vector3 P1, Vector3 P2, Vector3 P3);
