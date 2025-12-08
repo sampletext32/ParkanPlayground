@@ -11,6 +11,7 @@
       <ProjectReference Include="..\ScrLib\ScrLib.csproj" />
       <ProjectReference Include="..\VarsetLib\VarsetLib.csproj" />
       <ProjectReference Include="..\MaterialLib\MaterialLib.csproj" />
+      <ProjectReference Include="..\TexmLib\TexmLib.csproj" />
     </ItemGroup>
 
 </Project>
