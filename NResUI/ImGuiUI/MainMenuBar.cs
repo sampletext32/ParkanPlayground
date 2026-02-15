@@ -7,6 +7,7 @@ using NativeFileDialogSharp;
 using NResLib;
 using NResUI.Abstractions;
 using NResUI.Models;
+using ResTreeLib;
 using ScrLib;
 using TexmLib;
 using VarsetLib;
@@ -20,6 +21,7 @@ namespace NResUI.ImGuiUI
         MissionTmaViewModel missionTmaViewModel,
         VarsetViewModel varsetViewModel,
         CpDatSchemeViewModel cpDatSchemeViewModel,
+        ResearchTreeViewModel researchTreeViewModel,
         MessageBoxModalPanel messageBox)
         : IImGuiPanel
     {
@@ -135,6 +137,21 @@ namespace NResUI.ImGuiUI
                             cpDatSchemeViewModel.SetParseResult(parseResult, path);
 
                             Console.WriteLine("Read cp .dat");
+                        }
+                    }
+
+                    if (ImGui.MenuItem("Open research .trf File"))
+                    {
+                        var result = Dialog.FileOpen("trf");
+
+                        if (result.IsOk)
+                        {
+                            var path = result.Path;
+                            var parseResult = ResTreeParser.Parse(path);
+
+                            researchTreeViewModel.SetParseResult(parseResult, path);
+
+                            Console.WriteLine("Read .trf");
                         }
                     }
 

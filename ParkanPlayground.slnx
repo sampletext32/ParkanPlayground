@@ -3,6 +3,7 @@
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
     <File Path="README.md" />
+    <File Path="AI.md" />
   </Folder>
   <Project Path="Common\Common.csproj" Type="Classic C#" />
   <Project Path="CpDatLib\CpDatLib.csproj" Type="Classic C#" />
@@ -13,6 +14,7 @@
   <Project Path="NResUI/NResUI.csproj" />
   <Project Path="PalLib\PalLib.csproj" Type="Classic C#" />
   <Project Path="ParkanPlayground/ParkanPlayground.csproj" />
+  <Project Path="ResTreeLib\ResTreeLib.csproj" Type="Classic C#" />
   <Project Path="ScrLib/ScrLib.csproj" />
   <Project Path="TexmLib/TexmLib.csproj" />
   <Project Path="VarsetLib/VarsetLib.csproj" />

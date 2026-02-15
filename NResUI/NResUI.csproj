@@ -20,6 +20,7 @@
       <ProjectReference Include="..\CpDatLib\CpDatLib.csproj" />
       <ProjectReference Include="..\MissionTmaLib\MissionTmaLib.csproj" />
       <ProjectReference Include="..\NResLib\NResLib.csproj" />
+      <ProjectReference Include="..\ResTreeLib\ResTreeLib.csproj" />
       <ProjectReference Include="..\ScrLib\ScrLib.csproj" />
       <ProjectReference Include="..\TexmLib\TexmLib.csproj" />
       <ProjectReference Include="..\VarsetLib\VarsetLib.csproj" />
