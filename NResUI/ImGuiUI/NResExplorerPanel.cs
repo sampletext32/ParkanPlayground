@@ -70,7 +70,7 @@ public class NResExplorerPanel : IImGuiPanel
                     ImGui.SameLine();
                     ImGui.Text(_viewModel.Archive.Header.TotalFileLengthBytes.ToString());
 
-                    if (ImGui.BeginTable("content", 12,
+                    if (ImGui.BeginTable("content", 9,
                             ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoHostExtendX))
                     {
                         ImGui.TableSetupColumn("Тип файла");
@@ -79,12 +79,9 @@ public class NResExplorerPanel : IImGuiPanel
                         ImGui.TableSetupColumn("Длина файла в байтах");
                         ImGui.TableSetupColumn("Размер элемента");
                         ImGui.TableSetupColumn("Имя файла");
-                        ImGui.TableSetupColumn("Magic3");
-                        ImGui.TableSetupColumn("Magic4");
-                        ImGui.TableSetupColumn("Magic5");
-                        ImGui.TableSetupColumn("Magic6");
                         ImGui.TableSetupColumn("Смещение в байтах");
-                        ImGui.TableSetupColumn("Индекс в файле");
+                        ImGui.TableSetupColumn("SortIndex");
+                        ImGui.TableSetupColumn("DirectoryIndex");
 
                         ImGui.TableHeadersRow();
 
@@ -126,32 +123,17 @@ public class NResExplorerPanel : IImGuiPanel
                             ImGui.TableNextColumn();
                             ImGui.Text(
                                 _viewModel.Archive.Files[i]
-                                    .Magic3.ToString()
-                            );
-                            ImGui.TableNextColumn();
-                            ImGui.Text(
-                                _viewModel.Archive.Files[i]
-                                    .Magic4.ToString()
-                            );
-                            ImGui.TableNextColumn();
-                            ImGui.Text(
-                                _viewModel.Archive.Files[i]
-                                    .Magic5.ToString()
-                            );
-                            ImGui.TableNextColumn();
-                            ImGui.Text(
-                                _viewModel.Archive.Files[i]
-                                    .Magic6.ToString()
-                            );
-                            ImGui.TableNextColumn();
-                            ImGui.Text(
-                                _viewModel.Archive.Files[i]
                                     .OffsetInFile.ToString()
                             );
                             ImGui.TableNextColumn();
                             ImGui.Text(
                                 _viewModel.Archive.Files[i]
-                                    .Index.ToString()
+                                    .SortIndex.ToString()
+                            );
+                            ImGui.TableNextColumn();
+                            ImGui.Text(
+                                _viewModel.Archive.Files[i]
+                                    .DirectoryIndex.ToString()
                             );
                         }
 

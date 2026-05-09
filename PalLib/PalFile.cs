@@ -3,23 +3,12 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace PalLib;
 
-/// <summary>
-/// PAL файл по сути это indexed текстура (1024 байт - 256 цветов lookup + 4 байта "Ipol" и затем 256x256 индексов в lookup)
-/// </summary>
-public class PalFile
+/// <summary>PAL файл: indexed texture с lookup таблицей, подписью Ipol и индексами.</summary>
+/// <param name="FileName">Имя PAL файла.</param>
+/// <param name="Palette">[0x0000..0x0400] 256 цветов lookup (1024 байта).</param>
+/// <param name="Indices">[0x0404..0x10404] 256x256 индексов в lookup.</param>
+public record class PalFile(string FileName, byte[] Palette, byte[] Indices)
 {
-    public required string FileName { get; set; }
-    
-    /// <summary>
-    /// 256 цветов lookup (1024 байт)
-    /// </summary>
-    public required byte[] Palette { get; set; }
-    
-    /// <summary>
-    /// 256x256 индексов в lookup
-    /// </summary>
-    public required byte[] Indices { get; set; }
-
     public void SaveAsPng(string outputPath)
     {
         const int width = 256;
@@ -31,16 +20,12 @@ public class PalFile
         {
             var index = Indices[i];
             
-            // Palette is 256 colors * 4 bytes (ARGB usually, based on TexmLib)
-            // TexmLib: r = lookup[i*4+0], g = lookup[i*4+1], b = lookup[i*4+2], a = lookup[i*4+3]
-            // Assuming same format here.
-            
-            // since PAL is likely directx related, the format is is likely BGRA
+            // PAL, вероятно, связан с DirectX, поэтому порядок каналов похож на BGRA.
 
             var b = Palette[index * 4 + 0];
             var g = Palette[index * 4 + 1];
             var r = Palette[index * 4 + 2];
-            var a = Palette[index * 4 + 3]; // Alpha? Or is it unused/padding? TexmLib sets alpha to 255 manually for indexed.
+            var a = Palette[index * 4 + 3]; // Альфа или padding; ниже пока используется непрозрачность.
 
             rgbaBytes[i * 4 + 0] = r;
             rgbaBytes[i * 4 + 1] = g;

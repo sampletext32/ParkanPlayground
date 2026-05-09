@@ -166,6 +166,43 @@ public class TexmExplorer : IImGuiPanel
                         }
 
                         ImGui.Image((IntPtr) glTexture.GlTexture, imageSize);
+
+                        var imageHovered = ImGui.IsItemHovered();
+
+                        if (imageHovered && index < _viewModel.RgbaBytesByMipmap.Count)
+                        {
+                            var mousePos = ImGui.GetMousePos();
+
+                            var scale = _viewModel.DoubleSize ? 2.0f : 1.0f;
+                            var relativePos = (mousePos - screenPos) / scale;
+
+                            var pixelX = (int)MathF.Floor(relativePos.X);
+                            var pixelY = (int)MathF.Floor(relativePos.Y);
+
+                            pixelX = (int)Math.Clamp(pixelX, 0, glTexture.Width - 1);
+                            pixelY = (int)Math.Clamp(pixelY, 0, glTexture.Height - 1);
+
+                            var rgbaBytes = _viewModel.RgbaBytesByMipmap[index];
+                            var byteIndex = (pixelY * glTexture.Width + pixelX) * 4;
+
+                            if (byteIndex + 3 < rgbaBytes.Length)
+                            {
+                                var r = rgbaBytes[byteIndex + 0];
+                                var g = rgbaBytes[byteIndex + 1];
+                                var b = rgbaBytes[byteIndex + 2];
+                                var a = rgbaBytes[byteIndex + 3];
+
+                                ImGui.BeginTooltip();
+
+                                ImGui.Text($"Mipmap: {index}");
+                                ImGui.Text($"Pixel: X={pixelX}, Y={pixelY}");
+                                ImGui.Text($"RGBA: {r}, {g}, {b}, {a}");
+                                ImGui.Text($"HEX: #{r:X2}{g:X2}{b:X2}{a:X2}");
+
+                                ImGui.EndTooltip();
+                            }
+                        }
+
                         ImGui.SameLine();
 
                         if (_viewModel.ViewPages && _viewModel.TexmFile.Pages is not null)
@@ -179,18 +216,6 @@ public class TexmExplorer : IImGuiPanel
                                     0xFF0000FF
                                 );
                             }
-                        }
-
-                        if (ImGui.IsItemHovered())
-                        {
-                            var mousePos = ImGui.GetMousePos();
-                            var relativePos = (mousePos - screenPos) / (_viewModel.DoubleSize
-                                ? 2
-                                : 1);
-
-                            ImGui.Text("Hovering over: ");
-                            ImGui.SameLine();
-                            ImGui.Text(relativePos.ToString());
                         }
                     }
                 }

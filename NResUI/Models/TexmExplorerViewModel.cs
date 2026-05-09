@@ -13,6 +13,7 @@ public class TexmExplorerViewModel
 
     public string? Path { get; set; }
     public List<OpenGlTexture> GlTextures { get; set; } = [];
+    public List<byte[]> RgbaBytesByMipmap { get; set; } = [];
 
     private bool _glTexturesDirty = false;
     public bool IsWhiteBgEnabled;
@@ -48,10 +49,13 @@ public class TexmExplorerViewModel
             }
 
             GlTextures.Clear();
+            RgbaBytesByMipmap.Clear();
 
-            for (var i = 0; i < TexmFile!.Header.MipmapCount; i++)
+            for (var i = 0; i < TexmFile.Header.MipmapCount; i++)
             {
                 var bytes = TexmFile.GetRgba32BytesFromMipmap(i, out var width, out var height);
+
+                RgbaBytesByMipmap.Add(bytes);
 
                 var glTexture = new OpenGlTexture(
                     gl,

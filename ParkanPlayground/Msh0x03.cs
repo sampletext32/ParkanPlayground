@@ -4,7 +4,10 @@ using NResLib;
 
 namespace ParkanPlayground;
 
-public class Msh03
+/// <summary>
+/// MSH-компонент 0x03: позиции вершин
+/// </summary>
+public class Msh0x03
 {
     public static List<Vector3> ReadComponent(FileStream mshFs, NResArchive mshNres)
     {
@@ -20,7 +23,12 @@ public class Msh03
             throw new Exception("Vertices file (03) element size is not 12");
         }
 
-        var verticesFile = new byte[verticesFileEntry.ElementCount * verticesFileEntry.ElementSize];
+        if (verticesFileEntry.FileLength % verticesFileEntry.ElementSize != 0)
+        {
+            throw new Exception("Positions component (0x03) payload size is not divisible by element size");
+        }
+
+        var verticesFile = new byte[verticesFileEntry.FileLength];
         mshFs.Seek(verticesFileEntry.OffsetInFile, SeekOrigin.Begin);
         mshFs.ReadExactly(verticesFile, 0, verticesFile.Length);
 

@@ -43,7 +43,7 @@ var targetIds = new[] { 72, 88 };
 foreach (var targetId in targetIds)
 {
     // Material files are stored with their ID in the archive
-    var matEntry = matLibResult.Archive.Files.FirstOrDefault(f => f.Index == targetId);
+    var matEntry = matLibResult.Archive.Files.FirstOrDefault(f => f.DirectoryIndex == targetId);
     
     if (matEntry == null)
     {
@@ -52,7 +52,8 @@ foreach (var targetId in targetIds)
     }
     
     Console.WriteLine($"=== Material {targetId} ===");
-    Console.WriteLine($"  Index: {matEntry.Index}");
+    Console.WriteLine($"  DirectoryIndex: {matEntry.DirectoryIndex}");
+    Console.WriteLine($"  SortIndex: {matEntry.SortIndex}");
     Console.WriteLine($"  Name: {matEntry.FileName}");
     Console.WriteLine($"  ElementCount (Version): {matEntry.ElementCount}");
     Console.WriteLine($"  ElementSize (Magic1): {matEntry.ElementSize}");
@@ -126,7 +127,7 @@ foreach (var name in weaMatNames)
     
     if (found != null)
     {
-        Console.WriteLine($"  {name,-10} -> Index {found.Index,3}: {found.FileName}");
+        Console.WriteLine($"  {name,-10} -> DirectoryIndex {found.DirectoryIndex,3}, SortIndex {found.SortIndex,3}: {found.FileName}");
     }
     else
     {

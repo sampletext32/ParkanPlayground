@@ -13,50 +13,50 @@ public class ScrParser
 
     public static ScrFile ReadFile(Stream fs)
     {
-        var scrFile = new ScrFile();
+        var magic = fs.ReadInt32LittleEndian();
+        var entryCount = fs.ReadInt32LittleEndian();
+        List<ScrEntry> entries = [];
 
-        scrFile.Magic = fs.ReadInt32LittleEndian();
-
-        scrFile.EntryCount = fs.ReadInt32LittleEndian();
-        scrFile.Entries = [];
-
-        for (var i = 0; i < scrFile.EntryCount; i++)
+        for (var i = 0; i < entryCount; i++)
         {
-            var entry = new ScrEntry();
-            entry.Title = fs.ReadLengthPrefixedString();
+            var title = fs.ReadLengthPrefixedString();
 
             // тут игра дополнительно вычитывает ещё 1 байт, видимо как \0 для char*
             fs.ReadByte();
 
-            entry.Index = fs.ReadInt32LittleEndian();
-            entry.InnerCount = fs.ReadInt32LittleEndian();
-            entry.Inners = [];
-            for (var i1 = 0; i1 < entry.InnerCount; i1++)
+            var index = fs.ReadInt32LittleEndian();
+            var innerCount = fs.ReadInt32LittleEndian();
+            List<ScrEntryInner> inners = [];
+            for (var i1 = 0; i1 < innerCount; i1++)
             {
-                var entryInner = new ScrEntryInner();
-                entryInner.ScriptIndex = fs.ReadInt32LittleEndian();
+                var scriptIndex = fs.ReadInt32LittleEndian();
+                var unkInner2 = fs.ReadInt32LittleEndian();
+                var unkInner3 = fs.ReadInt32LittleEndian();
+                var type = (ScrEntryInnerType)fs.ReadInt32LittleEndian();
+                var unkInner5 = fs.ReadInt32LittleEndian();
+                var argumentsCount = fs.ReadInt32LittleEndian();
+                List<int> arguments = [];
 
-                entryInner.UnkInner2 = fs.ReadInt32LittleEndian();
-                entryInner.UnkInner3 = fs.ReadInt32LittleEndian();
-                entryInner.Type = (ScrEntryInnerType)fs.ReadInt32LittleEndian();
-                entryInner.UnkInner5 = fs.ReadInt32LittleEndian();
-
-                entryInner.ArgumentsCount = fs.ReadInt32LittleEndian();
-
-                entryInner.Arguments = [];
-
-                for (var i2 = 0; i2 < entryInner.ArgumentsCount; i2++)
+                for (var i2 = 0; i2 < argumentsCount; i2++)
                 {
-                    entryInner.Arguments.Add(fs.ReadInt32LittleEndian());
+                    arguments.Add(fs.ReadInt32LittleEndian());
                 }
 
-                entryInner.UnkInner7 = fs.ReadInt32LittleEndian();
-                entry.Inners.Add(entryInner);
+                var unkInner7 = fs.ReadInt32LittleEndian();
+                inners.Add(new ScrEntryInner(
+                    scriptIndex,
+                    unkInner2,
+                    unkInner3,
+                    type,
+                    unkInner5,
+                    argumentsCount,
+                    arguments,
+                    unkInner7));
             }
 
-            scrFile.Entries.Add(entry);
+            entries.Add(new ScrEntry(title, index, innerCount, inners));
         }
 
-        return scrFile;
+        return new ScrFile(magic, entryCount, entries);
     }
 }

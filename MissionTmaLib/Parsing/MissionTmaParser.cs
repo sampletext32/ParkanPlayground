@@ -72,32 +72,36 @@ public class MissionTmaParser
         List<ClanInfo> infos = [];
         for (var i = 0; i < clanCount; i++)
         {
-            var clanTreeInfo = new ClanInfo();
-
-            clanTreeInfo.ClanName = fileStream.ReadLengthPrefixedString();
-            clanTreeInfo.UnkInt1 = fileStream.ReadInt32LittleEndian();
-            clanTreeInfo.X = fileStream.ReadFloatLittleEndian();
-            clanTreeInfo.Y = fileStream.ReadFloatLittleEndian();
-            clanTreeInfo.ClanType = (ClanType) fileStream.ReadInt32LittleEndian();
+            var clanName = fileStream.ReadLengthPrefixedString();
+            var unkInt1 = fileStream.ReadInt32LittleEndian();
+            var x = fileStream.ReadFloatLittleEndian();
+            var y = fileStream.ReadFloatLittleEndian();
+            var clanType = (ClanType) fileStream.ReadInt32LittleEndian();
+            var scriptsString = string.Empty;
+            var unknownClanPartCount = 0;
+            List<UnknownClanTreeInfoPart> unknownParts = [];
+            var researchNResPath = string.Empty;
+            var brains = 0;
+            var alliesMapCount = 0;
+            Dictionary<string, int> alliesMap = [];
 
             if (1 < clanFeatureSet)
             {
                 // MISSIONS\SCRIPTS\default
                 // MISSIONS\SCRIPTS\tut1_pl
                 // MISSIONS\SCRIPTS\tut1_en
-                clanTreeInfo.ScriptsString = fileStream.ReadLengthPrefixedString();
+                scriptsString = fileStream.ReadLengthPrefixedString();
             }
 
             if (2 < clanFeatureSet)
             {
-                clanTreeInfo.UnknownClanPartCount = fileStream.ReadInt32LittleEndian();
+                unknownClanPartCount = fileStream.ReadInt32LittleEndian();
 
                 // тут игра читает число, затем 12 байт и ещё 2 числа
 
-                List<UnknownClanTreeInfoPart> unknownClanTreeInfoParts = [];
-                for (var i1 = 0; i1 < clanTreeInfo.UnknownClanPartCount; i1++)
+                for (var i1 = 0; i1 < unknownClanPartCount; i1++)
                 {
-                    unknownClanTreeInfoParts.Add(
+                    unknownParts.Add(
                         new UnknownClanTreeInfoPart(
                             fileStream.ReadInt32LittleEndian(),
                             new Vector3(
@@ -110,8 +114,6 @@ public class MissionTmaParser
                         )
                     );
                 }
-
-                clanTreeInfo.UnknownParts = unknownClanTreeInfoParts;
             }
 
             if (3 < clanFeatureSet)
@@ -120,17 +122,17 @@ public class MissionTmaParser
                 // MISSIONS\SCRIPTS\data.trf
                 // указатель на NRes файл с данными
                 // может быть пустым, например у Ntrl в туториале
-                clanTreeInfo.ResearchNResPath = fileStream.ReadLengthPrefixedString();
+                researchNResPath = fileStream.ReadLengthPrefixedString();
             }
 
             if (4 < clanFeatureSet)
             {
-                clanTreeInfo.Brains = fileStream.ReadInt32LittleEndian();
+                brains = fileStream.ReadInt32LittleEndian();
             }
 
             if (5 < clanFeatureSet)
             {
-                clanTreeInfo.AlliesMapCount = fileStream.ReadInt32LittleEndian();
+                alliesMapCount = fileStream.ReadInt32LittleEndian();
 
                 // тут какая-то мапа 
                 // в демо миссии тут 
@@ -142,20 +144,29 @@ public class MissionTmaParser
                 // Trgt -> 1
                 // Enm -> 0
                 // Ntrl -> 1
-                Dictionary<string, int> map = [];
-                for (var i1 = 0; i1 < clanTreeInfo.AlliesMapCount; i1++)
+                for (var i1 = 0; i1 < alliesMapCount; i1++)
                 {
                     var keyIdString = fileStream.ReadLengthPrefixedString();
                     // это число всегда либо 0 либо 1
                     var unkNumber = fileStream.ReadInt32LittleEndian();
 
-                    map[keyIdString] = unkNumber;
+                    alliesMap[keyIdString] = unkNumber;
                 }
-
-                clanTreeInfo.AlliesMap = map;
             }
 
-            infos.Add(clanTreeInfo);
+            infos.Add(new ClanInfo(
+                clanName,
+                unkInt1,
+                x,
+                y,
+                clanType,
+                scriptsString,
+                unknownClanPartCount,
+                unknownParts,
+                researchNResPath,
+                brains,
+                alliesMapCount,
+                alliesMap));
         }
 
         var clanInfo = new ClansFileData(clanFeatureSet, clanCount, infos);
@@ -177,51 +188,58 @@ public class MissionTmaParser
 
         for (var i = 0; i < gameObjectsCount; i++)
         {
-            var gameObjectInfo = new GameObjectInfo();
             // ReadGameObjectData
-            gameObjectInfo.Type = (GameObjectType) fileStream.ReadInt32LittleEndian();
-            gameObjectInfo.UnknownFlags = fileStream.ReadInt32LittleEndian();
+            var type = (GameObjectType) fileStream.ReadInt32LittleEndian();
+            var unknownFlags = fileStream.ReadInt32LittleEndian();
 
             // UNITS\UNITS\HERO\hero_t.dat
-            gameObjectInfo.DatString = fileStream.ReadLengthPrefixedString();
+            var datString = fileStream.ReadLengthPrefixedString();
+            var owningClanIndex = 0;
+            var order = 0;
+            var unknownString2 = string.Empty;
+            var unknownInt4 = 0;
+            var unknownInt5 = 0;
+            var unknownInt6 = 0;
+            var settingsData = new GameObjectSettings(0, 0, []);
 
             if (2 < gameObjectsFeatureSet)
             {
-                gameObjectInfo.OwningClanIndex = fileStream.ReadInt32LittleEndian();
+                owningClanIndex = fileStream.ReadInt32LittleEndian();
             }
 
             if (3 < gameObjectsFeatureSet)
             {
-                gameObjectInfo.Order = fileStream.ReadInt32LittleEndian();
-                if (gameObjectInfo.Type == GameObjectType.Building)
+                order = fileStream.ReadInt32LittleEndian();
+                if (type == GameObjectType.Building)
                 {
-                    gameObjectInfo.Order += int.MaxValue;
+                    order += int.MaxValue;
                 }
             }
 
             // читает 12 байт
-            gameObjectInfo.Position = new Vector3(
+            var position = new Vector3(
                 fileStream.ReadFloatLittleEndian(),
                 fileStream.ReadFloatLittleEndian(),
                 fileStream.ReadFloatLittleEndian()
             );
 
             // ещё раз читает 12 байт
-            gameObjectInfo.Rotation = new Vector3(
+            var rotation = new Vector3(
                 fileStream.ReadFloatLittleEndian(),
                 fileStream.ReadFloatLittleEndian(),
                 fileStream.ReadFloatLittleEndian()
             );
 
+            Vector3 scale;
             if (gameObjectsFeatureSet < 10)
             {
                 // если фичесет меньше 10, то игра забивает вектор единицами
-                gameObjectInfo.Scale = new Vector3(1, 1, 1);
+                scale = new Vector3(1, 1, 1);
             }
             else
             {
                 // в противном случае читает ещё вектор из файла
-                gameObjectInfo.Scale = new Vector3(
+                scale = new Vector3(
                     fileStream.ReadFloatLittleEndian(),
                     fileStream.ReadFloatLittleEndian(),
                     fileStream.ReadFloatLittleEndian()
@@ -231,18 +249,18 @@ public class MissionTmaParser
             if (6 < gameObjectsFeatureSet)
             {
                 // у HERO пустая строка
-                gameObjectInfo.UnknownString2 = fileStream.ReadLengthPrefixedString();
+                unknownString2 = fileStream.ReadLengthPrefixedString();
             }
 
             if (7 < gameObjectsFeatureSet)
             {
-                gameObjectInfo.UnknownInt4 = fileStream.ReadInt32LittleEndian();
+                unknownInt4 = fileStream.ReadInt32LittleEndian();
             }
 
             if (8 < gameObjectsFeatureSet)
             {
-                gameObjectInfo.UnknownInt5 = fileStream.ReadInt32LittleEndian();
-                gameObjectInfo.UnknownInt6 = fileStream.ReadInt32LittleEndian();
+                unknownInt5 = fileStream.ReadInt32LittleEndian();
+                unknownInt6 = fileStream.ReadInt32LittleEndian();
             }
 
             if (5 < gameObjectsFeatureSet)
@@ -318,10 +336,23 @@ public class MissionTmaParser
                     );
                 }
 
-                gameObjectInfo.Settings = new GameObjectSettings(unused, innerCount, settings);
+                settingsData = new GameObjectSettings(unused, innerCount, settings);
             }
 
-            gameObjectInfos.Add(gameObjectInfo);
+            gameObjectInfos.Add(new GameObjectInfo(
+                type,
+                unknownFlags,
+                datString,
+                owningClanIndex,
+                order,
+                position,
+                rotation,
+                scale,
+                unknownString2,
+                unknownInt4,
+                unknownInt5,
+                unknownInt6,
+                settingsData));
 
             // end ReadGameObjectData
         }

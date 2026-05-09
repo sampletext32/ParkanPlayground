@@ -12,10 +12,10 @@ namespace NResUI;
 
 public class App
     {
-        public GL GL { get; set; }
-        public IInputContext Input { get; set; }
+        public GL GL { get; set; } = null!;
+        public IInputContext Input { get; set; } = null!;
 
-        public static App Instance;
+        public static App Instance = null!;
 
         private static bool _dockspaceOpen = true;
         private static bool _optFullscreenPersistant = true;
@@ -25,7 +25,7 @@ public class App
 
         public ImFontPtr OpenSansFont;
 
-        private List<IImGuiPanel> _imGuiPanels;
+        private List<IImGuiPanel> _imGuiPanels = [];
 
         public App()
         {

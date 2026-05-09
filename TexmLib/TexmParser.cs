@@ -20,18 +20,18 @@ public class TexmParser
         var widthBytes = headerBytes[4..8];
         var heightBytes = headerBytes[8..12];
         var mipmapCountBytes = headerBytes[12..16];
-        var strideBytes = headerBytes[16..20];
-        var magic1Bytes = headerBytes[20..24];
-        var formatOptionFlagsBytes = headerBytes[24..28];
+        var flags4Bytes = headerBytes[16..20];
+        var flags5Bytes = headerBytes[20..24];
+        var unk6Bytes = headerBytes[24..28];
         var formatBytes = headerBytes[28..32];
 
         var texmAscii = Encoding.ASCII.GetString(texmHeader).Trim('\0');
         var width = BinaryPrimitives.ReadInt32LittleEndian(widthBytes);
         var height = BinaryPrimitives.ReadInt32LittleEndian(heightBytes);
         var mipmapCount = BinaryPrimitives.ReadInt32LittleEndian(mipmapCountBytes);
-        var stride = BinaryPrimitives.ReadInt32LittleEndian(strideBytes);
-        var magic1 = BinaryPrimitives.ReadInt32LittleEndian(magic1Bytes);
-        var formatOptionFlags = BinaryPrimitives.ReadInt32LittleEndian(formatOptionFlagsBytes);
+        var flags4 = BinaryPrimitives.ReadInt32LittleEndian(flags4Bytes);
+        var flags5 = BinaryPrimitives.ReadInt32LittleEndian(flags5Bytes);
+        var unk6 = BinaryPrimitives.ReadInt32LittleEndian(unk6Bytes);
         var format = BinaryPrimitives.ReadInt32LittleEndian(formatBytes);
 
         if (texmAscii != "Texm")
@@ -39,64 +39,56 @@ public class TexmParser
             return new TexmParseResult(null, "Файл не начинается с Texm");
         }
         
-        var textureFile = new TexmFile()
-        {
-            FileName = file
-        };
-
         var header = new TexmHeader(
             texmAscii,
             width,
             height,
             mipmapCount,
-            stride,
-            magic1,
-            formatOptionFlags,
+            flags4,
+            flags5,
+            unk6,
             format
         );
 
-        textureFile.Header = header;
+        List<byte[]> mipmapBytesList;
+        var isIndexed = false;
+        byte[] lookupColors = [];
 
         if (format == 0)
         {
             // если формат 0, то текстура использует lookup таблицу в первых 1024 байтах (256 разных цветов в формате ARGB 888)
 
-            var lookupColors = new byte[1024];
+            lookupColors = new byte[1024];
             stream.ReadExactly(lookupColors, 0, lookupColors.Length);
 
-            textureFile.LookupColors = lookupColors;
-
-            var mipmapBytesList = ReadMipmapsAsIndexes(
+            mipmapBytesList = ReadMipmapsAsIndexes(
                 stream,
                 mipmapCount,
                 width,
                 height
             );
 
-            textureFile.MipmapBytes = mipmapBytesList;
-            textureFile.IsIndexed = true;
+            isIndexed = true;
         }
         else
         {
-            var mipmapBytesList = ReadMipmaps(
+            mipmapBytesList = ReadMipmaps(
                 stream,
                 format.AsStride(),
                 mipmapCount,
                 width,
                 height
             );
-
-            textureFile.MipmapBytes = mipmapBytesList;
         }
 
+        PageHeader? pages = null;
         if (stream.Position < stream.Length)
         {
             // has PAGE data
-            var pageHeader = ReadPage(stream);
-
-            textureFile.Pages = pageHeader;
+            pages = ReadPage(stream);
         }
 
+        var textureFile = new TexmFile(file, header, mipmapBytesList, pages, isIndexed, lookupColors);
         return new TexmParseResult(textureFile);
     }
 
@@ -142,17 +134,12 @@ public class TexmParser
 
     private static List<byte[]> ReadMipmaps(Stream stream, int stride, int mipmapCount, int topWidth, int topHeight)
     {
-        if (stride == 0)
-        {
-            stride = 16;
-        }
-
         List<int> mipmapByteLengths = [];
 
         for (int i = 0; i < mipmapCount; i++)
         {
-            var mipWidth = topWidth / (int) Math.Pow(2, i);
-            var mipHeight = topHeight / (int) Math.Pow(2, i);
+            var mipWidth = Math.Max(1, topWidth >> i);
+            var mipHeight = Math.Max(1, topHeight >> i);
 
             var imageByteLength = mipWidth * mipHeight * (stride / 8);
             mipmapByteLengths.Add(imageByteLength);
@@ -178,8 +165,8 @@ public class TexmParser
 
         for (int i = 0; i < mipmapCount; i++)
         {
-            var mipWidth = topWidth / (int) Math.Pow(2, i);
-            var mipHeight = topHeight / (int) Math.Pow(2, i);
+            var mipWidth = Math.Max(1, topWidth >> i);
+            var mipHeight = Math.Max(1, topHeight >> i);
 
             var imageByteLength = mipWidth * mipHeight;
             mipmapByteLengths.Add(imageByteLength);

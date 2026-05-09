@@ -4,7 +4,11 @@ using NResLib;
 
 namespace ParkanPlayground;
 
-public class Msh0A
+/// <summary>
+/// MSH-компонент 0x0A: строки узлов.
+/// У FParkan: Res10 / Node strings. Старое локальное имя: ExternalRefs.
+/// </summary>
+public class Msh0x0A
 {
     public static List<string> ReadComponent(FileStream mshFs, NResArchive archive)
     {
@@ -23,19 +27,32 @@ public class Msh0A
         var strings = new List<string>();
         while (pos < data.Length)
         {
+            if (pos + 4 > data.Length)
+            {
+                throw new Exception("Node strings component (0x0A) has truncated length prefix");
+            }
+
             var len = BinaryPrimitives.ReadInt32LittleEndian(data.AsSpan(pos));
+            if (len < 0 || pos + 4 + len > data.Length)
+            {
+                throw new Exception("Node strings component (0x0A) has invalid string length");
+            }
+
             if (len == 0)
             {
-                pos += 4; // empty entry, no string attached
-                strings.Add(""); // add empty string
+                pos += 4;
+                strings.Add("");
             }
             else
             {
-                // len is not 0, we need to read it
                 var strBytes = data.AsSpan(pos + 4, len);
-                var str = Encoding.UTF8.GetString(strBytes);
+                var str = Encoding.ASCII.GetString(strBytes);
                 strings.Add(str);
-                pos += len + 4 + 1; // skip length prefix and string itself, +1, because it's null-terminated
+                pos += len + 4;
+                if (pos < data.Length && data[pos] == 0)
+                {
+                    pos++;
+                }
             }
         }
 

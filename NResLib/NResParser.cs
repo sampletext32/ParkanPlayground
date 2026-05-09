@@ -35,6 +35,16 @@ public static class NResParser
             TotalFileLengthBytes: BinaryPrimitives.ReadInt32LittleEndian(buffer[12..16])
         );
 
+        if (header.Version != 0x100)
+        {
+            return new NResParseResult(null, $"Неожиданная версия NRes: 0x{header.Version:X}");
+        }
+
+        if (header.FileCount < 0)
+        {
+            return new NResParseResult(null, $"Некорректное количество записей NRes: {header.FileCount}");
+        }
+
         if (header.TotalFileLengthBytes != nResFs.Length)
         {
             return new NResParseResult(
@@ -45,7 +55,14 @@ public static class NResParser
             );
         }
 
-        nResFs.Seek(-header.FileCount * 64, SeekOrigin.End);
+        var directorySize = header.FileCount * 64L;
+        var directoryOffset = header.TotalFileLengthBytes - directorySize;
+        if (directoryOffset < 16 || directoryOffset + directorySize != header.TotalFileLengthBytes)
+        {
+            return new NResParseResult(null, "Некорректное расположение каталога NRes");
+        }
+
+        nResFs.Seek(directoryOffset, SeekOrigin.Begin);
 
         var elements = new List<ListMetadataItem>(header.FileCount);
 
@@ -53,41 +70,32 @@ public static class NResParser
         for (int i = 0; i < header.FileCount; i++)
         {
             nResFs.ReadExactly(metaDataBuffer);
-            var type = "";
+            var typeId = BinaryPrimitives.ReadUInt32LittleEndian(metaDataBuffer[0..4]);
+            var type = FormatType(typeId, metaDataBuffer[0..4]);
+            var attr1 = BinaryPrimitives.ReadUInt32LittleEndian(metaDataBuffer[4..8]);
+            var attr2 = BinaryPrimitives.ReadUInt32LittleEndian(metaDataBuffer[8..12]);
+            var fileLength = BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[12..16]);
+            var attr3 = BinaryPrimitives.ReadUInt32LittleEndian(metaDataBuffer[16..20]);
+            var name = ReadNResName(metaDataBuffer[20..56]);
+            var offset = BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[56..60]);
+            var sortIndex = BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[60..64]);
 
-            for (int j = 0; j < 4; j++)
+            if (offset < 16 || fileLength < 0 || (long)offset + fileLength > directoryOffset)
             {
-                if (!char.IsLetterOrDigit((char)metaDataBuffer[j]))
-                {
-                    type += metaDataBuffer[j]
-                        .ToString("X2") + " ";
-                }
-                else
-                {
-                    type += (char)metaDataBuffer[j];
-                }
+                return new NResParseResult(null, $"Запись '{name}' выходит за границы data region");
             }
-
-            var type2 = BinaryPrimitives.ReadUInt32LittleEndian(metaDataBuffer.Slice(4));
-
-            type = type.Trim();
             
-            elements.Add(
-                new ListMetadataItem(
-                    FileType: type,
-                    ElementCount: type2,
-                    Magic1: BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[8..12]),
-                    FileLength: BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[12..16]),
-                    ElementSize: BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[16..20]),
-                    FileName: Encoding.ASCII.GetString(metaDataBuffer[20..40]).TrimEnd('\0'),
-                    Magic3: BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[40..44]),
-                    Magic4: BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[44..48]),
-                    Magic5: BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[48..52]),
-                    Magic6: BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[52..56]),
-                    OffsetInFile: BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[56..60]),
-                    Index: BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[60..64])
-                )
-            );
+            elements.Add(new ListMetadataItem(
+                typeId,
+                type,
+                attr1,
+                unchecked((int)attr2),
+                fileLength,
+                unchecked((int)attr3),
+                name,
+                offset,
+                sortIndex,
+                i));
 
             metaDataBuffer.Clear();
         }
@@ -98,5 +106,35 @@ public static class NResParser
                 Files: elements
             )
         );
+    }
+
+    private static string FormatType(uint typeId, ReadOnlySpan<byte> bytes)
+    {
+        bool formattable = true;
+        foreach (var b in bytes)
+        {
+            if (!char.IsLetterOrDigit((char)b))
+            {
+                formattable = false;
+                break;
+            }
+        }
+        if (!formattable)
+        {
+            return Encoding.ASCII.GetString(bytes);
+        }
+
+        return string.Join(" ", bytes.ToArray().Select(x => x.ToString("X2")));
+    }
+
+    private static string ReadNResName(ReadOnlySpan<byte> raw)
+    {
+        var nul = raw.IndexOf((byte)0);
+        if (nul < 0)
+        {
+            return Encoding.ASCII.GetString(raw);
+        }
+
+        return Encoding.ASCII.GetString(raw[..nul]);
     }
 }

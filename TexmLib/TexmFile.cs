@@ -35,44 +35,31 @@ public record TexmHeader(
 /// <param name="Items">Элементы</param>
 public record PageHeader(string Page, int Count, List<PageItem> Items);
 
+/// <summary>Элемент PAGE-секции TEXM.</summary>
+/// <param name="X">X-координата в атласе.</param>
+/// <param name="Width">Ширина элемента в атласе.</param>
+/// <param name="Y">Y-координата в атласе.</param>
+/// <param name="Height">Высота элемента в атласе.</param>
 public record PageItem(short X, short Width, short Y, short Height);
 
-public class TexmFile
+/// <summary>TEXM файл.</summary>
+/// <param name="FileName">Исходное имя файла текстуры TEXM.</param>
+/// <param name="Header">Заголовок файла (length = 32).</param>
+/// <param name="MipmapBytes">Байты mipmap уровней.</param>
+/// <param name="Pages">PAGE-секция атласа, если присутствует.</param>
+/// <param name="IsIndexed">Признак indexed texture с lookup таблицей на 1024 байта.</param>
+/// <param name="LookupColors">Lookup таблица цветов: 256 цветов * 4 байта.</param>
+public record class TexmFile(
+    string FileName,
+    TexmHeader Header,
+    List<byte[]> MipmapBytes,
+    PageHeader? Pages,
+    bool IsIndexed,
+    byte[] LookupColors)
 {
-    /// <summary>
-    /// Исходное имя файла текстуры TEXM
-    /// </summary>
-    public string FileName { get; set; }
-
-    /// <summary>
-    /// Заголовок файла, всегда 32 байта
-    /// </summary>
-    public TexmHeader Header { get; set; }
-
-    /// <summary>
-    /// Если в одной текстуре есть несколько MipMap уровней, тут будет несколько отдельных текстур
-    /// </summary>
-    public List<byte[]> MipmapBytes { get; set; }
-
-    /// <summary>
-    /// Если текстура - это атлас, то здесь будет информация о координатах в атласе
-    /// </summary>
-    public PageHeader? Pages { get; set; }
-
-    /// <summary>
-    /// В некоторых случаях, текстура может быть закодирована как lookup таблица на 1024 байта (256 цветов),
-    /// тогда сначала идёт 1024 байта lookup таблицы, а далее сами мипмапы, по 1 байту (каждый байт - индекс в lookup таблице)
-    /// </summary>
-    public bool IsIndexed { get; set; }
-
-    /// <summary>
-    /// Lookup таблица цветов (каждый цвет закодирован как 4 байта (ARGB))
-    /// </summary>
-    public byte[] LookupColors { get; set; }
-
-    public async Task WriteToFolder(string folder)
+    public Task WriteToFolder(string folder)
     {
-        if (Directory.Exists(folder))
+        if (!Directory.Exists(folder))
         {
             Directory.CreateDirectory(folder);
         }
@@ -84,8 +71,8 @@ public class TexmFile
         {
             for (var i = 0; i < Header.MipmapCount; i++)
             {
-                var mipWidth = Header.Width / (int) Math.Pow(2, i);
-                var mipHeight = Header.Height / (int) Math.Pow(2, i);
+                var mipWidth = Math.Max(1, Header.Width >> i);
+                var mipHeight = Math.Max(1, Header.Height >> i);
                 var reinterpretedPixels = ReinterpretIndexedMipmap(MipmapBytes[i], LookupColors);
                 
                 var image = Image.LoadPixelData<Rgba32>(reinterpretedPixels, mipWidth, mipHeight);
@@ -93,13 +80,13 @@ public class TexmFile
                 image.SaveAsPng(Path.Combine(outputDir, Path.GetFileName(FileName)) + $"_{mipWidth}x{mipHeight}_indexed.png");
             }
 
-            return;
+            return Task.CompletedTask;
         }
 
         for (var i = 0; i < Header.MipmapCount; i++)
         {
-            var mipWidth = Header.Width / (int) Math.Pow(2, i);
-            var mipHeight = Header.Height / (int) Math.Pow(2, i);
+            var mipWidth = Math.Max(1, Header.Width >> i);
+            var mipHeight = Math.Max(1, Header.Height >> i);
 
             var reinterpretedPixels = ReinterpretMipmapBytesAsRgba32(
                 MipmapBytes[i],
@@ -112,14 +99,16 @@ public class TexmFile
             
             image.SaveAsPng(Path.Combine(outputDir, Path.GetFileName(FileName)) + $"_{Header.Format}_{mipWidth}x{mipHeight}.png");
         }
+
+        return Task.CompletedTask;
     }
 
     public byte[] GetRgba32BytesFromMipmap(int index, out int mipWidth, out int mipHeight)
     {
         var mipmapBytes = MipmapBytes[index];
         
-        mipWidth = Header.Width / (int) Math.Pow(2, index);
-        mipHeight = Header.Height / (int) Math.Pow(2, index);
+        mipWidth = Math.Max(1, Header.Width >> index);
+        mipHeight = Math.Max(1, Header.Height >> index);
 
         if (IsIndexed)
         {
@@ -151,7 +140,7 @@ public class TexmFile
             result[i * 4 + 0] = r;
             result[i * 4 + 1] = g;
             result[i * 4 + 2] = b;
-            result[i * 4 + 3] = 255;
+            result[i * 4 + 3] = a;
         }
 
         return result;
@@ -165,6 +154,8 @@ public class TexmFile
             888 => ReinterpretAs888(bytes, mipWidth, mipHeight),
             4444 => ReinterpretAs4444(bytes, mipWidth, mipHeight),
             565 => ReinterpretAs565(bytes, mipWidth, mipHeight),
+            556 => ReinterpretAs556(bytes, mipWidth, mipHeight),
+            88 => ReinterpretAs88(bytes, mipWidth, mipHeight),
             _ => throw new InvalidOperationException($"Invalid format {format}")
         };
 
@@ -178,22 +169,38 @@ public class TexmFile
         var result = new byte[bytes.Length * 2];
         for (var i = 0; i < span.Length; i += 2)
         {
-            var rawPixel = span.Slice(i, 2);
+            var rawPixel = BinaryPrimitives.ReadUInt16LittleEndian(span.Slice(i, 2));
 
-            // swap endianess
-            (rawPixel[0], rawPixel[1]) = (rawPixel[1], rawPixel[0]);
+            var r = (byte)(((rawPixel >> 11) & 0b11111) * 255 / 31);
+            var g = (byte)(((rawPixel >> 5) & 0b111111) * 255 / 63);
+            var b = (byte)((rawPixel & 0b11111) * 255 / 31);
 
-            var r = (byte)(((rawPixel[0] >> 3) & 0b11111) * 255 / 31);
-            var g = (byte)((((rawPixel[0] & 0b111) << 3) | ((rawPixel[1] >> 5) & 0b111)) * 255 / 63);
-            var b = (byte)((rawPixel[1] & 0b11111) * 255 / 31);
-
-            result[i / 2 * 4 + 0] = (byte)(0xff - r);
-            result[i / 2 * 4 + 1] = (byte)(0xff - g);
-            result[i / 2 * 4 + 2] = (byte)(0xff - b);
+            result[i / 2 * 4 + 0] = r;
+            result[i / 2 * 4 + 1] = g;
+            result[i / 2 * 4 + 2] = b;
             result[i / 2 * 4 + 3] = 0xff;
+        }
 
-            // swap endianess back
-            (rawPixel[0], rawPixel[1]) = (rawPixel[1], rawPixel[0]);
+        return result;
+    }
+
+    private byte[] ReinterpretAs556(byte[] bytes, int mipWidth, int mipHeight)
+    {
+        var span = bytes.AsSpan();
+
+        var result = new byte[bytes.Length * 2];
+        for (var i = 0; i < span.Length; i += 2)
+        {
+            var rawPixel = BinaryPrimitives.ReadUInt16LittleEndian(span.Slice(i, 2));
+
+            var r = (byte)(((rawPixel >> 11) & 0b11111) * 255 / 31);
+            var g = (byte)(((rawPixel >> 6) & 0b11111) * 255 / 31);
+            var b = (byte)((rawPixel & 0b111111) * 255 / 63);
+
+            result[i / 2 * 4 + 0] = r;
+            result[i / 2 * 4 + 1] = g;
+            result[i / 2 * 4 + 2] = b;
+            result[i / 2 * 4 + 3] = 0xff;
         }
 
         return result;
@@ -206,23 +213,36 @@ public class TexmFile
         var result = new byte[bytes.Length * 2];
         for (var i = 0; i < span.Length; i += 2)
         {
-            var rawPixel = span.Slice(i, 2);
+            var rawPixel = BinaryPrimitives.ReadUInt16LittleEndian(span.Slice(i, 2));
 
-            // swap endianess
-            (rawPixel[0], rawPixel[1]) = (rawPixel[1], rawPixel[0]);
-
-            var a = (byte)(((rawPixel[0] >> 4) & 0b1111) * 17);
-            var b = (byte)(((rawPixel[0] >> 0) & 0b1111) * 17);
-            var g = (byte)(((rawPixel[1] >> 4) & 0b1111) * 17);
-            var r = (byte)(((rawPixel[1] >> 0) & 0b1111) * 17);
+            var a = (byte)(((rawPixel >> 12) & 0b1111) * 17);
+            var r = (byte)(((rawPixel >> 8) & 0b1111) * 17);
+            var g = (byte)(((rawPixel >> 4) & 0b1111) * 17);
+            var b = (byte)((rawPixel & 0b1111) * 17);
 
             result[i / 2 * 4 + 0] = r;
             result[i / 2 * 4 + 1] = g;
             result[i / 2 * 4 + 2] = b;
             result[i / 2 * 4 + 3] = a;
-            
-            // swap endianess back
-            (rawPixel[0], rawPixel[1]) = (rawPixel[1], rawPixel[0]);
+        }
+
+        return result;
+    }
+
+    private byte[] ReinterpretAs88(byte[] bytes, int mipWidth, int mipHeight)
+    {
+        var span = bytes.AsSpan();
+
+        var result = new byte[bytes.Length * 2];
+        for (var i = 0; i < span.Length; i += 2)
+        {
+            var l = span[i];
+            var a = span[i + 1];
+
+            result[i / 2 * 4 + 0] = l;
+            result[i / 2 * 4 + 1] = l;
+            result[i / 2 * 4 + 2] = l;
+            result[i / 2 * 4 + 3] = a;
         }
 
         return result;
@@ -237,14 +257,9 @@ public class TexmFile
         {
             var rawPixel = span.Slice(i, 4);
 
-            var r = rawPixel[0];
-            var g = rawPixel[1];
-            var b = rawPixel[2];
-            var w = rawPixel[3];
-
-            result[i + 0] = r;
-            result[i + 1] = g;
-            result[i + 2] = b;
+            result[i + 0] = rawPixel[0];
+            result[i + 1] = rawPixel[1];
+            result[i + 2] = rawPixel[2];
             result[i + 3] = 255;
         }
 
@@ -270,7 +285,7 @@ public class TexmFile
             result[i + 0] = r;
             result[i + 1] = g;
             result[i + 2] = b;
-            result[i + 3] = a;
+            result[i + 3] = 255;
             
             // swap endianess back
             // (rawPixel[0], rawPixel[1], rawPixel[2], rawPixel[3]) = (rawPixel[3], rawPixel[2], rawPixel[1], rawPixel[0]);

@@ -7,18 +7,39 @@ namespace ParkanPlayground.Effects;
 /// Parsed from CEffect_InitFromDef: defines component count, global duration/flags,
 /// some unknown control fields, and the uniform scale vector applied to the effect.
 /// </summary>
-public struct EffectHeader
+public record struct EffectHeader
 {
+    /// <summary>FXID payload offset 0x00: command count.</summary>
     public uint ComponentCount;
-    public uint Unknown1;
+    /// <summary>FXID payload offset 0x04: time mode used to compute effect alpha.</summary>
+    public uint TimeMode;
+    /// <summary>FXID payload offset 0x08: effect duration in seconds.</summary>
     public float Duration;
-    public float Unknown2;
+    /// <summary>FXID payload offset 0x0C: random phase shift amplitude.</summary>
+    public float PhaseJitter;
+    /// <summary>FXID payload offset 0x10: effect behavior flags.</summary>
     public uint Flags;
-    public uint Unknown3;
-    public byte[] Reserved; // 24 bytes
+    /// <summary>FXID payload offset 0x14: settings/profile id.</summary>
+    public uint SettingsId;
+    /// <summary>FXID payload offset 0x18: random spatial shift X.</summary>
+    public float RandShiftX;
+    /// <summary>FXID payload offset 0x1C: random spatial shift Y.</summary>
+    public float RandShiftY;
+    /// <summary>FXID payload offset 0x20: random spatial shift Z.</summary>
+    public float RandShiftZ;
+    /// <summary>FXID payload offset 0x24: local pivot X.</summary>
+    public float PivotX;
+    /// <summary>FXID payload offset 0x28: local pivot Y.</summary>
+    public float PivotY;
+    /// <summary>FXID payload offset 0x2C: local pivot Z.</summary>
+    public float PivotZ;
+    /// <summary>FXID payload offset 0x30: base scale X.</summary>
     public float ScaleX;
+    /// <summary>FXID payload offset 0x34: base scale Y.</summary>
     public float ScaleY;
+    /// <summary>FXID payload offset 0x38: base scale Z.</summary>
     public float ScaleZ;
+
 }
 
 /// <summary>
@@ -26,7 +47,7 @@ public struct EffectHeader
 /// Used by CBillboardComponent_Initialize/Update/Render to drive size/color/alpha
 /// curves and sample scattering within a 3D extent volume.
 /// </summary>
-public struct BillboardComponentData
+public record struct BillboardComponentData
 {
     public uint TypeAndFlags;       // type (low byte) and flags as seen in CEffect_InitFromDef
     public float Unknown04;         // mode / flag-like float, semantics not fully clear
@@ -56,7 +77,7 @@ public struct BillboardComponentData
 /// Used by CSoundComponent_Initialize/Update to drive positional audio, playback
 /// window, and scalar ranges (e.g. volume / pitch), plus a 0x40-byte sound name tail.
 /// </summary>
-public struct SoundComponentData
+public record struct SoundComponentData
 {
     public uint TypeAndFlags;           // component type and flags
     public uint PlayMode;               // playback mode (looping, one-shot, etc.)
@@ -79,7 +100,7 @@ public struct SoundComponentData
 /// Prefix layout matches BillboardComponentData and is used to allocate a grid of
 /// particle objects; the 0x38-byte tail is passed into CFxManager_LoadTexture.
 /// </summary>
-public struct AnimParticleComponentData
+public record struct AnimParticleComponentData
 {
     public uint TypeAndFlags;       // type (low byte) and flags as seen in CEffect_InitFromDef
     public float Unknown04;         // mode / flag-like float, semantics not fully clear
@@ -109,7 +130,7 @@ public struct AnimParticleComponentData
 /// Shares the same prefix layout as BillboardComponentData, including extents and
 /// radius/exponent triplets, but uses a 0x3C-byte tail passed to CFxManager_LoadTexture.
 /// </summary>
-public struct AnimBillboardComponentData
+public record struct AnimBillboardComponentData
 {
     public uint TypeAndFlags;       // type (low byte) and flags as seen in CEffect_InitFromDef
     public float Unknown04;         // mode / flag-like float, semantics not fully clear
@@ -139,7 +160,7 @@ public struct AnimBillboardComponentData
 /// CTrailComponent_Initialize interprets this as segment count, width/alpha/UV
 /// ranges, timing, and a shared texture name at +0x30.
 /// </summary>
-public struct TrailComponentData
+public record struct TrailComponentData
 {
     public uint TypeAndFlags;             // component type and flags
     public byte[] Unknown04To10;          // 0x10 bytes at +4..+0x13, used only indirectly; types unknown
@@ -157,7 +178,7 @@ public struct TrailComponentData
 /// Simple point component definition (type 6).
 /// Definition block is just the 4-byte typeAndFlags header; no extra data on disk.
 /// </summary>
-public struct PointComponentData
+public record struct PointComponentData
 {
     public uint TypeAndFlags; // component type and flags; definition block has no payload
 }
@@ -167,7 +188,7 @@ public struct PointComponentData
 /// Shares the same 0xC8-byte prefix layout as AnimParticleComponentData (type 3),
 /// followed by two dwords of plane-specific data.
 /// </summary>
-public struct PlaneComponentData
+public record struct PlaneComponentData
 {
     public AnimParticleComponentData Base; // shared 0xC8-byte prefix: time window, sample counts, extents, curves
     public uint ExtraPlaneParam0;          // plane-specific parameter, semantics not yet reversed
@@ -180,7 +201,7 @@ public struct PlaneComponentData
 /// time window, instance count, spatial extents/axes, radius triplets, and a
 /// 0x40-byte texture name tail.
 /// </summary>
-public struct ModelComponentData
+public record struct ModelComponentData
 {
     public uint TypeAndFlags;          // component type and flags
     public byte[] Unk04;               // 0x14-byte blob at +0x04..+0x17, purpose unclear
@@ -206,7 +227,7 @@ public struct ModelComponentData
 /// Layout derived from CAnimModelComponent_Initialize: time params, direction vectors,
 /// radius triplets, extent vectors, and a 0x48-byte texture name tail.
 /// </summary>
-public struct AnimModelComponentData
+public record struct AnimModelComponentData
 {
     public uint TypeAndFlags;          // component type and flags
     public float AnimSpeed;            // animation speed multiplier at +0x04
@@ -230,7 +251,7 @@ public struct AnimModelComponentData
 /// Shares the same 0xCC-byte prefix layout as AnimBillboardComponentData (type 4),
 /// followed by one dword of cube-specific data.
 /// </summary>
-public struct CubeComponentData
+public record struct CubeComponentData
 {
     public AnimBillboardComponentData Base; // shared 0xCC-byte prefix: billboard-style time window, extents, curves
     public uint ExtraCubeParam0;            // cube-specific parameter, semantics not yet reversed

@@ -25,12 +25,17 @@ public static class FxidReader
     {
         EffectHeader h;
         h.ComponentCount = br.ReadUInt32();
-        h.Unknown1 = br.ReadUInt32();
+        h.TimeMode = br.ReadUInt32();
         h.Duration = br.ReadSingle();
-        h.Unknown2 = br.ReadSingle();
+        h.PhaseJitter = br.ReadSingle();
         h.Flags = br.ReadUInt32();
-        h.Unknown3 = br.ReadUInt32();
-        h.Reserved = br.ReadBytes(24);
+        h.SettingsId = br.ReadUInt32();
+        h.RandShiftX = br.ReadSingle();
+        h.RandShiftY = br.ReadSingle();
+        h.RandShiftZ = br.ReadSingle();
+        h.PivotX = br.ReadSingle();
+        h.PivotY = br.ReadSingle();
+        h.PivotZ = br.ReadSingle();
         h.ScaleX = br.ReadSingle();
         h.ScaleY = br.ReadSingle();
         h.ScaleZ = br.ReadSingle();

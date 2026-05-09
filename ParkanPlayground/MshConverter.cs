@@ -13,9 +13,7 @@ public enum MshType
 
 public class MshConverter
 {
-    /// <summary>
-    /// Detects mesh type based on which components are present in the archive.
-    /// </summary>
+    /// <summary>Определяет тип MSH по набору hex-компонентов архива.</summary>
     public static MshType DetectMeshType(NResArchive archive)
     {
         bool hasComponent06 = archive.Files.Any(f => f.FileType == "06 00 00 00");
@@ -33,13 +31,12 @@ public class MshConverter
         return MshType.Unknown;
     }
 
-    /// <summary>
-    /// Converts a .msh file to OBJ format, auto-detecting mesh type.
-    /// </summary>
-    /// <param name="mshPath">Path to the .msh file</param>
-    /// <param name="outputPath">Output OBJ path (optional, defaults to input name + .obj)</param>
-    /// <param name="lodLevel">LOD level to export (0 = highest detail)</param>
-    public void Convert(string mshPath, string? outputPath = null, int lodLevel = 0)
+    /// <summary>Конвертирует .msh в OBJ с автоопределением типа меша.</summary>
+    /// <param name="mshPath">Путь к .msh файлу.</param>
+    /// <param name="outputPath">Путь к OBJ, по умолчанию рядом с исходным файлом.</param>
+    /// <param name="lodLevel">LOD для экспорта.</param>
+    /// <param name="group">Группа slot внутри LOD. slotIndex[lod * 5 + group].</param>
+    public void Convert(string mshPath, string? outputPath = null, int lodLevel = 0, int group = 0)
     {
         var mshNresResult = NResParser.ReadFile(mshPath);
         if (mshNresResult.Archive is null)
@@ -61,10 +58,10 @@ public class MshConverter
         switch (meshType)
         {
             case MshType.Model:
-                ConvertModel(fs, archive, outputPath, lodLevel);
+                ConvertModel(fs, archive, outputPath, lodLevel, group);
                 break;
             case MshType.Landscape:
-                ConvertLandscape(fs, archive, outputPath, lodLevel);
+                ConvertLandscape(fs, archive, outputPath, lodLevel, group);
                 break;
             default:
                 Console.WriteLine("ERROR: Unknown mesh type, cannot convert.");
@@ -73,17 +70,17 @@ public class MshConverter
     }
 
     /// <summary>
-    /// Converts a model mesh (robots, buildings, etc.) to OBJ.
-    /// Uses indexed triangles: 01 → 02 → 0D → 06 → 03
+    /// Конвертирует обычную модель в OBJ.
+    /// Путь данных: 0x01 -> 0x02 -> 0x0D -> 0x06 -> 0x03.
     /// </summary>
-    private void ConvertModel(FileStream fs, NResArchive archive, string outputPath, int lodLevel)
+    private void ConvertModel(FileStream fs, NResArchive archive, string outputPath, int lodLevel, int group)
     {
-        var component01 = Msh01.ReadComponent(fs, archive);
-        var component02 = Msh02.ReadComponent(fs, archive);
-        var component03 = Msh03.ReadComponent(fs, archive);
-        var component06 = Msh06.ReadComponent(fs, archive);
-        var component07 = Msh07.ReadComponent(fs, archive);
-        var component0D = Msh0D.ReadComponent(fs, archive);
+        var component01 = Msh0x01.ReadComponent(fs, archive);
+        var component02 = Msh0x02.ReadComponent(fs, archive);
+        var component03 = Msh0x03.ReadComponent(fs, archive);
+        var component06 = Msh0x06.ReadComponent(fs, archive);
+        var component07 = Msh0x07.ReadComponent(fs, archive);
+        var component0D = Msh0x0D.ReadComponent(fs, archive);
 
         Console.WriteLine($"Vertices: {component03.Count}");
         Console.WriteLine($"Pieces: {component01.Elements.Count}");
@@ -93,9 +90,10 @@ public class MshConverter
         sw.WriteLine($"# Model mesh converted from {Path.GetFileName(outputPath)}");
         sw.WriteLine($"# LOD level: {lodLevel}");
 
-        // Write all vertices
         foreach (var v in component03)
-            sw.WriteLine($"v {v.X:F6} {v.Y:F6} {v.Z:F6}");
+        {
+            sw.WriteLine(FormattableString.Invariant($"v {v.X:F6} {v.Y:F6} {v.Z:F6}"));
+        }
 
         int exportedFaces = 0;
         
@@ -103,32 +101,49 @@ public class MshConverter
         {
             var piece = component01.Elements[pieceIndex];
             
-            // Get submesh index for requested LOD
-            if (lodLevel >= piece.Lod.Length)
-                continue;
-                
-            var submeshIdx = piece.Lod[lodLevel];
+            var submeshIdx = piece.ResolveSlotIndex(lodLevel, group);
             if (submeshIdx == 0xFFFF || submeshIdx >= component02.Elements.Count)
                 continue;
 
             sw.WriteLine($"g piece_{pieceIndex}");
             
             var submesh = component02.Elements[submeshIdx];
-            var batchStart = submesh.StartOffsetIn0d;
-            var batchCount = submesh.ByteLengthIn0D;
+            var batchStart = submesh.BatchStart;
+            var batchCount = submesh.BatchCount;
+            if (batchStart + batchCount > component0D.Count)
+            {
+                Console.WriteLine($"WARNING: Batch range {batchStart}:{batchCount} out of range for piece {pieceIndex}");
+                continue;
+            }
 
             for (var batchIdx = 0; batchIdx < batchCount; batchIdx++)
             {
                 var batch = component0D[batchStart + batchIdx];
-                var baseVertex = batch.IndexInto03;
-                var indexStart = batch.IndexInto06;
-                var indexCount = batch.CountOf06;
+                var baseVertex = (int)batch.BaseVertex;
+                var indexStart = (int)batch.IndexStart;
+                var indexCount = batch.IndexCount;
+                if (indexStart + indexCount > component06.Count)
+                {
+                    Console.WriteLine($"WARNING: Index range {indexStart}:{indexCount} out of range for piece {pieceIndex}");
+                    continue;
+                }
 
                 for (int i = 0; i < indexCount; i += 3)
                 {
+                    if (i + 2 >= indexCount)
+                    {
+                        Console.WriteLine($"WARNING: Batch has non-triangle index tail in piece {pieceIndex}");
+                        break;
+                    }
+
                     var i1 = baseVertex + component06[indexStart + i];
                     var i2 = baseVertex + component06[indexStart + i + 1];
                     var i3 = baseVertex + component06[indexStart + i + 2];
+                    if (i1 >= component03.Count || i2 >= component03.Count || i3 >= component03.Count)
+                    {
+                        Console.WriteLine($"WARNING: Vertex index out of range in piece {pieceIndex}");
+                        continue;
+                    }
 
                     sw.WriteLine($"f {i1 + 1} {i2 + 1} {i3 + 1}");
                     exportedFaces++;
@@ -141,15 +156,15 @@ public class MshConverter
     }
 
     /// <summary>
-    /// Converts a landscape mesh (terrain) to OBJ.
-    /// Uses direct triangles: 01 → 02 → 15 (via StartIndexIn07/CountIn07)
+    /// Конвертирует terrain mesh в OBJ.
+    /// Путь данных является terrain-гипотезой проекта: 0x01 -> 0x02 -> 0x15.
     /// </summary>
-    private void ConvertLandscape(FileStream fs, NResArchive archive, string outputPath, int lodLevel)
+    private void ConvertLandscape(FileStream fs, NResArchive archive, string outputPath, int lodLevel, int group)
     {
-        var component01 = Msh01.ReadComponent(fs, archive);
-        var component02 = Msh02.ReadComponent(fs, archive);
-        var component03 = Msh03.ReadComponent(fs, archive);
-        var component15 = Msh15.ReadComponent(fs, archive);
+        var component01 = Msh0x01.ReadComponent(fs, archive);
+        var component02 = Msh0x02.ReadComponent(fs, archive);
+        var component03 = Msh0x03.ReadComponent(fs, archive);
+        var component15 = Msh0x15.ReadComponent(fs, archive);
 
         Console.WriteLine($"Vertices: {component03.Count}");
         Console.WriteLine($"Triangles: {component15.Count}");
@@ -161,9 +176,10 @@ public class MshConverter
         sw.WriteLine($"# LOD level: {lodLevel}");
         sw.WriteLine($"# Tile grid: {(int)Math.Sqrt(component01.Elements.Count)}x{(int)Math.Sqrt(component01.Elements.Count)}");
 
-        // Write all vertices
         foreach (var v in component03)
-            sw.WriteLine($"v {v.X:F6} {v.Y:F6} {v.Z:F6}");
+        {
+            sw.WriteLine(FormattableString.Invariant($"v {v.X:F6} {v.Y:F6} {v.Z:F6}"));
+        }
 
         int exportedFaces = 0;
         
@@ -171,11 +187,7 @@ public class MshConverter
         {
             var tile = component01.Elements[tileIdx];
             
-            // Get submesh index for requested LOD
-            if (lodLevel >= tile.Lod.Length)
-                continue;
-                
-            var submeshIdx = tile.Lod[lodLevel];
+            var submeshIdx = tile.ResolveSlotIndex(lodLevel, group);
             if (submeshIdx == 0xFFFF || submeshIdx >= component02.Elements.Count)
                 continue;
 
@@ -183,9 +195,8 @@ public class MshConverter
             
             var submesh = component02.Elements[submeshIdx];
             
-            // For landscape, StartIndexIn07 = triangle start index, CountIn07 = triangle count
-            var triangleStart = submesh.StartIndexIn07;
-            var triangleCount = submesh.CountIn07;
+            var triangleStart = submesh.TriStart;
+            var triangleCount = submesh.TriCount;
 
             for (var triOffset = 0; triOffset < triangleCount; triOffset++)
             {
@@ -197,6 +208,12 @@ public class MshConverter
                 }
 
                 var tri = component15[triIdx];
+                if (tri.Vertex1Index >= component03.Count || tri.Vertex2Index >= component03.Count || tri.Vertex3Index >= component03.Count)
+                {
+                    Console.WriteLine($"WARNING: Vertex index out of range for tile {tileIdx}");
+                    continue;
+                }
+
                 sw.WriteLine($"f {tri.Vertex1Index + 1} {tri.Vertex2Index + 1} {tri.Vertex3Index + 1}");
                 exportedFaces++;
             }
@@ -215,21 +232,21 @@ public class MshConverter
 
         using (StreamWriter writer = new StreamWriter(filePath))
         {
-            // Write vertices
+            // Запись вершин.
             foreach (var p in points)
             {
                 writer.WriteLine($"v {p.X} {p.Y} {p.Z}");
             }
 
-            // Write faces (each face defined by 4 vertices, using 1-based indices)
+            // Запись граней: каждая грань задается четырьмя вершинами, OBJ использует индексацию с 1.
             int[][] faces = new int[][]
             {
-                new int[] { 1, 2, 3, 4 }, // bottom
-                new int[] { 5, 6, 7, 8 }, // top
-                new int[] { 1, 2, 6, 5 }, // front
-                new int[] { 2, 3, 7, 6 }, // right
-                new int[] { 3, 4, 8, 7 }, // back
-                new int[] { 4, 1, 5, 8 } // left
+                new int[] { 1, 2, 3, 4 }, // низ
+                new int[] { 5, 6, 7, 8 }, // верх
+                new int[] { 1, 2, 6, 5 }, // перед
+                new int[] { 2, 3, 7, 6 }, // право
+                new int[] { 3, 4, 8, 7 }, // зад
+                new int[] { 4, 1, 5, 8 } // лево
             };
 
             foreach (var f in faces)
@@ -248,7 +265,7 @@ public class MshConverter
 
             foreach (var c in centers)
             {
-                // Generate 8 vertices for this cube
+                // Генерация восьми вершин куба.
                 Vector3[] vertices = new Vector3[]
                 {
                     new Vector3(c.X - half, c.Y - half, c.Z - half),
@@ -262,24 +279,24 @@ public class MshConverter
                     new Vector3(c.X - half, c.Y + half, c.Z + half)
                 };
 
-                // Write vertices
+                // Запись вершин.
                 foreach (var v in vertices)
                 {
                     writer.WriteLine($"v {v.X} {v.Y} {v.Z}");
                 }
 
-                // Define faces (1-based indices, counter-clockwise)
+                // Описание граней: индексация с 1, порядок против часовой стрелки.
                 int[][] faces = new int[][]
                 {
-                    new int[] { 1, 2, 3, 4 }, // bottom
-                    new int[] { 5, 6, 7, 8 }, // top
-                    new int[] { 1, 2, 6, 5 }, // front
-                    new int[] { 2, 3, 7, 6 }, // right
-                    new int[] { 3, 4, 8, 7 }, // back
-                    new int[] { 4, 1, 5, 8 } // left
+                    new int[] { 1, 2, 3, 4 }, // низ
+                    new int[] { 5, 6, 7, 8 }, // верх
+                    new int[] { 1, 2, 6, 5 }, // перед
+                    new int[] { 2, 3, 7, 6 }, // право
+                    new int[] { 3, 4, 8, 7 }, // зад
+                    new int[] { 4, 1, 5, 8 } // лево
                 };
 
-                // Write faces with offset
+                // Запись граней со смещением индексов.
                 foreach (var f in faces)
                 {
                     writer.WriteLine(
@@ -297,16 +314,16 @@ public class MshConverter
         {
             writer.WriteLine("# Exported OBJ file");
 
-            // Write vertices
+            // Запись вершин.
             foreach (var v in vertices)
             {
                 writer.WriteLine($"v {v.X:F2} {v.Y:F2} {v.Z:F2}");
             }
 
-            // Write edges as lines ("l" elements in .obj format)
+            // Запись ребер как line-элементов OBJ.
             foreach (var e in edges)
             {
-                // OBJ uses 1-based indexing
+                // OBJ использует индексацию с 1.
                 writer.WriteLine($"l {e.Index1 + 1} {e.Index2 + 1}");
             }
         }

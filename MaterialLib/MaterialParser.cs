@@ -7,17 +7,9 @@ public static class MaterialParser
 {
     public static MaterialFile ReadFromStream(Stream fs, string fileName, int elementCount, int magic1)
     {
-        var file = new MaterialFile
-        {
-            FileName = fileName,
-            Version = elementCount,
-            Magic1 = magic1
-        };
-
-        // Derived fields
-        file.MaterialRenderingType = elementCount >> 2 & 0xf;
-        file.SupportsBumpMapping = (elementCount & 2) != 0;
-        file.IsParticleEffect = elementCount & 40;
+        var materialRenderingType = elementCount >> 2 & 0xf;
+        var supportsBumpMapping = (elementCount & 2) != 0;
+        var isParticleEffect = elementCount & 40;
 
         // Reading content
         var stageCount = fs.ReadUInt16LittleEndian();
@@ -25,113 +17,140 @@ public static class MaterialParser
 
         uint magic = (uint)magic1;
 
-        // Defaults found in C code
-        file.GlobalAlphaMultiplier = 1.0f; // field8_0x15c
-        file.GlobalEmissiveIntensity = 0.0f; // field9_0x160
-        file.SourceBlendMode = BlendMode.Unknown;   // field6_0x154
-        file.DestBlendMode = BlendMode.Unknown;   // field7_0x158
+        // Значения по умолчанию из C-кода.
+        var globalAlphaMultiplier = 1.0f; // field8_0x15c
+        var globalEmissiveIntensity = 0.0f; // field9_0x160
+        var sourceBlendMode = BlendMode.Unknown;   // field6_0x154
+        var destBlendMode = BlendMode.Unknown;   // field7_0x158
 
         if (magic >= 2)
         {
-            file.SourceBlendMode = (BlendMode)fs.ReadByte();
-            file.DestBlendMode = (BlendMode)fs.ReadByte();
+            sourceBlendMode = (BlendMode)fs.ReadByte();
+            destBlendMode = (BlendMode)fs.ReadByte();
         }
 
         if (magic > 2)
         {
-            file.GlobalAlphaMultiplier = fs.ReadFloatLittleEndian();
+            globalAlphaMultiplier = fs.ReadFloatLittleEndian();
         }
 
         if (magic > 3)
         {
-            file.GlobalEmissiveIntensity = fs.ReadFloatLittleEndian();
+            globalEmissiveIntensity = fs.ReadFloatLittleEndian();
         }
 
-        // --- 2. Material Stages ---
+        // Стадии материала.
         const float Inv255 = 1.0f / 255.0f;
         const float Field7Mult = 0.01f;
         Span<byte> textureNameBuffer = stackalloc byte[16];
+        List<MaterialStage> stages = [];
 
         for (int i = 0; i < stageCount; i++)
         {
-            var stage = new MaterialStage();
-
-            // === FILE READ ORDER (matches decompiled.c lines 159-217) ===
+            // Порядок чтения соответствует файлу, а не C struct layout.
             
-            // 1. Ambient (4 bytes, A scaled by 0.01) - Lines 159-168
-            stage.AmbientR = fs.ReadByte() * Inv255;
-            stage.AmbientG = fs.ReadByte() * Inv255;
-            stage.AmbientB = fs.ReadByte() * Inv255;
-            stage.AmbientA = fs.ReadByte() * Field7Mult; // 0.01 scaling
+            // Ambient: 4 байта, A масштабируется на 0.01.
+            var ambientR = fs.ReadByte() * Inv255;
+            var ambientG = fs.ReadByte() * Inv255;
+            var ambientB = fs.ReadByte() * Inv255;
+            var ambientA = fs.ReadByte() * Field7Mult; // 0.01 scaling
 
-            // 2. Diffuse (4 bytes) - Lines 171-180
-            stage.DiffuseR = fs.ReadByte() * Inv255;
-            stage.DiffuseG = fs.ReadByte() * Inv255;
-            stage.DiffuseB = fs.ReadByte() * Inv255;
-            stage.DiffuseA = fs.ReadByte() * Inv255;
+            // Diffuse: 4 байта.
+            var diffuseR = fs.ReadByte() * Inv255;
+            var diffuseG = fs.ReadByte() * Inv255;
+            var diffuseB = fs.ReadByte() * Inv255;
+            var diffuseA = fs.ReadByte() * Inv255;
 
-            // 3. Specular (4 bytes) - Lines 183-192
-            stage.SpecularR = fs.ReadByte() * Inv255;
-            stage.SpecularG = fs.ReadByte() * Inv255;
-            stage.SpecularB = fs.ReadByte() * Inv255;
-            stage.SpecularA = fs.ReadByte() * Inv255;
+            // Specular: 4 байта.
+            var specularR = fs.ReadByte() * Inv255;
+            var specularG = fs.ReadByte() * Inv255;
+            var specularB = fs.ReadByte() * Inv255;
+            var specularA = fs.ReadByte() * Inv255;
 
-            // 4. Emissive (4 bytes) - Lines 195-204
-            stage.EmissiveR = fs.ReadByte() * Inv255;
-            stage.EmissiveG = fs.ReadByte() * Inv255;
-            stage.EmissiveB = fs.ReadByte() * Inv255;
-            stage.EmissiveA = fs.ReadByte() * Inv255;
+            // Emissive: 4 байта.
+            var emissiveR = fs.ReadByte() * Inv255;
+            var emissiveG = fs.ReadByte() * Inv255;
+            var emissiveB = fs.ReadByte() * Inv255;
+            var emissiveA = fs.ReadByte() * Inv255;
 
-            // 5. Power (1 byte → float) - Line 207
-            stage.Power = (float)fs.ReadByte();
+            // Power: 1 байт -> float.
+            var power = (float)fs.ReadByte();
             
-            // 6. Texture Stage Index (1 byte) - Line 210
-            stage.TextureStageIndex = fs.ReadByte();
+            // Texture stage index: 1 байт.
+            var textureStageIndex = fs.ReadByte();
 
-            // 7. Texture Name (16 bytes) - Lines 212-217
+            // Texture name: 16 байт.
             textureNameBuffer.Clear();
             fs.ReadExactly(textureNameBuffer);
-            stage.TextureName = Encoding.ASCII.GetString(textureNameBuffer).TrimEnd('\0');
+            var textureName = Encoding.ASCII.GetString(textureNameBuffer).TrimEnd('\0');
 
-            file.Stages.Add(stage);
+            stages.Add(new MaterialStage(
+                ambientR,
+                ambientG,
+                ambientB,
+                ambientA,
+                diffuseR,
+                diffuseG,
+                diffuseB,
+                diffuseA,
+                specularR,
+                specularG,
+                specularB,
+                specularA,
+                emissiveR,
+                emissiveG,
+                emissiveB,
+                emissiveA,
+                power,
+                textureStageIndex,
+                textureName));
         }
 
-        // --- 3. Animations ---
+        // Анимации.
+        List<MaterialAnimation> animations = [];
         for (int i = 0; i < animCount; i++)
         {
-            var anim = new MaterialAnimation();
-
             uint typeAndParams = fs.ReadUInt32LittleEndian();
-            anim.Target = (AnimationTarget)(typeAndParams >> 3);
-            anim.LoopMode = (AnimationLoopMode)(typeAndParams & 7);
+            var target = (AnimationTarget)(typeAndParams >> 3);
+            var loopMode = (AnimationLoopMode)(typeAndParams & 7);
 
             ushort keyCount = fs.ReadUInt16LittleEndian();
+            List<AnimKey> keys = [];
 
             for (int k = 0; k < keyCount; k++)
             {
-                var key = new AnimKey
-                {
-                    StageIndex = fs.ReadUInt16LittleEndian(),
-                    DurationMs = fs.ReadUInt16LittleEndian(),
-                    InterpolationCurve = fs.ReadUInt16LittleEndian()
-                };
-                anim.Keys.Add(key);
+                keys.Add(new AnimKey(
+                    fs.ReadUInt16LittleEndian(),
+                    fs.ReadUInt16LittleEndian(),
+                    fs.ReadUInt16LittleEndian()));
             }
             
-            // Precompute description for UI to avoid per-frame allocations
-            anim.TargetDescription = ComputeTargetDescription(anim.Target);
+            // Описание вычисляется один раз при парсинге, чтобы UI не выделял память каждый кадр.
+            var targetDescription = ComputeTargetDescription(target);
             
-            file.Animations.Add(anim);
+            animations.Add(new MaterialAnimation(target, loopMode, keys, targetDescription));
         }
 
-        return file;
+        return new MaterialFile(
+            fileName,
+            elementCount,
+            magic1,
+            materialRenderingType,
+            supportsBumpMapping,
+            isParticleEffect,
+            sourceBlendMode,
+            destBlendMode,
+            globalAlphaMultiplier,
+            globalEmissiveIntensity,
+            stages,
+            animations);
     }
     
     private static string ComputeTargetDescription(AnimationTarget target)
     {
         // Precompute the description once during parsing
         if ((int)target == 0)
-            return "No interpolation - entire stage is copied as-is (Flags: 0x0)";
+            return "Без интерполяции - вся стадия копируется как есть (Flags: 0x0)";
         
         var parts = new List<string>();
         
@@ -146,7 +165,7 @@ public static class MaterialParser
         if ((target & AnimationTarget.Power) != 0)
             parts.Add("Ambient.A + Power");
             
-        return $"Interpolates: {string.Join(", ", parts)} | Other components copied (Flags: 0x{(int)target:X})";
+        return $"Интерполируется: {string.Join(", ", parts)} | Остальные компоненты копируются (Flags: 0x{(int)target:X})";
     }
 }
 

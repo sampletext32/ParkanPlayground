@@ -1,48 +1,36 @@
 ﻿namespace ScrLib;
 
-public class ScrFile
-{
-    /// <summary>
-    /// тут всегда число 59 (0x3b) - это число известных игре скриптов
-    /// </summary>
-    public int Magic { get; set; }
+/// <summary>SCR файл.</summary>
+/// <param name="Magic">Число известных игре скриптов; обычно 59 (0x3B).</param>
+/// <param name="EntryCount">Количество ScrEntry.</param>
+/// <param name="Entries">Записи SCR.</param>
+public record ScrFile(int Magic, int EntryCount, List<ScrEntry> Entries);
 
-    public int EntryCount { get; set; }
+/// <summary>Запись SCR.</summary>
+/// <param name="Title">Название записи.</param>
+/// <param name="Index">Индекс записи.</param>
+/// <param name="InnerCount">Количество вложенных записей.</param>
+/// <param name="Inners">Вложенные записи.</param>
+public record ScrEntry(string Title, int Index, int InnerCount, List<ScrEntryInner> Inners);
 
-    public List<ScrEntry> Entries { get; set; }
-}
-
-public class ScrEntry
-{
-    public string Title { get; set; }
-
-    public int Index { get; set; }
-
-    public int InnerCount { get; set; }
-
-    public List<ScrEntryInner> Inners { get; set; }
-}
-
-public class ScrEntryInner
-{
-    /// <summary>
-    /// Номер скрипта в игре (это тех, которых 0x3b)
-    /// </summary>
-    public int ScriptIndex { get; set; }
-
-    public int UnkInner2 { get; set; }
-    public int UnkInner3 { get; set; }
-
-    public ScrEntryInnerType Type { get; set; }
-
-    public int UnkInner5 { get; set; }
-
-    public int ArgumentsCount { get; set; }
-
-    public List<int> Arguments { get; set; }
-
-    public int UnkInner7 { get; set; }
-}
+/// <summary>Вложенная запись SCR.</summary>
+/// <param name="ScriptIndex">Номер скрипта в игре из таблицы известных скриптов (обычно 0x3B записей).</param>
+/// <param name="UnkInner2">Неизвестное поле. Для SetVarsetValue это индекс в Varset.</param>
+/// <param name="UnkInner3">Неизвестное поле. Для SetVarsetValue это устанавливаемое значение.</param>
+/// <param name="Type">Тип вложенной записи.</param>
+/// <param name="UnkInner5">Неизвестное поле.</param>
+/// <param name="ArgumentsCount">Количество аргументов.</param>
+/// <param name="Arguments">Аргументы вложенной записи.</param>
+/// <param name="UnkInner7">Неизвестное поле.</param>
+public record ScrEntryInner(
+    int ScriptIndex,
+    int UnkInner2,
+    int UnkInner3,
+    ScrEntryInnerType Type,
+    int UnkInner5,
+    int ArgumentsCount,
+    List<int> Arguments,
+    int UnkInner7);
 
 public enum ScrEntryInnerType
 {

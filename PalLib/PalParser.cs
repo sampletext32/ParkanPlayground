@@ -27,11 +27,6 @@ public class PalParser
         var indices = new byte[65536];
         stream.ReadExactly(indices, 0, 65536);
 
-        return new PalFile
-        {
-            FileName = filename,
-            Palette = palette,
-            Indices = indices
-        };
+        return new PalFile(filename, palette, indices);
     }
 }
