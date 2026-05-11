@@ -6,6 +6,7 @@ namespace ParkanPlayground;
 /// <summary>
 /// MSH-компонент 0x01: таблица узлов модели.
 /// </summary>
+/// У ландшафта magic1 - grid_x_count
 public static class Msh0x01
 {
     public static Msh0x01Component ReadComponent(FileStream mshFs, NResArchive archive)
@@ -50,7 +51,7 @@ public static class Msh0x01
 
             elements.Add(new Node(
                 rawBytes,
-                BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(baseOffset)),
+                (NodeFlags)BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(baseOffset)),
                 BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(baseOffset + 2)),
                 BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(baseOffset + 4)),
                 BinaryPrimitives.ReadUInt16LittleEndian(dataSpan.Slice(baseOffset + 6)),
@@ -67,23 +68,28 @@ public static class Msh0x01
 
     /// <summary>Узел 0x01.</summary>
     /// <param name="RawBytes">Сырые байты узла (length = attr3). Нужны для copy-through редких вариантов, например attr3 = 24.</param>
-    /// <param name="Header0">[0x00..0x02] Заголовочное слово узла</param>
-    /// <param name="ParentOrLink">[0x02..0x04] Индекс родителя или связанного узла</param>
+    /// <param name="Flags">[0x00..0x02] Флаги узла</param>
+    /// <param name="ParentOrLink_possibly_0x02_index">[0x02..0x04] Индекс родителя или связанного узла</param>
     /// <param name="AnimMapStart">[0x04..0x06] Начало блока в карте анимации Msh0x13 или 0xFFFF</param>
     /// <param name="FallbackKey">[0x06..0x08] Индекс fallback-ключа в пуле ключей Msh0x08</param>
-    /// <param name="SlotIndex">[0x08..0x26] Индексы slot в Msh0x02 по формуле lod * 5 + group</param>
+    /// <param name="Msh02SlotIndicesByLodAndGroupSlotIndex">[0x08..0x26] Индексы slot в Msh0x02 по формуле lod * 5 + group</param>
     public record Node(
         byte[] RawBytes,
-        ushort Header0,
-        ushort ParentOrLink,
+        NodeFlags Flags,
+        ushort ParentOrLink_possibly_0x02_index,
         ushort AnimMapStart,
         ushort FallbackKey,
-        ushort[] SlotIndex)
+        ushort[] Msh02SlotIndicesByLodAndGroupSlotIndex)
     {
         public ushort ResolveSlotIndex(int lod, int group = 0)
         {
             var index = lod * 5 + group;
-            return index >= 0 && index < SlotIndex.Length ? SlotIndex[index] : ushort.MaxValue;
+            return index >= 0 && index < Msh02SlotIndicesByLodAndGroupSlotIndex.Length ? Msh02SlotIndicesByLodAndGroupSlotIndex[index] : ushort.MaxValue;
         }
     }
+}
+
+public enum NodeFlags
+{
+    MSH01_NODE_FLAG_NO_SHADOW  = 0x40
 }

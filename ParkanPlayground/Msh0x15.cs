@@ -18,32 +18,36 @@ public static class Msh0x15
             throw new Exception("Archive doesn't contain file (15)");
         }
 
-        if (entry.ElementSize != 28)
+        if (entry.ElementSize != 0x1C)
         {
             throw new Exception("Terrain triangle component (0x15) element size is not 28");
         }
 
-        if (entry.FileLength % entry.ElementSize != 0)
+        if (entry.FileLength % entry.ElementSize != 0x0)
         {
             throw new Exception("Terrain triangle component (0x15) payload size is not divisible by element size");
         }
 
         var data = new byte[entry.FileLength];
         mshFs.Seek(entry.OffsetInFile, SeekOrigin.Begin);
-        mshFs.ReadExactly(data, 0, data.Length);
+        mshFs.ReadExactly(data, 0x0, data.Length);
 
-        var elementBytes = data.Chunk(28);
+        var elementBytes = data.Chunk(0x1C);
 
         var elements = elementBytes.Select(x => new TerrainTriangle(
-            BinaryPrimitives.ReadUInt32LittleEndian(x.AsSpan(0)),
-            BinaryPrimitives.ReadUInt32LittleEndian(x.AsSpan(4)),
-            BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(8)),
-            BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(10)),
-            BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(12)),
-            BinaryPrimitives.ReadUInt32LittleEndian(x.AsSpan(14)),
-            BinaryPrimitives.ReadUInt32LittleEndian(x.AsSpan(18)),
-            BinaryPrimitives.ReadUInt32LittleEndian(x.AsSpan(22)),
-            BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(26)))).ToList();
+            Flags: (TerrainTriangleFlags)BinaryPrimitives.ReadUInt32LittleEndian(x.AsSpan(0x0)),
+            MaterialData: BinaryPrimitives.ReadUInt32LittleEndian(x.AsSpan(0x4)),
+            Vertex1Index: BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0x8)),
+            Vertex2Index: BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0xA)),
+            Vertex3Index: BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0xC)),
+            Neighbor0: BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0x0E)),
+            Neighbor1: BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0x10)),
+            Neighbor2: BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0x12)),
+            NormalX: BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0x14)),
+            NormalY: BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0x16)),
+            NormalZ: BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0x18)),
+            PackedEdgeOrSelector: BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0x1A))))
+            .ToList();
 
         return elements;
     }
@@ -54,20 +58,32 @@ public static class Msh0x15
     /// <param name="Vertex1Index">[0x08..0x0A] Индекс первой вершины в position stream Msh0x03</param>
     /// <param name="Vertex2Index">[0x0A..0x0C] Индекс второй вершины в position stream Msh0x03</param>
     /// <param name="Vertex3Index">[0x0C..0x0E] Индекс третьей вершины в position stream Msh0x03</param>
-    /// <param name="Opaque0E">[0x0E..0x12] Opaque поле</param>
-    /// <param name="Opaque12">[0x12..0x16] Opaque поле</param>
-    /// <param name="Opaque16">[0x16..0x1A] Opaque поле</param>
-    /// <param name="Opaque1A">[0x1A..0x1C] Opaque поле</param>
+    /// <param name="Neighbor0">[0x0E..0x10] Сосед 0</param>
+    /// <param name="Neighbor1">[0x10..0x12] Сосед 1</param>
+    /// <param name="Neighbor2">[0x12..0x14] Сосед 2</param>
+    /// <param name="NormalX">[0x14..0x16] Направление нормали</param>
+    /// <param name="NormalY">[0x16..0x18] Направление нормали</param>
+    /// <param name="NormalZ">[0x18..0x1A] Направление нормали</param>
+    /// <param name="PackedEdgeOrSelector">[0x1A..0x1C] TODO</param>
     public readonly record struct TerrainTriangle(
-        uint Flags,
+        TerrainTriangleFlags Flags,
 
         uint MaterialData,
         ushort Vertex1Index,
         ushort Vertex2Index,
         ushort Vertex3Index,
         
-        uint Opaque0E,
-        uint Opaque12,
-        uint Opaque16,
-        ushort Opaque1A);
+        ushort Neighbor0,
+        ushort Neighbor1,
+        ushort Neighbor2,
+        ushort NormalX,
+        ushort NormalY,
+        ushort NormalZ,
+        ushort PackedEdgeOrSelector);
+}
+
+public enum TerrainTriangleFlags {
+    MSH15_FLAG_REFLECTIVE_SURFACE = 0x20000,
+    MSH15_FLAG_HAS_MICROTEXTURE = 0x400,
+    MSH15_FLAG_DISABLE_BACKFACE_TEST = 0x8
 }

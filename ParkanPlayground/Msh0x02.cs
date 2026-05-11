@@ -100,44 +100,49 @@ public static class Msh0x02
 
         var elements = new List<Slot>();
         var skippedHeader = data.AsSpan(0x8c);
-        var slotCount = skippedHeader.Length / 68;
+        var slotCount = skippedHeader.Length / 0x44;
+
         for (var i = 0; i < slotCount; i++)
         {
-            var baseOffset = 68 * i;
-            var opaque = new uint[5];
+            var baseOffset = 0x44 * i;
+
+            var opaque = new uint[3];
             for (var opaqueIndex = 0; opaqueIndex < opaque.Length; opaqueIndex++)
             {
                 opaque[opaqueIndex] =
-                    BinaryPrimitives.ReadUInt32LittleEndian(skippedHeader.Slice(baseOffset + 48 + opaqueIndex * 4));
+                    BinaryPrimitives.ReadUInt32LittleEndian(
+                        skippedHeader.Slice(baseOffset + 0x38 + opaqueIndex * 4)
+                    );
             }
 
             elements.Add(new Slot(
-                BinaryPrimitives.ReadUInt16LittleEndian(skippedHeader.Slice(baseOffset + 0)),
-                BinaryPrimitives.ReadUInt16LittleEndian(skippedHeader.Slice(baseOffset + 2)),
-                BinaryPrimitives.ReadUInt16LittleEndian(skippedHeader.Slice(baseOffset + 4)),
-                BinaryPrimitives.ReadUInt16LittleEndian(skippedHeader.Slice(baseOffset + 6)),
+                BinaryPrimitives.ReadUInt16LittleEndian(skippedHeader.Slice(baseOffset + 0x00)),
+                BinaryPrimitives.ReadUInt16LittleEndian(skippedHeader.Slice(baseOffset + 0x02)),
+                BinaryPrimitives.ReadUInt16LittleEndian(skippedHeader.Slice(baseOffset + 0x04)),
+                BinaryPrimitives.ReadUInt16LittleEndian(skippedHeader.Slice(baseOffset + 0x06)),
                 new Vector3(
-                    BinaryPrimitives.ReadSingleLittleEndian(skippedHeader.Slice(baseOffset + 8)),
-                    BinaryPrimitives.ReadSingleLittleEndian(skippedHeader.Slice(baseOffset + 12)),
-                    BinaryPrimitives.ReadSingleLittleEndian(skippedHeader.Slice(baseOffset + 16))
+                    BinaryPrimitives.ReadSingleLittleEndian(skippedHeader.Slice(baseOffset + 0x08)),
+                    BinaryPrimitives.ReadSingleLittleEndian(skippedHeader.Slice(baseOffset + 0x0c)),
+                    BinaryPrimitives.ReadSingleLittleEndian(skippedHeader.Slice(baseOffset + 0x10))
                 ),
                 new Vector3(
-                    BinaryPrimitives.ReadSingleLittleEndian(skippedHeader.Slice(baseOffset + 20)),
-                    BinaryPrimitives.ReadSingleLittleEndian(skippedHeader.Slice(baseOffset + 24)),
-                    BinaryPrimitives.ReadSingleLittleEndian(skippedHeader.Slice(baseOffset + 28))
+                    BinaryPrimitives.ReadSingleLittleEndian(skippedHeader.Slice(baseOffset + 0x14)),
+                    BinaryPrimitives.ReadSingleLittleEndian(skippedHeader.Slice(baseOffset + 0x18)),
+                    BinaryPrimitives.ReadSingleLittleEndian(skippedHeader.Slice(baseOffset + 0x1c))
                 ),
-                new Vector3(
-                    BinaryPrimitives.ReadSingleLittleEndian(skippedHeader.Slice(baseOffset + 32)),
-                    BinaryPrimitives.ReadSingleLittleEndian(skippedHeader.Slice(baseOffset + 36)),
-                    BinaryPrimitives.ReadSingleLittleEndian(skippedHeader.Slice(baseOffset + 40))
-                ),
-                BinaryPrimitives.ReadSingleLittleEndian(skippedHeader.Slice(baseOffset + 44)),
-                opaque));
-
+                new Sphere(
+                    BinaryPrimitives.ReadSingleLittleEndian(skippedHeader.Slice(baseOffset + 0x20)),
+                    BinaryPrimitives.ReadSingleLittleEndian(skippedHeader.Slice(baseOffset + 0x24)),
+                    BinaryPrimitives.ReadSingleLittleEndian(skippedHeader.Slice(baseOffset + 0x28)),
+                    BinaryPrimitives.ReadSingleLittleEndian(skippedHeader.Slice(baseOffset + 0x2c))),
+                BinaryPrimitives.ReadSingleLittleEndian(skippedHeader.Slice(baseOffset + 0x30)),
+                BinaryPrimitives.ReadSingleLittleEndian(skippedHeader.Slice(baseOffset + 0x34)),
+                opaque
+            ));
         }
 
         return new Msh0x02Component(
-            new Msh02Header(bb, center, centerW, bottom, top, xyRadius),
+            new Msh02Header(bb, new Sphere(center.X, center.Y, center.Z, centerW), bottom, top, xyRadius),
             elements);
     }
 
@@ -148,38 +153,38 @@ public static class Msh0x02
 
     /// <summary>Заголовок 0x02 (length = 0x8C).</summary>
     /// <param name="BoundingBox">[0x00..0x60] Bounding box из 8 точек.</param>
-    /// <param name="Center">[0x60..0x6C] Центральная точка.</param>
-    /// <param name="CenterW">[0x6C..0x70] W-компонента центра.</param>
+    /// <param name="BoundingSphere">[0x60..0x70] Bounding sphere.</param>
     /// <param name="Bottom">[0x70..0x7C] Нижняя точка.</param>
     /// <param name="Top">[0x7C..0x88] Верхняя точка.</param>
     /// <param name="XYRadius">[0x88..0x8C] Радиус в плоскости XY.</param>
     public record class Msh02Header(
         BoundingBox BoundingBox,
-        Vector3 Center,
-        float CenterW,
+        Sphere BoundingSphere,
         Vector3 Bottom,
         Vector3 Top,
         float XYRadius);
 
-    /// <summary>Slot 0x02 (length = 0x44).</summary>
+    /// <summary>Geometry Slot 0x02 (length = 0x44).</summary>
     /// <param name="TriStart">[0x00..0x02] Первый triangle descriptor в Msh0x07. Для terrain-гипотезы может быть диапазоном Msh0x15.</param>
     /// <param name="TriCount">[0x02..0x04] Количество triangle descriptor в Msh0x07. Для terrain-гипотезы может быть count для Msh0x15.</param>
     /// <param name="BatchStart">[0x04..0x06] Первый batch в таблице 0x0D.</param>
     /// <param name="BatchCount">[0x06..0x08] Количество batch в таблице 0x0D</param>
     /// <param name="LocalMinimum">[0x08..0x14] Минимум локального AABB</param>
     /// <param name="LocalMaximum">[0x14..0x20] Максимум локального AABB</param>
-    /// <param name="Center">[0x20..0x2C] Центр bounding sphere</param>
-    /// <param name="SphereRadius">[0x2C..0x30] Радиус bounding sphere</param>
-    /// <param name="Opaque">[0x30..0x44] Пять opaque dword</param>
-    public record class Slot(
+    /// <param name="BoundingSphere">[0x20..0x30] Bounding sphere</param>
+    /// <param name="BaseXyArea">[0x30..0x34] Базовая XY-площадь / footprint area до масштабирования.</param>
+    /// <param name="BaseVolume">[0x34..0x38] Базовый объём до масштабирования.</param>
+    /// <param name="Opaque">[0x38..0x44] 3 opaque dword</param>
+    public record Slot(
         ushort TriStart,
         ushort TriCount,
         ushort BatchStart,
         ushort BatchCount,
         Vector3 LocalMinimum,
         Vector3 LocalMaximum,
-        Vector3 Center,
-        float SphereRadius,
+        Sphere BoundingSphere,
+        float BaseXyArea,
+        float BaseVolume,
         uint[] Opaque);
 
     /// <summary>Bounding box заголовка: 8 точек по 3 float (length = 0x60).</summary>
@@ -191,7 +196,7 @@ public static class Msh0x02
     /// <param name="TopFrontRight">[0x3C..0x48] Верхняя передняя правая точка.</param>
     /// <param name="TopBackRight">[0x48..0x54] Верхняя задняя правая точка.</param>
     /// <param name="TopBackLeft">[0x54..0x60] Верхняя задняя левая точка.</param>
-    public record class BoundingBox(
+    public record BoundingBox(
         Vector3 BottomFrontLeft,
         Vector3 BottomFrontRight,
         Vector3 BottomBackRight,
