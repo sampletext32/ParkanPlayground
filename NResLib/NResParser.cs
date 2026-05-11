@@ -119,7 +119,7 @@ public static class NResParser
                 break;
             }
         }
-        if (!formattable)
+        if (formattable)
         {
             return Encoding.ASCII.GetString(bytes);
         }

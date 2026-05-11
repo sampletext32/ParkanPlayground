@@ -37,7 +37,7 @@ public static class Msh0x0D
         var elementBytes = data.Chunk(ElementSize);
 
         var elements = elementBytes.Select(x => new Batch(
-            BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0)),
+            (BatchFlags)BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0)),
             BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(2)),
             BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(4)),
             BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(6)),
@@ -59,7 +59,7 @@ public static class Msh0x0D
     /// <param name="Opaque14">[0x0E..0x10] Opaque поле. Старое локальное имя: CountOf03; не подтверждено.</param>
     /// <param name="BaseVertex">[0x10..0x14] Базовая вершина в position stream 0x03. У FParkan: baseVertex.</param>
     public readonly record struct Batch(
-        ushort BatchFlags,
+        BatchFlags BatchFlags,
         ushort MaterialIndex,
         ushort Opaque4,
         ushort Opaque6,
@@ -67,4 +67,17 @@ public static class Msh0x0D
         uint IndexStart,
         ushort Opaque14,
         uint BaseVertex);
+}
+
+public enum BatchFlags : ushort
+{
+    MSH0D_BATCH_SPECIAL_SUBMIT = 1,
+    MSH0D_BATCH_INTERSECT_TWO_SIDED = 2,
+    MSH0D_BATCH_SPECIAL_PASS_OR_CONDITIONAL = 5,
+    MSH0D_BATCH_USE_MATERIAL_PHASE = 8,
+    MSH0D_BATCH_SUPPRESS_BATCH = 32,
+    MSH0D_BATCH_FORCE_PASS2 = 256,
+    MSH0D_BATCH_EMULATE_POINT_LIGHTS = 2048,
+    MSH0D_BATCH_HAS_LIGHTMAP_OR_TEXCOORD1 = 8192,
+    MSH0D_BATCH_FACING_TEST_EARLY_OUT = 16384,
 }

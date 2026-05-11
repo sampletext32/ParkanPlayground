@@ -89,7 +89,10 @@ public static class Msh0x01
     }
 }
 
-public enum NodeFlags
+public enum NodeFlags : ushort
 {
+    // very uncertain
+    MSH01_NODE_FLAG_UNKNOWN_SKIP_RECURSE_0x04 = 0x4,
+    MSH01_NODE_FLAG_STOP_CHILD_TRAVERSAL = 0x10,
     MSH01_NODE_FLAG_NO_SHADOW  = 0x40
 }
