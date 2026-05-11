@@ -7,325 +7,308 @@ namespace ParkanPlayground;
 public enum MshType
 {
     Unknown,
-    Model,      // Has component 06 (indices), 0D (batches), 07
-    Landscape   // Has component 0B (per-triangle material), uses 15 directly
+    /// <summary>
+    /// Для обычной модели минимальный геометрический путь сейчас выглядит так:
+    /// 0x01 node
+    ///   -> 0x02 geometry slot
+    ///     -> 0x0D batch
+    ///       -> 0x06 indices
+    ///         -> 0x03 positions
+    /// </summary>
+    Model,
+    Landscape
 }
 
-public class MshConverter
+public sealed class MshConverter
 {
-    /// <summary>Определяет тип MSH по набору hex-компонентов архива.</summary>
-    public static MshType DetectMeshType(NResArchive archive)
+    public void Convert(string mshPath, string? outputPath = null, int lod = 0, int group = 0)
     {
-        bool hasComponent06 = archive.Files.Any(f => f.FileType == "06 00 00 00");
-        bool hasComponent0B = archive.Files.Any(f => f.FileType == "0B 00 00 00");
-        bool hasComponent0D = archive.Files.Any(f => f.FileType == "0D 00 00 00");
-        
-        // Model: Uses indexed triangles via component 06 and batches via 0D
-        if (hasComponent06 && hasComponent0D)
-            return MshType.Model;
-        
-        // Landscape: Uses direct triangles in component 15, with material data in 0B
-        if (hasComponent0B && !hasComponent06)
-            return MshType.Landscape;
-        
-        return MshType.Unknown;
-    }
-
-    /// <summary>Конвертирует .msh в OBJ с автоопределением типа меша.</summary>
-    /// <param name="mshPath">Путь к .msh файлу.</param>
-    /// <param name="outputPath">Путь к OBJ, по умолчанию рядом с исходным файлом.</param>
-    /// <param name="lodLevel">LOD для экспорта.</param>
-    /// <param name="group">Группа slot внутри LOD. slotIndex[lod * 5 + group].</param>
-    public void Convert(string mshPath, string? outputPath = null, int lodLevel = 0, int group = 0)
-    {
-        var mshNresResult = NResParser.ReadFile(mshPath);
-        if (mshNresResult.Archive is null)
+        var result = NResParser.ReadFile(mshPath);
+        if (result.Archive is null)
         {
-            Console.WriteLine($"ERROR: Failed to read NRes archive: {mshNresResult.Error}");
+            Console.WriteLine($"ERROR: Failed to read NRes archive: {result.Error}");
             return;
         }
-        
-        var archive = mshNresResult.Archive;
+
+        var archive = result.Archive;
         var meshType = DetectMeshType(archive);
-        
+
         outputPath ??= Path.ChangeExtension(mshPath, ".obj");
-        
+
         Console.WriteLine($"Converting: {Path.GetFileName(mshPath)}");
         Console.WriteLine($"Detected type: {meshType}");
-        
+        Console.WriteLine($"LOD: {lod}, group: {group}");
+
         using var fs = new FileStream(mshPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-        
+
         switch (meshType)
         {
             case MshType.Model:
-                ConvertModel(fs, archive, outputPath, lodLevel, group);
+                ConvertModel(fs, archive, outputPath, lod, group);
                 break;
+
             case MshType.Landscape:
-                ConvertLandscape(fs, archive, outputPath, lodLevel, group);
+                ConvertLandscape(fs, archive, outputPath, lod, group);
                 break;
+
             default:
-                Console.WriteLine("ERROR: Unknown mesh type, cannot convert.");
+                Console.WriteLine("ERROR: Unknown or unsupported MSH type.");
                 break;
         }
     }
 
-    /// <summary>
-    /// Конвертирует обычную модель в OBJ.
-    /// Путь данных: 0x01 -> 0x02 -> 0x0D -> 0x06 -> 0x03.
-    /// </summary>
-    private void ConvertModel(FileStream fs, NResArchive archive, string outputPath, int lodLevel, int group)
+    public static MshType DetectMeshType(NResArchive archive)
     {
-        var component01 = Msh0x01.ReadComponent(fs, archive);
-        var component02 = Msh0x02.ReadComponent(fs, archive);
-        var component03 = Msh0x03.ReadComponent(fs, archive);
-        var component06 = Msh0x06.ReadComponent(fs, archive);
-        var component07 = Msh0x07.ReadComponent(fs, archive);
-        var component0D = Msh0x0D.ReadComponent(fs, archive);
+        var has03 = HasComponent(archive, "03");
+        var has06 = HasComponent(archive, "06");
+        var has0D = HasComponent(archive, "0D");
+        var has15 = HasComponent(archive, "15");
 
-        Console.WriteLine($"Vertices: {component03.Count}");
-        Console.WriteLine($"Pieces: {component01.Elements.Count}");
-        Console.WriteLine($"Submeshes: {component02.Elements.Count}");
-        
-        using var sw = new StreamWriter(outputPath, false, new UTF8Encoding(false));
-        sw.WriteLine($"# Model mesh converted from {Path.GetFileName(outputPath)}");
-        sw.WriteLine($"# LOD level: {lodLevel}");
-
-        foreach (var v in component03)
+        if (has03 && has06 && has0D)
         {
-            sw.WriteLine(FormattableString.Invariant($"v {v.X:F6} {v.Y:F6} {v.Z:F6}"));
+            return MshType.Model;
         }
 
-        int exportedFaces = 0;
-        
-        for (var pieceIndex = 0; pieceIndex < component01.Elements.Count; pieceIndex++)
+        if (has03 && has15 && !has06)
         {
-            var piece = component01.Elements[pieceIndex];
-            
-            var submeshIdx = piece.ResolveSlotIndex(lodLevel, group);
-            if (submeshIdx == 0xFFFF || submeshIdx >= component02.Elements.Count)
-                continue;
+            return MshType.Landscape;
+        }
 
-            sw.WriteLine($"g piece_{pieceIndex}");
-            
-            var submesh = component02.Elements[submeshIdx];
-            var batchStart = submesh.BatchStart;
-            var batchCount = submesh.BatchCount;
-            if (batchStart + batchCount > component0D.Count)
+        return MshType.Unknown;
+    }
+
+    private static bool HasComponent(NResArchive archive, string hexType)
+    {
+        return archive.Files.Any(x => x.FileType.Equals($"{hexType} 00 00 00", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static void ConvertModel(
+        FileStream fs,
+        NResArchive archive,
+        string outputPath,
+        int lod,
+        int group)
+    {
+        var nodes = Msh0x01.ReadComponent(fs, archive);
+        var geometry = Msh0x02.ReadComponent(fs, archive);
+        var vertices = Msh0x03.ReadComponent(fs, archive);
+        var indices = Msh0x06.ReadComponent(fs, archive);
+        var batches = Msh0x0D.ReadComponent(fs, archive);
+
+        using var writer = CreateObjWriter(outputPath);
+
+        writer.WriteLine($"# MSH model converted from {Path.GetFileName(outputPath)}");
+        writer.WriteLine($"# LOD: {lod}, group: {group}");
+        writer.WriteLine($"# Nodes: {nodes.Nodes.Count}");
+        writer.WriteLine($"# Geometry slots: {geometry.Slots.Count}");
+        writer.WriteLine($"# Batches: {batches.Count}");
+        writer.WriteLine($"# Vertices: {vertices.Count}");
+        writer.WriteLine();
+
+        WriteVertices(writer, vertices);
+
+        var exportedFaces = 0;
+        var skippedSlots = 0;
+        var skippedBatches = 0;
+        var skippedFaces = 0;
+
+        for (var pieceIndex = 0; pieceIndex < nodes.Nodes.Count; pieceIndex++)
+        {
+            var node = nodes.Nodes[pieceIndex];
+            var slotIndex = node.ResolveSlotIndex(lod, group);
+
+            if (slotIndex == ushort.MaxValue)
             {
-                Console.WriteLine($"WARNING: Batch range {batchStart}:{batchCount} out of range for piece {pieceIndex}");
+                skippedSlots++;
                 continue;
             }
 
-            for (var batchIdx = 0; batchIdx < batchCount; batchIdx++)
+            if (slotIndex >= geometry.Slots.Count)
             {
-                var batch = component0D[batchStart + batchIdx];
-                var baseVertex = (int)batch.BaseVertex;
-                var indexStart = (int)batch.IndexStart;
-                var indexCount = batch.IndexCount;
-                if (indexStart + indexCount > component06.Count)
+                Warn($"Piece {pieceIndex}: geometry slot {slotIndex} out of range");
+                skippedSlots++;
+                continue;
+            }
+
+            var slot = geometry.Slots[slotIndex];
+
+            if (!slot.HasBatches)
+            {
+                continue;
+            }
+
+            if (slot.BatchEndExclusive0x0D > batches.Count)
+            {
+                Warn($"Piece {pieceIndex}: batch range {slot.BatchStart0x0D}:{slot.BatchCount0x0D} out of range");
+                skippedBatches++;
+                continue;
+            }
+
+            writer.WriteLine();
+            writer.WriteLine($"g piece_{pieceIndex}_slot_{slotIndex}");
+
+            for (var batchIndex = slot.BatchStart0x0D; batchIndex < slot.BatchEndExclusive0x0D; batchIndex++)
+            {
+                var batch = batches[batchIndex];
+
+                if (batch.IndexStart + batch.IndexCount > indices.Count)
                 {
-                    Console.WriteLine($"WARNING: Index range {indexStart}:{indexCount} out of range for piece {pieceIndex}");
+                    Warn($"Piece {pieceIndex}, batch {batchIndex}: index range {batch.IndexStart}:{batch.IndexCount} out of range");
+                    skippedBatches++;
                     continue;
                 }
 
-                for (int i = 0; i < indexCount; i += 3)
-                {
-                    if (i + 2 >= indexCount)
-                    {
-                        Console.WriteLine($"WARNING: Batch has non-triangle index tail in piece {pieceIndex}");
-                        break;
-                    }
+                writer.WriteLine($"# batch {batchIndex}, material {batch.MaterialIndex}, flags {batch.Flags}");
 
-                    var i1 = baseVertex + component06[indexStart + i];
-                    var i2 = baseVertex + component06[indexStart + i + 1];
-                    var i3 = baseVertex + component06[indexStart + i + 2];
-                    if (i1 >= component03.Count || i2 >= component03.Count || i3 >= component03.Count)
+                for (var i = 0; i + 2 < batch.IndexCount; i += 3)
+                {
+                    var indexBase = (int)batch.IndexStart + i;
+
+                    var v1 = checked((int)batch.BaseVertex + indices[indexBase + 0]);
+                    var v2 = checked((int)batch.BaseVertex + indices[indexBase + 1]);
+                    var v3 = checked((int)batch.BaseVertex + indices[indexBase + 2]);
+
+                    if (!IsValidTriangle(vertices.Count, v1, v2, v3))
                     {
-                        Console.WriteLine($"WARNING: Vertex index out of range in piece {pieceIndex}");
+                        skippedFaces++;
                         continue;
                     }
 
-                    sw.WriteLine($"f {i1 + 1} {i2 + 1} {i3 + 1}");
+                    WriteFace(writer, v1, v2, v3);
                     exportedFaces++;
+                }
+
+                if (batch.IndexCount % 3 != 0)
+                {
+                    Warn($"Piece {pieceIndex}, batch {batchIndex}: index count {batch.IndexCount} is not divisible by 3");
                 }
             }
         }
-        
-        Console.WriteLine($"Exported: {component03.Count} vertices, {exportedFaces} faces");
+
+        Console.WriteLine($"Exported: {vertices.Count} vertices, {exportedFaces} faces");
+        Console.WriteLine($"Skipped slots: {skippedSlots}, skipped batches: {skippedBatches}, skipped faces: {skippedFaces}");
         Console.WriteLine($"Output: {outputPath}");
     }
 
-    /// <summary>
-    /// Конвертирует terrain mesh в OBJ.
-    /// Путь данных является terrain-гипотезой проекта: 0x01 -> 0x02 -> 0x15.
-    /// </summary>
-    private void ConvertLandscape(FileStream fs, NResArchive archive, string outputPath, int lodLevel, int group)
+    private static void ConvertLandscape(
+        FileStream fs,
+        NResArchive archive,
+        string outputPath,
+        int lod,
+        int group)
     {
-        var component01 = Msh0x01.ReadComponent(fs, archive);
-        var component02 = Msh0x02.ReadComponent(fs, archive);
-        var component03 = Msh0x03.ReadComponent(fs, archive);
-        var component15 = Msh0x15.ReadComponent(fs, archive);
+        var nodes = Msh0x01.ReadComponent(fs, archive);
+        var geometry = Msh0x02.ReadComponent(fs, archive);
+        var vertices = Msh0x03.ReadComponent(fs, archive);
+        var triangles = Msh0x15.ReadComponent(fs, archive);
 
-        Console.WriteLine($"Vertices: {component03.Count}");
-        Console.WriteLine($"Triangles: {component15.Count}");
-        Console.WriteLine($"Tiles: {component01.Elements.Count}");
-        Console.WriteLine($"Submeshes: {component02.Elements.Count}");
-        
-        using var sw = new StreamWriter(outputPath, false, new UTF8Encoding(false));
-        sw.WriteLine($"# Landscape mesh converted from {Path.GetFileName(outputPath)}");
-        sw.WriteLine($"# LOD level: {lodLevel}");
-        sw.WriteLine($"# Tile grid: {(int)Math.Sqrt(component01.Elements.Count)}x{(int)Math.Sqrt(component01.Elements.Count)}");
+        using var writer = CreateObjWriter(outputPath);
 
-        foreach (var v in component03)
+        writer.WriteLine($"# MSH landscape converted from {Path.GetFileName(outputPath)}");
+        writer.WriteLine($"# LOD: {lod}, group: {group}");
+        writer.WriteLine($"# Nodes/tiles: {nodes.Nodes.Count}");
+        writer.WriteLine($"# Geometry slots: {geometry.Slots.Count}");
+        writer.WriteLine($"# Triangles 0x15: {triangles.Count}");
+        writer.WriteLine($"# Vertices: {vertices.Count}");
+        writer.WriteLine();
+
+        WriteVertices(writer, vertices);
+
+        var exportedFaces = 0;
+        var skippedSlots = 0;
+        var skippedFaces = 0;
+
+        for (var tileIndex = 0; tileIndex < nodes.Nodes.Count; tileIndex++)
         {
-            sw.WriteLine(FormattableString.Invariant($"v {v.X:F6} {v.Y:F6} {v.Z:F6}"));
-        }
+            var node = nodes.Nodes[tileIndex];
+            var slotIndex = node.ResolveSlotIndex(lod, group);
 
-        int exportedFaces = 0;
-        
-        for (var tileIdx = 0; tileIdx < component01.Elements.Count; tileIdx++)
-        {
-            var tile = component01.Elements[tileIdx];
-            
-            var submeshIdx = tile.ResolveSlotIndex(lodLevel, group);
-            if (submeshIdx == 0xFFFF || submeshIdx >= component02.Elements.Count)
-                continue;
-
-            sw.WriteLine($"g tile_{tileIdx}");
-            
-            var submesh = component02.Elements[submeshIdx];
-            
-            var triangleStart = submesh.TriStart;
-            var triangleCount = submesh.TriCount;
-
-            for (var triOffset = 0; triOffset < triangleCount; triOffset++)
+            if (slotIndex == ushort.MaxValue)
             {
-                var triIdx = triangleStart + triOffset;
-                if (triIdx >= component15.Count)
+                skippedSlots++;
+                continue;
+            }
+
+            if (slotIndex >= geometry.Slots.Count)
+            {
+                Warn($"Tile {tileIndex}: geometry slot {slotIndex} out of range");
+                skippedSlots++;
+                continue;
+            }
+
+            var slot = geometry.Slots[slotIndex];
+
+            if (!slot.HasTriangles)
+            {
+                continue;
+            }
+
+            writer.WriteLine();
+            writer.WriteLine($"g tile_{tileIndex}_slot_{slotIndex}");
+
+            for (var triIndex = slot.TriStart0x07; triIndex < slot.TriEndExclusive0x07; triIndex++)
+            {
+                if (triIndex >= triangles.Count)
                 {
-                    Console.WriteLine($"WARNING: Triangle index {triIdx} out of range for tile {tileIdx}");
+                    Warn($"Tile {tileIndex}: triangle {triIndex} out of range");
+                    skippedFaces++;
                     continue;
                 }
 
-                var tri = component15[triIdx];
-                if (tri.Vertex1Index >= component03.Count || tri.Vertex2Index >= component03.Count || tri.Vertex3Index >= component03.Count)
+                var tri = triangles[triIndex];
+
+                var v1 = tri.Vertex1Index;
+                var v2 = tri.Vertex2Index;
+                var v3 = tri.Vertex3Index;
+
+                if (!IsValidTriangle(vertices.Count, v1, v2, v3))
                 {
-                    Console.WriteLine($"WARNING: Vertex index out of range for tile {tileIdx}");
+                    skippedFaces++;
                     continue;
                 }
 
-                sw.WriteLine($"f {tri.Vertex1Index + 1} {tri.Vertex2Index + 1} {tri.Vertex3Index + 1}");
+                WriteFace(writer, v1, v2, v3);
                 exportedFaces++;
             }
         }
-        
-        Console.WriteLine($"Exported: {component03.Count} vertices, {exportedFaces} faces");
+
+        Console.WriteLine($"Exported: {vertices.Count} vertices, {exportedFaces} faces");
+        Console.WriteLine($"Skipped slots: {skippedSlots}, skipped faces: {skippedFaces}");
         Console.WriteLine($"Output: {outputPath}");
     }
 
-    public record Face(Vector3 P1, Vector3 P2, Vector3 P3);
-
-    public static void ExportCube(string filePath, Vector3[] points)
+    private static StreamWriter CreateObjWriter(string outputPath)
     {
-        if (points.Length != 8)
-            throw new ArgumentException("Cube must have exactly 8 points.");
+        return new StreamWriter(outputPath, false, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+    }
 
-        using (StreamWriter writer = new StreamWriter(filePath))
+    private static void WriteVertices(StreamWriter writer, IReadOnlyList<Vector3> vertices)
+    {
+        foreach (var vertex in vertices)
         {
-            // Запись вершин.
-            foreach (var p in points)
-            {
-                writer.WriteLine($"v {p.X} {p.Y} {p.Z}");
-            }
-
-            // Запись граней: каждая грань задается четырьмя вершинами, OBJ использует индексацию с 1.
-            int[][] faces = new int[][]
-            {
-                new int[] { 1, 2, 3, 4 }, // низ
-                new int[] { 5, 6, 7, 8 }, // верх
-                new int[] { 1, 2, 6, 5 }, // перед
-                new int[] { 2, 3, 7, 6 }, // право
-                new int[] { 3, 4, 8, 7 }, // зад
-                new int[] { 4, 1, 5, 8 } // лево
-            };
-
-            foreach (var f in faces)
-            {
-                writer.WriteLine($"f {f[0]} {f[1]} {f[2]} {f[3]}");
-            }
+            writer.WriteLine(FormattableString.Invariant($"v {vertex.X:F6} {vertex.Y:F6} {vertex.Z:F6}"));
         }
     }
 
-    public static void ExportCubesAtPositions(string filePath, List<Vector3> centers, float size = 2f)
+    private static void WriteFace(StreamWriter writer, int v1, int v2, int v3)
     {
-        float half = size / 2f;
-        using (StreamWriter writer = new StreamWriter(filePath))
-        {
-            int vertexOffset = 0;
-
-            foreach (var c in centers)
-            {
-                // Генерация восьми вершин куба.
-                Vector3[] vertices = new Vector3[]
-                {
-                    new Vector3(c.X - half, c.Y - half, c.Z - half),
-                    new Vector3(c.X + half, c.Y - half, c.Z - half),
-                    new Vector3(c.X + half, c.Y - half, c.Z + half),
-                    new Vector3(c.X - half, c.Y - half, c.Z + half),
-
-                    new Vector3(c.X - half, c.Y + half, c.Z - half),
-                    new Vector3(c.X + half, c.Y + half, c.Z - half),
-                    new Vector3(c.X + half, c.Y + half, c.Z + half),
-                    new Vector3(c.X - half, c.Y + half, c.Z + half)
-                };
-
-                // Запись вершин.
-                foreach (var v in vertices)
-                {
-                    writer.WriteLine($"v {v.X} {v.Y} {v.Z}");
-                }
-
-                // Описание граней: индексация с 1, порядок против часовой стрелки.
-                int[][] faces = new int[][]
-                {
-                    new int[] { 1, 2, 3, 4 }, // низ
-                    new int[] { 5, 6, 7, 8 }, // верх
-                    new int[] { 1, 2, 6, 5 }, // перед
-                    new int[] { 2, 3, 7, 6 }, // право
-                    new int[] { 3, 4, 8, 7 }, // зад
-                    new int[] { 4, 1, 5, 8 } // лево
-                };
-
-                // Запись граней со смещением индексов.
-                foreach (var f in faces)
-                {
-                    writer.WriteLine(
-                        $"f {f[0] + vertexOffset} {f[1] + vertexOffset} {f[2] + vertexOffset} {f[3] + vertexOffset}");
-                }
-
-                vertexOffset += 8;
-            }
-        }
+        writer.WriteLine($"f {v1 + 1} {v2 + 1} {v3 + 1}");
     }
 
-    void Export(string filePath, IEnumerable<Vector3> vertices, List<IndexedEdge> edges)
+    private static bool IsValidTriangle(int vertexCount, int v1, int v2, int v3)
     {
-        using (var writer = new StreamWriter(filePath))
-        {
-            writer.WriteLine("# Exported OBJ file");
+        return IsValidVertexIndex(vertexCount, v1)
+            && IsValidVertexIndex(vertexCount, v2)
+            && IsValidVertexIndex(vertexCount, v3);
+    }
 
-            // Запись вершин.
-            foreach (var v in vertices)
-            {
-                writer.WriteLine($"v {v.X:F2} {v.Y:F2} {v.Z:F2}");
-            }
+    private static bool IsValidVertexIndex(int vertexCount, int index)
+    {
+        return index >= 0 && index < vertexCount;
+    }
 
-            // Запись ребер как line-элементов OBJ.
-            foreach (var e in edges)
-            {
-                // OBJ использует индексацию с 1.
-                writer.WriteLine($"l {e.Index1 + 1} {e.Index2 + 1}");
-            }
-        }
+    private static void Warn(string message)
+    {
+        Console.WriteLine($"WARNING: {message}");
     }
 }
