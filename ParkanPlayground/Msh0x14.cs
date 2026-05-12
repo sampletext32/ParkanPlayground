@@ -58,23 +58,6 @@ public static class Msh0x14
         return elements;
     }
 
-    /// <summary>
-    /// Component 0x14 is optional in the game reader.
-    /// This helper mirrors that behavior and returns an empty list when absent.
-    /// </summary>
-    public static List<LightProbe> ReadComponentOrEmpty(
-        FileStream mshFs, NResArchive archive)
-    {
-        var entry = archive.Files.FirstOrDefault(x => x.FileType == "14 00 00 00");
-
-        if (entry is null)
-        {
-            return [];
-        }
-
-        return ReadComponent(mshFs, archive);
-    }
-
     /// <summary>Light/probe entry 0x14.</summary>
     /// <param name="PieceIndex">[0x00..0x04] Индекс MSH_piece, чью world matrix используют для transform position/direction.</param>
     /// <param name="LocalPosition">[0x04..0x10] Локальная позиция источника/probe относительно PieceIndex.</param>

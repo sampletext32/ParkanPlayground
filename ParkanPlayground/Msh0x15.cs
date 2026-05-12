@@ -82,7 +82,8 @@ public static class Msh0x15
         ushort PackedEdgeOrSelector);
 }
 
-public enum TerrainTriangleFlags {
+public enum TerrainTriangleFlags : uint
+{
     MSH15_FLAG_REFLECTIVE_SURFACE = 0x20000,
     MSH15_FLAG_HAS_MICROTEXTURE = 0x400,
     MSH15_FLAG_DISABLE_BACKFACE_TEST = 0x8

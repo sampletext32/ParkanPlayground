@@ -67,7 +67,7 @@ public static class Msh0x07
     /// <param name="PackedNormalX">[0x08..0x0A] Packed normal X, int16, scale = 1 / 32767.</param>
     /// <param name="PackedNormalY">[0x0A..0x0C] Packed normal Y, int16, scale = 1 / 32767.</param>
     /// <param name="PackedNormalZ">[0x0C..0x0E] Packed normal Z, int16, scale = 1 / 32767.</param>
-    /// <param name="SelectorPacked">[0x0E..0x10] Packed selectors. Старое наблюдение: 3 трактуется как 0xFFFF.</param>
+    /// <param name="SelectorPacked">[0x0E..0x10] Packed selectors. 3 трактуется как 0xFFFF.</param>
     public readonly record struct TriangleDescriptor(
         TriangleFlags Flags,
         ushort Link0,

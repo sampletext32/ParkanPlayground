@@ -54,19 +54,19 @@ public static class Msh0x0D
     /// <param name="MaterialIndex">[0x02..0x04] Индекс material slot. Может быть overridden CAniMesh::forced_material_index.</param>
     /// <param name="Opaque04">[0x04..0x06] Opaque. В GetBatchRenderData попадает в packed field вместе с material/lightmap данными.</param>
     /// <param name="LocalBatchIndex">[0x06..0x08] Локальный batch index. В GetBatchRenderData складывается с MSH_piece.local_index_base / batch base.</param>
-    /// <param name="IndexCount">[0x08..0x0A] Количество индексов из component 0x06.</param>
-    /// <param name="IndexStart">[0x0A..0x0E] Первый индекс в component 0x06.</param>
-    /// <param name="VertexCount">[0x0E..0x10] Количество вершин для render primitive.</param>
-    /// <param name="BaseVertex">[0x10..0x14] Base vertex в vertex streams, включая position stream 0x03.</param>
+    /// <param name="IndexCount0x06">[0x08..0x0A] Количество индексов из component 0x06.</param>
+    /// <param name="IndexStart0x06">[0x0A..0x0E] Первый индекс в component 0x06.</param>
+    /// <param name="VertexCount0x03">[0x0E..0x10] Количество вершин для render primitive.</param>
+    /// <param name="BaseVertex0x03">[0x10..0x14] Base vertex в vertex streams, включая position stream 0x03.</param>
     public readonly record struct Batch(
         BatchFlags Flags,
         ushort MaterialIndex,
         ushort Opaque04,
         ushort LocalBatchIndex,
-        ushort IndexCount,
-        uint IndexStart,
-        ushort VertexCount,
-        uint BaseVertex);
+        ushort IndexCount0x06,
+        uint IndexStart0x06,
+        ushort VertexCount0x03,
+        uint BaseVertex0x03);
 }
 
 [Flags]

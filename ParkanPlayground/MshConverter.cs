@@ -151,22 +151,22 @@ public sealed class MshConverter
             {
                 var batch = batches[batchIndex];
 
-                if (batch.IndexStart + batch.IndexCount > indices.Count)
+                if (batch.IndexStart0x06 + batch.IndexCount0x06 > indices.Count)
                 {
-                    Warn($"Piece {pieceIndex}, batch {batchIndex}: index range {batch.IndexStart}:{batch.IndexCount} out of range");
+                    Warn($"Piece {pieceIndex}, batch {batchIndex}: index range {batch.IndexStart0x06}:{batch.IndexCount0x06} out of range");
                     skippedBatches++;
                     continue;
                 }
 
                 writer.WriteLine($"# batch {batchIndex}, material {batch.MaterialIndex}, flags {batch.Flags}");
 
-                for (var i = 0; i + 2 < batch.IndexCount; i += 3)
+                for (var i = 0; i + 2 < batch.IndexCount0x06; i += 3)
                 {
-                    var indexBase = (int)batch.IndexStart + i;
+                    var indexBase = (int)batch.IndexStart0x06 + i;
 
-                    var v1 = checked((int)batch.BaseVertex + indices[indexBase + 0]);
-                    var v2 = checked((int)batch.BaseVertex + indices[indexBase + 1]);
-                    var v3 = checked((int)batch.BaseVertex + indices[indexBase + 2]);
+                    var v1 = checked((int)batch.BaseVertex0x03 + indices[indexBase + 0]);
+                    var v2 = checked((int)batch.BaseVertex0x03 + indices[indexBase + 1]);
+                    var v3 = checked((int)batch.BaseVertex0x03 + indices[indexBase + 2]);
 
                     if (!IsValidTriangle(vertices.Count, v1, v2, v3))
                     {
@@ -178,9 +178,9 @@ public sealed class MshConverter
                     exportedFaces++;
                 }
 
-                if (batch.IndexCount % 3 != 0)
+                if (batch.IndexCount0x06 % 3 != 0)
                 {
-                    Warn($"Piece {pieceIndex}, batch {batchIndex}: index count {batch.IndexCount} is not divisible by 3");
+                    Warn($"Piece {pieceIndex}, batch {batchIndex}: index count {batch.IndexCount0x06} is not divisible by 3");
                 }
             }
         }
