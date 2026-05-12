@@ -393,7 +393,7 @@ color
 - `0x23` - IGameSettingsRoot
 - `0x24` - IGameObject2
 - `0x25` - ICollisionMesh (придумал сам implemented by CAniMesh)
-- `0x26` - IScalable (придумал сам implemented by CAniMesh and CControl and CWizard)
+- `0x26` - INetSerializable (придумал сам implemented by CAniMesh and CControl and CWizard)
 - `0x28` - ICollObject
 - `0x29` - IPhysicalModel
 - `0x101` - I3DRender

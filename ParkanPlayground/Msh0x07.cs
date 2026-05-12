@@ -61,9 +61,9 @@ public static class Msh0x07
 
     /// <summary>Описатель triangle MSH 0x07, length = 0x10.</summary>
     /// <param name="Flags">[0x00..0x02] Triangle flags. Используются GeometryWalkFilter require/exclude.</param>
-    /// <param name="Link0">[0x02..0x04] Opaque/link поле 0.</param>
-    /// <param name="Link1">[0x04..0x06] Opaque/link поле 1.</param>
-    /// <param name="Link2">[0x06..0x08] Opaque/link поле 2.</param>
+    /// <param name="Link0">[0x02..0x04] Указывает на треугольники в 0x07 (текущем) компоненте.</param>
+    /// <param name="Link1">[0x04..0x06] Указывает на треугольники в 0x07 (текущем) компоненте.</param>
+    /// <param name="Link2">[0x06..0x08] Указывает на треугольники в 0x07 (текущем) компоненте.</param>
     /// <param name="PackedNormalX">[0x08..0x0A] Packed normal X, int16, scale = 1 / 32767.</param>
     /// <param name="PackedNormalY">[0x0A..0x0C] Packed normal Y, int16, scale = 1 / 32767.</param>
     /// <param name="PackedNormalZ">[0x0C..0x0E] Packed normal Z, int16, scale = 1 / 32767.</param>

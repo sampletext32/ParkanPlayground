@@ -4,7 +4,7 @@ using NResLib;
 namespace ParkanPlayground;
 
 /// <summary>
-/// MSH-компонент 0x05: упакованные UV0. component / 1024.0.
+/// MSH-компонент 0x05: упакованные UV0 (TEXCOORD0). component / 1024.0.
 /// </summary>
 public static class Msh0x05
 {
