@@ -198,9 +198,9 @@ IComponent ** LoadSomething(undefined4, undefined4, undefined4, undefined4)
 |    5     |    Camera    | `terrain.dll LoadCamera`       |
 |    7     |  Atmosphere  | `terrain.dll CreateAtmosphere` |
 |    9     |    Agent     | `animesh.dll LoadAgent`        |
-|    10    |    Agent     | `animesh.dll LoadAgent`        |
-|    11    |   Research   | `misload.dll LoadResearch`     |
-|    12    |    Agent     | `animesh.dll LoadAgent`        |
+|   0xa    |    Agent     | `animesh.dll LoadAgent`        |
+|   0xb    |   Research   | `misload.dll LoadResearch`     |
+|   0xc    |    Agent     | `animesh.dll LoadAgent`        |
 
 Будет дополняться по мере реверса.
 
@@ -297,6 +297,30 @@ IComponent ** LoadSomething(undefined4, undefined4, undefined4, undefined4)
 
 Может как-то анимироваться. Как - пока не понятно.
 
+## `.bas Basement` файл
+
+Читается в `Terrain.dll/LoadBuilding/CBuilding::ctor`
+
+Описывает контуры объекта
+
+Формат
+```
+Длина динамическая
+
+(4 байта) Кол-во внутренних контуров -> IC
+{
+  (4 байта) Кол-во сегментов контура -> N
+    Vector3[N+1] Точки контура
+    int[N] - непонятно
+    int[N] - тоже непонятно, но выглядит как порядок вершин (e.g. [0 2 1])
+}[IC]
+(4 байта) Кол-во внешних контуров -> OC
+{
+  (4 байта) Кол-во сегментов контура -> N
+    Vector3[N+1] Точки контура
+}[OC]
+```
+
 ## Lightmap (TEXM)
 
 У текстур использующихся как карты освещения специальные имена.
@@ -308,10 +332,6 @@ IComponent ** LoadSomething(undefined4, undefined4, undefined4, undefined4)
 ```
 All lightmaps named whatever.0 → they all end up with no DirectDraw palette attached.
 ```
-
-## Люблю разработчиков
-
-У них получилось сделать LightSource и MaterialDescriptor чётко одинаковыми по размеру (0x5c) из-за чего я потерял 3 дня прыгая по указателям
 
 ## `FXID` - файл эффектов
 
@@ -354,12 +374,6 @@ enum EffectTemplateFlags : uint32_t
 
 
 # ЕСЛИ ГДЕ-ТО ВИДИШЬ PTR_func_ret1_no_args, ТО ЭТО ShaderConfig
-
-В рендеринге порядок дата-стримов такой
-
-position
-normal
-color
 
 # Внутренняя система ID
 
@@ -455,48 +469,6 @@ World3D.dll содержит функцию CreateGameSettings.
 |     16      |    93 (0x5d)    | "Select best sound device" |         |                    |
 |    ----     |    30 (0x1e)    |        ShadeConfig         |         | из файла shade.cfg |
 |    ----     |    (0x8001e)    |                            |         | добавляет AniMesh  |
-
-
-## Goodies
-
-```c++
-// Тип положения объекта в пространстве. Используется при расчёте эффектов,
-// расстановке объектов и для получения/выдачи их матриц трансформации.
-enum EPlacementType
-{
-    // 0: Полная мировая матрица, ориентированная "смотрю на цель".
-    //    Входная matrix — это мировая матрица (look-at к какой-то цели).
-    //    Движок при необходимости переводит её в локальное/костное пространство
-    //    (через inverse(parent/joint) * world и т.п.).
-    // Смысл: "Построй мне мировую матрицу так, чтобы я смотрел на цель;
-    //         если я привязан к кости — учти это."
-    Placement_WorldLookAtTarget              = 0,
-
-    // 1: Мировая матрица, где основная ось объекта (this->direction)
-    //    выровнена по направлению к цели.
-    //    Входная matrix — мировая; логика выравнивания использует внутренний
-    //    вектор direction и целевую точку/направление.
-    // Смысл: "Используй мой внутренний direction как основную ось
-    //         и как можно лучше направь её в сторону цели."
-    Placement_WorldAlignDirectionToTarget    = 1,
-
-    // 2: Мировая матрица, полностью задаётся внутренним состоянием объекта.
-    //    Входная matrix трактуется как "standalone world" — готовая мировая
-    //    матрица объекта. Движок лишь переводит её во внутреннее локальное/
-    //    костное пространство (inverse(parent/joint) * world), без look-at
-    //    и без выравнивания по цели.
-    // Смысл: "Вот моя конечная мировая матрица. Просто встрои её в иерархию,
-    //         не трогая ориентацию дополнительной логикой."
-    Placement_WorldFromStoredTransform       = 2,
-
-    // 3: Мировая матрица, ориентированная вдоль вектора движения, но с учётом цели.
-    //    Используется предыдущая мировая позиция + текущая + target, чтобы
-    //    построить базис: основная ось — направление движения, вспомогательная —
-    //    направление к цели.
-    // Смысл: "Ориентируй меня по вектору моего движения, но также учитывай цель."
-    Placement_WorldAlignMotionToTarget       = 3
-};
-```
 
 ## Контакты
 
