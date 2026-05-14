@@ -11,9 +11,9 @@ namespace ParkanPlayground;
 public static class Msh0x01
 {
     public const int NormalElementSize = 0x26;
-    public const int LodCount = 3;
-    public const int GroupCount = 5;
-    public const int SlotCount = LodCount * GroupCount;
+    public const int StateCount = 3;
+    public const int MaxLodCount = 5;
+    public const int SlotCount = StateCount * MaxLodCount;
 
     public static Msh0x01Component ReadComponent(FileStream mshFs, NResArchive archive)
     {
@@ -75,7 +75,7 @@ public static class Msh0x01
                 ParentIndexOrLink: BinaryPrimitives.ReadUInt16LittleEndian(elementSpan.Slice(0x02, 2)),
                 AnimMapStart0x13: BinaryPrimitives.ReadUInt16LittleEndian(elementSpan.Slice(0x04, 2)),
                 FallbackKey0x08: BinaryPrimitives.ReadUInt16LittleEndian(elementSpan.Slice(0x06, 2)),
-                Msh02SlotIndicesByLodAndGroup: slotIndices));
+                Msh02SlotIndicesByStateAndLOD: slotIndices));
         }
 
         return new Msh0x01Component(entry.ElementSize, nodes);
@@ -97,7 +97,7 @@ public static class Msh0x01
     /// <param name="ParentIndexOrLink">[0x02..0x04] Parent node index. 0xFFFF обычно значит root/no parent.</param>
     /// <param name="AnimMapStart0x13">[0x04..0x06] Начало блока в MSH 0x13 animation map или 0xFFFF.</param>
     /// <param name="FallbackKey0x08">[0x06..0x08] Fallback key / index в MSH 0x08.</param>
-    /// <param name="Msh02SlotIndicesByLodAndGroup">
+    /// <param name="Msh02SlotIndicesByStateAndLOD">
     /// [0x08..0x26] Индексы geometry slot в MSH 0x02.
     /// Формула: slot = lod * 5 + group. 0xFFFF значит отсутствует.
     /// </param>
@@ -107,19 +107,31 @@ public static class Msh0x01
         ushort ParentIndexOrLink,
         ushort AnimMapStart0x13,
         ushort FallbackKey0x08,
-        ushort[] Msh02SlotIndicesByLodAndGroup)
+        ushort[] Msh02SlotIndicesByStateAndLOD)
     {
         public bool IsRoot => ParentIndexOrLink == ushort.MaxValue;
 
         public int ParentIndexOrMinusOne =>
             ParentIndexOrLink == ushort.MaxValue ? -1 : ParentIndexOrLink;
 
-        public ushort ResolveSlotIndex(int lod, int group = 0)
+        public ushort ResolveSlotIndex(int state, int lod = 0)
         {
-            var index = lod * GroupCount + group;
+            
+            // MODEL_STATE_DEFAULT	    -1
+            // MODEL_STATE_REGULAR	    0
+            // MODEL_STATE_COLLAPSED	1
+            // _MODEL_STATE_UNKNOWN_2	2
+            
+            // LOD_LEVEL_MAX_0	    0
+            // LOD_LEVEL_MINUS_1	1
+            // LOD_LEVEL_MINUS_2	2
+            // LOD_LEVEL_MINUS_3	3
+            // LOD_LEVEL_MINUS_4	4
+            
+            var index = state * MaxLodCount + lod;
 
-            return index >= 0 && index < Msh02SlotIndicesByLodAndGroup.Length
-                ? Msh02SlotIndicesByLodAndGroup[index]
+            return index >= 0 && index < Msh02SlotIndicesByStateAndLOD.Length
+                ? Msh02SlotIndicesByStateAndLOD[index]
                 : ushort.MaxValue;
         }
 
@@ -130,7 +142,7 @@ public static class Msh0x01
         {
             var count = 0;
 
-            for (var lod = 0; lod < LodCount; lod++)
+            for (var lod = 0; lod < StateCount; lod++)
             {
                 if (!HasGeometrySlot(lod, group))
                 {
@@ -154,27 +166,26 @@ public enum NodeFlags : ushort
     /// Still uncertain. In recursive bounds/intersection paths this can suppress/alter child recursion.
     /// Seen as child_node.flags &amp; 0x04.
     /// </summary>
-    UnknownSkipChild0x04 = 0x0004,
+    MSH01_BOUNDS_MODE0_STOP = 0x0004,
 
     /// <summary>
     /// Stops recursive traversal into children for bounds/render/intersection helpers.
     /// </summary>
-    StopChildTraversal = 0x0010,
+    MSH01_STOP_CHILD_BOUNDS_TRAVERSAL = 0x0010,
 
     /// <summary>
-    /// Special render-group-4 mode bit. In render group 4, selects alternate piece render mode.
-    /// Earlier also seen in special render/clip behavior.
+    /// Special lod-4 mode bit. In lod 4, selects alternate piece render mode.
     /// </summary>
-    Group4AltRenderMode = 0x0020,
+    MSH01_HAS_SPECIAL_LOD_4 = 0x0020,
 
     /// <summary>
     /// Exclude from shadow / no shadow. CAniMesh tracks has_any_shadow_casting_piece when this bit is absent.
     /// </summary>
-    NoShadow = 0x0040,
+    MSH01_NO_SHADOW = 0x0040,
 
     /// <summary>
     /// Used during attached MSH load: if parent/root description contains "central", piece gets hidden/excluded flag.
     /// Exact semantic name still provisional.
     /// </summary>
-    CheckParentDescriptionCentral = 0x0800,
+    MSH01_CHECK_PARENT_DESCRIPTION_CENTRAL = 0x0800,
 }
