@@ -112,75 +112,81 @@ public sealed class MshConverter
         var skippedBatches = 0;
         var skippedFaces = 0;
 
-        for (var pieceIndex = 0; pieceIndex < nodes.Nodes.Count; pieceIndex++)
+        for (var pieceIndex = 1; pieceIndex < nodes.Nodes.Count; pieceIndex += 100000)
         {
             var node = nodes.Nodes[pieceIndex];
-            var slotIndex = node.ResolveSlotIndex(lod, group);
 
-            if (slotIndex == ushort.MaxValue)
+            for (var s = 0; s < node.Msh02SlotIndicesByStateAndLOD.Length; s++)
             {
-                skippedSlots++;
-                continue;
-            }
+                var slotIndex = node.Msh02SlotIndicesByStateAndLOD[s];
 
-            if (slotIndex >= geometry.Slots.Count)
-            {
-                Warn($"Piece {pieceIndex}: geometry slot {slotIndex} out of range");
-                skippedSlots++;
-                continue;
-            }
-
-            var slot = geometry.Slots[slotIndex];
-
-            if (!slot.HasBatches)
-            {
-                continue;
-            }
-
-            if (slot.BatchEndExclusive0x0D > batches.Count)
-            {
-                Warn($"Piece {pieceIndex}: batch range {slot.BatchStart0x0D}:{slot.BatchCount0x0D} out of range");
-                skippedBatches++;
-                continue;
-            }
-
-            writer.WriteLine();
-            writer.WriteLine($"g piece_{pieceIndex}_slot_{slotIndex}");
-
-            for (var batchIndex = slot.BatchStart0x0D; batchIndex < slot.BatchEndExclusive0x0D; batchIndex++)
-            {
-                var batch = batches[batchIndex];
-
-                if (batch.IndexStart0x06 + batch.IndexCount0x06 > indices.Count)
+                if (slotIndex == ushort.MaxValue)
                 {
-                    Warn($"Piece {pieceIndex}, batch {batchIndex}: index range {batch.IndexStart0x06}:{batch.IndexCount0x06} out of range");
+                    skippedSlots++;
+                    continue;
+                }
+
+                if (slotIndex >= geometry.Slots.Count)
+                {
+                    Warn($"Piece {pieceIndex}: geometry slot {slotIndex} out of range");
+                    skippedSlots++;
+                    continue;
+                }
+
+                var slot = geometry.Slots[slotIndex];
+
+                if (!slot.HasBatches)
+                {
+                    continue;
+                }
+
+                if (slot.BatchEndExclusive0x0D > batches.Count)
+                {
+                    Warn($"Piece {pieceIndex}: batch range {slot.BatchStart0x0D}:{slot.BatchCount0x0D} out of range");
                     skippedBatches++;
                     continue;
                 }
 
-                writer.WriteLine($"# batch {batchIndex}, material {batch.MaterialIndex}, flags {batch.Flags}");
+                writer.WriteLine();
+                writer.WriteLine($"o piece_{pieceIndex}_{s}");
 
-                for (var i = 0; i + 2 < batch.IndexCount0x06; i += 3)
+                for (var batchIndex = slot.BatchStart0x0D; batchIndex < slot.BatchEndExclusive0x0D; batchIndex++)
                 {
-                    var indexBase = (int)batch.IndexStart0x06 + i;
+                    var batch = batches[batchIndex];
 
-                    var v1 = checked((int)batch.BaseVertex0x03 + indices[indexBase + 0]);
-                    var v2 = checked((int)batch.BaseVertex0x03 + indices[indexBase + 1]);
-                    var v3 = checked((int)batch.BaseVertex0x03 + indices[indexBase + 2]);
-
-                    if (!IsValidTriangle(vertices.Count, v1, v2, v3))
+                    if (batch.IndexStart0x06 + batch.IndexCount0x06 > indices.Count)
                     {
-                        skippedFaces++;
+                        Warn(
+                            $"Piece {pieceIndex}, batch {batchIndex}: index range {batch.IndexStart0x06}:{batch.IndexCount0x06} out of range");
+                        skippedBatches++;
                         continue;
                     }
 
-                    WriteFace(writer, v1, v2, v3);
-                    exportedFaces++;
-                }
+                    writer.WriteLine($"# batch {batchIndex}, material {batch.MaterialIndex}, flags {batch.Flags}");
 
-                if (batch.IndexCount0x06 % 3 != 0)
-                {
-                    Warn($"Piece {pieceIndex}, batch {batchIndex}: index count {batch.IndexCount0x06} is not divisible by 3");
+                    for (var i = 0; i + 2 < batch.IndexCount0x06; i += 3)
+                    {
+                        var indexBase = (int)batch.IndexStart0x06 + i;
+
+                        var v1 = checked((int)batch.BaseVertex0x03 + indices[indexBase + 0]);
+                        var v2 = checked((int)batch.BaseVertex0x03 + indices[indexBase + 1]);
+                        var v3 = checked((int)batch.BaseVertex0x03 + indices[indexBase + 2]);
+
+                        if (!IsValidTriangle(vertices.Count, v1, v2, v3))
+                        {
+                            skippedFaces++;
+                            continue;
+                        }
+
+                        WriteFace(writer, v1, v2, v3);
+                        exportedFaces++;
+                    }
+
+                    if (batch.IndexCount0x06 % 3 != 0)
+                    {
+                        Warn(
+                            $"Piece {pieceIndex}, batch {batchIndex}: index count {batch.IndexCount0x06} is not divisible by 3");
+                    }
                 }
             }
         }

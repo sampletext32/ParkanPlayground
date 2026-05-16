@@ -434,6 +434,8 @@ enum EffectTemplateFlags : uint32_t
 - `0x502` - ResTree
 - `0x700` - INetWatcher
 - `0x701` - INetworkInterface
+- `0x802` - INetSessionBrowser (придумал сам implemented by CNetManager in services.dll)
+- `0x803` - INetManager
 
 ## SuperAI = Clan с точки зрения индексации
 
@@ -441,7 +443,7 @@ enum EffectTemplateFlags : uint32_t
 
 ## Опции
 
-World3D.dll содержит функцию CreateGameSettings.
+World3D.dll содержит singleton Registry в CreateGameSettings.
 Она создаёт объект настроек и далее вызывает методы в соседних библиотеках.
 - Terrain.dll - InitializeSettings
 - Effect.dll - InitializeSettings

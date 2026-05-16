@@ -47,5 +47,4 @@ public static class Msh0x05
 /// <summary>Упакованные UV0: две int16-компоненты (length = 4).</summary>
 /// <param name="U">[0x00..0x02] U-компонента, uv = U / 1024.0.</param>
 /// <param name="V">[0x02..0x04] V-компонента, uv = V / 1024.0.</param>
-public readonly record struct Msh05Uv(short U, short V)
-;
+public readonly record struct Msh05Uv(short U, short V);

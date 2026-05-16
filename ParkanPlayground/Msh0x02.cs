@@ -82,8 +82,8 @@ public static class Msh0x02
         return new Msh02Header(
             BoundingBox: bbox,
             BoundingSphere: ReadSphere(header, 0x60),
-            Bottom: ReadVector3(header, 0x70),
-            Top: ReadVector3(header, 0x7C),
+            MeshStart: ReadVector3(header, 0x70),
+            MeshEnd: ReadVector3(header, 0x7C),
             XyRadius: BinaryPrimitives.ReadSingleLittleEndian(header.Slice(0x88, 4)));
     }
 
@@ -120,14 +120,14 @@ public static class Msh0x02
     /// <summary>Заголовок MSH 0x02, length = 0x8C.</summary>
     /// <param name="BoundingBox">[0x00..0x60] Bounding box из 8 точек.</param>
     /// <param name="BoundingSphere">[0x60..0x70] Bounding sphere: xyz = center, w = radius.</param>
-    /// <param name="Bottom">[0x70..0x7C] Нижняя/опорная точка меша.</param>
-    /// <param name="Top">[0x7C..0x88] Верхняя точка меша.</param>
+    /// <param name="MeshStart">[0x70..0x7C] Нижняя/опорная точка меша. Минимальная точка меша ??</param>
+    /// <param name="MeshEnd">[0x7C..0x88] Верхняя точка меша. Максимальная точка меша ??</param>
     /// <param name="XyRadius">[0x88..0x8C] Радиус/extent в плоскости XY.</param>
     public sealed record Msh02Header(
         BoundingBox BoundingBox,
         Sphere BoundingSphere,
-        Vector3 Bottom,
-        Vector3 Top,
+        Vector3 MeshStart,
+        Vector3 MeshEnd,
         float XyRadius);
 
     /// <summary>Geometry slot MSH 0x02, length = 0x44.</summary>

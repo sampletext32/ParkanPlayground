@@ -54,7 +54,8 @@ public static class Msh0x06
     public static IEnumerable<TriangleIndices> EnumerateTriangles(
         IReadOnlyList<ushort> indices,
         int indexStart,
-        int indexCount)
+        int indexCount
+    )
     {
         if (indexStart < 0)
         {
@@ -81,11 +82,12 @@ public static class Msh0x06
     }
 
     /// <summary>Тройка индексов triangle из MSH 0x06.</summary>
-    /// <param name="A">Первый vertex index внутри batch/base vertex range.</param>
-    /// <param name="B">Второй vertex index внутри batch/base vertex range.</param>
-    /// <param name="C">Третий vertex index внутри batch/base vertex range.</param>
+    /// <param name="Vertex0">Первый vertex index внутри batch/base vertex range.</param>
+    /// <param name="Vertex1">Второй vertex index внутри batch/base vertex range.</param>
+    /// <param name="Vertex2">Третий vertex index внутри batch/base vertex range.</param>
     public readonly record struct TriangleIndices(
-        ushort A,
-        ushort B,
-        ushort C);
+        ushort Vertex0,
+        ushort Vertex1,
+        ushort Vertex2
+    );
 }
