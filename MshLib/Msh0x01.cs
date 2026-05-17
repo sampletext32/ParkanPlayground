@@ -1,7 +1,7 @@
 ﻿using System.Buffers.Binary;
 using NResLib;
 
-namespace ParkanPlayground;
+namespace MshLib;
 
 /// <summary>
 /// MSH-компонент 0x01: таблица узлов модели.

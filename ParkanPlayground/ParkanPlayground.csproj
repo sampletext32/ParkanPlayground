@@ -6,6 +6,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\MissionTmaLib\MissionTmaLib.csproj" />
+      <ProjectReference Include="..\MshLib\MshLib.csproj" />
       <ProjectReference Include="..\NResLib\NResLib.csproj" />
       <ProjectReference Include="..\PalLib\PalLib.csproj" />
       <ProjectReference Include="..\ResTreeLib\ResTreeLib.csproj" />
@@ -17,6 +18,10 @@
 
     <ItemGroup>
       <PackageReference Include="SixLabors.ImageSharp.Drawing" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Effects\" />
     </ItemGroup>
 
 </Project>

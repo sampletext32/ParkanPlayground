@@ -2,7 +2,7 @@
 using System.Numerics;
 using NResLib;
 
-namespace ParkanPlayground;
+namespace MshLib;
 
 /// <summary>
 /// MSH-компонент 0x14: таблица локальных directional/probe light entries.

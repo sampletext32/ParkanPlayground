@@ -2,7 +2,7 @@
 using Common;
 using NResLib;
 
-namespace ParkanPlayground;
+namespace MshLib;
 
 /// <summary>
 /// MSH-компонент 0x07: triangle descriptors.

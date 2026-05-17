@@ -4,16 +4,19 @@
     <File Path="Directory.Packages.props" />
     <File Path="README.md" />
   </Folder>
-  <Project Path="Common\Common.csproj" Type="C#" />
-  <Project Path="CpDatLib\CpDatLib.csproj" Type="C#" />
-  <Project Path="MaterialLib\MaterialLib.csproj" Type="C#" />
+  <Project Path="BasLib/BasLib.csproj" />
+  <Project Path="Common\Common.csproj" />
+  <Project Path="CpDatLib\CpDatLib.csproj" />
+  <Project Path="FxidLib/FxidLib.csproj" />
+  <Project Path="MaterialLib\MaterialLib.csproj" />
   <Project Path="MissionTmaLib/MissionTmaLib.csproj" />
+  <Project Path="MshLib/MshLib.csproj" />
   <Project Path="NLUnpacker/NLUnpacker.csproj" />
   <Project Path="NResLib/NResLib.csproj" />
   <Project Path="NResUI/NResUI.csproj" />
-  <Project Path="PalLib\PalLib.csproj" Type="C#" />
+  <Project Path="PalLib\PalLib.csproj" />
   <Project Path="ParkanPlayground/ParkanPlayground.csproj" />
-  <Project Path="ResTreeLib\ResTreeLib.csproj" Type="C#" />
+  <Project Path="ResTreeLib\ResTreeLib.csproj" />
   <Project Path="ScrLib/ScrLib.csproj" />
   <Project Path="TexmLib/TexmLib.csproj" />
   <Project Path="VarsetLib/VarsetLib.csproj" />

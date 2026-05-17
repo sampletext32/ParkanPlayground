@@ -1,6 +1,6 @@
 ﻿using Common;
 
-namespace ParkanPlayground;
+namespace BasLib;
 
 public record BasContours(InnerContour[] Inner, OuterContour[] Outer);
 public record InnerContour(Vector3[] Points, uint[] Nums1, uint[] Nums2);

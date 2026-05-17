@@ -1,6 +1,6 @@
 using Common;
 
-namespace ParkanPlayground.Effects;
+namespace FxidLib;
 
 /// <summary>
 /// Static reader methods for parsing FXID effect definition structures from binary streams.

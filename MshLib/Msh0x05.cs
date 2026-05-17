@@ -1,7 +1,7 @@
 using System.Buffers.Binary;
 using NResLib;
 
-namespace ParkanPlayground;
+namespace MshLib;
 
 /// <summary>
 /// MSH-компонент 0x05: упакованные UV0 (TEXCOORD0). component / 1024.0.

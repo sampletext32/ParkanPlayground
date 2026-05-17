@@ -2,7 +2,7 @@
 using System.Text;
 using NResLib;
 
-namespace ParkanPlayground;
+namespace MshLib;
 
 /// <summary>
 /// MSH-компонент 0x0A: строки узлов.

@@ -1,8 +1,7 @@
-﻿using System.Buffers.Binary;
-using Common;
+﻿using Common;
 using NResLib;
 
-namespace ParkanPlayground;
+namespace MshLib;
 
 public static class Msh0x08
 {

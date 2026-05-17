@@ -2,7 +2,7 @@ using System.Text;
 using Common;
 using NResLib;
 
-namespace ParkanPlayground;
+namespace MshLib;
 
 public enum MshType
 {

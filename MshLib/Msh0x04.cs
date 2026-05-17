@@ -1,6 +1,6 @@
 using NResLib;
 
-namespace ParkanPlayground;
+namespace MshLib;
 
 /// <summary>
 /// MSH-компонент 0x04: упакованные нормали вершин. clamp(component / 127.0, -1..1).

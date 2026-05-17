@@ -1,6 +1,6 @@
 using Common;
 
-namespace ParkanPlayground.Effects;
+namespace FxidLib;
 
 /// <summary>
 /// Effect-level header at the start of each FXID file (60 bytes total).
