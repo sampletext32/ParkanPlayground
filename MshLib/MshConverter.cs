@@ -16,6 +16,16 @@ public enum MshType
     ///         -> 0x03 positions
     /// </summary>
     Model,
+    
+    /// <summary>
+    /// Для landscape минимальный геометрический путь сейчас выглядит так:
+    ///
+    /// 0x01 terrain cell / tile
+    ///   -> 0x02 geometry slot
+    ///     -> 0x15 terrain triangle
+    ///       -> vertex1_idx / vertex2_idx / vertex3_idx
+    ///         -> 0x03 positions
+    /// </summary>
     Landscape
 }
 

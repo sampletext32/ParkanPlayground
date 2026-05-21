@@ -189,22 +189,20 @@ IComponent ** LoadSomething(undefined4, undefined4, undefined4, undefined4)
 
 
 
-| Logic ID |  ClassName   | Function                       |
-|:--------:|:------------:|--------------------------------|
-|    1     |  Landscape   | `terrain.dll LoadLandscape`    |
-|    2     |    Agent     | `animesh.dll LoadAgent`        |
-|    3     |   Building   | `terrain.dll LoadBuilding`     |
-|    4     |    Agent     | `animesh.dll LoadAgent`        |
-|    5     |    Camera    | `terrain.dll LoadCamera`       |
-|    7     |  Atmosphere  | `terrain.dll CreateAtmosphere` |
-|    9     |    Agent     | `animesh.dll LoadAgent`        |
-|   0xa    |    Agent     | `animesh.dll LoadAgent`        |
-|   0xb    |   Research   | `misload.dll LoadResearch`     |
-|   0xc    |    Agent     | `animesh.dll LoadAgent`        |
+| Logic ID |  ClassName   | Function                       | Description                  |
+|:--------:|:------------:|--------------------------------|------------------------------|
+|    1     |  Landscape   | `terrain.dll LoadLandscape`    | LOGIC_LANDSCAPE              |
+|    2     |    Agent     | `animesh.dll LoadAgent`        | LOGIC_WEAPON_AGENT_WPNS      |
+|    3     |   Building   | `terrain.dll LoadBuilding`     | LOGIC_BUILDING_HALLWAY       |
+|    4     |    Agent     | `animesh.dll LoadAgent`        | LOGIC_BATTLE_UNIT_AGENT_BTLU |
+|    5     |    Camera    | `terrain.dll LoadCamera`       | LOGIC_CAMERA                 |
+|    7     |  Atmosphere  | `terrain.dll CreateAtmosphere` | LOGIC_ATMOSPHERE             |
+|    9     |    Agent     | `animesh.dll LoadAgent`        | LOGIC_BULLET_AGENT_BULL      |
+|   0xa    |    Agent     | `animesh.dll LoadAgent`        | LOGIC_STATIC_AGENT_STAT      |
+|   0xb    |   Research   | `misload.dll LoadResearch`     | LOGIC_RESEARCH               |
+|   0xc    |    Agent     | `animesh.dll LoadAgent`        | LOGIC_AGENT_0xC              |
 
-Будет дополняться по мере реверса.
-
-Всем этим функциям передаётся `nres_file_name, nres_entry_name, 0, player_id`
+Всем этим функциям передаётся `nres_file_name, nres_entry_name, 0, player_index`
 
 ## `fr FORT` файл
 
@@ -377,12 +375,12 @@ enum EffectTemplateFlags : uint32_t
 
 # Внутренняя система ID
 
-- `1` - unknown (implemented by CLandscape) видимо ILandscape
+- `1` - unknown (implemented by CLandscape) видимо ILandscape (очень похоже на legacy IMesh судя по vtable)
 - `3` - unknown (implemented by CAtmosphere) видимо IAtmosphere
 - `4` - IShader
 - `5` - ITerrain
 - `6` - IGameObject
-- `7` - ISettings
+- `7` - IGameSettingsProvider
 - `8` - ICamera
 - `9` - IQueue
 - `10` - IControl
@@ -403,7 +401,7 @@ enum EffectTemplateFlags : uint32_t
 - `0x19` - IManManager
 - `0x20` - IJointMesh
 - `0x21` - IShadowProcessor (придумал сам implemented by CShade)
-- `0x22` - unknown (implement by CLandscape)
+- `0x22` - unknown (implement by CLandscape) (похоже на ITopProvider т.к. в vtable только GetTopQuad)
 - `0x23` - IGameSettingsRoot
 - `0x24` - IGameObject2
 - `0x25` - ICollisionMesh (придумал сам implemented by CAniMesh)
@@ -471,6 +469,35 @@ World3D.dll содержит singleton Registry в CreateGameSettings.
 |     16      |    93 (0x5d)    | "Select best sound device" |         |                    |
 |    ----     |    30 (0x1e)    |        ShadeConfig         |         | из файла shade.cfg |
 |    ----     |    (0x8001e)    |                            |         | добавляет AniMesh  |
+
+## Terrain primitive RE
+
+Primitive layer types:
+0: PrimLayer0
+Stores PrimLayerElement0 { primitive, vb_descriptor, key0, key1 }.
+Sorts by dynamic vertex-buffer descriptor and stream/layout keys,
+then calls primitive->Render in grouped order.
+
+1: PrimLayer1
+Stores PrimLayerElement1 { primitive, distance_key }.
+Inserts by descending distance from sort_origin.
+Calls primitive->Render in stored order.
+
+2: PrimLayer2
+Stores IPrimitive* only.
+Alpha-filters and appends.
+Calls primitive->Render in insertion order.
+
+3: CCamDistSortLayer / PrimLayer3
+Stores PrimLayerElement1 { primitive, distance_key }.
+Inserts by descending distance from sort_origin.
+Does not call primitive->Render; merges primitives into batched dynamic-VB draws.
+
+4: illegal.
+
+5: PrimLayer5
+Same primitive pointer list style as PrimLayer2.
+Renders only when UseReflections is enabled and clears Z before render.
 
 ## Контакты
 
