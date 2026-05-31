@@ -499,6 +499,20 @@ Does not call primitive->Render; merges primitives into batched dynamic-VB draws
 Same primitive pointer list style as PrimLayer2.
 Renders only when UseReflections is enabled and clears Z before render.
 
+## Item system RE
+
+0x14 - CONTROL_ITEM_TYPE_CRITICAL_SUPPORT
+
+```
+If the unit has no special critical-support items, enter decay when total NDP life falls below the configured low-life threshold.
+
+If the unit has multiple critical-support items, ignore the normal HP threshold and instead enter decay when enough support items report a failed/low value.
+
+While in critical decay, apply continuous negative NDP life delta until the unit is destroyed.
+```
+
+0x16 - CONTROL_ITEM_TYPE_GUIDANCE
+
 ## Контакты
 
 Вы можете связаться со мной в [Telegram](https://t.me/bird_egop).

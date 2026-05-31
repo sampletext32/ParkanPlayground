@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Text.Json;
 using CpDatLib;
 using ImGuiNET;
 using MissionTmaLib;
@@ -137,6 +138,7 @@ namespace NResUI.ImGuiUI
                             cpDatSchemeViewModel.SetParseResult(parseResult, path);
 
                             Console.WriteLine("Read cp .dat");
+                            Console.WriteLine(JsonSerializer.Serialize(parseResult.Scheme));
                         }
                     }
 

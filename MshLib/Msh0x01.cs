@@ -184,6 +184,29 @@ public enum NodeFlags : ushort
     MSH01_NO_SHADOW = 0x0040,
 
     /// <summary>
+    /// If this MSH01 flag is set, depletion/restore of this NDP slot should not
+    /// participate in central-piece state updates. In practice it maps to
+    /// CONTROL_NDP_REF_FLAG_NO_CENTRAL_STATE_UPDATE and probably prevents this piece
+    /// from changing the "central" damage/mobility accounting.
+    /// </summary>
+    MSH01_NO_CENTRAL_STATE_UPDATE = 0x0100,
+    
+    /// <summary>
+    /// If this MSH01 flag is set, the matching ControlNdpRef becomes fatal/critical.
+    /// When that NDP slot is depleted, higher-level life logic likely treats the owning
+    /// object as destroyed or forces a kill/failure path.
+    /// </summary>
+    MSH01_NDP_FATAL_ON_DEPLETION = 0x0200,
+
+    /// <summary>
+    /// If this MSH01 flag is set, this NDP slot derives or clamps its life ratio
+    /// from the parent piece/NDP slot. It maps to
+    /// CONTROL_NDP_REF_FLAG_INHERIT_PARENT_LIFE_RATIO and is likely used for
+    /// child/helper damage parts that should visually follow parent damage state.
+    /// </summary>
+    MSH01_NDP_INHERIT_PARENT_LIFE_RATIO = 0x0400,
+
+    /// <summary>
     /// Used during attached MSH load: if parent/root description contains "central", piece gets hidden/excluded flag.
     /// Exact semantic name still provisional.
     /// </summary>
