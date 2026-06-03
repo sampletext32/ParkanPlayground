@@ -499,19 +499,44 @@ Does not call primitive->Render; merges primitives into batched dynamic-VB draws
 Same primitive pointer list style as PrimLayer2.
 Renders only when UseReflections is enabled and clears Z before render.
 
-## Item system RE
+## Network GMSG commands (not complete)
 
-0x14 - CONTROL_ITEM_TYPE_CRITICAL_SUPPORT
+_элементы с _ не до конца понятны_
 
 ```
-If the unit has no special critical-support items, enter decay when total NDP life falls below the configured low-life threshold.
-
-If the unit has multiple critical-support items, ignore the normal HP threshold and instead enter decay when enough support items report a failed/low value.
-
-While in critical decay, apply continuous negative NDP life delta until the unit is destroyed.
+typedef enum E_GMSG_COMMAND {
+  GMSG_NEW_GAME_TICK = 1,
+  GMSG_INIT = 4,
+  GMSG_END_MESSAGE_SEQ = 6,
+  _GMSG_SET_STATE = 7,
+  _GMSG_REMOVE_RESOURCE = 0x14,
+  _GMSG_AFTER_DETACHED = 0x15,
+  GMSG_KILL_GAMEOBJECT = 0x16,
+  _SomeEnvironmentToggleON = 0x17,
+  _SomeEnvironmentToggleOFF = 0x18,
+  _Unknown_Command_0x19 = 0x19,
+  GMSG_COLLISION_DETECTED = 0x1B,
+  GMSG_FRAME_UPDATE = 0x1C,
+  _SHOW_AREALS = 0x67,
+  _GMSG_PAUSE_REMOTE_PLAYER = 0x3EA,
+  GMSG_CONFIRM_PLAYER_DATA = 0x3EC,
+  GMSG_KILL_PLAYER = 0x3ED,
+  GMSG_GET_SAVEGAME_FROM_HOST = 0x3EE,
+  GMSG_SET_GAME_STARTED = 0x3EF,
+  GMSG_DETACH_CHILD_FROM_PARENT = 0x3F1,
+  GMSG_ADD_LANDSCAPE_CHILD = 0x3F2,
+  GMSG_CREATE_MIRROR = 0x80000000,
+  GMSG_CREATE_REMOTE_PLAYER = 0x80000001,
+  GMSG_TEXT_FOR_PLAYER = 0x80000002,
+  GMSG_SYNC_OBJECT_STATE = 0x80000003,
+  GMSG_TAKE_OBJECT = 0x80000004,
+  GMSG_MISSION_DATA_PATH = 0x80000005,
+  GMSG_SET_PLAYER_DATA = 0x80000006,
+  GMSG_CHANGE_OBJECT_OWNER = 0x80000007,
+  GMSG_APPEND_RESOURCE = 0x80000020,
+  GMSG_INVALID = 0xFFFFFFFF,
+} E_GMSG_COMMAND;
 ```
-
-0x16 - CONTROL_ITEM_TYPE_GUIDANCE
 
 ## Контакты
 
