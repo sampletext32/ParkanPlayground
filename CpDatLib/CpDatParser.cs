@@ -51,7 +51,7 @@ public class CpDatParser
 
         fs.Seek(32 - str2.Length - 1, SeekOrigin.Current); // -1 ignore null terminator
         var magic1 = fs.ReadInt32LittleEndian();
-        var magic2 = fs.ReadInt32LittleEndian();
+        var attachIndex = fs.ReadInt32LittleEndian();
 
         var descriptionString = fs.ReadNullTerminated1251String();
 
@@ -69,6 +69,6 @@ public class CpDatParser
             children.Add(child);
         }
 
-        return new CpDatEntry(str1, str2, magic1, magic2, descriptionString, type, childCount, Children: children);
+        return new CpDatEntry(str1, str2, magic1, attachIndex, descriptionString, type, childCount, Children: children);
     }
 }

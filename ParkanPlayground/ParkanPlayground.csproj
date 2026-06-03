@@ -5,6 +5,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\ControlLib\ControlLib.csproj" />
       <ProjectReference Include="..\MissionTmaLib\MissionTmaLib.csproj" />
       <ProjectReference Include="..\MshLib\MshLib.csproj" />
       <ProjectReference Include="..\NResLib\NResLib.csproj" />

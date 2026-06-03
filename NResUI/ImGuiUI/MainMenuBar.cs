@@ -44,6 +44,7 @@ namespace NResUI.ImGuiUI
 
                             nResExplorerViewModel.SetParseResult(parseResult, path);
                             Console.WriteLine("Read NRES");
+                            Console.WriteLine(JsonSerializer.Serialize(parseResult.Archive));
                         }
                     }
 

@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 using Common;
 using NResLib;
 
@@ -104,6 +105,18 @@ public sealed class MshConverter
         var vertices = Msh0x03.ReadComponent(fs, archive);
         var indices = Msh0x06.ReadComponent(fs, archive);
         var batches = Msh0x0D.ReadComponent(fs, archive);
+        var names = Msh0x0A.ReadComponent(fs, archive);
+
+        Console.WriteLine("0x01 component");
+        Console.WriteLine(JsonSerializer.Serialize(nodes));
+        
+        Console.WriteLine("0x02 component");
+        Console.WriteLine(JsonSerializer.Serialize(geometry));
+        
+        Console.WriteLine("0x0A component");
+        Console.WriteLine(JsonSerializer.Serialize(names));
+        
+        return;
 
         using var writer = CreateObjWriter(outputPath);
 

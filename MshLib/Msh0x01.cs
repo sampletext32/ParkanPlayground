@@ -54,8 +54,6 @@ public static class Msh0x01
             var baseOffset = i * entry.ElementSize;
             var elementSpan = dataSpan.Slice(baseOffset, entry.ElementSize);
 
-            var rawBytes = elementSpan.ToArray();
-
             var slotIndices = new ushort[SlotCount];
             Array.Fill(slotIndices, ushort.MaxValue);
 
@@ -70,7 +68,6 @@ public static class Msh0x01
             }
 
             nodes.Add(new Node(
-                RawBytes: rawBytes,
                 Flags: (NodeFlags)BinaryPrimitives.ReadUInt16LittleEndian(elementSpan.Slice(0x00, 2)),
                 ParentIndexOrLink: BinaryPrimitives.ReadUInt16LittleEndian(elementSpan.Slice(0x02, 2)),
                 AnimMapStart0x13: BinaryPrimitives.ReadUInt16LittleEndian(elementSpan.Slice(0x04, 2)),
@@ -92,7 +89,6 @@ public static class Msh0x01
     }
 
     /// <summary>Узел MSH 0x01.</summary>
-    /// <param name="RawBytes">Сырые байты узла. Нужны для copy-through нестандартных вариантов.</param>
     /// <param name="Flags">[0x00..0x02] Флаги узла.</param>
     /// <param name="ParentIndexOrLink">[0x02..0x04] Parent node index. 0xFFFF обычно значит root/no parent.</param>
     /// <param name="AnimMapStart0x13">[0x04..0x06] Начало блока в MSH 0x13 animation map или 0xFFFF.</param>
@@ -102,7 +98,6 @@ public static class Msh0x01
     /// Формула: slot = lod * 5 + group. 0xFFFF значит отсутствует.
     /// </param>
     public sealed record Node(
-        byte[] RawBytes,
         NodeFlags Flags,
         ushort ParentIndexOrLink,
         ushort AnimMapStart0x13,

@@ -41,7 +41,7 @@ public class CpDatSchemeExplorer : IImGuiPanel
                     ImGui.TableSetupColumn("Архив");
                     ImGui.TableSetupColumn("Элемент");
                     ImGui.TableSetupColumn("Magic1");
-                    ImGui.TableSetupColumn("Magic2");
+                    ImGui.TableSetupColumn("AttachIndex");
                     ImGui.TableSetupColumn("Описание");
                     ImGui.TableSetupColumn("Тип");
 
@@ -70,7 +70,7 @@ public class CpDatSchemeExplorer : IImGuiPanel
                                     case 2: result = string.Compare(a.Entry.ArchiveFile, b.Entry.ArchiveFile, StringComparison.Ordinal); break;
                                     case 3: result = string.Compare(a.Entry.ArchiveEntryName, b.Entry.ArchiveEntryName, StringComparison.Ordinal); break;
                                     case 4: result = a.Entry.Magic1.CompareTo(b.Entry.Magic1); break;
-                                    case 5: result = a.Entry.Magic2.CompareTo(b.Entry.Magic2); break;
+                                    case 5: result = a.Entry.AttachIndex.CompareTo(b.Entry.AttachIndex); break;
                                     case 6: result = string.Compare(a.Entry.Description, b.Entry.Description, StringComparison.Ordinal); break;
                                     case 7: result = a.Entry.Type.CompareTo(b.Entry.Type); break;
                                 }
@@ -96,7 +96,7 @@ public class CpDatSchemeExplorer : IImGuiPanel
                         ImGui.TableNextColumn();
                         ImGui.Text(_viewModel.FlatList[i].Entry.Magic1.ToString());
                         ImGui.TableNextColumn();
-                        ImGui.Text(_viewModel.FlatList[i].Entry.Magic2.ToString());
+                        ImGui.Text(_viewModel.FlatList[i].Entry.AttachIndex.ToString());
                         ImGui.TableNextColumn();
                         ImGui.Text(_viewModel.FlatList[i].Entry.Description);
                         ImGui.TableNextColumn();
@@ -114,9 +114,9 @@ public class CpDatSchemeExplorer : IImGuiPanel
                         ImGui.SameLine();
                         ImGui.Text(entry.Magic1.ToString());
 
-                        ImGui.Text("Magic2: ");
+                        ImGui.Text("AttachIndex: ");
                         ImGui.SameLine();
-                        ImGui.Text(entry.Magic2.ToString());
+                        ImGui.Text(entry.AttachIndex.ToString());
 
                         ImGui.Text("Тип: ");
                         ImGui.SameLine();
