@@ -2,7 +2,9 @@ using System.Numerics;
 using ImGuiNET;
 using NResUI.Abstractions;
 using NResUI.Rendering.Viewport;
+using NativeFileDialogSharp;
 using NResUI.Rendering.Viewport.Meshes;
+using NResUI.Rendering.Viewport.Msh;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 
@@ -14,6 +16,9 @@ public sealed class ViewportPanel : IImGuiPanel
     private readonly ViewportScene _scene;
     private readonly ViewportCamera _camera = new();
     private readonly ViewportInputController _inputController = new();
+
+    private string? _loadedModelPath;
+    private string? _loadError;
 
     public ViewportPanel(GL gl, IWindow window)
     {
@@ -32,6 +37,7 @@ public sealed class ViewportPanel : IImGuiPanel
             return;
         }
 
+        DrawModelControls();
         DrawSelectionStatus();
         DrawViewportToolbar();
         DrawDebugControls();
@@ -73,13 +79,72 @@ public sealed class ViewportPanel : IImGuiPanel
         ImGui.End();
     }
 
+
+    private void DrawModelControls()
+    {
+        if (ImGui.Button("Open MSH in viewport"))
+        {
+            var result = Dialog.FileOpen("msh");
+            if (result.IsOk)
+                LoadMsh(result.Path);
+        }
+
+        ImGui.SameLine();
+
+        if (ImGui.Button("Reset cube"))
+        {
+            var cubeMesh = PrimitiveMeshes.CreateCube(_renderer.Gl);
+            _scene.ReplacePieces(new[] { ViewportPiece.CreateUnitCube(0, "Cube", cubeMesh) });
+            _loadedModelPath = null;
+            _loadError = null;
+            _camera.Reset();
+        }
+
+        if (_loadedModelPath != null)
+            ImGui.TextDisabled($"Model: {Path.GetFileName(_loadedModelPath)}");
+
+        if (_loadError != null)
+            ImGui.TextColored(new Vector4(1.0f, 0.35f, 0.25f, 1.0f), $"MSH load failed: {_loadError}");
+    }
+
+    private void LoadMsh(string path)
+    {
+        var loadResult = MshViewportLoader.LoadFromFile(_renderer.Gl, path);
+        if (!loadResult.IsSuccess)
+        {
+            _loadError = loadResult.Error ?? "Unknown error.";
+            return;
+        }
+
+        _scene.ReplacePieces(loadResult.Pieces);
+        _loadedModelPath = loadResult.SourcePath;
+        _loadError = null;
+
+        if (_scene.TryGetSceneWorldBounds(out var bounds))
+            _camera.FrameBounds(bounds.Min, bounds.Max);
+        else
+            _camera.Reset();
+    }
+
     private void DrawSelectionStatus()
     {
         var selectedPiece = _scene.SelectedPiece;
         if (selectedPiece != null)
+        {
             ImGui.Text($"Selected: {selectedPiece.Name}");
+
+            var debugInfo = selectedPiece.DebugInfo;
+            if (debugInfo != null)
+            {
+                ImGui.TextDisabled(
+                    $"{debugInfo.SourceKind} | parent {debugInfo.SourceParentIndex} | slot {debugInfo.GeometrySlotIndex} | " +
+                    $"flags 0x{debugInfo.Msh01Flags:X4} | batches {debugInfo.BatchCount} | tris {debugInfo.TriangleCount}");
+            }
+        }
         else
+        {
             ImGui.TextDisabled("Selected: none");
+        }
     }
 
     private void DrawViewportToolbar()

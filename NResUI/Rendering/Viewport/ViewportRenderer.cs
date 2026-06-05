@@ -12,6 +12,8 @@ public sealed class ViewportRenderer
     private readonly IWindow _window;
     private readonly MsaaFramebuffer _framebuffer;
 
+    public GL Gl => _gl;
+
     private ShaderProgram? _meshShader;
     private ShaderProgram? _outlineShader;
 

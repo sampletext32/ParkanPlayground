@@ -185,6 +185,15 @@ public static unsafe class PrimitiveMeshes
         return CreateIndexedMesh(gl, vertices, indices, PrimitiveType.Lines);
     }
 
+    public static GpuMesh CreateColoredIndexedMesh(
+        GL gl,
+        IReadOnlyList<float> vertices,
+        IReadOnlyList<uint> indices,
+        PrimitiveType primitiveType = PrimitiveType.Triangles)
+    {
+        return CreateIndexedMesh(gl, vertices.ToArray(), indices.ToArray(), primitiveType);
+    }
+
     private static GpuMesh CreateIndexedMesh(
         GL gl,
         float[] vertices,

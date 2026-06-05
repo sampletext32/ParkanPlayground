@@ -20,6 +20,7 @@
     <ItemGroup>
       <ProjectReference Include="..\CpDatLib\CpDatLib.csproj" />
       <ProjectReference Include="..\MissionTmaLib\MissionTmaLib.csproj" />
+      <ProjectReference Include="..\MshLib\MshLib.csproj" />
       <ProjectReference Include="..\NResLib\NResLib.csproj" />
       <ProjectReference Include="..\ResTreeLib\ResTreeLib.csproj" />
       <ProjectReference Include="..\ScrLib\ScrLib.csproj" />

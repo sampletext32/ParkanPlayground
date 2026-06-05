@@ -37,6 +37,19 @@ public sealed class ViewportScene
         _pieces.Add(piece);
     }
 
+    public void ClearPieces()
+    {
+        _pieces.Clear();
+        ClearSelection();
+    }
+
+    public void ReplacePieces(IEnumerable<ViewportPiece> pieces)
+    {
+        _pieces.Clear();
+        _pieces.AddRange(pieces);
+        ClearSelection();
+    }
+
     public void ClearSelection()
     {
         SelectedPieceId = -1;
