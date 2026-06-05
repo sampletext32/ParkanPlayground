@@ -9,5 +9,8 @@ public sealed class ViewportPieceDebugInfo
     public int BatchCount { get; init; }
     public int TriangleCount { get; init; }
 
+    public int FallbackKeyframeIndex { get; init; } = -1;
+    public bool HasRestPose { get; init; }
+
     public string SourceKind { get; init; } = "MSH";
 }

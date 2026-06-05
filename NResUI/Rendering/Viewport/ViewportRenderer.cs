@@ -20,7 +20,10 @@ public sealed class ViewportRenderer
     private GpuMesh? _unitWireBoxMesh;
     private GpuMesh? _axesMesh;
 
-    private int _meshMvpLocation;
+    private int _modelLocation;
+    private int _mvpLocation;
+    private int _lightDirectionLocation;
+
     private int _outlineMvpLocation;
     private int _outlineColorLocation;
 
@@ -44,8 +47,7 @@ public sealed class ViewportRenderer
         _framebuffer.BindForRender();
 
         _gl.Enable(EnableCap.DepthTest);
-        _gl.Enable(EnableCap.CullFace);
-        _gl.CullFace(TriangleFace.Back);
+        _gl.Disable(EnableCap.CullFace);
 
         _gl.ClearColor(0.12f, 0.13f, 0.15f, 1.0f);
         _gl.ClearStencil(0);
@@ -66,7 +68,6 @@ public sealed class ViewportRenderer
         _gl.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Fill);
         _framebuffer.Resolve();
 
-        _gl.Disable(EnableCap.CullFace);
         _gl.Disable(EnableCap.DepthTest);
         _gl.Disable(EnableCap.StencilTest);
         _gl.UseProgram(0);
@@ -96,14 +97,12 @@ public sealed class ViewportRenderer
         var mvp = model * view * projection;
 
         _gl.Disable(EnableCap.StencilTest);
-        _gl.Disable(EnableCap.CullFace);
         _gl.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Fill);
 
         _meshShader.Use();
-        _meshShader.SetMatrix4(_meshMvpLocation, mvp);
+        _meshShader.SetMatrix4(_mvpLocation, mvp);
         grid.Mesh.Draw();
 
-        _gl.Enable(EnableCap.CullFace);
     }
 
     private void DrawScene(
@@ -166,7 +165,6 @@ public sealed class ViewportRenderer
             throw new InvalidOperationException("Viewport debug resources are not initialized.");
 
         _gl.Disable(EnableCap.StencilTest);
-        _gl.Disable(EnableCap.CullFace);
         _gl.Disable(EnableCap.DepthTest);
         _gl.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Fill);
         _gl.LineWidth(2.0f);
@@ -203,7 +201,6 @@ public sealed class ViewportRenderer
 
         _gl.LineWidth(1.0f);
         _gl.Enable(EnableCap.DepthTest);
-        _gl.Enable(EnableCap.CullFace);
     }
 
     private void DrawPiece(
@@ -248,8 +245,13 @@ public sealed class ViewportRenderer
 
         var mvp = model * view * projection;
 
+        var lightDirection = Vector3.Normalize(new Vector3(-0.35f, -0.75f, -0.55f));
+
         _meshShader.Use();
-        _meshShader.SetMatrix4(_meshMvpLocation, mvp);
+        _meshShader.SetMatrix4(_mvpLocation, mvp);
+        _meshShader.SetMatrix4(_modelLocation, model);
+        _meshShader.SetVector3(_lightDirectionLocation, lightDirection);
+
         mesh.Draw();
     }
 
@@ -276,30 +278,49 @@ public sealed class ViewportRenderer
     {
         const string meshVertexShaderSource = """
         #version 330 core
-
+        
         layout (location = 0) in vec3 aPosition;
         layout (location = 1) in vec3 aColor;
-
+        layout (location = 2) in vec3 aNormal;
+        
+        uniform mat4 uModel;
         uniform mat4 uMvp;
-
+        
         out vec3 vColor;
-
+        out vec3 vNormalWorld;
+        
         void main()
         {
             vColor = aColor;
+            vNormalWorld = mat3(transpose(inverse(uModel))) * aNormal;
             gl_Position = uMvp * vec4(aPosition, 1.0);
         }
         """;
 
         const string meshFragmentShaderSource = """
         #version 330 core
-
+        
         in vec3 vColor;
+        in vec3 vNormalWorld;
+        
+        uniform vec3 uLightDirectionWorld;
+        
         out vec4 FragColor;
-
+        
         void main()
         {
-            FragColor = vec4(vColor, 1.0);
+            vec3 normal = normalize(vNormalWorld);
+        
+            // Useful when backface display is enabled.
+            if (!gl_FrontFacing)
+                normal = -normal;
+        
+            vec3 lightDir = normalize(-uLightDirectionWorld);
+        
+            float diffuse = max(dot(normal, lightDir), 0.0);
+            float lighting = 0.35 + diffuse * 0.65;
+        
+            FragColor = vec4(vColor * lighting, 1.0);
         }
         """;
 
@@ -329,9 +350,13 @@ public sealed class ViewportRenderer
         """;
 
         _meshShader = new ShaderProgram(_gl, meshVertexShaderSource, meshFragmentShaderSource, "Viewport mesh");
-        _outlineShader = new ShaderProgram(_gl, outlineVertexShaderSource, outlineFragmentShaderSource, "Viewport outline");
+        _outlineShader = new ShaderProgram(_gl, outlineVertexShaderSource, outlineFragmentShaderSource,
+            "Viewport outline");
 
-        _meshMvpLocation = _meshShader.GetUniformLocation("uMvp");
+        _modelLocation = _meshShader.GetUniformLocation("uModel");
+        _mvpLocation = _meshShader.GetUniformLocation("uMvp");
+        _lightDirectionLocation = _meshShader.GetUniformLocation("uLightDirectionWorld");
+
         _outlineMvpLocation = _outlineShader.GetUniformLocation("uMvp");
         _outlineColorLocation = _outlineShader.GetUniformLocation("uColor");
     }

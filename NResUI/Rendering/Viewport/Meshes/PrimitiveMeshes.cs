@@ -226,7 +226,7 @@ public static unsafe class PrimitiveMeshes
                 BufferUsageARB.StaticDraw);
         }
 
-        const uint stride = 6 * sizeof(float);
+        const uint stride = 9 * sizeof(float);
 
         gl.EnableVertexAttribArray(0);
         gl.VertexAttribPointer(
@@ -245,6 +245,16 @@ public static unsafe class PrimitiveMeshes
             false,
             stride,
             (void*)(3 * sizeof(float)));
+        
+        gl.EnableVertexAttribArray(2);
+        gl.VertexAttribPointer(
+            2,
+            3,
+            VertexAttribPointerType.Float,
+            false,
+            stride,
+            (void*)(6 * sizeof(float))
+        );
 
         gl.BindVertexArray(0);
 

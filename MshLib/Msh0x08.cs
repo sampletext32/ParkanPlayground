@@ -26,10 +26,10 @@ public static class Msh0x08
                     mshFs.ReadFloatLittleEndian()),
                 mshFs.ReadFloatLittleEndian(),
                 new UShortQuaternion(
-                    mshFs.ReadUInt16LittleEndian(),
-                    mshFs.ReadUInt16LittleEndian(),
-                    mshFs.ReadUInt16LittleEndian(),
-                    mshFs.ReadUInt16LittleEndian()
+                    mshFs.ReadInt16LittleEndian(),
+                    mshFs.ReadInt16LittleEndian(),
+                    mshFs.ReadInt16LittleEndian(),
+                    mshFs.ReadInt16LittleEndian()
                 )
             ));
         }

@@ -2,7 +2,7 @@
 
 public record Quaternion(float X, float Y, float Z, float W);
 
-public record UShortQuaternion(ushort X, ushort Y, ushort Z, ushort W)
+public record UShortQuaternion(short W, short X, short Y, short Z)
 {
     public Quaternion ToRegular()
     {

@@ -49,6 +49,9 @@ public static class MshViewportLoader
         var positions = Msh0x03.ReadComponent(fs, archive);
         var indices = Msh0x06.ReadComponent(fs, archive);
         var batches = Msh0x0D.ReadComponent(fs, archive);
+        var animationDescriptors = Msh0x08.ReadComponent(fs, archive);
+        var restPoses = MshRestPoseBuilder.BuildRestPose(nodes, animationDescriptors);
+        var mshToViewportTransform = Matrix4x4.CreateRotationX(-MathF.PI * 0.5f);
         var names = TryReadNames(fs, archive);
 
         var pieces = new List<ViewportPiece>();
@@ -56,6 +59,7 @@ public static class MshViewportLoader
         for (var nodeIndex = 0; nodeIndex < nodes.Nodes.Count; nodeIndex++)
         {
             var node = nodes.Nodes[nodeIndex];
+            var restPose = restPoses[nodeIndex];
             var slotIndex = node.ResolveSlotIndex(DefaultModelState, DefaultLod);
             if (slotIndex == ushort.MaxValue)
                 continue;
@@ -72,24 +76,24 @@ public static class MshViewportLoader
                 continue;
 
             var name = ResolvePieceName(names, nodeIndex);
-            var parentIndex = node.ParentIndexOrMinusOne;
-
             pieces.Add(new ViewportPiece(
                 id: nodeIndex,
                 name: name,
                 mesh: meshBuildResult.Mesh,
-                localTransform: Matrix4x4.Identity,
+                localTransform: restPose.MeshSpaceTransform * mshToViewportTransform,
                 boundsMin: meshBuildResult.BoundsMin,
                 boundsMax: meshBuildResult.BoundsMax,
                 debugInfo: new ViewportPieceDebugInfo
                 {
                     SourceKind = "MSH 0x01 piece",
                     SourcePieceIndex = nodeIndex,
-                    SourceParentIndex = parentIndex,
+                    SourceParentIndex = restPose.ParentIndex,
                     GeometrySlotIndex = slotIndex,
                     Msh01Flags = (uint)node.Flags,
                     BatchCount = meshBuildResult.BatchCount,
-                    TriangleCount = meshBuildResult.TriangleCount
+                    TriangleCount = meshBuildResult.TriangleCount,
+                    FallbackKeyframeIndex = restPose.FallbackKeyframeIndex,
+                    HasRestPose = restPose.HasFallbackPose
                 }));
         }
 
@@ -135,9 +139,19 @@ public static class MshViewportLoader
                 if (!IsValidTriangle(positions.Count, vertexIndex0, vertexIndex1, vertexIndex2))
                     continue;
 
-                AddTriangleVertex(positions[vertexIndex0], color, vertices, outIndices, ref boundsMin, ref boundsMax);
-                AddTriangleVertex(positions[vertexIndex1], color, vertices, outIndices, ref boundsMin, ref boundsMax);
-                AddTriangleVertex(positions[vertexIndex2], color, vertices, outIndices, ref boundsMin, ref boundsMax);
+                var p0 = ToNumericsVector3(positions[vertexIndex0]);
+                var p1 = ToNumericsVector3(positions[vertexIndex1]);
+                var p2 = ToNumericsVector3(positions[vertexIndex2]);
+
+                var normal = Vector3.Cross(p1 - p0, p2 - p0);
+                if (normal.LengthSquared() < 1e-8f)
+                    normal = Vector3.UnitY;
+                else
+                    normal = Vector3.Normalize(normal);
+
+                AddTriangleVertex(p0, color, normal, vertices, outIndices, ref boundsMin, ref boundsMax);
+                AddTriangleVertex(p1, color, normal, vertices, outIndices, ref boundsMin, ref boundsMax);
+                AddTriangleVertex(p2, color, normal, vertices, outIndices, ref boundsMin, ref boundsMax);
                 triangleCount++;
             }
         }
@@ -148,14 +162,21 @@ public static class MshViewportLoader
         var mesh = PrimitiveMeshes.CreateColoredIndexedMesh(gl, vertices, outIndices, PrimitiveType.Triangles);
         return new PieceMeshBuildResult(mesh, boundsMin, boundsMax, batchCount, triangleCount);
     }
+    
+    private static Vector3 ToNumericsVector3(Common.Vector3 position)
+    {
+        return new Vector3(position.X, position.Y, position.Z);
+    }
 
     private static void AddTriangleVertex(
-        Common.Vector3 position,
+        Vector3 position,
         Vector3 color,
+        Vector3 normal,
         List<float> vertices,
         List<uint> indices,
         ref Vector3 boundsMin,
-        ref Vector3 boundsMax)
+        ref Vector3 boundsMax
+    )
     {
         var vertexIndex = (uint)(vertices.Count / 6);
 
@@ -165,6 +186,9 @@ public static class MshViewportLoader
         vertices.Add(color.X);
         vertices.Add(color.Y);
         vertices.Add(color.Z);
+        vertices.Add(normal.X);
+        vertices.Add(normal.Y);
+        vertices.Add(normal.Z);
 
         indices.Add(vertexIndex);
 
