@@ -25,7 +25,7 @@ public sealed class MsaaFramebuffer
         _samples = samples;
     }
 
-    public void EnsureSize(int width, int height)
+    public unsafe void EnsureSize(int width, int height)
     {
         width = Math.Max(1, width);
         height = Math.Max(1, height);

@@ -28,7 +28,7 @@ public sealed class GpuMesh
         PrimitiveType = primitiveType;
     }
 
-    public void Draw()
+    public unsafe void Draw()
     {
         _gl.BindVertexArray(VertexArrayObject);
         _gl.DrawElements(PrimitiveType, IndexCount, DrawElementsType.UnsignedInt, null);

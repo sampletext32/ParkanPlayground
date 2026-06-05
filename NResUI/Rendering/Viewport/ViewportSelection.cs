@@ -14,28 +14,24 @@ public static class ViewportSelection
             return -1;
 
         var aspect = viewportSize.X / viewportSize.Y;
-        var fovRadians = ViewportCamera.ToRadians(60.0f);
+        var fovRadians = ViewportCamera.ToRadians(ViewportCamera.FieldOfViewDegrees);
         var tanHalfFov = MathF.Tan(fovRadians * 0.5f);
 
         var ndcX = (2.0f * localMouse.X / viewportSize.X) - 1.0f;
         var ndcY = 1.0f - (2.0f * localMouse.Y / viewportSize.Y);
 
-        var rayOriginWorld = new Vector3(0.0f, 0.0f, camera.Distance);
-        var rayDirectionWorld = Vector3.Normalize(new Vector3(
-            ndcX * aspect * tanHalfFov,
-            ndcY * tanHalfFov,
-            -1.0f));
-
-        var sceneRotation = camera.GetSceneRotationMatrix();
+        var rayOriginWorld = camera.GetEyePosition();
+        var rayDirectionWorld = Vector3.Normalize(
+            camera.GetForwardDirection() +
+            camera.GetRightDirection() * (ndcX * aspect * tanHalfFov) +
+            camera.GetUpDirection() * (ndcY * tanHalfFov));
 
         var bestPieceId = -1;
         var bestDistance = float.PositiveInfinity;
 
         foreach (var piece in scene.Pieces)
         {
-            var model = piece.LocalTransform * sceneRotation;
-
-            if (!Matrix4x4.Invert(model, out var inverseModel))
+            if (!Matrix4x4.Invert(piece.LocalTransform, out var inverseModel))
                 continue;
 
             var rayOriginLocal = Vector3.Transform(rayOriginWorld, inverseModel);

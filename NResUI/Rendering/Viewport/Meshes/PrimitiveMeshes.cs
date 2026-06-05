@@ -132,6 +132,59 @@ public static unsafe class PrimitiveMeshes
         return CreateIndexedMesh(gl, vertices.ToArray(), indices.ToArray(), PrimitiveType.Lines);
     }
 
+
+
+    public static GpuMesh CreateUnitWireBox(GL gl)
+    {
+        float[] vertices =
+        {
+            -1, -1, -1,  1.0f, 0.82f, 0.15f,
+             1, -1, -1,  1.0f, 0.82f, 0.15f,
+             1,  1, -1,  1.0f, 0.82f, 0.15f,
+            -1,  1, -1,  1.0f, 0.82f, 0.15f,
+            -1, -1,  1,  1.0f, 0.82f, 0.15f,
+             1, -1,  1,  1.0f, 0.82f, 0.15f,
+             1,  1,  1,  1.0f, 0.82f, 0.15f,
+            -1,  1,  1,  1.0f, 0.82f, 0.15f,
+        };
+
+        uint[] indices =
+        {
+            0, 1, 1, 2, 2, 3, 3, 0,
+            4, 5, 5, 6, 6, 7, 7, 4,
+            0, 4, 1, 5, 2, 6, 3, 7,
+        };
+
+        return CreateIndexedMesh(gl, vertices, indices, PrimitiveType.Lines);
+    }
+
+    public static GpuMesh CreateAxes(GL gl, float length = 1.0f)
+    {
+        if (length <= 0.0f)
+            throw new ArgumentOutOfRangeException(nameof(length));
+
+        float[] vertices =
+        {
+            0, 0, 0,       1.0f, 0.25f, 0.25f,
+            length, 0, 0,  1.0f, 0.25f, 0.25f,
+
+            0, 0, 0,       0.25f, 1.0f, 0.25f,
+            0, length, 0,  0.25f, 1.0f, 0.25f,
+
+            0, 0, 0,       0.25f, 0.45f, 1.0f,
+            0, 0, length,  0.25f, 0.45f, 1.0f,
+        };
+
+        uint[] indices =
+        {
+            0, 1,
+            2, 3,
+            4, 5,
+        };
+
+        return CreateIndexedMesh(gl, vertices, indices, PrimitiveType.Lines);
+    }
+
     private static GpuMesh CreateIndexedMesh(
         GL gl,
         float[] vertices,

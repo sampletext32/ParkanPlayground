@@ -33,7 +33,8 @@ public sealed class ViewportPanel : IImGuiPanel
         }
 
         DrawSelectionStatus();
-        DrawGridToggle();
+        DrawViewportToolbar();
+        DrawDebugControls();
 
         var imageSize = ImGui.GetContentRegionAvail();
         if (imageSize.X < 32 || imageSize.Y < 32)
@@ -56,6 +57,7 @@ public sealed class ViewportPanel : IImGuiPanel
             new Vector2(1, 0));
 
         var viewportHovered = ImGui.IsItemHovered();
+        var viewportFocused = ImGui.IsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows);
         var imageMin = ImGui.GetItemRectMin();
 
         DrawViewportHelpOverlay();
@@ -64,6 +66,7 @@ public sealed class ViewportPanel : IImGuiPanel
             _scene,
             _camera,
             viewportHovered,
+            viewportFocused,
             imageMin,
             imageSize);
 
@@ -79,15 +82,69 @@ public sealed class ViewportPanel : IImGuiPanel
             ImGui.TextDisabled("Selected: none");
     }
 
-    private void DrawGridToggle()
+    private void DrawViewportToolbar()
+    {
+        if (ImGui.Button("Reset view"))
+            _camera.Reset();
+
+        ImGui.SameLine();
+
+        if (ImGui.Button("Frame selected"))
+        {
+            if (_scene.TryGetSelectedPieceWorldBounds(out var selectedBounds))
+                _camera.FrameBounds(selectedBounds.Min, selectedBounds.Max);
+        }
+
+        ImGui.SameLine();
+
+        if (ImGui.Button("Frame all"))
+        {
+            if (_scene.TryGetSceneWorldBounds(out var sceneBounds))
+                _camera.FrameBounds(sceneBounds.Min, sceneBounds.Max);
+            else
+                _camera.Reset();
+        }
+    }
+
+    private void DrawDebugControls()
     {
         var grid = _scene.Grid;
-        if (grid == null)
-            return;
+        if (grid != null)
+        {
+            var isVisible = grid.IsVisible;
+            if (ImGui.Checkbox("Grid", ref isVisible))
+                grid.IsVisible = isVisible;
+        }
 
-        var isVisible = grid.IsVisible;
-        if (ImGui.Checkbox("Show grid", ref isVisible))
-            grid.IsVisible = isVisible;
+        ImGui.SameLine();
+
+        var showOriginAxes = _scene.Debug.ShowOriginAxes;
+        if (ImGui.Checkbox("Origin axes", ref showOriginAxes))
+            _scene.Debug.ShowOriginAxes = showOriginAxes;
+
+        ImGui.SameLine();
+
+        var showPieceOrigins = _scene.Debug.ShowPieceOrigins;
+        if (ImGui.Checkbox("Piece axes", ref showPieceOrigins))
+            _scene.Debug.ShowPieceOrigins = showPieceOrigins;
+
+        ImGui.SameLine();
+
+        var showSelectedBounds = _scene.Debug.ShowSelectedBounds;
+        if (ImGui.Checkbox("Selected bounds", ref showSelectedBounds))
+            _scene.Debug.ShowSelectedBounds = showSelectedBounds;
+
+        ImGui.SameLine();
+
+        var showSceneBounds = _scene.Debug.ShowSceneBounds;
+        if (ImGui.Checkbox("Scene bounds", ref showSceneBounds))
+            _scene.Debug.ShowSceneBounds = showSceneBounds;
+
+        ImGui.SameLine();
+
+        var wireframe = _scene.Debug.Wireframe;
+        if (ImGui.Checkbox("Wireframe", ref wireframe))
+            _scene.Debug.Wireframe = wireframe;
     }
 
     private static void DrawViewportHelpOverlay()
@@ -97,7 +154,12 @@ public sealed class ViewportPanel : IImGuiPanel
         var imageMin = ImGui.GetItemRectMin();
         var imageMax = ImGui.GetItemRectMax();
 
-        const string helpText = "LMB click: select / deselect\nMMB drag: rotate\nMouse wheel: zoom";
+        const string helpText =
+            "LMB click: select / deselect\n" +
+            "MMB drag: rotate\n" +
+            "RMB drag or Alt+MMB: pan\n" +
+            "Mouse wheel: zoom\n" +
+            "F: frame selected   Home: frame all";
 
         var textSize = ImGui.CalcTextSize(helpText);
         var padding = new Vector2(8.0f, 6.0f);

@@ -1,4 +1,5 @@
 using System.Numerics;
+using NResUI.Rendering.Viewport.Meshes;
 using NResUI.Rendering.Viewport.OpenGL;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
@@ -13,6 +14,9 @@ public sealed class ViewportRenderer
 
     private ShaderProgram? _meshShader;
     private ShaderProgram? _outlineShader;
+
+    private GpuMesh? _unitWireBoxMesh;
+    private GpuMesh? _axesMesh;
 
     private int _meshMvpLocation;
     private int _outlineMvpLocation;
@@ -55,7 +59,9 @@ public sealed class ViewportRenderer
 
         DrawGrid(scene, sceneRotation, view, projection);
         DrawScene(scene, sceneRotation, view, projection);
+        DrawDebugOverlays(scene, sceneRotation, view, projection);
 
+        _gl.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Fill);
         _framebuffer.Resolve();
 
         _gl.Disable(EnableCap.CullFace);
@@ -70,7 +76,6 @@ public sealed class ViewportRenderer
 
         return _framebuffer.ColorTexture;
     }
-
 
     private void DrawGrid(
         ViewportScene scene,
@@ -90,6 +95,7 @@ public sealed class ViewportRenderer
 
         _gl.Disable(EnableCap.StencilTest);
         _gl.Disable(EnableCap.CullFace);
+        _gl.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Fill);
 
         _meshShader.Use();
         _meshShader.SetMatrix4(_meshMvpLocation, mvp);
@@ -109,6 +115,9 @@ public sealed class ViewportRenderer
 
         _gl.Disable(EnableCap.StencilTest);
         _meshShader.Use();
+        _gl.PolygonMode(
+            TriangleFace.FrontAndBack,
+            scene.Debug.Wireframe ? PolygonMode.Line : PolygonMode.Fill);
 
         foreach (var piece in scene.Pieces)
         {
@@ -120,7 +129,10 @@ public sealed class ViewportRenderer
 
         var selectedPiece = scene.SelectedPiece;
         if (selectedPiece == null)
+        {
+            _gl.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Fill);
             return;
+        }
 
         _gl.Enable(EnableCap.StencilTest);
         _gl.StencilMask(0xFF);
@@ -130,6 +142,7 @@ public sealed class ViewportRenderer
         _meshShader.Use();
         DrawPiece(selectedPiece, sceneRotation, view, projection);
 
+        _gl.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Fill);
         _gl.StencilFunc(StencilFunction.Notequal, 1, 0xFF);
         _gl.StencilMask(0x00);
         _gl.Disable(EnableCap.DepthTest);
@@ -141,21 +154,64 @@ public sealed class ViewportRenderer
         _gl.Disable(EnableCap.StencilTest);
     }
 
+    private void DrawDebugOverlays(
+        ViewportScene scene,
+        Matrix4x4 sceneRotation,
+        Matrix4x4 view,
+        Matrix4x4 projection)
+    {
+        if (_meshShader == null || _unitWireBoxMesh == null || _axesMesh == null)
+            throw new InvalidOperationException("Viewport debug resources are not initialized.");
+
+        _gl.Disable(EnableCap.StencilTest);
+        _gl.Disable(EnableCap.CullFace);
+        _gl.Disable(EnableCap.DepthTest);
+        _gl.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Fill);
+        _gl.LineWidth(2.0f);
+
+        _meshShader.Use();
+
+        if (scene.Debug.ShowOriginAxes)
+            DrawMesh(_axesMesh, Matrix4x4.CreateScale(1.25f) * sceneRotation, view, projection);
+
+        if (scene.Debug.ShowPieceOrigins)
+        {
+            foreach (var piece in scene.Pieces)
+            {
+                var axesModel = Matrix4x4.CreateScale(0.45f) * piece.LocalTransform * sceneRotation;
+                DrawMesh(_axesMesh, axesModel, view, projection);
+            }
+        }
+
+        if (scene.Debug.ShowSelectedBounds && scene.SelectedPiece != null)
+        {
+            var selectedPiece = scene.SelectedPiece;
+            var boundsModel = BuildLocalBoundsModel(selectedPiece.BoundsMin, selectedPiece.BoundsMax) *
+                              selectedPiece.LocalTransform *
+                              sceneRotation;
+
+            DrawMesh(_unitWireBoxMesh, boundsModel, view, projection);
+        }
+
+        if (scene.Debug.ShowSceneBounds && scene.TryGetSceneWorldBounds(out var sceneBounds))
+        {
+            var sceneBoundsModel = BuildLocalBoundsModel(sceneBounds.Min, sceneBounds.Max) * sceneRotation;
+            DrawMesh(_unitWireBoxMesh, sceneBoundsModel, view, projection);
+        }
+
+        _gl.LineWidth(1.0f);
+        _gl.Enable(EnableCap.DepthTest);
+        _gl.Enable(EnableCap.CullFace);
+    }
+
     private void DrawPiece(
         ViewportPiece piece,
         Matrix4x4 sceneRotation,
         Matrix4x4 view,
         Matrix4x4 projection)
     {
-        if (_meshShader == null)
-            throw new InvalidOperationException("Viewport mesh shader is not initialized.");
-
         var model = piece.LocalTransform * sceneRotation;
-        var mvp = model * view * projection;
-
-        _meshShader.Use();
-        _meshShader.SetMatrix4(_meshMvpLocation, mvp);
-        piece.Mesh.Draw();
+        DrawMesh(piece.Mesh, model, view, projection);
     }
 
     private void DrawPieceOutline(
@@ -179,12 +235,38 @@ public sealed class ViewportRenderer
         piece.Mesh.Draw();
     }
 
+    private void DrawMesh(
+        GpuMesh mesh,
+        Matrix4x4 model,
+        Matrix4x4 view,
+        Matrix4x4 projection)
+    {
+        if (_meshShader == null)
+            throw new InvalidOperationException("Viewport mesh shader is not initialized.");
+
+        var mvp = model * view * projection;
+
+        _meshShader.Use();
+        _meshShader.SetMatrix4(_meshMvpLocation, mvp);
+        mesh.Draw();
+    }
+
+    private static Matrix4x4 BuildLocalBoundsModel(Vector3 boundsMin, Vector3 boundsMax)
+    {
+        var center = (boundsMin + boundsMax) * 0.5f;
+        var size = boundsMax - boundsMin;
+
+        return Matrix4x4.CreateScale(size * 0.5f) * Matrix4x4.CreateTranslation(center);
+    }
+
     private void EnsureInitialized()
     {
         if (_initialized)
             return;
 
         CreateShaders();
+        _unitWireBoxMesh = PrimitiveMeshes.CreateUnitWireBox(_gl);
+        _axesMesh = PrimitiveMeshes.CreateAxes(_gl);
         _initialized = true;
     }
 
