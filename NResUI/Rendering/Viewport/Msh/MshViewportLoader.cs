@@ -178,7 +178,7 @@ public static class MshViewportLoader
         ref Vector3 boundsMax
     )
     {
-        var vertexIndex = (uint)(vertices.Count / 6);
+        var vertexIndex = (uint)(vertices.Count / 9);
 
         vertices.Add(position.X);
         vertices.Add(position.Y);

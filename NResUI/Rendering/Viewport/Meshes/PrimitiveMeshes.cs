@@ -1,5 +1,4 @@
-using System;
-using System.Collections.Generic;
+using System.Numerics;
 using Silk.NET.OpenGL;
 
 namespace NResUI.Rendering.Viewport.Meshes;
@@ -8,50 +7,64 @@ public static unsafe class PrimitiveMeshes
 {
     public static GpuMesh CreateCube(GL gl)
     {
-        // position.xyz, color.rgb
-        float[] vertices =
-        {
-            // front
-            -1, -1,  1,  1, 0, 0,
-             1, -1,  1,  0, 1, 0,
-             1,  1,  1,  0, 0, 1,
-            -1,  1,  1,  1, 1, 0,
+        var vertices = new List<float>();
+        var indices = new List<uint>();
 
-            // back
-            -1, -1, -1,  1, 0, 1,
-             1, -1, -1,  0, 1, 1,
-             1,  1, -1,  1, 1, 1,
-            -1,  1, -1,  0.5f, 0.5f, 0.5f,
-        };
+        AddCubeFace(
+            vertices, indices,
+            new Vector3(-1, -1,  1),
+            new Vector3( 1, -1,  1),
+            new Vector3( 1,  1,  1),
+            new Vector3(-1,  1,  1),
+            new Vector3(0, 0, 1),
+            new Vector3(1, 0, 0));
 
-        uint[] indices =
-        {
-            // front
-            0, 1, 2,
-            2, 3, 0,
+        AddCubeFace(
+            vertices, indices,
+            new Vector3( 1, -1, -1),
+            new Vector3(-1, -1, -1),
+            new Vector3(-1,  1, -1),
+            new Vector3( 1,  1, -1),
+            new Vector3(0, 0, -1),
+            new Vector3(0, 1, 0));
 
-            // right
-            1, 5, 6,
-            6, 2, 1,
+        AddCubeFace(
+            vertices, indices,
+            new Vector3(-1, -1, -1),
+            new Vector3(-1, -1,  1),
+            new Vector3(-1,  1,  1),
+            new Vector3(-1,  1, -1),
+            new Vector3(-1, 0, 0),
+            new Vector3(0, 0, 1));
 
-            // back
-            5, 4, 7,
-            7, 6, 5,
+        AddCubeFace(
+            vertices, indices,
+            new Vector3(1, -1,  1),
+            new Vector3(1, -1, -1),
+            new Vector3(1,  1, -1),
+            new Vector3(1,  1,  1),
+            new Vector3(1, 0, 0),
+            new Vector3(1, 1, 0));
 
-            // left
-            4, 0, 3,
-            3, 7, 4,
+        AddCubeFace(
+            vertices, indices,
+            new Vector3(-1, 1,  1),
+            new Vector3( 1, 1,  1),
+            new Vector3( 1, 1, -1),
+            new Vector3(-1, 1, -1),
+            new Vector3(0, 1, 0),
+            new Vector3(1, 0, 1));
 
-            // top
-            3, 2, 6,
-            6, 7, 3,
+        AddCubeFace(
+            vertices, indices,
+            new Vector3(-1, -1, -1),
+            new Vector3( 1, -1, -1),
+            new Vector3( 1, -1,  1),
+            new Vector3(-1, -1,  1),
+            new Vector3(0, -1, 0),
+            new Vector3(0, 1, 1));
 
-            // bottom
-            4, 5, 1,
-            1, 0, 4,
-        };
-
-        return CreateIndexedMesh(gl, vertices, indices, PrimitiveType.Triangles);
+        return CreateColoredIndexedMesh(gl, vertices, indices, PrimitiveType.Triangles);
     }
 
     public static GpuMesh CreateWorldGrid(
@@ -72,25 +85,15 @@ public static unsafe class PrimitiveMeshes
         var vertices = new List<float>();
         var indices = new List<uint>();
 
-        void AddVertex(float x, float y, float z, float r, float g, float b)
-        {
-            vertices.Add(x);
-            vertices.Add(y);
-            vertices.Add(z);
-            vertices.Add(r);
-            vertices.Add(g);
-            vertices.Add(b);
-        }
-
         void AddLine(
             float x0, float y0, float z0,
             float x1, float y1, float z1,
             float r, float g, float b)
         {
-            var startIndex = (uint)(vertices.Count / 6);
+            var startIndex = (uint)(vertices.Count / 9);
 
-            AddVertex(x0, y0, z0, r, g, b);
-            AddVertex(x1, y1, z1, r, g, b);
+            AddVertex(vertices, x0, y0, z0, r, g, b, 0, 1, 0);
+            AddVertex(vertices, x1, y1, z1, r, g, b, 0, 1, 0);
 
             indices.Add(startIndex);
             indices.Add(startIndex + 1);
@@ -132,30 +135,88 @@ public static unsafe class PrimitiveMeshes
         return CreateIndexedMesh(gl, vertices.ToArray(), indices.ToArray(), PrimitiveType.Lines);
     }
 
+    private static void AddCubeFace(
+        List<float> vertices,
+        List<uint> indices,
+        Vector3 a,
+        Vector3 b,
+        Vector3 c,
+        Vector3 d,
+        Vector3 normal,
+        Vector3 color)
+    {
+        var start = (uint)(vertices.Count / 9);
+
+        AddVertex(vertices, a.X, a.Y, a.Z, color.X, color.Y, color.Z, normal.X, normal.Y, normal.Z);
+        AddVertex(vertices, b.X, b.Y, b.Z, color.X, color.Y, color.Z, normal.X, normal.Y, normal.Z);
+        AddVertex(vertices, c.X, c.Y, c.Z, color.X, color.Y, color.Z, normal.X, normal.Y, normal.Z);
+        AddVertex(vertices, d.X, d.Y, d.Z, color.X, color.Y, color.Z, normal.X, normal.Y, normal.Z);
+
+        indices.Add(start + 0);
+        indices.Add(start + 1);
+        indices.Add(start + 2);
+
+        indices.Add(start + 2);
+        indices.Add(start + 3);
+        indices.Add(start + 0);
+    }
 
 
     public static GpuMesh CreateUnitWireBox(GL gl)
     {
-        float[] vertices =
+        var vertices = new List<float>();
+        var indices = new List<uint>();
+
+        var color = new Vector3(1.0f, 0.82f, 0.15f);
+
+        Vector3[] corners =
         {
-            -1, -1, -1,  1.0f, 0.82f, 0.15f,
-             1, -1, -1,  1.0f, 0.82f, 0.15f,
-             1,  1, -1,  1.0f, 0.82f, 0.15f,
-            -1,  1, -1,  1.0f, 0.82f, 0.15f,
-            -1, -1,  1,  1.0f, 0.82f, 0.15f,
-             1, -1,  1,  1.0f, 0.82f, 0.15f,
-             1,  1,  1,  1.0f, 0.82f, 0.15f,
-            -1,  1,  1,  1.0f, 0.82f, 0.15f,
+            new(-1, -1, -1),
+            new( 1, -1, -1),
+            new( 1,  1, -1),
+            new(-1,  1, -1),
+            new(-1, -1,  1),
+            new( 1, -1,  1),
+            new( 1,  1,  1),
+            new(-1,  1,  1),
         };
 
-        uint[] indices =
+        foreach (var corner in corners)
+        {
+            AddVertex(vertices, corner.X, corner.Y, corner.Z, color.X, color.Y, color.Z);
+        }
+
+        uint[] lineIndices =
         {
             0, 1, 1, 2, 2, 3, 3, 0,
             4, 5, 5, 6, 6, 7, 7, 4,
             0, 4, 1, 5, 2, 6, 3, 7,
         };
 
-        return CreateIndexedMesh(gl, vertices, indices, PrimitiveType.Lines);
+        indices.AddRange(lineIndices);
+
+        return CreateIndexedMesh(gl, vertices.ToArray(), indices.ToArray(), PrimitiveType.Lines);
+    }
+    
+    private static void AddVertex(
+        List<float> vertices,
+        float x, float y, float z,
+        float r, float g, float b,
+        float nx = 0.0f,
+        float ny = 1.0f,
+        float nz = 0.0f)
+    {
+        vertices.Add(x);
+        vertices.Add(y);
+        vertices.Add(z);
+
+        vertices.Add(r);
+        vertices.Add(g);
+        vertices.Add(b);
+
+        vertices.Add(nx);
+        vertices.Add(ny);
+        vertices.Add(nz);
     }
 
     public static GpuMesh CreateAxes(GL gl, float length = 1.0f)
@@ -163,26 +224,25 @@ public static unsafe class PrimitiveMeshes
         if (length <= 0.0f)
             throw new ArgumentOutOfRangeException(nameof(length));
 
-        float[] vertices =
+        var vertices = new List<float>();
+        var indices = new List<uint>();
+
+        void AddLine(Vector3 a, Vector3 b, Vector3 color)
         {
-            0, 0, 0,       1.0f, 0.25f, 0.25f,
-            length, 0, 0,  1.0f, 0.25f, 0.25f,
+            var start = (uint)(vertices.Count / 9);
 
-            0, 0, 0,       0.25f, 1.0f, 0.25f,
-            0, length, 0,  0.25f, 1.0f, 0.25f,
+            AddVertex(vertices, a.X, a.Y, a.Z, color.X, color.Y, color.Z);
+            AddVertex(vertices, b.X, b.Y, b.Z, color.X, color.Y, color.Z);
 
-            0, 0, 0,       0.25f, 0.45f, 1.0f,
-            0, 0, length,  0.25f, 0.45f, 1.0f,
-        };
+            indices.Add(start);
+            indices.Add(start + 1);
+        }
 
-        uint[] indices =
-        {
-            0, 1,
-            2, 3,
-            4, 5,
-        };
+        AddLine(Vector3.Zero, new Vector3(length, 0, 0), new Vector3(1.0f, 0.25f, 0.25f));
+        AddLine(Vector3.Zero, new Vector3(0, length, 0), new Vector3(0.25f, 1.0f, 0.25f));
+        AddLine(Vector3.Zero, new Vector3(0, 0, length), new Vector3(0.25f, 0.45f, 1.0f));
 
-        return CreateIndexedMesh(gl, vertices, indices, PrimitiveType.Lines);
+        return CreateIndexedMesh(gl, vertices.ToArray(), indices.ToArray(), PrimitiveType.Lines);
     }
 
     public static GpuMesh CreateColoredIndexedMesh(

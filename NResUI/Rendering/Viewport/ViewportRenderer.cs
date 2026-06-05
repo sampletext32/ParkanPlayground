@@ -93,16 +93,11 @@ public sealed class ViewportRenderer
         if (grid == null || !grid.IsVisible)
             return;
 
-        var model = grid.LocalTransform * sceneRotation;
-        var mvp = model * view * projection;
-
         _gl.Disable(EnableCap.StencilTest);
         _gl.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Fill);
 
-        _meshShader.Use();
-        _meshShader.SetMatrix4(_mvpLocation, mvp);
-        grid.Mesh.Draw();
-
+        var model = grid.LocalTransform * sceneRotation;
+        DrawMesh(grid.Mesh, model, view, projection);
     }
 
     private void DrawScene(
