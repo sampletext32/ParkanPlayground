@@ -3,6 +3,7 @@
     <PropertyGroup>
         <OutputType Condition="'$(OS)' == 'Windows_NT'">WinExe</OutputType>
         <OutputType Condition="'$(OS)' != 'Windows_NT'">Exe</OutputType>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
