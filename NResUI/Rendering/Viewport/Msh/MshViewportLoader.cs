@@ -1,6 +1,7 @@
 using System.Numerics;
 using MshLib;
 using NResLib;
+using NResUI.Abstractions;
 using NResUI.Rendering.Viewport.Meshes;
 using Silk.NET.OpenGL;
 
@@ -11,7 +12,7 @@ public static class MshViewportLoader
     private const int DefaultModelState = 0;
     private const int DefaultLod = 0;
 
-    public static MshViewportLoadResult LoadFromFile(GL gl, string path)
+    public static MshViewportLoadResult LoadFromFile(GL gl, string path, IConfigProvider configProvider)
     {
         try
         {
@@ -30,7 +31,7 @@ public static class MshViewportLoader
             }
 
             fs.Seek(0, SeekOrigin.Begin);
-            var pieces = LoadModelPieces(gl, fs, archive, path);
+            var pieces = LoadModelPieces(gl, fs, archive, path, configProvider);
             if (pieces.Count == 0)
                 return MshViewportLoadResult.Failure("MSH was parsed, but no renderable geometry pieces were found.", path);
 
@@ -42,7 +43,9 @@ public static class MshViewportLoader
         }
     }
 
-    private static List<ViewportPiece> LoadModelPieces(GL gl, FileStream fs, NResArchive archive, string path)
+    private static List<ViewportPiece> LoadModelPieces(
+        GL gl, FileStream fs, NResArchive archive, string path, IConfigProvider configProvider
+    )
     {
         var nodes = Msh0x01.ReadComponent(fs, archive);
         var geometry = Msh0x02.ReadComponent(fs, archive);
@@ -54,7 +57,7 @@ public static class MshViewportLoader
         var restPoses = MshRestPoseBuilder.BuildRestPose(nodes, animationDescriptors);
         var mshToViewportTransform = Matrix4x4.CreateRotationX(-MathF.PI * 0.5f);
         var names = TryReadNames(fs, archive);
-        var materialLibrary = WeaMaterialLibrary.TryLoadForMsh(gl, path);
+        var materialLibrary = WeaMaterialLibrary.TryLoadForMsh(gl, path, configProvider);
 
         var pieces = new List<ViewportPiece>();
 

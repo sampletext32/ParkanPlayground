@@ -26,6 +26,7 @@ public class App
         public ImFontPtr OpenSansFont;
 
         private List<IImGuiPanel> _imGuiPanels = [];
+        private Later _later = new();
 
         public App()
         {
@@ -40,12 +41,20 @@ public class App
 
             IServiceCollection serviceCollection = new ServiceCollection();
 
+            serviceCollection.AddSingleton<ILater>(_later);
+            serviceCollection.AddSingleton<IConfigProvider>(new ConfigProvider(new ConfigJson()));
+
             foreach (var type in Utils.GetAssignableTypes<IService>())
             {
                 serviceCollection.AddSingleton(type);
             }
 
             foreach (var type in Utils.GetAssignableTypes<IImGuiPanel>())
+            {
+                serviceCollection.AddSingleton(type);
+            }
+
+            foreach (var type in Utils.GetAssignableTypes<ILaunchReceiver>())
             {
                 serviceCollection.AddSingleton(type);
             }
@@ -68,6 +77,12 @@ public class App
             _imGuiPanels = Utils.GetAssignableTypes<IImGuiPanel>()
                 .Select(t => (serviceProvider.GetService(t) as IImGuiPanel)!)
                 .ToList();
+            
+            foreach (var type in Utils.GetAssignableTypes<ILaunchReceiver>())
+            {
+                var launchReceiver = serviceProvider.GetService(type) as ILaunchReceiver;
+                launchReceiver?.OnLaunch();
+            }
         }
 
         public void OnImGuiRender()
@@ -122,6 +137,11 @@ public class App
             foreach (var imGuiPanel in _imGuiPanels)
             {
                 imGuiPanel.OnImGuiRender();
+            }
+            
+            foreach (var action in _later.Enumerate())
+            {
+                action();
             }
 
             // ImGui.ShowMetricsWindow();

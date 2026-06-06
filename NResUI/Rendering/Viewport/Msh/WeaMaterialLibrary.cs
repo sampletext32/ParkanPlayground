@@ -1,5 +1,6 @@
 using MaterialLib;
 using NResLib;
+using NResUI.Abstractions;
 using NResUI.Rendering.Viewport.OpenGL;
 using Silk.NET.OpenGL;
 using TexmLib;
@@ -24,7 +25,7 @@ public sealed class WeaMaterialLibrary
             : null;
     }
 
-    public static WeaMaterialLibrary TryLoadForMsh(GL gl, string mshPath)
+    public static WeaMaterialLibrary TryLoadForMsh(GL gl, string mshPath, IConfigProvider configProvider)
     {
         var weaPath = FindMatchingWeaPath(mshPath);
         if (!File.Exists(weaPath))
@@ -34,9 +35,13 @@ public sealed class WeaMaterialLibrary
         if (materialRefs.Count == 0)
             return Empty;
 
-        // TODO: Hardcoded for now
-        var materialLibFs = "C:\\IronStrategy\\Material.lib";
+        var materialLibFs = Path.Combine(configProvider.GetConfig().GameBasePath, "Material.lib");
 
+        if (!File.Exists(materialLibFs))
+        {
+            return new WeaMaterialLibrary([]);
+        }
+        
         using var materialFs = new FileStream(materialLibFs, FileMode.Open, FileAccess.Read, FileShare.Read);
         var parseResult = NResParser.ReadFile(materialFs);
         if (parseResult.Archive == null)
@@ -46,7 +51,7 @@ public sealed class WeaMaterialLibrary
 
         foreach (var materialRef in materialRefs)
         {
-            var texture = TryLoadMaterialTexture(gl, materialFs, parseResult.Archive, materialRef.Name, out var texm);
+            var texture = TryLoadMaterialTexture(gl, materialFs, parseResult.Archive, materialRef.Name, configProvider, out var texm);
             result[materialRef.Id] = texture != null
                 ? new ViewportMaterial(materialRef.Name, texture.Value, texm)
                 : new ViewportMaterial(materialRef.Name);
@@ -194,7 +199,8 @@ public sealed class WeaMaterialLibrary
     }
 
     private static uint? TryLoadMaterialTexture(
-        GL gl, FileStream materialFs, NResArchive materialArchive, string materialName, out TexmFile? texm
+        GL gl, FileStream materialFs, NResArchive materialArchive, string materialName, IConfigProvider configProvider,
+        out TexmFile? texm
     )
     {
         texm = null;
@@ -212,7 +218,12 @@ public sealed class WeaMaterialLibrary
 
         var texture = materialFile.Stages[0].TextureName;
 
-        var textureLibFs = "C:\\IronStrategy\\Textures.lib";
+        var textureLibFs = Path.Combine(configProvider.GetConfig().GameBasePath, "Textures.lib");
+
+        if (!File.Exists(textureLibFs))
+        {
+            return null;
+        }
 
         using var textureFs = new FileStream(textureLibFs, FileMode.Open, FileAccess.Read, FileShare.Read);
         var textureResult = NResParser.ReadFile(textureFs);
@@ -267,28 +278,6 @@ public sealed class WeaMaterialLibrary
         return archive.Files.FirstOrDefault(x =>
             string.Equals(x.FileName, name, StringComparison.OrdinalIgnoreCase) ||
             Normalize(x.FileName) == normalized);
-    }
-
-    private static string? FindTexturesLib(string? startDirectory)
-    {
-        if (string.IsNullOrWhiteSpace(startDirectory))
-            return null;
-
-        var directory = new DirectoryInfo(startDirectory);
-        while (directory != null)
-        {
-            var candidate = Path.Combine(directory.FullName, "Textures.lib");
-            if (Directory.Exists(candidate))
-                return candidate;
-
-            candidate = Path.Combine(directory.FullName, "textures.lib");
-            if (Directory.Exists(candidate))
-                return candidate;
-
-            directory = directory.Parent;
-        }
-
-        return null;
     }
 
     private readonly record struct WeaMaterialRef(int Id, string Name);

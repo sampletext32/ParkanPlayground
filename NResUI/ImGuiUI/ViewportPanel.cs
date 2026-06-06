@@ -16,12 +16,14 @@ public sealed class ViewportPanel : IImGuiPanel
     private readonly ViewportScene _scene;
     private readonly ViewportCamera _camera = new();
     private readonly ViewportInputController _inputController = new();
+    private readonly IConfigProvider _configProvider;
 
     private string? _loadedModelPath;
     private string? _loadError;
 
-    public ViewportPanel(GL gl, IWindow window)
+    public ViewportPanel(GL gl, IWindow window, IConfigProvider configProvider)
     {
+        _configProvider = configProvider;
         var cubeMesh = PrimitiveMeshes.CreateCube(gl);
         var gridMesh = PrimitiveMeshes.CreateWorldGrid(gl);
 
@@ -94,7 +96,7 @@ public sealed class ViewportPanel : IImGuiPanel
         if (ImGui.Button("Reset cube"))
         {
             var cubeMesh = PrimitiveMeshes.CreateCube(_renderer.Gl);
-            _scene.ReplacePieces(new[] { ViewportPiece.CreateUnitCube(0, "Cube", cubeMesh) });
+            _scene.ReplacePieces([ViewportPiece.CreateUnitCube(0, "Cube", cubeMesh)]);
             _loadedModelPath = null;
             _loadError = null;
             _camera.Reset();
@@ -109,7 +111,7 @@ public sealed class ViewportPanel : IImGuiPanel
 
     private void LoadMsh(string path)
     {
-        var loadResult = MshViewportLoader.LoadFromFile(_renderer.Gl, path);
+        var loadResult = MshViewportLoader.LoadFromFile(_renderer.Gl, path, _configProvider);
         if (!loadResult.IsSuccess)
         {
             _loadError = loadResult.Error ?? "Unknown error.";
