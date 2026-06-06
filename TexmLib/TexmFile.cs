@@ -277,9 +277,9 @@ public record class TexmFile(
             // swap endianess back
             // (rawPixel[0], rawPixel[1], rawPixel[2], rawPixel[3]) = (rawPixel[3], rawPixel[2], rawPixel[1], rawPixel[0]);
 
-            var r = rawPixel[0];
+            var b = rawPixel[0];
             var g = rawPixel[1];
-            var b = rawPixel[2];
+            var r = rawPixel[2];
             var a = rawPixel[3];
 
             result[i + 0] = r;

@@ -134,7 +134,7 @@ public static class MshViewportLoader
             var outIndices = new List<uint>();
             var batchTriangleCount = 0;
 
-            var material = materialLibrary.FindMaterial(batch.MaterialIndex) ?? ViewportMaterial.Untextured;
+            var material = materialLibrary.FindMaterial(batch.MaterialIndexLo) ?? ViewportMaterial.Untextured;
             var vertexColor = material.HasTexture ? Vector3.One : debugColor;
 
             for (var i = 0; i + 2 < batch.IndexCount0x06; i += 3)
@@ -156,7 +156,7 @@ public static class MshViewportLoader
                     normal = Vector3.UnitY;
                 else
                     normal = Vector3.Normalize(normal);
-
+                
                 AddTriangleVertex(p0, vertexColor, normal, GetUv(uvs, vertexIndex0), vertices, outIndices, ref boundsMin, ref boundsMax);
                 AddTriangleVertex(p1, vertexColor, normal, GetUv(uvs, vertexIndex1), vertices, outIndices, ref boundsMin, ref boundsMax);
                 AddTriangleVertex(p2, vertexColor, normal, GetUv(uvs, vertexIndex2), vertices, outIndices, ref boundsMin, ref boundsMax);
@@ -183,7 +183,7 @@ public static class MshViewportLoader
             return Vector2.Zero;
 
         var uv = uvs[vertexIndex];
-        return new Vector2(uv.U / 1024.0f, 1.0f - uv.V / 1024.0f);
+        return new Vector2(uv.U / 1024.0f, uv.V / 1024.0f);
     }
 
     private static Vector3 ToNumericsVector3(Common.Vector3 position)

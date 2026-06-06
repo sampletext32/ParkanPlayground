@@ -104,11 +104,6 @@ public static class Msh0x01
         ushort FallbackKey0x08,
         ushort[] Msh02SlotIndicesByStateAndLOD)
     {
-        public bool IsRoot => ParentIndexOrLink == ushort.MaxValue;
-
-        public int ParentIndexOrMinusOne =>
-            ParentIndexOrLink == ushort.MaxValue ? -1 : ParentIndexOrLink;
-
         public ushort ResolveSlotIndex(int state, int lod = 0)
         {
             
@@ -128,26 +123,6 @@ public static class Msh0x01
             return index >= 0 && index < Msh02SlotIndicesByStateAndLOD.Length
                 ? Msh02SlotIndicesByStateAndLOD[index]
                 : ushort.MaxValue;
-        }
-
-        public bool HasGeometrySlot(int lod, int group = 0) =>
-            ResolveSlotIndex(lod, group) != ushort.MaxValue;
-
-        public int CountLodsForGroup(int group = 0)
-        {
-            var count = 0;
-
-            for (var lod = 0; lod < StateCount; lod++)
-            {
-                if (!HasGeometrySlot(lod, group))
-                {
-                    break;
-                }
-
-                count++;
-            }
-
-            return count;
         }
     }
 }

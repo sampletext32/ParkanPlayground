@@ -88,7 +88,7 @@ public static class MshRestPoseBuilder
     {
         try
         {
-            return Convert.ToInt32(node.ParentIndexOrMinusOne);
+            return Convert.ToInt32(node.ParentIndexOrLink);
         }
         catch
         {

@@ -1,5 +1,6 @@
 using System.Buffers.Binary;
 using System.Text;
+using Common;
 
 namespace MaterialLib;
 
@@ -166,30 +167,5 @@ public static class MaterialParser
             parts.Add("Ambient.A + Power");
             
         return $"Интерполируется: {string.Join(", ", parts)} | Остальные компоненты копируются (Flags: 0x{(int)target:X})";
-    }
-}
-
-// Helper extensions
-internal static class StreamExtensions
-{
-    public static float ReadFloatLittleEndian(this Stream stream)
-    {
-        Span<byte> buffer = stackalloc byte[4];
-        stream.ReadExactly(buffer);
-        return BinaryPrimitives.ReadSingleLittleEndian(buffer);
-    }
-    
-    public static ushort ReadUInt16LittleEndian(this Stream stream)
-    {
-        Span<byte> buffer = stackalloc byte[2];
-        stream.ReadExactly(buffer);
-        return BinaryPrimitives.ReadUInt16LittleEndian(buffer);
-    }
-    
-    public static uint ReadUInt32LittleEndian(this Stream stream)
-    {
-        Span<byte> buffer = stackalloc byte[4];
-        stream.ReadExactly(buffer);
-        return BinaryPrimitives.ReadUInt32LittleEndian(buffer);
     }
 }

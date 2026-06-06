@@ -46,9 +46,9 @@ public sealed class WeaMaterialLibrary
 
         foreach (var materialRef in materialRefs)
         {
-            var texture = TryLoadMaterialTexture(gl, materialFs, parseResult.Archive, materialRef.Name);
+            var texture = TryLoadMaterialTexture(gl, materialFs, parseResult.Archive, materialRef.Name, out var texm);
             result[materialRef.Id] = texture != null
-                ? new ViewportMaterial(materialRef.Name, texture.Value)
+                ? new ViewportMaterial(materialRef.Name, texture.Value, texm)
                 : new ViewportMaterial(materialRef.Name);
         }
 
@@ -194,9 +194,10 @@ public sealed class WeaMaterialLibrary
     }
 
     private static uint? TryLoadMaterialTexture(
-        GL gl, FileStream materialFs, NResArchive materialArchive, string materialName
+        GL gl, FileStream materialFs, NResArchive materialArchive, string materialName, out TexmFile? texm
     )
     {
+        texm = null;
         var entry = FindMaterialEntry(materialArchive, materialName);
         if (entry == null)
             return null;
@@ -235,6 +236,7 @@ public sealed class WeaMaterialLibrary
         if (texmResult.TexmFile == null)
             return null;
 
+        texm = texmResult.TexmFile;
         var rgba = texmResult.TexmFile.GetRgba32BytesFromMipmap(0, out var width, out var height);
         return ViewportTextureLoader.CreateRgbaTexture(gl, rgba, width, height);
     }

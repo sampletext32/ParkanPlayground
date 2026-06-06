@@ -38,21 +38,25 @@ public static class Msh0x0D
         return data
             .Chunk(ElementSize)
             .Select(x => new Batch(
-                (BatchFlags)BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0x00)),
-                BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0x02)),
-                BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0x04)),
-                BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0x06)),
-                BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0x08)),
-                BinaryPrimitives.ReadUInt32LittleEndian(x.AsSpan(0x0A)),
-                BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0x0E)),
-                BinaryPrimitives.ReadUInt32LittleEndian(x.AsSpan(0x10))))
+                Flags: (BatchFlags)BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0x00)),
+                MaterialIndexHi: BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0x02)),
+                MaterialIndexLo: x.AsSpan(0x04)[0],
+                LightmapIndex: x.AsSpan(0x05)[0],
+                LocalBatchIndex: BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0x06)),
+                IndexCount0x06: BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0x08)),
+                IndexStart0x06: BinaryPrimitives.ReadUInt32LittleEndian(x.AsSpan(0x0A)),
+                VertexCount0x03: BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0x0E)),
+                BaseVertex0x03: BinaryPrimitives.ReadUInt16LittleEndian(x.AsSpan(0x10))
+                )
+            )
             .ToList();
     }
 
     /// <summary>MSH batch 0x0D, sizeof 0x14.</summary>
     /// <param name="Flags">[0x00..0x02] Флаги batch.</param>
-    /// <param name="MaterialIndex">[0x02..0x04] Индекс material slot. Может быть overridden CAniMesh::forced_material_index.</param>
-    /// <param name="Opaque04">[0x04..0x06] Opaque. В GetBatchRenderData попадает в packed field вместе с material/lightmap данными.</param>
+    /// <param name="MaterialIndexHi">[0x02..0x04] Индекс material slot. Может быть overridden CAniMesh::forced_material_index.</param>
+    /// <param name="MaterialIndexLo">[0x04..0x05] Индекс материала</param>
+    /// <param name="LightmapIndex">[0x05..0x06] Индекс карты освещения</param>
     /// <param name="LocalBatchIndex">[0x06..0x08] Локальный batch index. В GetBatchRenderData складывается с MSH_piece.local_index_base / batch base.</param>
     /// <param name="IndexCount0x06">[0x08..0x0A] Количество индексов из component 0x06.</param>
     /// <param name="IndexStart0x06">[0x0A..0x0E] Первый индекс в component 0x06.</param>
@@ -60,8 +64,9 @@ public static class Msh0x0D
     /// <param name="BaseVertex0x03">[0x10..0x14] Base vertex в vertex streams, включая position stream 0x03.</param>
     public readonly record struct Batch(
         BatchFlags Flags,
-        ushort MaterialIndex,
-        ushort Opaque04,
+        ushort MaterialIndexHi,
+        byte MaterialIndexLo,
+        byte LightmapIndex,
         ushort LocalBatchIndex,
         ushort IndexCount0x06,
         uint IndexStart0x06,

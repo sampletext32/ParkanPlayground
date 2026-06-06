@@ -185,7 +185,7 @@ public sealed class MshConverter
                         continue;
                     }
 
-                    writer.WriteLine($"# batch {batchIndex}, material {batch.MaterialIndex}, flags {batch.Flags}");
+                    writer.WriteLine($"# batch {batchIndex}, material {batch.MaterialIndexLo}, flags {batch.Flags}");
 
                     for (var i = 0; i + 2 < batch.IndexCount0x06; i += 3)
                     {
