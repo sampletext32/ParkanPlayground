@@ -30,7 +30,7 @@ public static class MshViewportLoader
             }
 
             fs.Seek(0, SeekOrigin.Begin);
-            var pieces = LoadModelPieces(gl, fs, archive);
+            var pieces = LoadModelPieces(gl, fs, archive, path);
             if (pieces.Count == 0)
                 return MshViewportLoadResult.Failure("MSH was parsed, but no renderable geometry pieces were found.", path);
 
@@ -42,17 +42,19 @@ public static class MshViewportLoader
         }
     }
 
-    private static List<ViewportPiece> LoadModelPieces(GL gl, FileStream fs, NResArchive archive)
+    private static List<ViewportPiece> LoadModelPieces(GL gl, FileStream fs, NResArchive archive, string path)
     {
         var nodes = Msh0x01.ReadComponent(fs, archive);
         var geometry = Msh0x02.ReadComponent(fs, archive);
         var positions = Msh0x03.ReadComponent(fs, archive);
+        var uvs = TryReadUvs(fs, archive);
         var indices = Msh0x06.ReadComponent(fs, archive);
         var batches = Msh0x0D.ReadComponent(fs, archive);
         var animationDescriptors = Msh0x08.ReadComponent(fs, archive);
         var restPoses = MshRestPoseBuilder.BuildRestPose(nodes, animationDescriptors);
         var mshToViewportTransform = Matrix4x4.CreateRotationX(-MathF.PI * 0.5f);
         var names = TryReadNames(fs, archive);
+        var materialLibrary = WeaMaterialLibrary.TryLoadForMsh(gl, path);
 
         var pieces = new List<ViewportPiece>();
 
@@ -71,7 +73,7 @@ public static class MshViewportLoader
             if (!slot.HasBatches)
                 continue;
 
-            var meshBuildResult = BuildPieceMesh(gl, nodeIndex, slot, positions, indices, batches);
+            var meshBuildResult = BuildPieceMeshes(gl, nodeIndex, slot, positions, uvs, indices, batches, materialLibrary);
             if (meshBuildResult == null)
                 continue;
 
@@ -79,7 +81,7 @@ public static class MshViewportLoader
             pieces.Add(new ViewportPiece(
                 id: nodeIndex,
                 name: name,
-                mesh: meshBuildResult.Mesh,
+                meshes: meshBuildResult.Meshes,
                 localTransform: restPose.MeshSpaceTransform * mshToViewportTransform,
                 boundsMin: meshBuildResult.BoundsMin,
                 boundsMax: meshBuildResult.BoundsMax,
@@ -100,17 +102,18 @@ public static class MshViewportLoader
         return pieces;
     }
 
-    private static PieceMeshBuildResult? BuildPieceMesh(
+    private static PieceMeshBuildResult? BuildPieceMeshes(
         GL gl,
         int nodeIndex,
         Msh0x02.GeometrySlot slot,
         IReadOnlyList<Common.Vector3> positions,
+        IReadOnlyList<Msh05Uv> uvs,
         IReadOnlyList<ushort> indices,
-        IReadOnlyList<Msh0x0D.Batch> batches)
+        IReadOnlyList<Msh0x0D.Batch> batches,
+        WeaMaterialLibrary materialLibrary)
     {
-        var vertices = new List<float>();
-        var outIndices = new List<uint>();
-        var color = PickDebugColor(nodeIndex);
+        var meshes = new List<GpuMesh>();
+        var debugColor = PickDebugColor(nodeIndex);
 
         var batchCount = 0;
         var triangleCount = 0;
@@ -127,7 +130,12 @@ public static class MshViewportLoader
             if (batch.IndexStart0x06 + batch.IndexCount0x06 > indices.Count)
                 continue;
 
-            batchCount++;
+            var vertices = new List<float>();
+            var outIndices = new List<uint>();
+            var batchTriangleCount = 0;
+
+            var material = materialLibrary.FindMaterial(batch.MaterialIndex) ?? ViewportMaterial.Untextured;
+            var vertexColor = material.HasTexture ? Vector3.One : debugColor;
 
             for (var i = 0; i + 2 < batch.IndexCount0x06; i += 3)
             {
@@ -149,20 +157,35 @@ public static class MshViewportLoader
                 else
                     normal = Vector3.Normalize(normal);
 
-                AddTriangleVertex(p0, color, normal, vertices, outIndices, ref boundsMin, ref boundsMax);
-                AddTriangleVertex(p1, color, normal, vertices, outIndices, ref boundsMin, ref boundsMax);
-                AddTriangleVertex(p2, color, normal, vertices, outIndices, ref boundsMin, ref boundsMax);
-                triangleCount++;
+                AddTriangleVertex(p0, vertexColor, normal, GetUv(uvs, vertexIndex0), vertices, outIndices, ref boundsMin, ref boundsMax);
+                AddTriangleVertex(p1, vertexColor, normal, GetUv(uvs, vertexIndex1), vertices, outIndices, ref boundsMin, ref boundsMax);
+                AddTriangleVertex(p2, vertexColor, normal, GetUv(uvs, vertexIndex2), vertices, outIndices, ref boundsMin, ref boundsMax);
+                batchTriangleCount++;
             }
+
+            if (batchTriangleCount == 0)
+                continue;
+
+            batchCount++;
+            triangleCount += batchTriangleCount;
+            meshes.Add(PrimitiveMeshes.CreateColoredIndexedMesh(gl, vertices, outIndices, PrimitiveType.Triangles, material));
         }
 
-        if (triangleCount == 0)
+        if (triangleCount == 0 || meshes.Count == 0)
             return null;
 
-        var mesh = PrimitiveMeshes.CreateColoredIndexedMesh(gl, vertices, outIndices, PrimitiveType.Triangles);
-        return new PieceMeshBuildResult(mesh, boundsMin, boundsMax, batchCount, triangleCount);
+        return new PieceMeshBuildResult(meshes, boundsMin, boundsMax, batchCount, triangleCount);
     }
-    
+
+    private static Vector2 GetUv(IReadOnlyList<Msh05Uv> uvs, int vertexIndex)
+    {
+        if (vertexIndex < 0 || vertexIndex >= uvs.Count)
+            return Vector2.Zero;
+
+        var uv = uvs[vertexIndex];
+        return new Vector2(uv.U / 1024.0f, 1.0f - uv.V / 1024.0f);
+    }
+
     private static Vector3 ToNumericsVector3(Common.Vector3 position)
     {
         return new Vector3(position.X, position.Y, position.Z);
@@ -172,13 +195,13 @@ public static class MshViewportLoader
         Vector3 position,
         Vector3 color,
         Vector3 normal,
+        Vector2 uv,
         List<float> vertices,
         List<uint> indices,
         ref Vector3 boundsMin,
-        ref Vector3 boundsMax
-    )
+        ref Vector3 boundsMax)
     {
-        var vertexIndex = (uint)(vertices.Count / 9);
+        var vertexIndex = (uint)(vertices.Count / PrimitiveMeshes.FloatsPerVertex);
 
         vertices.Add(position.X);
         vertices.Add(position.Y);
@@ -189,12 +212,13 @@ public static class MshViewportLoader
         vertices.Add(normal.X);
         vertices.Add(normal.Y);
         vertices.Add(normal.Z);
+        vertices.Add(uv.X);
+        vertices.Add(uv.Y);
 
         indices.Add(vertexIndex);
 
-        var p = new Vector3(position.X, position.Y, position.Z);
-        boundsMin = Vector3.Min(boundsMin, p);
-        boundsMax = Vector3.Max(boundsMax, p);
+        boundsMin = Vector3.Min(boundsMin, position);
+        boundsMax = Vector3.Max(boundsMax, position);
     }
 
     private static bool IsValidTriangle(int vertexCount, int vertexIndex0, int vertexIndex1, int vertexIndex2)
@@ -218,6 +242,18 @@ public static class MshViewportLoader
         catch
         {
             return new List<string>();
+        }
+    }
+
+    private static List<Msh05Uv> TryReadUvs(FileStream fs, NResArchive archive)
+    {
+        try
+        {
+            return Msh0x05.ReadComponent(fs, archive);
+        }
+        catch
+        {
+            return new List<Msh05Uv>();
         }
     }
 
@@ -247,7 +283,7 @@ public static class MshViewportLoader
     }
 
     private sealed record PieceMeshBuildResult(
-        GpuMesh Mesh,
+        IReadOnlyList<GpuMesh> Meshes,
         Vector3 BoundsMin,
         Vector3 BoundsMax,
         int BatchCount,

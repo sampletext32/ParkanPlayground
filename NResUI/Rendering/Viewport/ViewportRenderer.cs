@@ -23,6 +23,8 @@ public sealed class ViewportRenderer
     private int _modelLocation;
     private int _mvpLocation;
     private int _lightDirectionLocation;
+    private int _useTextureLocation;
+    private int _texture0Location;
 
     private int _outlineMvpLocation;
     private int _outlineColorLocation;
@@ -93,11 +95,13 @@ public sealed class ViewportRenderer
         if (grid == null || !grid.IsVisible)
             return;
 
+        var model = grid.LocalTransform * sceneRotation;
+
         _gl.Disable(EnableCap.StencilTest);
         _gl.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Fill);
 
-        var model = grid.LocalTransform * sceneRotation;
         DrawMesh(grid.Mesh, model, view, projection);
+
     }
 
     private void DrawScene(
@@ -205,7 +209,8 @@ public sealed class ViewportRenderer
         Matrix4x4 projection)
     {
         var model = piece.LocalTransform * sceneRotation;
-        DrawMesh(piece.Mesh, model, view, projection);
+        foreach (var mesh in piece.Meshes)
+            DrawMesh(mesh, model, view, projection);
     }
 
     private void DrawPieceOutline(
@@ -226,7 +231,8 @@ public sealed class ViewportRenderer
         _outlineShader.SetMatrix4(_outlineMvpLocation, mvp);
         _outlineShader.SetVector4(_outlineColorLocation, new Vector4(1.0f, 0.82f, 0.15f, 1.0f));
 
-        piece.Mesh.Draw();
+        foreach (var mesh in piece.Meshes)
+            mesh.Draw();
     }
 
     private void DrawMesh(
@@ -246,6 +252,19 @@ public sealed class ViewportRenderer
         _meshShader.SetMatrix4(_mvpLocation, mvp);
         _meshShader.SetMatrix4(_modelLocation, model);
         _meshShader.SetVector3(_lightDirectionLocation, lightDirection);
+
+        if (mesh.Material.HasTexture)
+        {
+            _gl.ActiveTexture(TextureUnit.Texture0);
+            _gl.BindTexture(TextureTarget.Texture2D, mesh.Material.TextureHandle);
+            _meshShader.SetInt(_texture0Location, 0);
+            _meshShader.SetInt(_useTextureLocation, 1);
+        }
+        else
+        {
+            _gl.BindTexture(TextureTarget.Texture2D, 0);
+            _meshShader.SetInt(_useTextureLocation, 0);
+        }
 
         mesh.Draw();
     }
@@ -277,17 +296,20 @@ public sealed class ViewportRenderer
         layout (location = 0) in vec3 aPosition;
         layout (location = 1) in vec3 aColor;
         layout (location = 2) in vec3 aNormal;
+        layout (location = 3) in vec2 aTexCoord;
         
         uniform mat4 uModel;
         uniform mat4 uMvp;
         
         out vec3 vColor;
         out vec3 vNormalWorld;
+        out vec2 vTexCoord;
         
         void main()
         {
             vColor = aColor;
             vNormalWorld = mat3(transpose(inverse(uModel))) * aNormal;
+            vTexCoord = aTexCoord;
             gl_Position = uMvp * vec4(aPosition, 1.0);
         }
         """;
@@ -297,8 +319,11 @@ public sealed class ViewportRenderer
         
         in vec3 vColor;
         in vec3 vNormalWorld;
+        in vec2 vTexCoord;
         
         uniform vec3 uLightDirectionWorld;
+        uniform bool uUseTexture;
+        uniform sampler2D uTexture0;
         
         out vec4 FragColor;
         
@@ -315,7 +340,11 @@ public sealed class ViewportRenderer
             float diffuse = max(dot(normal, lightDir), 0.0);
             float lighting = 0.35 + diffuse * 0.65;
         
-            FragColor = vec4(vColor * lighting, 1.0);
+            vec4 texel = uUseTexture ? texture(uTexture0, vTexCoord) : vec4(1.0);
+            if (texel.a < 0.05)
+                discard;
+
+            FragColor = vec4(vColor * texel.rgb * lighting, texel.a);
         }
         """;
 
@@ -351,6 +380,8 @@ public sealed class ViewportRenderer
         _modelLocation = _meshShader.GetUniformLocation("uModel");
         _mvpLocation = _meshShader.GetUniformLocation("uMvp");
         _lightDirectionLocation = _meshShader.GetUniformLocation("uLightDirectionWorld");
+        _useTextureLocation = _meshShader.GetUniformLocation("uUseTexture");
+        _texture0Location = _meshShader.GetUniformLocation("uTexture0");
 
         _outlineMvpLocation = _outlineShader.GetUniformLocation("uMvp");
         _outlineColorLocation = _outlineShader.GetUniformLocation("uColor");

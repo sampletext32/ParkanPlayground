@@ -15,11 +15,11 @@ namespace MaterialLib;
 /// <param name="Animations">Анимации материала в порядке чтения из файла.</param>
 public record MaterialFile(
     string FileName,
-    int Version,
+    uint Version,
     int Magic1,
-    int MaterialRenderingType,
+    uint MaterialRenderingType,
     bool SupportsBumpMapping,
-    int IsParticleEffect,
+    uint IsParticleEffect,
     BlendMode SourceBlendMode,
     BlendMode DestBlendMode,
     float GlobalAlphaMultiplier,

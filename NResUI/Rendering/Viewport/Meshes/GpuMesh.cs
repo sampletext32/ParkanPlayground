@@ -1,4 +1,5 @@
 using Silk.NET.OpenGL;
+using NResUI.Rendering.Viewport;
 
 namespace NResUI.Rendering.Viewport.Meshes;
 
@@ -11,6 +12,7 @@ public sealed class GpuMesh
     public uint ElementBufferObject { get; }
     public uint IndexCount { get; }
     public PrimitiveType PrimitiveType { get; }
+    public ViewportMaterial Material { get; }
 
     public GpuMesh(
         GL gl,
@@ -18,7 +20,8 @@ public sealed class GpuMesh
         uint vertexBufferObject,
         uint elementBufferObject,
         uint indexCount,
-        PrimitiveType primitiveType = PrimitiveType.Triangles)
+        PrimitiveType primitiveType = PrimitiveType.Triangles,
+        ViewportMaterial? material = null)
     {
         _gl = gl;
         VertexArrayObject = vertexArrayObject;
@@ -26,6 +29,7 @@ public sealed class GpuMesh
         ElementBufferObject = elementBufferObject;
         IndexCount = indexCount;
         PrimitiveType = primitiveType;
+        Material = material ?? ViewportMaterial.Untextured;
     }
 
     public unsafe void Draw()

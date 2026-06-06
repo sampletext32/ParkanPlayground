@@ -7,7 +7,9 @@ public sealed class ViewportPiece
 {
     public int Id { get; }
     public string Name { get; }
-    public GpuMesh Mesh { get; }
+    public IReadOnlyList<GpuMesh> Meshes { get; }
+
+    public GpuMesh Mesh => Meshes[0];
 
     public Matrix4x4 LocalTransform { get; set; }
 
@@ -24,10 +26,25 @@ public sealed class ViewportPiece
         Vector3 boundsMin,
         Vector3 boundsMax,
         ViewportPieceDebugInfo? debugInfo = null)
+        : this(id, name, new[] { mesh }, localTransform, boundsMin, boundsMax, debugInfo)
     {
+    }
+
+    public ViewportPiece(
+        int id,
+        string name,
+        IReadOnlyList<GpuMesh> meshes,
+        Matrix4x4 localTransform,
+        Vector3 boundsMin,
+        Vector3 boundsMax,
+        ViewportPieceDebugInfo? debugInfo = null)
+    {
+        if (meshes.Count == 0)
+            throw new ArgumentException("A viewport piece must contain at least one mesh.", nameof(meshes));
+
         Id = id;
         Name = name;
-        Mesh = mesh;
+        Meshes = meshes;
         LocalTransform = localTransform;
         BoundsMin = boundsMin;
         BoundsMax = boundsMax;

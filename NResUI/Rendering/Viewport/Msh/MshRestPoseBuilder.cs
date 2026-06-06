@@ -143,7 +143,10 @@ public static class MshRestPoseBuilder
         if (q.LengthSquared() < 1e-8f)
             return Quaternion.Identity;
 
-        return Quaternion.Normalize(q);
+        // MSH/game convention is opposite to our System.Numerics/OpenGL transform convention.
+        // Conjugating converts the stored piece rotation into the viewport convention.
+        // The MSH keyframe rotation is stored as mesh-to-parent instead of parent-to-mesh, so the viewer needs the inverse.
+        return Quaternion.Conjugate(q);
     }
 }
 

@@ -5,7 +5,7 @@ namespace MaterialLib;
 
 public static class MaterialParser
 {
-    public static MaterialFile ReadFromStream(Stream fs, string fileName, int elementCount, int magic1)
+    public static MaterialFile ReadFromStream(Stream fs, string fileName, uint elementCount, int magic1)
     {
         var materialRenderingType = elementCount >> 2 & 0xf;
         var supportsBumpMapping = (elementCount & 2) != 0;

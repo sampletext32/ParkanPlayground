@@ -54,6 +54,11 @@ public sealed unsafe class ShaderProgram
         _gl.Uniform3(location, value.X, value.Y, value.Z);
     }
 
+    public void SetInt(int location, int value)
+    {
+        _gl.Uniform1(location, value);
+    }
+
     public void SetVector4(int location, Vector4 value)
     {
         _gl.Uniform4(location, value.X, value.Y, value.Z, value.W);

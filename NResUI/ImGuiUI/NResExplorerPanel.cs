@@ -268,7 +268,7 @@ public class NResExplorerPanel : IImGuiPanel
 
                                     try 
                                     {
-                                        var parseResult = MaterialLib.MaterialParser.ReadFromStream(ms, file.FileName, (int)file.ElementCount, file.Magic1);
+                                        var parseResult = MaterialLib.MaterialParser.ReadFromStream(ms, file.FileName, file.ElementCount, file.Magic1);
                                         _materialViewModel.SetParseResult(parseResult, Path.Combine(_viewModel.Path!, file.FileName));
                                         Console.WriteLine("Read Material from context menu");
                                     }
