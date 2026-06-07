@@ -83,7 +83,12 @@ public static class MaterialParser
             // Texture name: 16 байт.
             textureNameBuffer.Clear();
             fs.ReadExactly(textureNameBuffer);
-            var textureName = Encoding.ASCII.GetString(textureNameBuffer).TrimEnd('\0');
+            var terminator = textureNameBuffer.IndexOf((byte)0);
+            if (terminator == -1)
+            {
+                terminator = textureNameBuffer.Length - 1;
+            }
+            var textureName = Encoding.ASCII.GetString(textureNameBuffer[..terminator]);
 
             stages.Add(new MaterialStage(
                 ambientR,
