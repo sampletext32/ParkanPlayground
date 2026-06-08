@@ -9,6 +9,10 @@ namespace NResUI.Rendering.Viewport.Msh;
 
 public static class MshRestPoseBuilder
 {
+    /// <summary>
+    /// Собирает bind/rest pose для pieces из fallback keyframes 0x08.
+    /// Циклы и битые parent-ссылки не должны ломать viewport, поэтому такие узлы остаются с identity transform.
+    /// </summary>
     public static IReadOnlyList<MshPieceRestPose> BuildRestPose(Msh0x01.Msh0x01Component nodesComponent, List<Msh0x08.AnimationDescriptor> animationDescriptors)
     {
         var nodeList = nodesComponent.Nodes;
@@ -54,15 +58,12 @@ public static class MshRestPoseBuilder
         else
         {
             localTransform = Matrix4x4.Identity;
-
-            Console.WriteLine($"Node {nodeIndex} has no fallback");
         }
 
         if (parentIndex == -1)
         {
+            // Root nodes describe object placement in game space; the viewer keeps the model centered.
             localTransform.Translation = Vector3.Zero;
-
-            Console.WriteLine($"Node {nodeIndex} has no parent");
         }
         
         var meshSpaceTransform = localTransform;
@@ -86,15 +87,7 @@ public static class MshRestPoseBuilder
 
     private static int GetParentIndex(Msh0x01.Node node)
     {
-        try
-        {
-            return Convert.ToInt32(node.ParentIndexOrLink);
-        }
-        catch
-        {
-            var rawParent = Convert.ToUInt16(node.ParentIndexOrLink);
-            return rawParent == ushort.MaxValue ? -1 : rawParent;
-        }
+        return node.ParentIndexOrLink == ushort.MaxValue ? -1 : node.ParentIndexOrLink;
     }
 
     private static int GetFallbackKeyframeIndex(Msh0x01.Node node)

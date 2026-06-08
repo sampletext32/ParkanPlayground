@@ -71,6 +71,7 @@ public class App
             serviceCollection.AddSingleton(new CpDatSchemeViewModel());
             serviceCollection.AddSingleton(new MaterialViewModel());
             serviceCollection.AddSingleton(new ResearchTreeViewModel());
+            serviceCollection.AddSingleton(new MeshViewportViewModel());
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
 

@@ -21,4 +21,5 @@
   <Project Path="ScrLib/ScrLib.csproj" />
   <Project Path="TexmLib/TexmLib.csproj" />
   <Project Path="VarsetLib/VarsetLib.csproj" />
+  <Project Path="WeaLib/WeaLib.csproj" />
 </Solution>

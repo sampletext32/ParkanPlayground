@@ -95,7 +95,8 @@ public static class Msh0x01
     /// <param name="FallbackKey0x08">[0x06..0x08] Fallback key / index в MSH 0x08.</param>
     /// <param name="Msh02SlotIndicesByStateAndLOD">
     /// [0x08..0x26] Индексы geometry slot в MSH 0x02.
-    /// Формула: slot = lod * 5 + group. 0xFFFF значит отсутствует.
+    /// Формула индекса в этой таблице: index = state * MaxLodCount + lod.
+    /// 0xFFFF значит, что для этой пары state/LOD геометрии нет.
     /// </param>
     public sealed record Node(
         NodeFlags Flags,
@@ -106,7 +107,7 @@ public static class Msh0x01
     {
         public ushort ResolveSlotIndex(int state, int lod = 0)
         {
-            
+            // State и LOD выбираются для конкретного узла/piece, не для всего файла сразу.
             // MODEL_STATE_DEFAULT	    -1
             // MODEL_STATE_REGULAR	    0
             // MODEL_STATE_COLLAPSED	1

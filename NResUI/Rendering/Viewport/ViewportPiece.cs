@@ -17,6 +17,7 @@ public sealed class ViewportPiece
     public Vector3 BoundsMax { get; }
 
     public ViewportPieceDebugInfo? DebugInfo { get; }
+    public IReadOnlyList<int> SourceBatchIndices { get; }
 
     public ViewportPiece(
         int id,
@@ -25,8 +26,9 @@ public sealed class ViewportPiece
         Matrix4x4 localTransform,
         Vector3 boundsMin,
         Vector3 boundsMax,
-        ViewportPieceDebugInfo? debugInfo = null)
-        : this(id, name, new[] { mesh }, localTransform, boundsMin, boundsMax, debugInfo)
+        ViewportPieceDebugInfo? debugInfo = null,
+        IReadOnlyList<int>? sourceBatchIndices = null)
+        : this(id, name, new[] { mesh }, localTransform, boundsMin, boundsMax, debugInfo, sourceBatchIndices)
     {
     }
 
@@ -37,7 +39,8 @@ public sealed class ViewportPiece
         Matrix4x4 localTransform,
         Vector3 boundsMin,
         Vector3 boundsMax,
-        ViewportPieceDebugInfo? debugInfo = null)
+        ViewportPieceDebugInfo? debugInfo = null,
+        IReadOnlyList<int>? sourceBatchIndices = null)
     {
         if (meshes.Count == 0)
             throw new ArgumentException("A viewport piece must contain at least one mesh.", nameof(meshes));
@@ -49,6 +52,7 @@ public sealed class ViewportPiece
         BoundsMin = boundsMin;
         BoundsMax = boundsMax;
         DebugInfo = debugInfo;
+        SourceBatchIndices = sourceBatchIndices ?? [];
     }
 
     public static ViewportPiece CreateUnitCube(int id, string name, GpuMesh mesh)

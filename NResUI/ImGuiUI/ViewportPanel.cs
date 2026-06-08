@@ -1,10 +1,12 @@
 using System.Numerics;
 using ImGuiNET;
 using NResUI.Abstractions;
+using NResUI.Models;
+using NResUI.Rendering.Import.Msh;
+using NResUI.Rendering.Materials;
 using NResUI.Rendering.Viewport;
 using NativeFileDialogSharp;
 using NResUI.Rendering.Viewport.Meshes;
-using NResUI.Rendering.Viewport.Msh;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 
@@ -17,13 +19,14 @@ public sealed class ViewportPanel : IImGuiPanel
     private readonly ViewportCamera _camera = new();
     private readonly ViewportInputController _inputController = new();
     private readonly IConfigProvider _configProvider;
+    private readonly MeshViewportViewModel _viewModel;
 
-    private string? _loadedModelPath;
-    private string? _loadError;
+    private ViewportMaterialSet _materialSet = ViewportMaterialSet.Empty;
 
-    public ViewportPanel(GL gl, IWindow window, IConfigProvider configProvider)
+    public ViewportPanel(GL gl, IWindow window, IConfigProvider configProvider, MeshViewportViewModel viewModel)
     {
         _configProvider = configProvider;
+        _viewModel = viewModel;
         var cubeMesh = PrimitiveMeshes.CreateCube(gl);
         var gridMesh = PrimitiveMeshes.CreateWorldGrid(gl);
 
@@ -43,6 +46,8 @@ public sealed class ViewportPanel : IImGuiPanel
         DrawSelectionStatus();
         DrawViewportToolbar();
         DrawDebugControls();
+        RebuildSceneIfNeeded();
+        SyncSelectionFromViewModel();
 
         var imageSize = ImGui.GetContentRegionAvail();
         if (imageSize.X < 32 || imageSize.Y < 32)
@@ -78,6 +83,9 @@ public sealed class ViewportPanel : IImGuiPanel
             imageMin,
             imageSize);
 
+        if (_viewModel.RenderState.SelectedPieceId != _scene.SelectedPieceId)
+            _viewModel.RenderState.SelectedPieceId = _scene.SelectedPieceId;
+
         ImGui.End();
     }
 
@@ -97,30 +105,34 @@ public sealed class ViewportPanel : IImGuiPanel
         {
             var cubeMesh = PrimitiveMeshes.CreateCube(_renderer.Gl);
             _scene.ReplacePieces([ViewportPiece.CreateUnitCube(0, "Cube", cubeMesh)]);
-            _loadedModelPath = null;
-            _loadError = null;
+            _viewModel.ClearDocument();
             _camera.Reset();
         }
 
-        if (_loadedModelPath != null)
-            ImGui.TextDisabled($"Model: {Path.GetFileName(_loadedModelPath)}");
+        if (_viewModel.Document != null)
+            ImGui.TextDisabled($"Model: {Path.GetFileName(_viewModel.Document.SourcePath)}");
 
-        if (_loadError != null)
-            ImGui.TextColored(new Vector4(1.0f, 0.35f, 0.25f, 1.0f), $"MSH load failed: {_loadError}");
+        if (_viewModel.LoadError != null)
+            ImGui.TextColored(new Vector4(1.0f, 0.35f, 0.25f, 1.0f), $"MSH load failed: {_viewModel.LoadError}");
     }
 
     private void LoadMsh(string path)
     {
-        var loadResult = MshViewportLoader.LoadFromFile(_renderer.Gl, path, _configProvider);
+        // Сначала строим CPU-документ для inspector, затем отдельно резолвим материалы и OpenGL textures.
+        var loadResult = MshMeshDocumentImporter.LoadFromFile(path);
         if (!loadResult.IsSuccess)
         {
-            _loadError = loadResult.Error ?? "Unknown error.";
+            _viewModel.SetError(loadResult.Error ?? "Unknown error.");
             return;
         }
 
-        _scene.ReplacePieces(loadResult.Pieces);
-        _loadedModelPath = loadResult.SourcePath;
-        _loadError = null;
+        _viewModel.SetDocument(loadResult.Document!);
+        _materialSet = ViewportMaterialResolver.LoadForMsh(
+            _renderer.Gl,
+            path,
+            _configProvider,
+            loadResult.Document!.Warnings is ICollection<string> mutableWarnings ? mutableWarnings : null);
+        RebuildSceneIfNeeded();
 
         if (_scene.TryGetSceneWorldBounds(out var bounds))
             _camera.FrameBounds(bounds.Min, bounds.Max);
@@ -147,6 +159,39 @@ public sealed class ViewportPanel : IImGuiPanel
         {
             ImGui.TextDisabled("Selected: none");
         }
+    }
+
+    private void RebuildSceneIfNeeded()
+    {
+        if (!_viewModel.NeedsSceneRebuild)
+            return;
+
+        var document = _viewModel.Document;
+        if (document == null)
+        {
+            _viewModel.MarkSceneRebuilt();
+            return;
+        }
+
+        // Перестройка нужна при смене state/LOD, hide/isolate и batch filter: все это меняет состав GPU-мешей.
+        var pieces = MshViewportMeshFactory.BuildViewportPieces(
+            _renderer.Gl,
+            document,
+            _viewModel.RenderState,
+            _materialSet);
+
+        _scene.ReplacePieces(pieces);
+        _scene.SelectedPieceId = _viewModel.RenderState.SelectedPieceId;
+        _viewModel.MarkSceneRebuilt();
+    }
+
+    private void SyncSelectionFromViewModel()
+    {
+        if (_viewModel.Document == null)
+            return;
+
+        // Inspector может выбрать piece без клика по viewport; renderer должен подсветить тот же id.
+        _scene.SelectedPieceId = _viewModel.RenderState.SelectedPieceId;
     }
 
     private void DrawViewportToolbar()
