@@ -15,7 +15,6 @@ public sealed class ViewportRenderer
     public GL Gl => _gl;
 
     private ShaderProgram? _meshShader;
-    private ShaderProgram? _outlineShader;
 
     private GpuMesh? _unitWireBoxMesh;
     private GpuMesh? _axesMesh;
@@ -25,9 +24,7 @@ public sealed class ViewportRenderer
     private int _lightDirectionLocation;
     private int _useTextureLocation;
     private int _texture0Location;
-
-    private int _outlineMvpLocation;
-    private int _outlineColorLocation;
+    private int _colorAddLocation;
 
     private bool _initialized;
 
@@ -110,7 +107,7 @@ public sealed class ViewportRenderer
         Matrix4x4 view,
         Matrix4x4 projection)
     {
-        if (_meshShader == null || _outlineShader == null)
+        if (_meshShader == null)
             throw new InvalidOperationException("Viewport renderer is not initialized.");
 
         _gl.Disable(EnableCap.StencilTest);
@@ -121,37 +118,13 @@ public sealed class ViewportRenderer
 
         foreach (var piece in scene.Pieces)
         {
-            if (piece.Id == scene.SelectedPieceId)
-                continue;
-
-            DrawPiece(piece, sceneRotation, view, projection);
+            var colorAdd = piece.Id == scene.SelectedPieceId
+                ? new Vector3(0.22f, 0.16f, 0.02f)
+                : Vector3.Zero;
+            DrawPiece(piece, sceneRotation, view, projection, colorAdd);
         }
-
-        var selectedPiece = scene.SelectedPiece;
-        if (selectedPiece == null)
-        {
-            _gl.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Fill);
-            return;
-        }
-
-        _gl.Enable(EnableCap.StencilTest);
-        _gl.StencilMask(0xFF);
-        _gl.StencilFunc(StencilFunction.Always, 1, 0xFF);
-        _gl.StencilOp(StencilOp.Keep, StencilOp.Keep, StencilOp.Replace);
-
-        _meshShader.Use();
-        DrawPiece(selectedPiece, sceneRotation, view, projection);
 
         _gl.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Fill);
-        _gl.StencilFunc(StencilFunction.Notequal, 1, 0xFF);
-        _gl.StencilMask(0x00);
-        _gl.Disable(EnableCap.DepthTest);
-
-        DrawPieceOutline(selectedPiece, sceneRotation, view, projection);
-
-        _gl.Enable(EnableCap.DepthTest);
-        _gl.StencilMask(0xFF);
-        _gl.Disable(EnableCap.StencilTest);
     }
 
     private void DrawDebugOverlays(
@@ -206,40 +179,20 @@ public sealed class ViewportRenderer
         ViewportPiece piece,
         Matrix4x4 sceneRotation,
         Matrix4x4 view,
-        Matrix4x4 projection)
+        Matrix4x4 projection,
+        Vector3 colorAdd)
     {
         var model = piece.LocalTransform * sceneRotation;
         foreach (var mesh in piece.Meshes)
-            DrawMesh(mesh, model, view, projection);
-    }
-
-    private void DrawPieceOutline(
-        ViewportPiece piece,
-        Matrix4x4 sceneRotation,
-        Matrix4x4 view,
-        Matrix4x4 projection)
-    {
-        if (_outlineShader == null)
-            throw new InvalidOperationException("Viewport outline shader is not initialized.");
-
-        const float outlineScale = 1.06f;
-
-        var model = Matrix4x4.CreateScale(outlineScale) * piece.LocalTransform * sceneRotation;
-        var mvp = model * view * projection;
-
-        _outlineShader.Use();
-        _outlineShader.SetMatrix4(_outlineMvpLocation, mvp);
-        _outlineShader.SetVector4(_outlineColorLocation, new Vector4(1.0f, 0.82f, 0.15f, 1.0f));
-
-        foreach (var mesh in piece.Meshes)
-            mesh.Draw();
+            DrawMesh(mesh, model, view, projection, colorAdd);
     }
 
     private void DrawMesh(
         GpuMesh mesh,
         Matrix4x4 model,
         Matrix4x4 view,
-        Matrix4x4 projection)
+        Matrix4x4 projection,
+        Vector3? colorAdd = null)
     {
         if (_meshShader == null)
             throw new InvalidOperationException("Viewport mesh shader is not initialized.");
@@ -252,6 +205,7 @@ public sealed class ViewportRenderer
         _meshShader.SetMatrix4(_mvpLocation, mvp);
         _meshShader.SetMatrix4(_modelLocation, model);
         _meshShader.SetVector3(_lightDirectionLocation, lightDirection);
+        _meshShader.SetVector3(_colorAddLocation, colorAdd ?? Vector3.Zero);
 
         if (mesh.Material.HasTexture)
         {
@@ -322,6 +276,7 @@ public sealed class ViewportRenderer
         in vec2 vTexCoord;
         
         uniform vec3 uLightDirectionWorld;
+        uniform vec3 uColorAdd;
         uniform bool uUseTexture;
         uniform sampler2D uTexture0;
         
@@ -344,46 +299,18 @@ public sealed class ViewportRenderer
             if (texel.a < 0.05)
                 discard;
 
-            FragColor = vec4(vColor * texel.rgb * lighting, texel.a);
-        }
-        """;
-
-        const string outlineVertexShaderSource = """
-        #version 330 core
-
-        layout (location = 0) in vec3 aPosition;
-
-        uniform mat4 uMvp;
-
-        void main()
-        {
-            gl_Position = uMvp * vec4(aPosition, 1.0);
-        }
-        """;
-
-        const string outlineFragmentShaderSource = """
-        #version 330 core
-
-        uniform vec4 uColor;
-        out vec4 FragColor;
-
-        void main()
-        {
-            FragColor = uColor;
+            vec3 litColor = vColor * texel.rgb * lighting;
+            FragColor = vec4(clamp(litColor + uColorAdd, 0.0, 1.0), texel.a);
         }
         """;
 
         _meshShader = new ShaderProgram(_gl, meshVertexShaderSource, meshFragmentShaderSource, "Viewport mesh");
-        _outlineShader = new ShaderProgram(_gl, outlineVertexShaderSource, outlineFragmentShaderSource,
-            "Viewport outline");
 
         _modelLocation = _meshShader.GetUniformLocation("uModel");
         _mvpLocation = _meshShader.GetUniformLocation("uMvp");
         _lightDirectionLocation = _meshShader.GetUniformLocation("uLightDirectionWorld");
         _useTextureLocation = _meshShader.GetUniformLocation("uUseTexture");
         _texture0Location = _meshShader.GetUniformLocation("uTexture0");
-
-        _outlineMvpLocation = _outlineShader.GetUniformLocation("uMvp");
-        _outlineColorLocation = _outlineShader.GetUniformLocation("uColor");
+        _colorAddLocation = _meshShader.GetUniformLocation("uColorAdd");
     }
 }

@@ -21,6 +21,7 @@ System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Inst
 // var ndp = ControlResourceReader.ReadNdpFile("E:\\ParkanUnpacked\\guns.rlb\\309_NDPR_o_gun_la_01.ndp");
 
 // ControlResourceDump.DumpAll(ctl, cpt, ndp, Console.Out);
+var materialLib = "Material.lib";
 
 List<string> allNres =
 [
