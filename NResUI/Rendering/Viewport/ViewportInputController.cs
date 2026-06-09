@@ -12,6 +12,7 @@ public sealed class ViewportInputController
     private bool _isPanningViewport;
 
     public void Handle(
+        ViewportRenderer renderer,
         ViewportScene scene,
         ViewportCamera camera,
         bool viewportHovered,
@@ -59,11 +60,12 @@ public sealed class ViewportInputController
             var mouse = ImGui.GetMousePos();
             var localMouse = mouse - imageMin;
 
-            scene.SelectedPieceId = ViewportSelection.PickPiece(
+            scene.SelectedPieceId = renderer.PickPiece(
+                Math.Max(1, (int)imageSize.X),
+                Math.Max(1, (int)imageSize.Y),
                 scene,
                 camera,
-                localMouse,
-                imageSize);
+                localMouse);
         }
 
         if (viewportFocused || viewportHovered)

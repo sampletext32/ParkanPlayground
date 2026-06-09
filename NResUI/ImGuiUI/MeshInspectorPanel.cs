@@ -14,6 +14,8 @@ public sealed class MeshInspectorPanel : IImGuiPanel
 {
     private readonly MeshViewportViewModel _viewModel;
     private readonly HashSet<int> _expandedPieceDetails = [];
+    private readonly HashSet<int> _pieceIdsToAutoOpen = [];
+    private int _lastSyncedSelectedPieceId = -1;
     private static readonly string[] ModelStateLabels = ["Обычное", "Collapsed", "Неизвестное 2"];
     private static readonly string[] LodLabels = ["LOD 0", "LOD -1", "LOD -2", "LOD -3", "LOD -4"];
 
@@ -116,6 +118,8 @@ public sealed class MeshInspectorPanel : IImGuiPanel
             .GroupBy(x => x.ParentId)
             .ToDictionary(x => x.Key, x => x.OrderBy(p => p.Id).ToList());
 
+        SyncTreeExpansionToSelection(document);
+
         // Parent -1 приходит из 0xFFFF в 0x01 и означает корневой piece.
         if (childrenByParent.TryGetValue(-1, out var roots))
         {
@@ -146,6 +150,9 @@ public sealed class MeshInspectorPanel : IImGuiPanel
         var childMarker = childCount > 0 ? $" | дочерних: {childCount}" : "";
         var hiddenMarker = hidden ? " | скрыта" : "";
         var label = $"{piece.Name}{childMarker}{hiddenMarker}##piece_{piece.Id}";
+        if (_pieceIdsToAutoOpen.Remove(piece.Id))
+            ImGui.SetNextItemOpen(true, ImGuiCond.Always);
+
         var open = ImGui.TreeNodeEx(label, flags);
         var nodeClicked = ImGui.IsItemClicked();
         if (nodeClicked)
@@ -191,6 +198,34 @@ public sealed class MeshInspectorPanel : IImGuiPanel
             }
 
             ImGui.TreePop();
+        }
+    }
+
+    private void SyncTreeExpansionToSelection(MeshDocument document)
+    {
+        var selectedPieceId = _viewModel.RenderState.SelectedPieceId;
+        if (selectedPieceId == _lastSyncedSelectedPieceId)
+            return;
+
+        _lastSyncedSelectedPieceId = selectedPieceId;
+        _pieceIdsToAutoOpen.Clear();
+
+        if (selectedPieceId < 0)
+            return;
+
+        var piecesById = document.Pieces.ToDictionary(x => x.Id);
+        if (!piecesById.TryGetValue(selectedPieceId, out var piece))
+            return;
+
+        // ImGui не раскрывает родителей выбранного leaf автоматически, поэтому раскрываем только путь до него.
+        var visited = new HashSet<int>();
+        while (piece.ParentId != -1 && piecesById.TryGetValue(piece.ParentId, out var parent))
+        {
+            if (!visited.Add(parent.Id))
+                break;
+
+            _pieceIdsToAutoOpen.Add(parent.Id);
+            piece = parent;
         }
     }
 

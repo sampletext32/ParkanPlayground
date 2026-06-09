@@ -76,6 +76,7 @@ public sealed class ViewportPanel : IImGuiPanel
         DrawViewportHelpOverlay();
 
         _inputController.Handle(
+            _renderer,
             _scene,
             _camera,
             viewportHovered,

@@ -15,9 +15,16 @@ public sealed class ViewportRenderer
     public GL Gl => _gl;
 
     private ShaderProgram? _meshShader;
+    private ShaderProgram? _pickingShader;
 
     private GpuMesh? _unitWireBoxMesh;
     private GpuMesh? _axesMesh;
+
+    private uint _pickingFramebuffer;
+    private uint _pickingColorTexture;
+    private uint _pickingDepthRenderbuffer;
+    private int _pickingWidth;
+    private int _pickingHeight;
 
     private int _modelLocation;
     private int _mvpLocation;
@@ -25,6 +32,8 @@ public sealed class ViewportRenderer
     private int _useTextureLocation;
     private int _texture0Location;
     private int _colorAddLocation;
+    private int _pickingMvpLocation;
+    private int _pickingColorLocation;
 
     private bool _initialized;
 
@@ -77,6 +86,58 @@ public sealed class ViewportRenderer
         _gl.Viewport(0, 0, (uint)framebufferSize.X, (uint)framebufferSize.Y);
 
         return _framebuffer.ColorTexture;
+    }
+
+    /// <summary>
+    /// Делает GPU picking: рендерит pieces в служебный framebuffer уникальными цветами и читает один пиксель.
+    /// Так выбор совпадает с видимой геометрией и не требует CPU-копии вершин.
+    /// </summary>
+    public unsafe int PickPiece(int width, int height, ViewportScene scene, ViewportCamera camera, Vector2 localMouse)
+    {
+        EnsureInitialized();
+
+        if (_pickingShader == null || width <= 1 || height <= 1)
+            return -1;
+
+        var x = Math.Clamp((int)localMouse.X, 0, width - 1);
+        var y = Math.Clamp(height - 1 - (int)localMouse.Y, 0, height - 1);
+
+        EnsurePickingFramebuffer(width, height);
+
+        try
+        {
+            _gl.BindFramebuffer(FramebufferTarget.Framebuffer, _pickingFramebuffer);
+            _gl.Viewport(0, 0, (uint)width, (uint)height);
+            _gl.Enable(EnableCap.DepthTest);
+            _gl.Disable(EnableCap.CullFace);
+            _gl.Disable(EnableCap.Blend);
+            _gl.Disable(EnableCap.StencilTest);
+            _gl.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Fill);
+            _gl.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            _gl.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
+
+            var aspect = width / (float)Math.Max(1, height);
+            var sceneRotation = camera.GetSceneRotationMatrix();
+            var view = camera.GetViewMatrix();
+            var projection = camera.GetProjectionMatrix(aspect);
+
+            _pickingShader.Use();
+            foreach (var piece in scene.Pieces)
+                DrawPieceForPicking(piece, sceneRotation, view, projection);
+
+            Span<byte> pixel = stackalloc byte[4];
+            fixed (byte* pixelPtr = pixel)
+            {
+                _gl.ReadPixels(x, y, 1, 1, PixelFormat.Rgba, PixelType.UnsignedByte, pixelPtr);
+            }
+
+            var encoded = pixel[0] | (pixel[1] << 8) | (pixel[2] << 16);
+            return encoded == 0 ? -1 : encoded - 1;
+        }
+        finally
+        {
+            RestoreDefaultRenderTargetState();
+        }
     }
 
     private void DrawGrid(
@@ -187,6 +248,27 @@ public sealed class ViewportRenderer
             DrawMesh(mesh, model, view, projection, colorAdd);
     }
 
+    private void DrawPieceForPicking(
+        ViewportPiece piece,
+        Matrix4x4 sceneRotation,
+        Matrix4x4 view,
+        Matrix4x4 projection)
+    {
+        if (_pickingShader == null)
+            throw new InvalidOperationException("Viewport picking shader is not initialized.");
+
+        var encodedColor = EncodePickingColor(piece.Id);
+        var model = piece.LocalTransform * sceneRotation;
+        var mvp = model * view * projection;
+
+        _pickingShader.SetMatrix4(_pickingMvpLocation, mvp);
+        _pickingShader.SetVector4(_pickingColorLocation, encodedColor);
+
+        // Рисуем теми же VAO, что и обычный viewport. Depth buffer сам выберет ближайшую piece под курсором.
+        foreach (var mesh in piece.Meshes)
+            mesh.Draw();
+    }
+
     private void DrawMesh(
         GpuMesh mesh,
         Matrix4x4 model,
@@ -229,6 +311,90 @@ public sealed class ViewportRenderer
         var size = boundsMax - boundsMin;
 
         return Matrix4x4.CreateScale(size * 0.5f) * Matrix4x4.CreateTranslation(center);
+    }
+
+    private unsafe void EnsurePickingFramebuffer(int width, int height)
+    {
+        width = Math.Max(1, width);
+        height = Math.Max(1, height);
+
+        if (_pickingFramebuffer != 0 && _pickingWidth == width && _pickingHeight == height)
+            return;
+
+        _pickingWidth = width;
+        _pickingHeight = height;
+
+        if (_pickingFramebuffer == 0)
+        {
+            _pickingFramebuffer = _gl.GenFramebuffer();
+            _pickingColorTexture = _gl.GenTexture();
+            _pickingDepthRenderbuffer = _gl.GenRenderbuffer();
+        }
+
+        _gl.BindTexture(TextureTarget.Texture2D, _pickingColorTexture);
+        _gl.TexImage2D(
+            TextureTarget.Texture2D,
+            0,
+            InternalFormat.Rgba8,
+            (uint)width,
+            (uint)height,
+            0,
+            PixelFormat.Rgba,
+            PixelType.UnsignedByte,
+            null);
+        _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+        _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+        _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
+        _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
+
+        _gl.BindRenderbuffer(RenderbufferTarget.Renderbuffer, _pickingDepthRenderbuffer);
+        _gl.RenderbufferStorage(RenderbufferTarget.Renderbuffer, InternalFormat.DepthComponent24, (uint)width, (uint)height);
+
+        _gl.BindFramebuffer(FramebufferTarget.Framebuffer, _pickingFramebuffer);
+        _gl.FramebufferTexture2D(
+            FramebufferTarget.Framebuffer,
+            FramebufferAttachment.ColorAttachment0,
+            TextureTarget.Texture2D,
+            _pickingColorTexture,
+            0);
+        _gl.FramebufferRenderbuffer(
+            FramebufferTarget.Framebuffer,
+            FramebufferAttachment.DepthAttachment,
+            RenderbufferTarget.Renderbuffer,
+            _pickingDepthRenderbuffer);
+
+        var status = _gl.CheckFramebufferStatus(FramebufferTarget.Framebuffer);
+        if (status != GLEnum.FramebufferComplete)
+            throw new InvalidOperationException($"Viewport picking framebuffer is incomplete: {status}");
+
+        _gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+        _gl.BindTexture(TextureTarget.Texture2D, 0);
+        _gl.BindRenderbuffer(RenderbufferTarget.Renderbuffer, 0);
+    }
+
+    private void RestoreDefaultRenderTargetState()
+    {
+        _gl.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Fill);
+        _gl.Disable(EnableCap.DepthTest);
+        _gl.Disable(EnableCap.StencilTest);
+        _gl.UseProgram(0);
+        _gl.BindVertexArray(0);
+        _gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+
+        var framebufferSize = _window.FramebufferSize;
+        _gl.Viewport(0, 0, (uint)framebufferSize.X, (uint)framebufferSize.Y);
+    }
+
+    private static Vector4 EncodePickingColor(int pieceId)
+    {
+        var encoded = pieceId + 1;
+        if (encoded <= 0 || encoded > 0x00FFFFFF)
+            return Vector4.Zero;
+
+        var r = (encoded & 0x0000FF) / 255.0f;
+        var g = ((encoded >> 8) & 0x0000FF) / 255.0f;
+        var b = ((encoded >> 16) & 0x0000FF) / 255.0f;
+        return new Vector4(r, g, b, 1.0f);
     }
 
     private void EnsureInitialized()
@@ -304,7 +470,34 @@ public sealed class ViewportRenderer
         }
         """;
 
+        const string pickingVertexShaderSource = """
+        #version 330 core
+
+        layout (location = 0) in vec3 aPosition;
+
+        uniform mat4 uMvp;
+
+        void main()
+        {
+            gl_Position = uMvp * vec4(aPosition, 1.0);
+        }
+        """;
+
+        const string pickingFragmentShaderSource = """
+        #version 330 core
+
+        uniform vec4 uPickColor;
+        out vec4 FragColor;
+
+        void main()
+        {
+            FragColor = uPickColor;
+        }
+        """;
+
         _meshShader = new ShaderProgram(_gl, meshVertexShaderSource, meshFragmentShaderSource, "Viewport mesh");
+        _pickingShader = new ShaderProgram(_gl, pickingVertexShaderSource, pickingFragmentShaderSource,
+            "Viewport picking");
 
         _modelLocation = _meshShader.GetUniformLocation("uModel");
         _mvpLocation = _meshShader.GetUniformLocation("uMvp");
@@ -312,5 +505,8 @@ public sealed class ViewportRenderer
         _useTextureLocation = _meshShader.GetUniformLocation("uUseTexture");
         _texture0Location = _meshShader.GetUniformLocation("uTexture0");
         _colorAddLocation = _meshShader.GetUniformLocation("uColorAdd");
+
+        _pickingMvpLocation = _pickingShader.GetUniformLocation("uMvp");
+        _pickingColorLocation = _pickingShader.GetUniformLocation("uPickColor");
     }
 }
