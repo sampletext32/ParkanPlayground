@@ -1,5 +1,7 @@
 namespace NResUI.Rendering.Inspection;
 
+using NResUI.Rendering.Viewport.Msh;
+
 /// <summary>
 /// Состояние просмотра меша. State/LOD задаются только для конкретных pieces,
 /// потому что 0x01 хранит таблицу slot indices отдельно для каждого узла.
@@ -15,6 +17,10 @@ public sealed class MeshRenderState
     public HashSet<int> HiddenPieceIds { get; } = [];
     public Dictionary<int, int> PieceStateOverrides { get; } = [];
     public Dictionary<int, int> PieceLodOverrides { get; } = [];
+    public MshAnimationPoseMode AnimationPoseMode { get; set; } = MshAnimationPoseMode.DefaultKeyframe;
+    public float AnimationSampleTime { get; set; }
+    public float AnimationSpeed { get; set; } = 1.0f;
+    public bool AnimationPlay { get; set; }
 
     public void ClearSelection()
     {

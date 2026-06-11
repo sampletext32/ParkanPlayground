@@ -27,4 +27,13 @@ public sealed class MshModelGeometry
 
     /// <summary>Render batches 0x0D: диапазоны индексов, material id и render flags.</summary>
     public required IReadOnlyList<Msh0x0D.Batch> Batches { get; init; }
+
+    /// <summary>Piece transform keyframes from MSH 0x08.</summary>
+    public required IReadOnlyList<MshTransformKeyframe> TransformKeyframes { get; init; }
+
+    /// <summary>Animation frame to 0x08 keyframe map from MSH 0x13. Optional in some files.</summary>
+    public required IReadOnlyList<MshAnimationMapEntry> AnimationMap { get; init; }
+
+    /// <summary>Animation frame count/window from MSH 0x13 NRes metadata.</summary>
+    public required int MaxAnimationTime { get; init; }
 }

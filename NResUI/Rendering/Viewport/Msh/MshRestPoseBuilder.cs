@@ -13,7 +13,22 @@ public static class MshRestPoseBuilder
     /// Собирает bind/rest pose для pieces из fallback keyframes 0x08.
     /// Циклы и битые parent-ссылки не должны ломать viewport, поэтому такие узлы остаются с identity transform.
     /// </summary>
-    public static IReadOnlyList<MshPieceRestPose> BuildRestPose(Msh0x01.Msh0x01Component nodesComponent, List<Msh0x08.AnimationDescriptor> animationDescriptors)
+    public static IReadOnlyList<MshPieceRestPose> BuildRestPose(Msh0x01.Msh0x01Component nodesComponent, IReadOnlyList<MshTransformKeyframe> animationDescriptors)
+    {
+        return BuildPose(
+            nodesComponent,
+            animationDescriptors,
+            [],
+            MshAnimationPoseMode.DefaultKeyframe,
+            0.0f);
+    }
+
+    public static IReadOnlyList<MshPieceRestPose> BuildPose(
+        Msh0x01.Msh0x01Component nodesComponent,
+        IReadOnlyList<MshTransformKeyframe> animationDescriptors,
+        IReadOnlyList<MshAnimationMapEntry> animationMap,
+        MshAnimationPoseMode poseMode,
+        float sampleTime)
     {
         var nodeList = nodesComponent.Nodes;
         var animationList = animationDescriptors;
@@ -22,7 +37,7 @@ public static class MshRestPoseBuilder
         var state = new byte[nodeList.Count];
 
         for (var nodeIndex = 0; nodeIndex < nodeList.Count; nodeIndex++)
-            BuildNodePose(nodeIndex, nodeList, animationList, poses, state);
+            BuildNodePose(nodeIndex, nodeList, animationList, animationMap, poses, state, poseMode, sampleTime);
 
         return poses;
     }
@@ -30,9 +45,12 @@ public static class MshRestPoseBuilder
     private static Matrix4x4 BuildNodePose(
         int nodeIndex,
         List<Msh0x01.Node> nodes,
-        List<Msh0x08.AnimationDescriptor> animationDescriptors,
+        IReadOnlyList<MshTransformKeyframe> animationDescriptors,
+        IReadOnlyList<MshAnimationMapEntry> animationMap,
         MshPieceRestPose[] poses,
-        byte[] state)
+        byte[] state,
+        MshAnimationPoseMode poseMode,
+        float sampleTime)
     {
         if (state[nodeIndex] == 2)
             return poses[nodeIndex].MeshSpaceTransform;
@@ -49,11 +67,10 @@ public static class MshRestPoseBuilder
         var fallbackKeyframeIndex = GetFallbackKeyframeIndex(node);
         var hasFallbackPose = fallbackKeyframeIndex >= 0 && fallbackKeyframeIndex < animationDescriptors.Count;
 
-        // var localTransform = Matrix4x4.Identity;
         Matrix4x4 localTransform;
         if (hasFallbackPose)
         {
-            localTransform = BuildTransformFromAnimationDescriptor(animationDescriptors[fallbackKeyframeIndex]!);
+            localTransform = BuildLocalTransform(node, animationDescriptors, animationMap, poseMode, sampleTime);
         }
         else
         {
@@ -69,7 +86,7 @@ public static class MshRestPoseBuilder
         var meshSpaceTransform = localTransform;
         if (parentIndex >= 0 && parentIndex < nodes.Count && parentIndex != nodeIndex)
         {
-            var parentTransform = BuildNodePose(parentIndex, nodes, animationDescriptors, poses, state);
+            var parentTransform = BuildNodePose(parentIndex, nodes, animationDescriptors, animationMap, poses, state, poseMode, sampleTime);
             meshSpaceTransform = localTransform * parentTransform;
         }
 
@@ -83,6 +100,43 @@ public static class MshRestPoseBuilder
 
         state[nodeIndex] = 2;
         return meshSpaceTransform;
+    }
+
+    private static Matrix4x4 BuildLocalTransform(
+        Msh0x01.Node node,
+        IReadOnlyList<MshTransformKeyframe> animationDescriptors,
+        IReadOnlyList<MshAnimationMapEntry> animationMap,
+        MshAnimationPoseMode poseMode,
+        float sampleTime)
+    {
+        if (poseMode == MshAnimationPoseMode.AnimationSample)
+        {
+            return MshAnimationSampler.ToMatrix(MshAnimationSampler.SamplePieceAnimationAtTime(
+                node,
+                animationDescriptors,
+                animationMap,
+                sampleTime));
+        }
+
+        return BuildTransformFromAnimationDescriptor(animationDescriptors[node.DefaultKeyframeIndex0x08]);
+    }
+
+    private static bool IsValidSampleStream(
+        Msh0x01.Node node,
+        IReadOnlyList<MshTransformKeyframe> animationDescriptors,
+        IReadOnlyList<MshAnimationMapEntry> animationMap,
+        float sampleTime)
+    {
+        if (animationMap.Count == 0 || node.AnimMapStart0x13 == ushort.MaxValue)
+            return false;
+
+        var frameIndex = (int)MathF.Round(sampleTime - 0.5f, MidpointRounding.AwayFromZero);
+        if (frameIndex < 0 || node.AnimMapStart0x13 + frameIndex >= animationMap.Count)
+            return false;
+
+        var keyframeIndex = animationMap[node.AnimMapStart0x13 + frameIndex].KeyframeIndex;
+        return keyframeIndex < node.DefaultKeyframeIndex0x08 &&
+               keyframeIndex + 1 < animationDescriptors.Count;
     }
 
     private static int GetParentIndex(Msh0x01.Node node)
@@ -103,14 +157,9 @@ public static class MshRestPoseBuilder
         }
     }
 
-    private static Matrix4x4 BuildTransformFromAnimationDescriptor(Msh0x08.AnimationDescriptor descriptor)
+    private static Matrix4x4 BuildTransformFromAnimationDescriptor(MshTransformKeyframe descriptor)
     {
-        var position = ToSystemVector3(descriptor.Position);
-        var rotation = ToSystemQuaternion(descriptor.Rotation);
-
-        var matrix = Matrix4x4.CreateFromQuaternion(rotation);
-        matrix.Translation = position;
-        return matrix;
+        return MshAnimationSampler.ToMatrix(MshAnimationSampler.FromKeyframe(descriptor));
     }
 
     private static Vector3 ToSystemVector3(dynamic vector)
@@ -141,6 +190,12 @@ public static class MshRestPoseBuilder
         // The MSH keyframe rotation is stored as mesh-to-parent instead of parent-to-mesh, so the viewer needs the inverse.
         return Quaternion.Conjugate(q);
     }
+}
+
+public enum MshAnimationPoseMode
+{
+    DefaultKeyframe,
+    AnimationSample
 }
 
 public readonly record struct MshPieceRestPose(

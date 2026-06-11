@@ -26,6 +26,7 @@ public class App
         public ImFontPtr OpenSansFont;
 
         private List<IImGuiPanel> _imGuiPanels = [];
+        private List<IUpdateReceiver> _updateReceivers = [];
         private Later _later = new();
 
         public App()
@@ -59,6 +60,11 @@ public class App
                 serviceCollection.AddSingleton(type);
             }
 
+            foreach (var type in Utils.GetAssignableTypes<IUpdateReceiver>())
+            {
+                serviceCollection.AddSingleton(type);
+            }
+
             serviceCollection.AddSingleton(openGl);
             serviceCollection.AddSingleton(window);
 
@@ -77,6 +83,10 @@ public class App
 
             _imGuiPanels = Utils.GetAssignableTypes<IImGuiPanel>()
                 .Select(t => (serviceProvider.GetService(t) as IImGuiPanel)!)
+                .ToList();
+
+            _updateReceivers = Utils.GetAssignableTypes<IUpdateReceiver>()
+                .Select(t => (serviceProvider.GetService(t) as IUpdateReceiver)!)
                 .ToList();
             
             foreach (var type in Utils.GetAssignableTypes<ILaunchReceiver>())
@@ -159,6 +169,8 @@ public class App
 
         public void Update(double delta)
         {
+            foreach (var updateReceiver in _updateReceivers)
+                updateReceiver.OnUpdate((float)delta);
         }
 
         public void OnKeyPressed(Key key)

@@ -39,12 +39,14 @@ public sealed class ViewportScene
 
     public void ClearPieces()
     {
+        DisposePieces();
         _pieces.Clear();
         ClearSelection();
     }
 
     public void ReplacePieces(IEnumerable<ViewportPiece> pieces)
     {
+        DisposePieces();
         _pieces.Clear();
         _pieces.AddRange(pieces);
         ClearSelection();
@@ -102,6 +104,12 @@ public sealed class ViewportScene
         scene.AddPiece(ViewportPiece.CreateUnitCube(0, "Cube", cubeMesh));
 
         return scene;
+    }
+
+    private void DisposePieces()
+    {
+        foreach (var piece in _pieces)
+            piece.Dispose();
     }
 
     private static bool TryTransformBounds(

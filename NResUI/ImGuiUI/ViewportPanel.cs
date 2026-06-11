@@ -2,17 +2,19 @@ using System.Numerics;
 using ImGuiNET;
 using NResUI.Abstractions;
 using NResUI.Models;
+using NResUI.Rendering.Inspection;
 using NResUI.Rendering.Import.Msh;
 using NResUI.Rendering.Materials;
 using NResUI.Rendering.Viewport;
 using NativeFileDialogSharp;
 using NResUI.Rendering.Viewport.Meshes;
+using NResUI.Rendering.Viewport.Msh;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 
 namespace NResUI.ImGuiUI;
 
-public sealed class ViewportPanel : IImGuiPanel
+public sealed class ViewportPanel : IImGuiPanel, IUpdateReceiver
 {
     private readonly ViewportRenderer _renderer;
     private readonly ViewportScene _scene;
@@ -46,6 +48,7 @@ public sealed class ViewportPanel : IImGuiPanel
         DrawSelectionStatus();
         DrawViewportToolbar();
         DrawDebugControls();
+        DrawAnimationControls();
         RebuildSceneIfNeeded();
         SyncSelectionFromViewModel();
 
@@ -88,6 +91,27 @@ public sealed class ViewportPanel : IImGuiPanel
             _viewModel.RenderState.SelectedPieceId = _scene.SelectedPieceId;
 
         ImGui.End();
+    }
+
+    public void OnUpdate(float delta)
+    {
+        var document = _viewModel.Document;
+        if (document?.MshModelGeometry == null)
+            return;
+
+        var state = _viewModel.RenderState;
+        if (!state.AnimationPlay)
+            return;
+
+        var maxAnimationTime = GetMaxAnimationTime(document);
+        if (maxAnimationTime <= 0.0f)
+            return;
+
+        state.AnimationSampleTime = WrapAnimationTime(
+            state.AnimationSampleTime + delta * state.AnimationSpeed,
+            maxAnimationTime);
+        state.AnimationPoseMode = MshAnimationPoseMode.AnimationSample;
+        ApplyCurrentAnimationPose(document);
     }
 
 
@@ -183,7 +207,32 @@ public sealed class ViewportPanel : IImGuiPanel
 
         _scene.ReplacePieces(pieces);
         _scene.SelectedPieceId = _viewModel.RenderState.SelectedPieceId;
+        ApplyCurrentAnimationPose(document);
         _viewModel.MarkSceneRebuilt();
+    }
+
+    private void ApplyCurrentAnimationPose(MeshDocument document)
+    {
+        var modelGeometry = document.MshModelGeometry;
+        if (modelGeometry == null)
+            return;
+
+        var renderState = _viewModel.RenderState;
+        var poses = MshRestPoseBuilder.BuildPose(
+            modelGeometry.Nodes,
+            modelGeometry.TransformKeyframes,
+            modelGeometry.AnimationMap,
+            renderState.AnimationPoseMode,
+            renderState.AnimationSampleTime);
+
+        var mshToViewportTransform = Matrix4x4.CreateRotationX(-MathF.PI * 0.5f);
+        foreach (var piece in _scene.Pieces)
+        {
+            if (piece.Id < 0 || piece.Id >= poses.Count)
+                continue;
+
+            piece.LocalTransform = poses[piece.Id].MeshSpaceTransform * mshToViewportTransform;
+        }
     }
 
     private void SyncSelectionFromViewModel()
@@ -258,6 +307,75 @@ public sealed class ViewportPanel : IImGuiPanel
         var wireframe = _scene.Debug.Wireframe;
         if (ImGui.Checkbox("Wireframe", ref wireframe))
             _scene.Debug.Wireframe = wireframe;
+    }
+
+    private void DrawAnimationControls()
+    {
+        var document = _viewModel.Document;
+        var state = _viewModel.RenderState;
+        ImGui.SeparatorText("Animation");
+        var hasAnimationDocument = document?.MshModelGeometry != null;
+        var maxAnimationTime = hasAnimationDocument ? GetMaxAnimationTime(document!) : 0.0f;
+
+        if (!hasAnimationDocument)
+            ImGui.BeginDisabled();
+
+        if (ImGui.Button("Reset to default keyframe"))
+        {
+            state.AnimationPlay = false;
+            state.AnimationPoseMode = MshAnimationPoseMode.DefaultKeyframe;
+            if (document != null)
+                ApplyCurrentAnimationPose(document);
+        }
+
+        var animationSampleTime = state.AnimationSampleTime;
+        if (ImGui.SliderFloat("Anim time", ref animationSampleTime, 0.0f, maxAnimationTime))
+        {
+            state.AnimationSampleTime = animationSampleTime;
+            state.AnimationPoseMode = MshAnimationPoseMode.AnimationSample;
+            if (document != null)
+                ApplyCurrentAnimationPose(document);
+        }
+
+        var play = state.AnimationPlay;
+        if (ImGui.Checkbox("Play", ref play))
+        {
+            state.AnimationPlay = play;
+            if (play)
+                state.AnimationPoseMode = MshAnimationPoseMode.AnimationSample;
+            else if (document != null)
+                ApplyCurrentAnimationPose(document);
+        }
+
+        ImGui.SameLine();
+
+        var speed = state.AnimationSpeed;
+        if (ImGui.InputFloat("Speed", ref speed, 0.1f, 1.0f))
+            state.AnimationSpeed = speed;
+
+        if (!hasAnimationDocument)
+            ImGui.EndDisabled();
+    }
+
+    private static float GetMaxAnimationTime(MeshDocument document)
+    {
+        var maxAnimationTime = document.MshModelGeometry?.MaxAnimationTime ?? 0;
+        if (maxAnimationTime > 0)
+            return maxAnimationTime;
+
+        var keyframes = document.MshModelGeometry?.TransformKeyframes;
+        return keyframes == null || keyframes.Count == 0
+            ? 0.0f
+            : MathF.Max(0.0f, keyframes.Max(x => x.Time));
+    }
+
+    private static float WrapAnimationTime(float time, float maxAnimationTime)
+    {
+        if (maxAnimationTime <= 0.0f)
+            return 0.0f;
+
+        var wrapped = time % maxAnimationTime;
+        return wrapped < 0.0f ? wrapped + maxAnimationTime : wrapped;
     }
 
     private static void DrawViewportHelpOverlay()

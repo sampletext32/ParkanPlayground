@@ -105,6 +105,8 @@ public static class Msh0x01
         ushort FallbackKey0x08,
         ushort[] Msh02SlotIndicesByStateAndLOD)
     {
+        public ushort DefaultKeyframeIndex0x08 => FallbackKey0x08;
+
         public ushort ResolveSlotIndex(int state, int lod = 0)
         {
             // State и LOD выбираются для конкретного узла/piece, не для всего файла сразу.

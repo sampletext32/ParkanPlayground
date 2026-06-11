@@ -5,7 +5,7 @@ namespace MshLib;
 
 public static class Msh0x08
 {
-    public static List<AnimationDescriptor> ReadComponent(FileStream mshFs, NResArchive archive)
+    public static List<MshTransformKeyframe> ReadComponent(FileStream mshFs, NResArchive archive)
     {
         var entry = archive.Files.FirstOrDefault(x => x.FileType == "08 00 00 00");
 
@@ -16,11 +16,11 @@ public static class Msh0x08
 
         mshFs.Seek(entry.OffsetInFile, SeekOrigin.Begin);
 
-        var descriptors = new List<AnimationDescriptor>();
+        var descriptors = new List<MshTransformKeyframe>();
 
         for (var i = 0; i < entry.ElementCount; i++)
         {
-            descriptors.Add(new AnimationDescriptor(
+            descriptors.Add(new MshTransformKeyframe(
                 new Vector3(mshFs.ReadFloatLittleEndian(),
                     mshFs.ReadFloatLittleEndian(),
                     mshFs.ReadFloatLittleEndian()),
@@ -36,10 +36,10 @@ public static class Msh0x08
 
         return descriptors;
     }
-
-    public record AnimationDescriptor(
-        Vector3 Position,
-        float Time,
-        UShortQuaternion Rotation
-    );
 }
+
+public record MshTransformKeyframe(
+    Vector3 Position,
+    float Time,
+    UShortQuaternion Rotation
+);

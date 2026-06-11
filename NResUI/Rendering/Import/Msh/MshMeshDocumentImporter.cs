@@ -60,6 +60,9 @@ public static class MshMeshDocumentImporter
         var indices = Msh0x06.ReadComponent(fs, archive);
         var batches = Msh0x0D.ReadComponent(fs, archive);
         var animationDescriptors = Msh0x08.ReadComponent(fs, archive);
+        var animationMapComponent = TryReadAnimationMap(fs, archive, warnings);
+        var animationMap = animationMapComponent?.Entries ?? [];
+        var maxAnimationTime = animationMapComponent?.MaxAnimationTime ?? InferMaxAnimationTime(animationDescriptors);
         var restPoses = MshRestPoseBuilder.BuildRestPose(nodes, animationDescriptors);
         var names = TryReadNames(fs, archive, warnings);
 
@@ -121,7 +124,10 @@ public static class MshMeshDocumentImporter
                 Normals = normals,
                 Uvs = uvs,
                 Indices = indices,
-                Batches = batches
+                Batches = batches,
+                TransformKeyframes = animationDescriptors,
+                AnimationMap = animationMap,
+                MaxAnimationTime = maxAnimationTime
             }
         };
     }
@@ -226,6 +232,27 @@ public static class MshMeshDocumentImporter
             warnings.Add($"MSH 0x05 UVs are unavailable: {ex.Message}");
             return [];
         }
+    }
+
+    private static Msh0x13Component? TryReadAnimationMap(FileStream fs, NResArchive archive, ICollection<string> warnings)
+    {
+        try
+        {
+            return Msh0x13.ReadComponent(fs, archive);
+        }
+        catch (Exception ex)
+        {
+            warnings.Add($"MSH 0x13 animation map is unavailable: {ex.Message}");
+            return null;
+        }
+    }
+
+    private static int InferMaxAnimationTime(IReadOnlyList<MshTransformKeyframe> keyframes)
+    {
+        if (keyframes.Count == 0)
+            return 0;
+
+        return (int)MathF.Ceiling(MathF.Max(0.0f, keyframes.Max(x => x.Time)));
     }
 
     private static string ResolvePieceName(IReadOnlyList<string> names, int nodeIndex)

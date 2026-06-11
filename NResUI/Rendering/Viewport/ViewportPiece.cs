@@ -3,7 +3,7 @@ using NResUI.Rendering.Viewport.Meshes;
 
 namespace NResUI.Rendering.Viewport;
 
-public sealed class ViewportPiece
+public sealed class ViewportPiece : IDisposable
 {
     public int Id { get; }
     public string Name { get; }
@@ -74,5 +74,11 @@ public sealed class ViewportPiece
                 BatchCount = 1,
                 TriangleCount = 12
             });
+    }
+
+    public void Dispose()
+    {
+        foreach (var mesh in Meshes)
+            mesh.Dispose();
     }
 }

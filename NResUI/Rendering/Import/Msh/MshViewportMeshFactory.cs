@@ -4,6 +4,7 @@ using NResUI.Rendering.Inspection;
 using NResUI.Rendering.Materials;
 using NResUI.Rendering.Viewport;
 using NResUI.Rendering.Viewport.Meshes;
+using NResUI.Rendering.Viewport.Msh;
 using Silk.NET.OpenGL;
 
 namespace NResUI.Rendering.Import.Msh;
@@ -26,18 +27,25 @@ public static class MshViewportMeshFactory
         var result = new List<ViewportPiece>();
         var modelGeometry = document.MshModelGeometry;
         var mshToViewportTransform = Matrix4x4.CreateRotationX(-MathF.PI * 0.5f);
+        var poses = MshRestPoseBuilder.BuildPose(
+            modelGeometry.Nodes,
+            modelGeometry.TransformKeyframes,
+            modelGeometry.AnimationMap,
+            renderState.AnimationPoseMode,
+            renderState.AnimationSampleTime);
 
         foreach (var pieceInfo in document.Pieces)
         {
             if (!renderState.IsPieceVisible(pieceInfo.Id))
                 continue;
 
+            var pieceTransform = poses[pieceInfo.Id].MeshSpaceTransform;
             var (pieceState, pieceLod) = ResolvePieceStateLod(document, pieceInfo, renderState);
             var slotIndex = pieceInfo.ResolveSlotIndex(pieceState, pieceLod);
             if (slotIndex == ushort.MaxValue || slotIndex >= modelGeometry.GeometrySlots.Slots.Count)
             {
                 if (renderState.ShowEmptyPieces)
-                    AddEmptyPieceMarker(gl, result, pieceInfo, mshToViewportTransform, "No geometry slot for selected state/LOD");
+                    AddEmptyPieceMarker(gl, result, pieceInfo, pieceTransform, mshToViewportTransform, "No geometry slot for selected state/LOD");
                 continue;
             }
 
@@ -45,7 +53,7 @@ public static class MshViewportMeshFactory
             if (!slot.HasBatches)
             {
                 if (renderState.ShowEmptyPieces)
-                    AddEmptyPieceMarker(gl, result, pieceInfo, mshToViewportTransform, "Geometry slot has no batches", slotIndex);
+                    AddEmptyPieceMarker(gl, result, pieceInfo, pieceTransform, mshToViewportTransform, "Geometry slot has no batches", slotIndex);
                 continue;
             }
 
@@ -60,7 +68,7 @@ public static class MshViewportMeshFactory
             if (meshBuildResult == null)
             {
                 if (renderState.ShowEmptyPieces)
-                    AddEmptyPieceMarker(gl, result, pieceInfo, mshToViewportTransform, "Geometry slot produced no valid triangles", slotIndex);
+                    AddEmptyPieceMarker(gl, result, pieceInfo, pieceTransform, mshToViewportTransform, "Geometry slot produced no valid triangles", slotIndex);
                 continue;
             }
 
@@ -68,7 +76,7 @@ public static class MshViewportMeshFactory
                 id: pieceInfo.Id,
                 name: pieceInfo.Name,
                 meshes: meshBuildResult.Meshes,
-                localTransform: pieceInfo.MeshSpaceTransform * mshToViewportTransform,
+                localTransform: pieceTransform * mshToViewportTransform,
                 boundsMin: meshBuildResult.BoundsMin,
                 boundsMax: meshBuildResult.BoundsMax,
                 debugInfo: new ViewportPieceDebugInfo
@@ -121,6 +129,7 @@ public static class MshViewportMeshFactory
         GL gl,
         List<ViewportPiece> pieces,
         MeshPieceInfo pieceInfo,
+        Matrix4x4 pieceTransform,
         Matrix4x4 mshToViewportTransform,
         string reason,
         int geometrySlotIndex = -1)
@@ -131,7 +140,7 @@ public static class MshViewportMeshFactory
             id: pieceInfo.Id,
             name: pieceInfo.Name,
             mesh: marker,
-            localTransform: pieceInfo.MeshSpaceTransform * mshToViewportTransform,
+            localTransform: pieceTransform * mshToViewportTransform,
             boundsMin: new Vector3(-0.35f, -0.35f, -0.35f),
             boundsMax: new Vector3(0.35f, 0.35f, 0.35f),
             debugInfo: new ViewportPieceDebugInfo

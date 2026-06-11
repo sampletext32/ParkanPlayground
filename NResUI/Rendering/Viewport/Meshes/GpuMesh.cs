@@ -3,9 +3,10 @@ using NResUI.Rendering.Viewport;
 
 namespace NResUI.Rendering.Viewport.Meshes;
 
-public sealed class GpuMesh
+public sealed class GpuMesh : IDisposable
 {
     private readonly GL _gl;
+    private bool _disposed;
 
     public uint VertexArrayObject { get; }
     public uint VertexBufferObject { get; }
@@ -34,7 +35,21 @@ public sealed class GpuMesh
 
     public unsafe void Draw()
     {
+        if (_disposed)
+            return;
+
         _gl.BindVertexArray(VertexArrayObject);
         _gl.DrawElements(PrimitiveType, IndexCount, DrawElementsType.UnsignedInt, null);
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+            return;
+
+        _gl.DeleteBuffer(ElementBufferObject);
+        _gl.DeleteBuffer(VertexBufferObject);
+        _gl.DeleteVertexArray(VertexArrayObject);
+        _disposed = true;
     }
 }
