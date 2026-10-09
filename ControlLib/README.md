@@ -227,14 +227,26 @@ For example:
 - CPT indices are ints.
 - effect radius/scale/range can be float bit patterns.
 
-Known command direction:
-- 0x03 spawn effect using one CPT/bounds-like anchor.
-- 0x04 spawn oriented effect from three CPT/control points.
-- 0x16 spawn object from three CPT/control points.
-- 0x0A start effect by local id/index.
-- 0x0B request stop effect by local id/index.
-- 0x12 activate effect.
-- 0x13 deactivate effect.
+Effect commands (`CControlBase::ExecuteControlCommandList`, проверено по коду и по 449 CTL первой части игры; файлы `is2_bases` относятся ко второй части, формат у них другой и движок первой части их не читает)
+-----------------------------------------------------------------------------------------------
+Эффекты адресуются 32-битным id: `(msh_tag списка команд << 16) | local_id`. Для spawn-команд `local_id = arg3`;
+`arg3 == 0xFFFFFFFF` значит «взять следующий номер из счётчика объекта» (в данных не встречается).
+Ресурс команды (`archive_name` + `resource_name`) указывает на элемент FXID в NRes archive `effects.rlb`
+(в данных всегда `effects.rlb`); ему соответствует `IEffectManager::OpenEffectNResArchive` + `LoadNResEffectItem`.
+
+| Опкод | Команда | Аргументы |
+|---|---|---|
+| 3 | SPAWN_EFFECT_ON_JOINT_BOUNDS | `arg0` = смещение детали от первой детали msh_tag, `arg3` = local_id; `arg1/arg2/arg4` не используются. Масштаб = радиус сферы детали (по всем осям), позиция = центр сферы (SPACE_LOCAL) |
+| 4 | SPAWN_EFFECT_FROM_3_JOINTS | `arg0/arg1/arg2` = индексы CPT относительно первой CPT msh_tag, `arg3` = local_id; `arg4` не используется (в данных часто мусор/float). Позиция = среднее трёх CPT, оси из их направлений; деталь привязки = деталь CPT `arg0`; SetEffectTransform(LOCAL) |
+| 5 | SPAWN_EFFECT_ON_OBJECT_BOUNDS | `arg3` = local_id (в данных 9000); матрица = радиус и центр сферы всего объекта (SPACE_WORLD) |
+| 8 | REMOVE_EFFECT | `arg0` = local_id |
+| 10 | START_EFFECT | `arg0` = local_id, `arg1` = **источник силы** (`EffectStrengthSource`), подменяет значение из FXID: в данных 1 (Life_0to1) ×147, 0 (Constant) ×30, 3 (Life_1minus) ×4, 2 (Life_Fract) ×3 |
+| 11 | REQUEST_STOP_EFFECT | `arg0` = local_id (эффект доигрывается до конца цикла и перезапускается с источником силы из файла) |
+| 14 | ATTACH_EFFECT_TO_PIECE | `arg0` = local_id, `arg1` = смещение детали от msh_tag; деталь, по анимации которой считаются источники силы 4/16/17 |
+| 18 / 19 | ACTIVATE / DEACTIVATE_EFFECT | `arg0` = local_id (в данных 1 или 2) |
+
+Нигде в `ExecuteControlCommandList` не вызывается `IEffectManager::method6` (значение для источника силы Constant),
+так что команды CTL всегда запускают эффект либо с Life-источником, либо с Constant без значения.
 
 Network/update timing model
 ---------------------------

@@ -1,9 +1,12 @@
 using Common;
 
+#pragma warning disable CS0618 // legacy component records are obsolete but kept for compatibility
+
 namespace FxidLib;
 
 /// <summary>
 /// Static reader methods for parsing FXID effect definition structures from binary streams.
+/// Prefer <see cref="FxidFile.Read"/>; the per-component readers here use the legacy (incorrect) layouts.
 /// </summary>
 public static class FxidReader
 {
@@ -25,10 +28,10 @@ public static class FxidReader
     {
         EffectHeader h;
         h.ComponentCount = br.ReadUInt32();
-        h.TimeMode = br.ReadUInt32();
+        h.StrengthSource = (EffectStrengthSource)br.ReadUInt32();
         h.Duration = br.ReadSingle();
-        h.PhaseJitter = br.ReadSingle();
-        h.Flags = br.ReadUInt32();
+        h.StrengthJitter = br.ReadSingle();
+        h.Flags = (FxidEffectFlags)br.ReadUInt32();
         h.SettingsId = br.ReadUInt32();
         h.RandShiftX = br.ReadSingle();
         h.RandShiftY = br.ReadSingle();

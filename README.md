@@ -334,43 +334,8 @@ All lightmaps named whatever.0 → they all end up with no DirectDraw palette at
 
 ## `FXID` - файл эффектов
 
-По сути представляет собой последовательный список саб-эффектов идущих друг за другом.
-
-Всего существует 10 (1..10) видов FXID-команд. Field-level смысл payload ещё нужно дополнять по мере реверса.
-
-Выглядит так, словно весь файл это тоже эффект сам по себе.
-
-```
-0x00-0x04 Type (игра обрезает 1 байт, и поддерживает только значения 1-9)
-0x04-0x08 unknown
-0x08-0x0C unknown
-0x0C-0x10 unknown
-0x10-0x14 EffectTemplateFlags
-...
-0x30-0x34 ScaleX
-0x34-0x38 ScaleY
-0x38-0x3C ScaleZ
-
-enum EffectTemplateFlags : uint32_t
-{
-    EffectTemplateFlag_RandomizeStrength   = 0x0001,  // used in UpdateDust
-    EffectTemplateFlag_RandomOffset        = 0x0008,  // random worldTransform offset
-    EffectTemplateFlag_TriangularShape     = 0x0020,  // post-process strength as 0→1→0
-    EffectTemplateFlag_OnlyWhenEnvBit0Off  = 0x0080,  // gating in ComputeEffectStrength
-    EffectTemplateFlag_OnlyWhenEnvBit0On   = 0x0100,  // gating in ComputeEffectStrength
-    EffectTemplateFlag_MultiplyByLife      = 0x0200,  // multiply strength by life progress
-    EffectTemplateFlag_EnvFlag2_IfNotSet   = 0x0800,  // if NOT set → envFlags |= 0x02
-    EffectTemplateFlag_EnvFlag10_IfSet     = 0x1000,  // if set  → envFlags |= 0x10
-    EffectTemplateFlag_AlwaysEmitDust      = 0x0010,  // ignore piece state / flags
-    EffectTemplateFlag_IgnorePieceState    = 0x8000,  // treat piece default state as OK
-    EffectTemplateFlag_AutoDeleteAtFull    = 0x0002,  // delete when strength >= 1
-    EffectTemplateFlag_DetachAfterEmit     = 0x0004,  // detach from attachment after update
-};
-
-```
-
-
-
+Заголовок 0x3C + компоненты 10 типов (свет, 3D-звук, анимированные объекты, след, частицы, спавнер). Рантайм - `Effect.dll` (FxManager, EffectHandle, IEffect).
+Полное описание формата, флагов, `SettingsId`, LOD, `stateFlags` и неразобранных мест: [FxidLib/README.md](FxidLib/README.md).
 
 # ЕСЛИ ГДЕ-ТО ВИДИШЬ PTR_func_ret1_no_args, ТО ЭТО ShaderConfig
 

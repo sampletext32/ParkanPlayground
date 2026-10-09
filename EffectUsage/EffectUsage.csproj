@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ControlLib\ControlLib.csproj" />
+      <ProjectReference Include="..\FxidLib\FxidLib.csproj" />
+    </ItemGroup>
+
+</Project>
