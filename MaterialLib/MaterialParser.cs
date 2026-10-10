@@ -21,13 +21,13 @@ public static class MaterialParser
         // Значения по умолчанию из C-кода.
         var globalAlphaMultiplier = 1.0f; // field8_0x15c
         var globalEmissiveIntensity = 0.0f; // field9_0x160
-        var sourceBlendMode = BlendMode.Unknown;   // field6_0x154
-        var destBlendMode = BlendMode.Unknown;   // field7_0x158
+        var surfaceMaterial = SurfaceMaterial.None;   // field6_0x154 (в Ghidra SourceBlendMode)
+        byte reserved05 = 0xFF;                       // field7_0x158 (в Ghidra DestBlendMode)
 
         if (magic >= 2)
         {
-            sourceBlendMode = (BlendMode)fs.ReadByte();
-            destBlendMode = (BlendMode)fs.ReadByte();
+            surfaceMaterial = (SurfaceMaterial)fs.ReadByte();
+            reserved05 = (byte)fs.ReadByte();
         }
 
         if (magic > 2)
@@ -144,8 +144,8 @@ public static class MaterialParser
             materialRenderingType,
             supportsBumpMapping,
             isParticleEffect,
-            sourceBlendMode,
-            destBlendMode,
+            surfaceMaterial,
+            reserved05,
             globalAlphaMultiplier,
             globalEmissiveIntensity,
             stages,

@@ -30,7 +30,7 @@ public readonly record struct FxidResourceRef(string ArchiveName, string Resourc
     }
 }
 
-/// <summary>Thrown when an FXID payload does not conform to the layout verified on the original game corpus.</summary>
+/// <summary>Thrown when an FXID payload does not conform to the layout verified on the original game files.</summary>
 public sealed class FxidFormatException(string message) : Exception(message);
 
 /// <summary>
@@ -77,8 +77,8 @@ public static class FxidComponentLayout
     };
 
     /// <summary>
-    /// Size of the data after the resource reference. Type 4: one float (corpus: 300/500/700, looks like a distance);
-    /// type 9: two dwords (corpus: 0/1 values).
+    /// Size of the data after the resource reference. Type 4: one float (in the files: 300/500/700, looks like a distance);
+    /// type 9: two dwords (in the files: 0/1 values).
     /// </summary>
     public static int GetTrailingSize(FxidComponentType type)
     {
@@ -99,7 +99,7 @@ public sealed record FxidComponent(
     /// <summary>
     /// Bit 8 of <c>TypeAndFlags</c>. Copied by the engine into byte +4 of the runtime effect object
     /// and, together with header flag 0x400, sets <c>EffectHandle.stateFlags |= 0x10</c>. Meaning TBD.
-    /// Corpus: set in types 3, 4, 7, 8.
+    /// In the files: set in types 3, 4, 7, 8.
     /// </summary>
     public bool TypeFlagBit8_TBD => ((TypeAndFlags >> 8) & 1) != 0;
 
@@ -253,15 +253,15 @@ public sealed record EffectType3Data(
     // +0x04: ESpace (0 mesh, 1 local, 2 world); copied to EffectContents.space.
     uint Space,
     // +0x08..0x10: value v = pow(t, PhaseExponent) * (PhaseEnd - max(PhaseStart, 0)) + max(PhaseStart, 0);
-    // t = effect strength when PhaseStart < 0 (corpus: -1.0 in 317 of 394), otherwise normalized life.
+    // t = effect strength when PhaseStart < 0 (in the files: -1.0 in 317 of 394), otherwise normalized life.
     // The fractional part of v is passed to the render call as a phase (animation frame?).
     float PhaseStart_maybe,
     float PhaseEnd_maybe,
-    float PhaseExponent_maybe,      // corpus: always 1.0
+    float PhaseExponent_maybe,      // in the files: always 1.0
     // +0x14..0x1C: lerp(LifeLerpStart, LifeLerpEnd, pow(life, LifeLerpExponent)) is passed to the render call (alpha/size?).
     float LifeLerpStart_TBD,
     float LifeLerpEnd_TBD,
-    float LifeLerpExponent,         // corpus: ~always 1.0
+    float LifeLerpExponent,         // in the files: ~always 1.0
     // +0x20..0x24: component is active while ActiveTimeStart <= t <= ActiveTimeEnd; life = (t - start) / (end - start).
     // Units: EvaluateAtTime.param_2[1] (ctx dword1) is the effect strength value 0..1 (see FxidStrength), NOT necessarily time: types 7/10 (verified in 10001240)
     // compare it with their window and normalise (v-lo)/(hi-lo). With life-based StrengthSource it equals normalized life; type 1 uses the same convention (windows like 0.75..1.0 occur).
@@ -270,7 +270,7 @@ public sealed record EffectType3Data(
     // Animated over life: value = Start + (End - Start) * pow(life, Exponent) per axis.
     Vector3 PositionStart,          // +0x28
     Vector3 PositionEnd,            // +0x34
-    Vector3 PositionExponent,       // +0x40 (corpus: (1,1,1) almost always)
+    Vector3 PositionExponent,       // +0x40 (in the files: (1,1,1) almost always)
     Vector3 DirectionStart,         // +0x4C (exponent is not used: linear in life)
     Vector3 DirectionEnd,           // +0x58
     Vector3 ScaleStart,             // +0x64
@@ -321,7 +321,7 @@ public sealed record EffectType3Data(
 }
 
 /// <summary>
-/// Type 4: the type-3 layout plus a trailing float at +0xC8 (corpus: 150/300/500/700).
+/// Type 4: the type-3 layout plus a trailing float at +0xC8 (in the files: 150/300/500/700).
 /// VERIFIED (SetParamsWithReferenceDistance 10011650 / EffectType4::RenderContents): stores 1 / value; at render time the animation
 /// progress becomes clamp(distance_to_camera * (1 / value) * life, 0..1), where distance_to_camera is the length of the reference
 /// vector (camera position transformed into the effect's local space). So the value is the distance at which the animation is complete.
@@ -332,25 +332,25 @@ public sealed record EffectType4Data(EffectType3Data Base, float ReferenceDistan
 /// Type 9: type-3 prefix (same constructor, SetParams and EvaluateAtTime as type 3; only the vtable and Render at 100149e0 differ) plus two dwords.
 /// Render sets the render flags of <c>EffectContents</c> (field at +8) and then calls the type-3 content render:
 /// <c>EffectContents.render_group</c> is really a render-flags word (types 3/4 use 1): base value by <see cref="DrawMode_maybe"/> (0 -> 3, 1 -> 5, 2 -> 6), the render-context quality level (0..3) goes into the top two bits
-/// (level &lt;&lt; 30), and <see cref="Flag_TBD"/> == 0 additionally sets 0x8000000. Corpus: (0,0) 129, (1,0) 66, (1,1) 6 (mode 2 never occurs).
+/// (level &lt;&lt; 30), and <see cref="Flag_TBD"/> == 0 additionally sets 0x8000000. In the files: (0,0) 129, (1,0) 66, (1,1) 6 (mode 2 never occurs).
 /// </summary>
 public sealed record EffectType9Data(EffectType3Data Base, uint DrawMode_maybe, uint Flag_TBD);
 
 /// <summary>
 /// Type 1 (named Billboard in FxidLib). EffectType1::SetParams works with ILightManager, so the engine treats it as a
-/// dynamic light with animated position, direction, colour and range. Layout from SetParams and the corpus (e.g. aim_light_L:
+/// dynamic light with animated position, direction, colour and range. Layout from SetParams and the files (e.g. aim_light_L:
 /// direction (0,-1,0), colour (1,0.1,0.1) -> (2.5,0.1,0.1), range 3 -> 12). Bytes after +0x78 up to the resource at +0xA0 are not decoded yet.
 /// </summary>
 public sealed record EffectType1Data(
     uint TypeAndFlags,
-    uint LightType_maybe,       // +0x04: 1,2,5,6,7 in the corpus (3 and 4 are handled by the engine); mapped to ILightManager type + flags
+    uint LightType_maybe,       // +0x04: 1,2,5,6,7 in the files (3 and 4 are handled by the engine); mapped to ILightManager type + flags
     float ActiveTimeStart,      // +0x08: window on the effect strength value (ctx dword1); = normalized life for life-based sources
     float ActiveTimeEnd,        // +0x0C
     Vector3 PositionStart,      // +0x10
     Vector3 PositionEnd,        // +0x1C
     Vector3 DirectionStart_maybe, // +0x28
     Vector3 DirectionEnd_maybe,   // +0x34
-    float[] ColorStart_maybe,   // +0x40: 4 floats, RGB + 4th (0 in the corpus samples); values above 1 occur
+    float[] ColorStart_maybe,   // +0x40: 4 floats, RGB + 4th (0 in the sample files); values above 1 occur
     float[] ColorEnd_maybe,     // +0x50
     float[] ColorJitter_TBD,    // +0x60: random amplitude per channel
     float RangeStart_maybe,     // +0x70
@@ -389,7 +389,7 @@ public sealed record EffectType1Data(
 public sealed record EffectParticleData(
     uint TypeAndFlags,
     uint Mode_maybe,                // +0x04: VERIFIED. Type 7: 0/2 -> particle render value 0, 1 -> 3. Type 10: 0x10/0x20 pick the polyhedron shape table (see README, FUN_1000caf0)
-    float ValueLerpStart_maybe,     // +0x08: lerp start used by Render (t^ValueExponent); corpus 1.0 -> 0.0..0.5, looks like an opacity fade
+    float ValueLerpStart_maybe,     // +0x08: lerp start used by Render (t^ValueExponent); in the files 1.0 -> 0.0..0.5, looks like an opacity fade
     float ValueLerpEnd_maybe,       // +0x0C
     float ValueExponent_maybe,      // +0x10
     float ActiveWindowStart,        // +0x14: window on ctx dword1 (strength); EvaluateAtTime stores (v-lo)/(hi-lo) in object+0x1C, -1 outside
@@ -435,8 +435,8 @@ public sealed record EffectParticleData(
 /// </summary>
 public sealed record EffectTrailData(
     uint TypeAndFlags,
-    float ValueStart,        // +0x04: VERIFIED (Render): value = ValueStart + window * (ValueEnd - ValueStart), passed to the draw call; always 1.0 in the corpus (looks like opacity)
-    float ValueEnd,        // +0x08: always 0.0 in the corpus
+    float ValueStart,        // +0x04: VERIFIED (Render): value = ValueStart + window * (ValueEnd - ValueStart), passed to the draw call; always 1.0 in the files (looks like opacity)
+    float ValueEnd,        // +0x08: always 0.0 in the files
     float ActiveWindowStart,    // +0x0C: window on ctx dword1 (strength), half-open [start, end): at value == end the trail disappears
     float ActiveWindowEnd,      // +0x10
     uint MaxPieces,             // +0x14: ring size, also the cap for the piece count
@@ -478,7 +478,7 @@ public sealed record EffectSpawnerData(
     float SpawnIntervalEnd,     // +0x1C: at window value 1
     float LifeExponent_unused,        // +0x20: Render computes pow(this, life) but discards the result (dead code)
     uint MaxParticles,          // +0x24: ring buffer size
-    Vector3 SpawnOffsetStart,   // +0x28: offset of the spawn point from the attach point at window value 0 (corpus: always 0,0,0; end/jitter 0, exponent 1,1,1)
+    Vector3 SpawnOffsetStart,   // +0x28: offset of the spawn point from the attach point at window value 0 (in the files: always 0,0,0; end/jitter 0, exponent 1,1,1)
     Vector3 SpawnOffsetEnd,     // +0x34: at window value 1
     Vector3 SpawnOffsetJitter,  // +0x40: random box added to SpawnOffsetEnd per particle
     Vector3 SpawnOffsetExponent_maybe, // +0x4C: per-axis pow exponent of the offset lerp
@@ -521,15 +521,15 @@ public sealed record EffectSoundData(
     uint Mode,                  // +0x04: 2,3 = looped; also passed to the wave loader
     float WindowStart,          // +0x08
     float WindowEnd,            // +0x0C
-    Vector3 PositionOffsetStart, // +0x10: VERIFIED: lerp by strength, then transformed by the parent matrix to a world position; corpus (0,0,0), (0,-3,0), (0,0,-1); start == end in all files
+    Vector3 PositionOffsetStart, // +0x10: VERIFIED: lerp by strength, then transformed by the parent matrix to a world position; in the files (0,0,0), (0,-3,0), (0,0,-1); start == end in all files
     Vector3 PositionOffsetEnd,   // +0x1C
-    Vector3 DirectionStart_unused,      // +0x28: copied to runtime in SetParams but NOT read by EvaluateAtTime; corpus always (1,0,0)
+    Vector3 DirectionStart_unused,      // +0x28: copied to runtime in SetParams but NOT read by EvaluateAtTime; in the files always (1,0,0)
     Vector3 DirectionEnd_unused,        // +0x34
-    float MinDistance,    // +0x40: VERIFIED constant (SetParams makes no lerp), 1..150 in the corpus; goes to the sound parameters
+    float MinDistance,    // +0x40: VERIFIED constant (SetParams makes no lerp), 1..150 in the files; goes to the sound parameters
     float MaxDistance,    // +0x44: VERIFIED constant, 15..1500, always > MinDistance
     float VolumeStart,    // +0x48: VERIFIED: volume = start + strength * (end - start); 1.0 in 198 of 199 files
     float VolumeEnd,      // +0x4C: always 1.0
-    float Unknown50_TBD,        // +0x50: passed as the last field of the sound parameter block (command 0x38E); always 0 in the corpus
+    float Unknown50_TBD,        // +0x50: passed as the last field of the sound parameter block (command 0x38E); always 0 in the files
     FxidResourceRef Resource)   // +0x54: wave file
 {
     public bool IsLooped => Mode is 2 or 3;

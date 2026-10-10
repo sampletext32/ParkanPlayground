@@ -103,7 +103,14 @@ public record class TexmFile(
         return Task.CompletedTask;
     }
 
-    public byte[] GetRgba32BytesFromMipmap(int index, out int mipWidth, out int mipHeight)
+    /// <param name="index">Номер мипмапа.</param>
+    /// <param name="mipWidth">Ширина мипмапа.</param>
+    /// <param name="mipHeight">Высота мипмапа.</param>
+    /// <param name="preserveAlpha">
+    /// Для формата 8888 по умолчанию альфа принудительно 255 (как раньше). Текстуры эффектов (WAVE.0, EFFECT4.0 и др.)
+    /// хранят форму спрайта именно в альфа-канале, для них нужно передать true.
+    /// </param>
+    public byte[] GetRgba32BytesFromMipmap(int index, out int mipWidth, out int mipHeight, bool preserveAlpha = false)
     {
         var mipmapBytes = MipmapBytes[index];
         
@@ -119,7 +126,8 @@ public record class TexmFile(
             mipmapBytes,
             mipWidth,
             mipHeight,
-            Header.Format
+            Header.Format,
+            preserveAlpha
         );
     }
 
@@ -146,11 +154,11 @@ public record class TexmFile(
         return result;
     }
 
-    private byte[] ReinterpretMipmapBytesAsRgba32(byte[] bytes, int mipWidth, int mipHeight, int format)
+    private byte[] ReinterpretMipmapBytesAsRgba32(byte[] bytes, int mipWidth, int mipHeight, int format, bool preserveAlpha = false)
     {
         var result = format switch
         {
-            8888 => ReinterpretAs8888(bytes, mipWidth, mipHeight),
+            8888 => ReinterpretAs8888(bytes, mipWidth, mipHeight, preserveAlpha),
             888 => ReinterpretAs888(bytes, mipWidth, mipHeight),
             4444 => ReinterpretAs4444(bytes, mipWidth, mipHeight),
             565 => ReinterpretAs565(bytes, mipWidth, mipHeight),
@@ -266,7 +274,7 @@ public record class TexmFile(
         return result;
     }
 
-    private byte[] ReinterpretAs8888(byte[] bytes, int mipWidth, int mipHeight)
+    private byte[] ReinterpretAs8888(byte[] bytes, int mipWidth, int mipHeight, bool preserveAlpha)
     {
         var span = bytes.AsSpan();
 
@@ -285,7 +293,7 @@ public record class TexmFile(
             result[i + 0] = r;
             result[i + 1] = g;
             result[i + 2] = b;
-            result[i + 3] = 255;
+            result[i + 3] = preserveAlpha ? a : (byte)255;
             
             // swap endianess back
             // (rawPixel[0], rawPixel[1], rawPixel[2], rawPixel[3]) = (rawPixel[3], rawPixel[2], rawPixel[1], rawPixel[0]);

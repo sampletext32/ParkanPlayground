@@ -1,4 +1,5 @@
 using System.Text;
+using MaterialLib;
 
 namespace ExplLib;
 
@@ -37,27 +38,6 @@ public enum ExplDirectionMode : uint
 }
 
 /// <summary>
-/// Surface material class (byte 4 of a MAT0 item; World3D.dll reads it into the material descriptor, where Ghidra calls it
-/// <c>SourceBlendMode</c>, and <c>IMatManager::GetMaterialMetaByIndex</c> returns a pointer to it). 255 = not set.
-/// Names are inferred from the material names of each class and from the effect names in EXPL slots; the numbers are verified.
-/// </summary>
-public enum SurfaceMaterial : byte
-{
-    Class0 = 0,      // L08, L09, TOK41_PLC
-    Stone = 1,       // "st": landscape tiles L*, STONE00, WATER_BOT (EXPL slot 2)
-    Class2 = 2,      // landscape tiles L00/L01/L19/L20/L28/L32/L40
-    Class3 = 3,      // L23, L26
-    Class4 = 4,      // L18, L27
-    Metal = 5,       // "m": R_*, B_* (robots, buildings; 262 materials) (slot 6)
-    Wood = 6,        // "w": trees, bark (TREE*, KORA, ELKA) (slot 7)
-    Water = 7,       // "wb/wl/wm/wt": WATER, WATER_M (slot 8)
-    Class8 = 8,      // "al": B_MTP_* (slot 9)
-    Class9 = 9,      // "an": BIRD_*, TOK11, TOK42W (slot 10)
-    Class10 = 10,    // "s": TOK51, B_A_BRIGE (slot 11)
-    None = 255,
-}
-
-/// <summary>
 /// EXPL item (explosion description, 4CC "EXPL", extension .exp), 792 bytes in all 104 files of the first game:
 /// 0x18 byte header + 12 resource slots of 0x40 bytes. VERIFIED from <c>CControlBase::CommitNdpDamageStateTransition</c>
 /// and <c>ComputeNdpDamageEffectBoundsRadius</c> (Control.dll), which read this item when an NDP piece reaches a worse
@@ -67,7 +47,7 @@ public enum SurfaceMaterial : byte
 /// Slot selection: the surface hit by the object gives a material id <c>m</c>. If 0 &lt;= m &lt;= 10, <c>Slots[m + 1]</c> is tried
 /// (offset 0x58 + 0x40 * m), and if its effect cannot be loaded (empty name) or there is no hit, <c>Slots[0]</c> (offset 0x18) is used.
 /// A hit without a triangle gives m = 10. 76 of 104 files have only slot 0. Effect name suffixes (m, st, w, wb/wl/wm/wt, al, an, s, *_metal)
-/// follow the material ids (see <see cref="SurfaceMaterial"/>; the id comes from the MAT0 item of the hit surface).
+/// follow the material ids (see <see cref="MaterialLib.SurfaceMaterial"/>; the id is byte 4 of the MAT0 item of the hit surface).
 /// The unused part of the name buffers can contain uninitialized memory (garbage after the terminating zero).
 /// </remarks>
 public sealed record ExplFile(

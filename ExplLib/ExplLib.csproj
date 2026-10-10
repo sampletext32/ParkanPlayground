@@ -1,3 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
+    <ItemGroup>
+        <ProjectReference Include="..\MaterialLib\MaterialLib.csproj" />
+    </ItemGroup>
 </Project>

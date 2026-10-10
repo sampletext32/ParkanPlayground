@@ -73,18 +73,18 @@ public class MaterialExplorerPanel : IImGuiPanel
                     
                     ImGui.Separator();
                     ImGui.TextDisabled($"(Read if Magic1 >= 2)");
-                    ImGui.Text($"Source Blend Mode: {mat.SourceBlendMode}");
+                    ImGui.Text($"Surface Material: {mat.SurfaceMaterial} ({(byte)mat.SurfaceMaterial})");
                     if (ImGui.IsItemHovered())
                     {
-                        ImGui.SetTooltip(GetBlendModeDescription(mat.SourceBlendMode));
+                        ImGui.SetTooltip("Класс поверхности: по нему Control.dll выбирает слот эффекта в EXPL (255 = не задан)");
                     }
                     ImGui.SameLine();
                     ImGui.TextDisabled("(1 byte)");
                     
-                    ImGui.Text($"Dest Blend Mode: {mat.DestBlendMode}");
+                    ImGui.Text($"Reserved (byte 5): {mat.Reserved05}");
                     if (ImGui.IsItemHovered())
                     {
-                        ImGui.SetTooltip(GetBlendModeDescription(mat.DestBlendMode));
+                        ImGui.SetTooltip("Читается движком, но в данных всегда 255; назначение неизвестно");
                     }
                     ImGui.SameLine();
                     ImGui.TextDisabled("(1 byte)");
@@ -249,42 +249,6 @@ public class MaterialExplorerPanel : IImGuiPanel
             }
         }
         ImGui.End();
-    }
-
-    private static string GetBlendModeDescription(BlendMode mode)
-    {
-        return mode switch
-        {
-            BlendMode.Zero => "D3DBLEND_ZERO\nBlend factor is (0, 0, 0, 0)\nResults in black/transparent",
-            
-            BlendMode.One => "D3DBLEND_ONE\nBlend factor is (1, 1, 1, 1)\nUses full color value (no blending)",
-            
-            BlendMode.SrcColor => "D3DBLEND_SRCCOLOR\nBlend factor is (Rs, Gs, Bs, As)\nUses source color",
-            
-            BlendMode.InvSrcColor => "D3DBLEND_INVSRCCOLOR\nBlend factor is (1-Rs, 1-Gs, 1-Bs, 1-As)\nUses inverted source color",
-            
-            BlendMode.SrcAlpha => "D3DBLEND_SRCALPHA\nBlend factor is (As, As, As, As)\nUses source alpha for all channels\n Standard transparency (common with InvSrcAlpha for dest)",
-            
-            BlendMode.InvSrcAlpha => "D3DBLEND_INVSRCALPHA\nBlend factor is (1-As, 1-As, 1-As, 1-As)\nUses inverted source alpha\n Standard transparency (common with SrcAlpha for source)",
-            
-            BlendMode.DestAlpha => "D3DBLEND_DESTALPHA\nBlend factor is (Ad, Ad, Ad, Ad)\nUses destination alpha",
-            
-            BlendMode.InvDestAlpha => "D3DBLEND_INVDESTALPHA\nBlend factor is (1-Ad, 1-Ad, 1-Ad, 1-Ad)\nUses inverted destination alpha",
-            
-            BlendMode.DestColor => "D3DBLEND_DESTCOLOR\nBlend factor is (Rd, Gd, Bd, Ad)\nUses destination color",
-            
-            BlendMode.InvDestColor => "D3DBLEND_INVDESTCOLOR\nBlend factor is (1-Rd, 1-Gd, 1-Bd, 1-Ad)\nUses inverted destination color",
-            
-            BlendMode.SrcAlphaSat => "D3DBLEND_SRCALPHASAT\nBlend factor is (f, f, f, 1) where f = min(As, 1-Ad)\nSaturates source alpha",
-            
-            BlendMode.BothSrcAlpha => "D3DBLEND_BOTHSRCALPHA (Obsolete in D3D9+)\nBlend factor is (As, As, As, As) for both source and dest\nSource: (As, As, As, As), Dest: (1-As, 1-As, 1-As, 1-As)",
-            
-            BlendMode.BothInvSrcAlpha => "D3DBLEND_BOTHINVSRCALPHA (Obsolete in D3D9+)\nBlend factor is (1-As, 1-As, 1-As, 1-As) for both source and dest\nSource: (1-As, 1-As, 1-As, 1-As), Dest: (As, As, As, As)",
-            
-            BlendMode.Unknown => "Unknown/Default (0xFF)\nUninitialized or opaque rendering",
-            
-            _ => "Unknown blend mode"
-        };
     }
 
     private static string GetAnimationLoopModeDescription(AnimationLoopMode mode)

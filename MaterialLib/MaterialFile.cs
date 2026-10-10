@@ -7,8 +7,10 @@ namespace MaterialLib;
 /// <param name="MaterialRenderingType">Производное от Version: (Version >> 2) &amp; 0xF. 0 = standard, 1 = special, 2 = particle.</param>
 /// <param name="SupportsBumpMapping">Производное от Version: (Version &amp; 2) != 0.</param>
 /// <param name="IsParticleEffect">Производное от Version: Version &amp; 40. 0 = normal, 8 = particle/effect.</param>
-/// <param name="SourceBlendMode">Глобальный source blend mode; читается, если Magic1 >= 2. Значение по умолчанию: Unknown (0xFF).</param>
-/// <param name="DestBlendMode">Глобальный destination blend mode; читается, если Magic1 >= 2. Значение по умолчанию: Unknown (0xFF).</param>
+/// <param name="SurfaceMaterial">Класс поверхности (материал для попаданий/взрывов); читается, если Magic1 >= 2, иначе None (0xFF).
+/// В Ghidra World3D.dll поле названо SourceBlendMode по ошибке: значения в данных 0..10 и 255, не D3DBLEND; IMatManager::GetMaterialMetaByIndex
+/// возвращает указатель на него, и Control.dll по нему выбирает слот EXPL.</param>
+/// <param name="Reserved05">Второй байт после AnimCount; читается, если Magic1 >= 2, иначе 0xFF. Движок записывает его в DestBlendMode, но в данных всегда 255 (все 628 материалов); назначение неизвестно.</param>
 /// <param name="GlobalAlphaMultiplier">Глобальный alpha multiplier; читается, если Magic1 > 2. Значение по умолчанию: 1.0.</param>
 /// <param name="GlobalEmissiveIntensity">Глобальная emissive intensity; читается, если Magic1 > 3. Значение по умолчанию: 0.0.</param>
 /// <param name="Stages">Стадии материала в порядке чтения из файла.</param>
@@ -20,61 +22,31 @@ public record MaterialFile(
     uint MaterialRenderingType,
     bool SupportsBumpMapping,
     uint IsParticleEffect,
-    BlendMode SourceBlendMode,
-    BlendMode DestBlendMode,
+    SurfaceMaterial SurfaceMaterial,
+    byte Reserved05,
     float GlobalAlphaMultiplier,
     float GlobalEmissiveIntensity,
     List<MaterialStage> Stages,
     List<MaterialAnimation> Animations);
 
 /// <summary>
-/// Режимы blend для материала. Управляют смешиванием source и destination цветов.
-/// Формула: FinalColor = SourceColor * SourceBlend [operation] DestColor * DestBlend.
-/// Соответствуют значениям Direct3D D3DBLEND.
+/// Класс поверхности материала (байт 4 элемента MAT0). Числа проверены по данным (Material.lib, 628 материалов) и по кодам слотов EXPL;
+/// названия выведены из имён материалов и суффиксов эффектов взрыва. Для None (255) используется слот 0 EXPL.
 /// </summary>
-public enum BlendMode : byte
+public enum SurfaceMaterial : byte
 {
-    /// <summary>Blend factor = (0, 0, 0, 0).</summary>
-    Zero = 1,
-    
-    /// <summary>Blend factor = (1, 1, 1, 1).</summary>
-    One = 2,
-    
-    /// <summary>Blend factor = (Rs, Gs, Bs, As).</summary>
-    SrcColor = 3,
-    
-    /// <summary>Blend factor = (1-Rs, 1-Gs, 1-Bs, 1-As).</summary>
-    InvSrcColor = 4,
-    
-    /// <summary>Blend factor = (As, As, As, As).</summary>
-    SrcAlpha = 5,
-    
-    /// <summary>Blend factor = (1-As, 1-As, 1-As, 1-As).</summary>
-    InvSrcAlpha = 6,
-    
-    /// <summary>Blend factor = (Ad, Ad, Ad, Ad).</summary>
-    DestAlpha = 7,
-    
-    /// <summary>Blend factor = (1-Ad, 1-Ad, 1-Ad, 1-Ad).</summary>
-    InvDestAlpha = 8,
-    
-    /// <summary>Blend factor = (Rd, Gd, Bd, Ad).</summary>
-    DestColor = 9,
-    
-    /// <summary>Blend factor = (1-Rd, 1-Gd, 1-Bd, 1-Ad).</summary>
-    InvDestColor = 10,
-    
-    /// <summary>Blend factor = (f, f, f, 1), где f = min(As, 1-Ad).</summary>
-    SrcAlphaSat = 11,
-    
-    /// <summary>Blend factor = (As, As, As, As) для source и destination; устарело в D3D9+.</summary>
-    BothSrcAlpha = 12,
-    
-    /// <summary>Blend factor = (1-As, 1-As, 1-As, 1-As) для source и destination; устарело в D3D9+.</summary>
-    BothInvSrcAlpha = 13,
-    
-    /// <summary>Неизвестный или неинициализированный режим blend; значение по умолчанию 0xFF.</summary>
-    Unknown = 0xFF
+    Class0 = 0,   // L08, L09, TOK41_PLC
+    Stone = 1,    // "st": ландшафт L*, STONE*, WATER_BOT (37)
+    Class2 = 2,   // ландшафт L00/L01/L19/L20/L28/L32/L40
+    Class3 = 3,   // L23, L26
+    Class4 = 4,   // L18, L27
+    Metal = 5,    // "m": R_*, B_* (262)
+    Wood = 6,     // "w": деревья, кора (60)
+    Water = 7,    // "wb/wl/wm/wt": WATER, WATER_M
+    Class8 = 8,   // "al": B_MTP_* (23)
+    Class9 = 9,   // "an": BIRD_*, TOK11, TOK42W (12)
+    Class10 = 10, // "s": TOK51, B_A_BRIGE
+    None = 0xFF,
 }
 
 /// <summary>Стадия материала. Порядок полей соответствует порядку чтения из файла, а не C struct layout.</summary>

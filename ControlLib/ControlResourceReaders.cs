@@ -223,12 +223,12 @@ public static class ControlResourceReader
         int unknown0C = r.ReadInt32();
         int unknown10 = r.ReadInt32();
         int unknown14 = r.ReadInt32();
-        int optionalLinkIndex = r.ReadInt32();
-        uint mobilityContribution = r.ReadUInt32();
+        int initialRuntimeState = r.ReadInt32();
+        float unknown1C = r.ReadSingle();
         float unknown20 = r.ReadSingle();
         float unknown24 = r.ReadSingle();
-        float unknown28 = r.ReadSingle();
-        float unknown2C = r.ReadSingle();
+        float signalAWeight = r.ReadSingle();
+        float signalBWeight = r.ReadSingle();
 
         var commonParams = new float[16];
         for (int i = 0; i < commonParams.Length; i++)
@@ -267,12 +267,12 @@ public static class ControlResourceReader
             Unknown0C: unknown0C,
             Unknown10: unknown10,
             Unknown14: unknown14,
-            OptionalLinkIndex: optionalLinkIndex,
-            MobilityContribution: mobilityContribution,
+            InitialRuntimeState: initialRuntimeState,
+            Param1C: unknown1C,
             Param20: unknown20,
             Param24: unknown24,
-            Param28: unknown28,
-            Param2C: unknown2C,
+            SignalAWeight: signalAWeight,
+            SignalBWeight: signalBWeight,
             CommonParams: commonParams,
             Resource: new ResourceNamedRef(resourceArchiveName, resourceResourceName),
             PieceBindingIndices: bindingIndices,
@@ -398,12 +398,12 @@ public sealed record CtlItemRecordRaw(
     int Unknown0C,
     int Unknown10,
     int Unknown14,
-    int OptionalLinkIndex,
-    uint MobilityContribution,
-    float Param20,
+    int InitialRuntimeState, // +0x18: initial runtime_state of the item, -1 = keep default (CItemBase::ParseCtlItemRecordAndInit)
+    float Param1C, // +0x1C: float, 0 or multiples of 12.5 (engines 450..1350, radars 175..1150, shields 200..290, batteries 175..700); no reader found in Control.dll
+    float Param20, // +0x20: raw item value (selector 0x30): base power draw per second; for batteries (0x13) the max output
     float Param24,
-    float Param28,
-    float Param2C,
+    float SignalAWeight, // +0x28: weight of control signal A (flags bits 8..15) in CItemBase::method9
+    float SignalBWeight, // +0x2C: weight of control signal B (flags bits 16..23); wheels use 0.5 or 1.0
     IReadOnlyList<float> CommonParams,
     ResourceNamedRef Resource,
     IReadOnlyList<int> PieceBindingIndices,

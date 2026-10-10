@@ -174,14 +174,14 @@ public static class ControlResourceDump
                 $"       idx0C/10/14={GetInt(item, "OptionalIndex0C", "Unknown0C")}, " +
                 $"{GetInt(item, "OptionalIndex10", "Unknown10")}, " +
                 $"{GetInt(item, "OptionalIndex14", "Unknown14")} " +
-                $"link={GetInt(item, "OptionalLinkIndex")} " +
-                $"mobility={GetInt(item, "MobilityContribution")}");
+                $"initState={GetInt(item, "InitialRuntimeState", "OptionalLinkIndex")} " +
+                $"p1C={F(GetFloat(item, "Param1C", "MobilityContribution"))}");
 
             w.WriteLine(
-                $"       p20/24/28/2C={F(GetFloat(item, "Param20", "Unknown20"))}, " +
+                $"       p20/24/wA/wB={F(GetFloat(item, "Param20", "Unknown20"))}, " +
                 $"{F(GetFloat(item, "Param24", "Unknown24"))}, " +
-                $"{F(GetFloat(item, "Param28", "Unknown28"))}, " +
-                $"{F(GetFloat(item, "Param2C", "Unknown2C"))}");
+                $"{F(GetFloat(item, "SignalAWeight", "Param28", "Unknown28"))}, " +
+                $"{F(GetFloat(item, "SignalBWeight", "Param2C", "Unknown2C"))}");
 
             var resource = Get(item, "Resource");
             if (resource is not null && !ResourceIsEmpty(resource))

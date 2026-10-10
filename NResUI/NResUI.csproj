@@ -18,7 +18,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\ControlLib\ControlLib.csproj" />
       <ProjectReference Include="..\CpDatLib\CpDatLib.csproj" />
+      <ProjectReference Include="..\ExplLib\ExplLib.csproj" />
+      <ProjectReference Include="..\FxidLib\FxidLib.csproj" />
       <ProjectReference Include="..\MissionTmaLib\MissionTmaLib.csproj" />
       <ProjectReference Include="..\MshLib\MshLib.csproj" />
       <ProjectReference Include="..\NResLib\NResLib.csproj" />

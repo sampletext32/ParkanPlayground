@@ -20,16 +20,16 @@ public record struct EffectHeader
     public EffectStrengthSource StrengthSource;
     /// <summary>
     /// FXID payload offset 0x08: effect duration in seconds. The engine computes
-    /// end_time_ms = Duration * 1000 + start_time_ms. 0.0 in 120 corpus files, always with a non-life StrengthSource (0,4,5,14,15,16,17), because life-based sources would divide 0/0.
+    /// end_time_ms = Duration * 1000 + start_time_ms. 0.0 in 120 files, always with a non-life StrengthSource (0,4,5,14,15,16,17), because life-based sources would divide 0/0.
     /// </summary>
     public float Duration;
-    /// <summary>FXID payload offset 0x0C: amplitude of the random strength offset; used only with <see cref="FxidEffectFlags.RandomizeStrength"/> (corpus: 0.1/0.2/0.4).</summary>
+    /// <summary>FXID payload offset 0x0C: amplitude of the random strength offset; used only with <see cref="FxidEffectFlags.RandomizeStrength"/> (in the files: 0.1/0.2/0.4).</summary>
     public float StrengthJitter;
     /// <summary>FXID payload offset 0x10: effect behavior flags (see <see cref="FxidEffectFlags"/> for evidence levels).</summary>
     public FxidEffectFlags Flags;
     /// <summary>
     /// FXID payload offset 0x14: quality-settings id (read in Effect.dll by <c>EffectDllSettings::GetDust</c> and <c>NextRandLODValue</c>).
-    /// Low byte (<see cref="SettingsCategory"/>, corpus 0..19): index into a table of 20 enable flags; an entry of 0 means the effect is not created at the current detail preset.
+    /// Low byte (<see cref="SettingsCategory"/>, in the files 0..19): index into a table of 20 enable flags; an entry of 0 means the effect is not created at the current detail preset.
     /// The flags are filled by <c>SetDefaultValues(preset)</c>: presets 1 and 2 enable everything, preset 3 (lowest detail) disables indices 0,1,6,7,10,11,12,16.
     /// By the order of the resource strings the indices look like: 0 Dust, 1 Smoke, 2 EngineFire, 3 Explode, 4 Shield, 5 Lights, 6 Dust2, 7 Smoke2, 8 Explode2, 9 Shield2,
     /// 10 Lights2, 11 Smoke3, 12 EngineFire2, 13 Explode3, 14 GunFire1, 15 Lights3, 16 Smoke4, 17 Explode4, 18 GunFire2, 19 Lights4 (names are a hypothesis from the string order).
@@ -70,7 +70,7 @@ public record struct EffectHeader
 /// Used by CBillboardComponent_Initialize/Update/Render to drive size/color/alpha
 /// curves and sample scattering within a 3D extent volume.
 /// </summary>
-[Obsolete("Legacy layout: prefix is shifted and the tail overlaps the resource reference (verified against the corpus). Use FxidFile.Read / FxidComponent.Raw / FxidComponentLayout; typed views: EffectType3Data.")]
+[Obsolete("Legacy layout: prefix is shifted and the tail overlaps the resource reference (verified against the files). Use FxidFile.Read / FxidComponent.Raw / FxidComponentLayout; typed views: EffectType3Data.")]
 public record struct BillboardComponentData
 {
     public uint TypeAndFlags;       // type (low byte) and flags as seen in CEffect_InitFromDef
@@ -101,7 +101,7 @@ public record struct BillboardComponentData
 /// Used by CSoundComponent_Initialize/Update to drive positional audio, playback
 /// window, and scalar ranges (e.g. volume / pitch), plus a 0x40-byte sound name tail.
 /// </summary>
-[Obsolete("Legacy layout: prefix is shifted and the tail overlaps the resource reference (verified against the corpus). Use FxidFile.Read / FxidComponent.Raw / FxidComponentLayout; typed views: EffectType3Data.")]
+[Obsolete("Legacy layout: prefix is shifted and the tail overlaps the resource reference (verified against the files). Use FxidFile.Read / FxidComponent.Raw / FxidComponentLayout; typed views: EffectType3Data.")]
 public record struct SoundComponentData
 {
     public uint TypeAndFlags;           // component type and flags
@@ -125,7 +125,7 @@ public record struct SoundComponentData
 /// Prefix layout matches BillboardComponentData and is used to allocate a grid of
 /// particle objects; the 0x38-byte tail is passed into CFxManager_LoadTexture.
 /// </summary>
-[Obsolete("Legacy layout: prefix is shifted and the tail overlaps the resource reference (verified against the corpus). Use FxidFile.Read / FxidComponent.Raw / FxidComponentLayout; typed views: EffectType3Data.")]
+[Obsolete("Legacy layout: prefix is shifted and the tail overlaps the resource reference (verified against the files). Use FxidFile.Read / FxidComponent.Raw / FxidComponentLayout; typed views: EffectType3Data.")]
 public record struct AnimParticleComponentData
 {
     public uint TypeAndFlags;       // type (low byte) and flags as seen in CEffect_InitFromDef
@@ -156,7 +156,7 @@ public record struct AnimParticleComponentData
 /// Shares the same prefix layout as BillboardComponentData, including extents and
 /// radius/exponent triplets, but uses a 0x3C-byte tail passed to CFxManager_LoadTexture.
 /// </summary>
-[Obsolete("Legacy layout: prefix is shifted and the tail overlaps the resource reference (verified against the corpus). Use FxidFile.Read / FxidComponent.Raw / FxidComponentLayout; typed views: EffectType3Data.")]
+[Obsolete("Legacy layout: prefix is shifted and the tail overlaps the resource reference (verified against the files). Use FxidFile.Read / FxidComponent.Raw / FxidComponentLayout; typed views: EffectType3Data.")]
 public record struct AnimBillboardComponentData
 {
     public uint TypeAndFlags;       // type (low byte) and flags as seen in CEffect_InitFromDef
@@ -187,7 +187,7 @@ public record struct AnimBillboardComponentData
 /// CTrailComponent_Initialize interprets this as segment count, width/alpha/UV
 /// ranges, timing, and a shared texture name at +0x30.
 /// </summary>
-[Obsolete("Legacy layout: prefix is shifted and the tail overlaps the resource reference (verified against the corpus). Use FxidFile.Read / FxidComponent.Raw / FxidComponentLayout; typed views: EffectType3Data.")]
+[Obsolete("Legacy layout: prefix is shifted and the tail overlaps the resource reference (verified against the files). Use FxidFile.Read / FxidComponent.Raw / FxidComponentLayout; typed views: EffectType3Data.")]
 public record struct TrailComponentData
 {
     public uint TypeAndFlags;             // component type and flags
@@ -206,7 +206,7 @@ public record struct TrailComponentData
 /// Simple point component definition (type 6).
 /// Definition block is just the 4-byte typeAndFlags header; no extra data on disk.
 /// </summary>
-[Obsolete("Legacy layout: prefix is shifted and the tail overlaps the resource reference (verified against the corpus). Use FxidFile.Read / FxidComponent.Raw / FxidComponentLayout; typed views: EffectType3Data.")]
+[Obsolete("Legacy layout: prefix is shifted and the tail overlaps the resource reference (verified against the files). Use FxidFile.Read / FxidComponent.Raw / FxidComponentLayout; typed views: EffectType3Data.")]
 public record struct PointComponentData
 {
     public uint TypeAndFlags; // component type and flags; definition block has no payload
@@ -217,7 +217,7 @@ public record struct PointComponentData
 /// Shares the same 0xC8-byte prefix layout as AnimParticleComponentData (type 3),
 /// followed by two dwords of plane-specific data.
 /// </summary>
-[Obsolete("Legacy layout: prefix is shifted and the tail overlaps the resource reference (verified against the corpus). Use FxidFile.Read / FxidComponent.Raw / FxidComponentLayout; typed views: EffectType3Data.")]
+[Obsolete("Legacy layout: prefix is shifted and the tail overlaps the resource reference (verified against the files). Use FxidFile.Read / FxidComponent.Raw / FxidComponentLayout; typed views: EffectType3Data.")]
 public record struct PlaneComponentData
 {
     public AnimParticleComponentData Base; // shared 0xC8-byte prefix: time window, sample counts, extents, curves
@@ -231,7 +231,7 @@ public record struct PlaneComponentData
 /// time window, instance count, spatial extents/axes, radius triplets, and a
 /// 0x40-byte texture name tail.
 /// </summary>
-[Obsolete("Legacy layout: prefix is shifted and the tail overlaps the resource reference (verified against the corpus). Use FxidFile.Read / FxidComponent.Raw / FxidComponentLayout; typed views: EffectType3Data.")]
+[Obsolete("Legacy layout: prefix is shifted and the tail overlaps the resource reference (verified against the files). Use FxidFile.Read / FxidComponent.Raw / FxidComponentLayout; typed views: EffectType3Data.")]
 public record struct ModelComponentData
 {
     public uint TypeAndFlags;          // component type and flags
@@ -258,7 +258,7 @@ public record struct ModelComponentData
 /// Layout derived from CAnimModelComponent_Initialize: time params, direction vectors,
 /// radius triplets, extent vectors, and a 0x48-byte texture name tail.
 /// </summary>
-[Obsolete("Legacy layout: prefix is shifted and the tail overlaps the resource reference (verified against the corpus). Use FxidFile.Read / FxidComponent.Raw / FxidComponentLayout; typed views: EffectType3Data.")]
+[Obsolete("Legacy layout: prefix is shifted and the tail overlaps the resource reference (verified against the files). Use FxidFile.Read / FxidComponent.Raw / FxidComponentLayout; typed views: EffectType3Data.")]
 public record struct AnimModelComponentData
 {
     public uint TypeAndFlags;          // component type and flags
@@ -283,7 +283,7 @@ public record struct AnimModelComponentData
 /// Shares the same 0xCC-byte prefix layout as AnimBillboardComponentData (type 4),
 /// followed by one dword of cube-specific data.
 /// </summary>
-[Obsolete("Legacy layout: prefix is shifted and the tail overlaps the resource reference (verified against the corpus). Use FxidFile.Read / FxidComponent.Raw / FxidComponentLayout; typed views: EffectType3Data.")]
+[Obsolete("Legacy layout: prefix is shifted and the tail overlaps the resource reference (verified against the files). Use FxidFile.Read / FxidComponent.Raw / FxidComponentLayout; typed views: EffectType3Data.")]
 public record struct CubeComponentData
 {
     public AnimBillboardComponentData Base; // shared 0xCC-byte prefix: billboard-style time window, extents, curves

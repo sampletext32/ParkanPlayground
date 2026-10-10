@@ -4,7 +4,7 @@ namespace FxidLib;
 /// Source of the effect "strength" value. Stored in the FXID header at +0x04 and copied by
 /// <c>EffectHandle::InitFromFxidData</c> into <c>EffectMainParams.m_StrengthSource</c>.
 /// Names come from the Ghidra enum <c>EEffectStrengthSource</c>; behaviour below is taken from
-/// <c>FxManager::ComputeEffectStrength</c> (Effect.dll). The corpus uses only 0,1,2,4,5,14,15,16,17;
+/// <c>FxManager::ComputeEffectStrength</c> (Effect.dll). The files use only 0,1,2,4,5,14,15,16,17;
 /// the remaining values are defined by the engine but never occur in data.
 /// Life = (current_time_ms - start_time_ms) / (end_time_ms - start_time_ms), so with Duration = 0
 /// the life-based sources divide 0/0; such files presumably rely on non-life sources.
@@ -48,7 +48,7 @@ public enum EffectStrengthSource : uint
 /// FXID header flags (+0x10). Evidence: Effect.dll functions FxManager::UpdateEffectHandle,
 /// FxManager::ComputeEffectStrength, EffectHandle::EvaluateComponentsAndMergeBounds (ex "UpdateDust"),
 /// EffectHandle::RenderEffectComponents, EffectHandle::InitFromFxidData.
-/// Corpus usage (476 files): 0x1:52 0x2:106 0x4:108 0x8:51 0x10:130 0x20:56 0x40:7 0x100:110 0x400:113
+/// Usage in the 476 files: 0x1:52 0x2:106 0x4:108 0x8:51 0x10:130 0x20:56 0x40:7 0x100:110 0x400:113
 /// 0x800:148 0x1000:7 0x2000:1 0x8000:5; 0x80 is never used.
 /// </summary>
 [Flags]
@@ -70,7 +70,7 @@ public enum FxidEffectFlags : uint
     TriangularShape = 0x0020,
     /// <summary>VERIFIED (InitFromFxidData): <c>isActive = !(Flags &amp; 0x40)</c>. Must be switched on with ActivateEffect.</summary>
     StartInactive = 0x0040,
-    /// <summary>VERIFIED (ComputeEffectStrength): strength is 0 while FxManager.environment_flags bit 0 is CLEAR (bit 0 is set/cleared by two environment toggle messages; meaning TBD). The README had 0x80/0x100 reversed. Unused in the corpus.</summary>
+    /// <summary>VERIFIED (ComputeEffectStrength): strength is 0 while FxManager.environment_flags bit 0 is CLEAR (bit 0 is set/cleared by two environment toggle messages; meaning TBD). The README had 0x80/0x100 reversed. Unused in the files.</summary>
     OnlyWhenEnvBit0On = 0x0080,
     /// <summary>VERIFIED (ComputeEffectStrength): strength is 0 while environment_flags bit 0 is SET.</summary>
     OnlyWhenEnvBit0Off = 0x0100,
@@ -111,7 +111,7 @@ public enum FxidComponentType : byte
     AnimBillboard = 4,
     /// <summary>Runtime class <c>EffectType5</c> (0x54 bytes): a streak drawn between the previous and current attach point.</summary>
     Trail = 5,
-    /// <summary>Empty component: 4-byte payload, SetParams/EvaluateAtTime/Render are stubs (EvaluateAtTime returns false). Not present in the corpus.</summary>
+    /// <summary>Empty component: 4-byte payload, SetParams/EvaluateAtTime/Render are stubs (EvaluateAtTime returns false). Not present in the files.</summary>
     Point = 6,
     /// <summary>Particle emitter, 0xCC-byte particles, non-looping (EffectType7, 0x48 bytes).</summary>
     Plane = 7,

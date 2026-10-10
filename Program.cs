@@ -73,8 +73,8 @@ foreach (var targetId in targetIds)
         Console.WriteLine($"\n  Parsed Material:");
         Console.WriteLine($"    Rendering Type: {material.MaterialRenderingType}");
         Console.WriteLine($"    Supports Bump: {material.SupportsBumpMapping}");
-        Console.WriteLine($"    Source Blend: {material.SourceBlendMode}");
-        Console.WriteLine($"    Dest Blend: {material.DestBlendMode}");
+        Console.WriteLine($"    Surface Material: {material.SurfaceMaterial}");
+        Console.WriteLine($"    Reserved05: {material.Reserved05}");
         Console.WriteLine($"    Stages: {material.Stages.Count}");
         Console.WriteLine($"    Animations: {material.Animations.Count}");
         
