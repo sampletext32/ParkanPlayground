@@ -48,17 +48,15 @@ public class MaterialExplorerPanel : IImGuiPanel
                     
                     ImGui.Separator();
                     ImGui.TextDisabled("(Derived from Version)");
-                    ImGui.Text($"Material Rendering Type: {mat.MaterialRenderingType}");
+                    ImGui.Text($"Blend Mode: {mat.BlendMode} ({(uint)mat.BlendMode})");
                     if (ImGui.IsItemHovered())
                     {
-                        ImGui.SetTooltip("0=Standard, 1=Special, 2=Particle/Effect");
+                        ImGui.SetTooltip(
+                            "Version bits 2..5 = Ngi32 render state profile:\n" +
+                            "0=Opaque, 1=SrcAlpha/Zero + alpha test, 2=SrcAlpha/One (additive, effects),\n" +
+                            "3=Zero/SrcColor, 4=SrcAlpha/InvSrcAlpha, 5=DestColor/SrcColor");
                     }
                     ImGui.Text($"Supports Bump Mapping: {mat.SupportsBumpMapping}");
-                    ImGui.Text($"Is Particle Effect: {mat.IsParticleEffect}");
-                    if (ImGui.IsItemHovered())
-                    {
-                        ImGui.SetTooltip("0=Normal material, 8=Particle/Effect (e.g., jet engines)");
-                    }
                 }
 
                 if (ImGui.CollapsingHeader("2. File Header (Read Order)", ImGuiTreeNodeFlags.DefaultOpen))

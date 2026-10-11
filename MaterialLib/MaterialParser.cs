@@ -8,9 +8,8 @@ public static class MaterialParser
 {
     public static MaterialFile ReadFromStream(Stream fs, string fileName, uint elementCount, int magic1)
     {
-        var materialRenderingType = elementCount >> 2 & 0xf;
+        var blendMode = (MaterialBlendMode)(elementCount >> 2 & 0xf);
         var supportsBumpMapping = (elementCount & 2) != 0;
-        var isParticleEffect = elementCount & 40;
 
         // Reading content
         var stageCount = fs.ReadUInt16LittleEndian();
@@ -141,9 +140,8 @@ public static class MaterialParser
             fileName,
             elementCount,
             magic1,
-            materialRenderingType,
+            blendMode,
             supportsBumpMapping,
-            isParticleEffect,
             surfaceMaterial,
             reserved05,
             globalAlphaMultiplier,

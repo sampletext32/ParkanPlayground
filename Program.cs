@@ -71,7 +71,7 @@ foreach (var targetId in targetIds)
             matEntry.ElementSize);
         
         Console.WriteLine($"\n  Parsed Material:");
-        Console.WriteLine($"    Rendering Type: {material.MaterialRenderingType}");
+        Console.WriteLine($"    Blend Mode: {material.BlendMode}");
         Console.WriteLine($"    Supports Bump: {material.SupportsBumpMapping}");
         Console.WriteLine($"    Surface Material: {material.SurfaceMaterial}");
         Console.WriteLine($"    Reserved05: {material.Reserved05}");

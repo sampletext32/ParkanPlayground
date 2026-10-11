@@ -21,10 +21,16 @@ public sealed class GunModelPreview : IService
     private readonly IWindow _window;
     private readonly WeaponCatalog _catalog;
     private readonly IConfigProvider _config;
-    private readonly ViewportScene _scene = new();
+    /// <summary>
+    /// Кадры анимации материалов. У материалов орудий (R_GB50..52, R_GB16 в Material.lib) 4 стадии по 50 мс в цикле 200 мс;
+    /// стадия выбирается по времени (MatManager::AnimateFrame), поэтому для каждого кадра строится своя сцена.
+    /// </summary>
+    public const int FrameCount = 4;
+    public const float FrameDurationSec = 0.05f;
+
+    private readonly ViewportScene[] _scenes = Enumerable.Range(0, FrameCount).Select(_ => new ViewportScene()).ToArray();
     private readonly ViewportCamera _camera = new();
     private ViewportRenderer? _renderer;
-    private int _loadedStage = -1;
 
     public GunModelPreview(GL gl, IWindow window, WeaponCatalog catalog, IConfigProvider config)
     {
@@ -39,17 +45,17 @@ public sealed class GunModelPreview : IService
 
     public string? LoadedName { get; private set; }
     public string? Error { get; private set; }
-    public bool HasModel => LoadedName != null && _scene.Pieces.Count > 0;
+    public bool HasModel => LoadedName != null && _scenes[0].Pieces.Count > 0;
 
     /// <summary>Загружает модель орудия по имени CTL (<c>o_gun_ba_23.ctl</c>).</summary>
-    public void Load(string ctlName, IReadOnlyDictionary<int, float>? poseTimes = null, int colorStage = 0)
+    public void Load(string ctlName, IReadOnlyDictionary<int, float>? poseTimes = null)
     {
-        if (string.Equals(LoadedName, ctlName, StringComparison.OrdinalIgnoreCase) && _loadedStage == colorStage)
+        if (string.Equals(LoadedName, ctlName, StringComparison.OrdinalIgnoreCase))
             return;
 
-        _loadedStage = colorStage;
+        foreach (var scene in _scenes)
+            scene.ClearPieces();
 
-        _scene.ClearPieces();
         LoadedName = null;
         Error = null;
         PieceTransforms = [];
@@ -84,9 +90,14 @@ public sealed class GunModelPreview : IService
                 return;
             }
 
-            var materials = ViewportMaterialResolver.LoadForMsh(_gl, mshPath, _config, warnings, colorStage);
-            var pieces = MshViewportMeshFactory.BuildViewportPieces(_gl, result.Document, new MeshRenderState(), materials);
-            _scene.ReplacePieces(pieces);
+            for (var frame = 0; frame < FrameCount; frame++)
+            {
+                var materials = ViewportMaterialResolver.LoadForMsh(_gl, mshPath, _config, warnings, frame);
+                var pieces = MshViewportMeshFactory.BuildViewportPieces(
+                    _gl, result.Document, new MeshRenderState(), materials);
+                _scenes[frame].ReplacePieces(pieces);
+            }
+
             ApplyPose(result.Document, poseTimes);
             LoadedName = ctlName;
         }
@@ -156,19 +167,24 @@ public sealed class GunModelPreview : IService
 
         // MSH (Z вверх, Y вперёд) -> пространство viewport (Y вверх, -Z вперёд).
         var toViewport = Matrix4x4.CreateRotationX(-MathF.PI * 0.5f);
-        foreach (var piece in _scene.Pieces)
+        foreach (var scene in _scenes)
         {
-            if (piece.Id >= 0 && piece.Id < world.Length)
-                piece.LocalTransform = world[piece.Id] * toViewport;
+            foreach (var piece in scene.Pieces)
+            {
+                if (piece.Id >= 0 && piece.Id < world.Length)
+                    piece.LocalTransform = world[piece.Id] * toViewport;
+            }
         }
     }
 
     /// <summary>
     /// Рисует модель в текстуру. <paramref name="right"/> и <paramref name="up"/> - оси экрана в системе вида эффектов
     /// (X вперёд, Y влево, Z вверх), <paramref name="target"/> - точка в центре экрана, <paramref name="unitsHigh"/> - высота
-    /// кадра в единицах.
+    /// кадра в единицах, <paramref name="timeSec"/> - время для анимации материалов.
     /// </summary>
-    public uint Render(int width, int height, Vector3 right, Vector3 up, Vector3 target, float unitsHigh, Vector3 background)
+    public uint Render(
+        int width, int height, Vector3 right, Vector3 up, Vector3 target, float unitsHigh, Vector3 background,
+        float timeSec = 0f)
     {
         _renderer ??= new ViewportRenderer(_gl, _window);
         _renderer.ClearColor = background;
@@ -187,6 +203,7 @@ public sealed class GunModelPreview : IService
         _camera.Target = ToViewport(target);
         _camera.OrthographicHeight = MathF.Max(unitsHigh, 0.01f);
 
-        return _renderer.Render(width, height, _scene, _camera);
+        var frame = (int)MathF.Floor(MathF.Max(timeSec, 0f) / FrameDurationSec) % FrameCount;
+        return _renderer.Render(width, height, _scenes[frame], _camera);
     }
 }

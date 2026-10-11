@@ -4,9 +4,9 @@ namespace MaterialLib;
 /// <param name="FileName">Имя файла из NRes metadata, не из payload материала.</param>
 /// <param name="Version">Значение attr1 / ElementCount из NRes metadata.</param>
 /// <param name="Magic1">Значение attr2 / Magic1 из NRes metadata.</param>
-/// <param name="MaterialRenderingType">Производное от Version: (Version >> 2) &amp; 0xF. 0 = standard, 1 = special, 2 = particle.</param>
+/// <param name="BlendMode">Производное от Version: (Version >> 2) &amp; 0xF. Индекс профиля состояний рендера Ngi32 (wanted_device_caps);
+/// в данных встречаются только 0, 1, 2.</param>
 /// <param name="SupportsBumpMapping">Производное от Version: (Version &amp; 2) != 0.</param>
-/// <param name="IsParticleEffect">Производное от Version: Version &amp; 40. 0 = normal, 8 = particle/effect.</param>
 /// <param name="SurfaceMaterial">Класс поверхности (материал для попаданий/взрывов); читается, если Magic1 >= 2, иначе None (0xFF).
 /// В Ghidra World3D.dll поле названо SourceBlendMode по ошибке: значения в данных 0..10 и 255, не D3DBLEND; IMatManager::GetMaterialMetaByIndex
 /// возвращает указатель на него, и Control.dll по нему выбирает слот EXPL.</param>
@@ -19,15 +19,41 @@ public record MaterialFile(
     string FileName,
     uint Version,
     int Magic1,
-    uint MaterialRenderingType,
+    MaterialBlendMode BlendMode,
     bool SupportsBumpMapping,
-    uint IsParticleEffect,
     SurfaceMaterial SurfaceMaterial,
     byte Reserved05,
     float GlobalAlphaMultiplier,
     float GlobalEmissiveIntensity,
     List<MaterialStage> Stages,
     List<MaterialAnimation> Animations);
+
+/// <summary>
+/// Режим смешивания материала: биты 2..5 версии MAT0 = индекс в таблице профилей состояний рендера Ngi32.dll
+/// (<c>g_DefaultRenderStateProfiles</c>, <c>3DRender::SelectRenderStateProfile</c>). Для каждого профиля заданы
+/// SRCBLEND, DESTBLEND, ALPHAFUNC, ALPHATESTENABLE, ALPHABLENDENABLE; если устройство режим не поддерживает,
+/// <c>CShade::InitAlphaBlendModeTranslateTable</c> подставляет ближайший меньший поддержанный.
+/// </summary>
+public enum MaterialBlendMode : uint
+{
+    /// <summary>ONE/ZERO, тест и смешивание выключены: непрозрачные материалы (53 в Material.lib).</summary>
+    Opaque = 0,
+
+    /// <summary>SRCALPHA/ZERO, alpha-test ALPHAFUNC = GREATEREQUAL: вырезка по альфе (SKY, EXPL1, SHOOT1, B_PG2..., 184).</summary>
+    SrcAlphaZeroAlphaTest = 1,
+
+    /// <summary>SRCALPHA/ONE, alpha-test GREATEREQUAL: аддитивное, взвешенное альфой. Материалы эффектов (JET*, LIGHT1, LASER_R, GLOW_R, 67).</summary>
+    Additive = 2,
+
+    /// <summary>ZERO/SRCCOLOR: умножение фона на цвет источника. В данных не встречается.</summary>
+    Multiply = 3,
+
+    /// <summary>SRCALPHA/INVSRCALPHA: обычная прозрачность. В данных не встречается.</summary>
+    Alpha = 4,
+
+    /// <summary>DESTCOLOR/SRCCOLOR: модуляция x2. В данных не встречается.</summary>
+    Modulate2X = 5,
+}
 
 /// <summary>
 /// Класс поверхности материала (байт 4 элемента MAT0). Числа проверены по данным (Material.lib, 628 материалов) и по кодам слотов EXPL;

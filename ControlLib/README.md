@@ -134,7 +134,7 @@ Control — слой игровой логики, который связыва�
 | Опкод | Команда | Аргументы и действие |
 |---|---|---|
 | 3 | SPAWN_EFFECT_ON_JOINT_BOUNDS | `arg0` = деталь от первой детали msh_tag, `arg3` = local_id; масштаб = радиус сферы детали, позиция = её центр (SPACE_LOCAL) |
-| 4 | SPAWN_EFFECT_FROM_3_JOINTS | `arg0..2` = индексы CPT от первой CPT msh_tag, `arg3` = local_id; матрица из трёх CPT (§7.4); `arg4` игнорируется |
+| 4 | SPAWN_EFFECT_FROM_3_JOINTS | `arg0..2` = индексы CPT от первой CPT msh_tag, `arg3` = local_id; матрица из трёх CPT (§7.4); `arg4` игнорируется: в ветке не читается, в данных 0 у 806 из 937 записей, остальное разнородное с ASCII-мусором |
 | 5 | SPAWN_EFFECT_ON_OBJECT_BOUNDS | `arg3` = local_id (в данных 9000); радиус и центр сферы всего объекта (SPACE_WORLD) |
 | 8 | REMOVE_EFFECT | `arg0` = local_id |
 | 10 | START_EFFECT | `arg0` = local_id, `arg1` = источник силы (`EffectStrengthSource`): Life_0to1 ×147, Constant ×30, Life_1minus ×4, Life_Fract ×3 |
@@ -145,8 +145,8 @@ Control — слой игровой логики, который связыва�
 `IEffectManager::SetConstantStrength` из команд не вызывается: эффект стартует с Life-источником либо с Constant = значение по умолчанию (0).
 
 Прочие опкоды: 0 RESET_MOTION, 1/2 MARK/UNMARK_ROOT_CENTRAL, 7 KILL_PIECE, 9 ITEM_LOAD_RESOURCE, 12/13 SET_TANG_ACCEL/NORM_SPEED, 15 SCHEDULE_DETACH_OR_KILL
-(удаление через `DetachCleanupDelayMs`), 17 FORCE_KILL, 20 PLACE_BUILDING_ON_TERRAIN, 21 DAMAGE_OBJECTS_IN_BOUNDS, 22 SPAWN_OBJECT_FROM_3_JOINTS,
-23/30 EXECUTE_ITEM_ACTION, 27 SWAP_NDP_RESOURCE (подмена EXPL и немедленный взрыв, §7.5), 40/41 QUEUE_PATH_TO_(RANDOM_)CONTROL_STATE, 42/43 NET_SYNC_FLAG.
+(ставит `clan_index` = 0xFFFE, затем удаление через `DetachCleanupDelayMs`), 17 FORCE_KILL, 20 PLACE_BUILDING_ON_TERRAIN, 21 DAMAGE_OBJECTS_IN_BOUNDS, 22 SPAWN_OBJECT_FROM_3_JOINTS,
+23/30 EXECUTE_ITEM_ACTION, 27 SWAP_NDP_RESOURCE (подмена EXPL и немедленный взрыв, §7.5), 29 INHERIT_CLAN_FROM_PARENT (`clan_index` = клан родителя через `ILifeSystem` слот 0x2C; в данных 4 раза: `ws_al_01`, `ws_al_02`, `ws_hm_01`, `ws_hm_02`), 40/41 QUEUE_PATH_TO_(RANDOM_)CONTROL_STATE, 42/43 NET_SYNC_FLAG.
 
 ## 4. Записи агентов (objects.rlb, fortif.rlb)
 
@@ -461,7 +461,7 @@ bullet_entry_name, …)` создаёт снаряд, читает его `ILife
 **Лазерный выстрел:** вспышка `gunf_laser_*` + звук у дула; `las_tail_*` создаётся с источником Constant = 0 (окно 0..1, значение 1 → луч виден целиком от дула
 до снаряда); при попадании START_EFFECT с Life — значение падает 1 → 0 за 0.75 с (луч затухает на месте); снаряд живёт ещё 1000 мс; в точке попадания `exp_*_las_*` по материалу.
 
-**Многоствольные орудия** (`o_gun_ba_23`: три ствола): у предмета несколько привязок (по одной на ствол), у каждой своя CPT дула (`PrimaryCptRefIndex`, иначе `SecondaryCptRefIndex`: CPT 0, 3, 6) и свой автомат выстрела (`AdvanceShotStateMachine(binding_index)`); эффект вспышки на каждый ствол создаётся отдельной командой 4 с local_id 0, 1, 2, а список команд предмета запускает их все. Снаряд рождается в положении CPT дула своей привязки, поэтому шлейф и взрыв идут от соответствующего ствола. Режим стрельбы определяет флаг предмета `0x02000000` (`CONTROL_ITEM_FLAG_RIGHT_DRIVE_GROUP`) в `CItemType2_and_0x1e_ProjectileWeapon::AdvanceBindingTimeline` (0x100244D0): с флагом автомат выстрела проходит по **всем** привязкам сразу (залп; у `o_gun_ba_21..23`, `o_gun_ma_21/22` и у большинства лазеров), без флага стреляет одна привязка за раз по кругу (`field12_0x120` = следующая; `o_gun_fa_09`: 9 труб). Привязки с флагом `0x40` (`COPY_PREVIOUS_VALUE`) пропускаются. Weapon Viewer по умолчанию показывает залп или один ствол соответственно, выбор «Ствол» переключает.
+**Многоствольные орудия** (`o_gun_ba_23`: три ствола): у предмета несколько привязок (по одной на ствол), у каждой своя CPT дула (`PrimaryCptRefIndex`, иначе `SecondaryCptRefIndex`: CPT 0, 3, 6) и свой автомат выстрела (`AdvanceShotStateMachine(binding_index)`); эффект вспышки на каждый ствол создаётся отдельной командой 4 с local_id 0, 1, 2, а список команд предмета запускает их все. Снаряд рождается в положении CPT дула своей привязки, поэтому шлейф и взрыв идут от соответствующего ствола. Режим стрельбы определяет флаг предмета `0x02000000` (`CONTROL_ITEM_FLAG_RIGHT_DRIVE_GROUP`) в `CItemType2_and_0x1e_ProjectileWeapon::AdvanceBindingTimeline` (0x100244D0): с флагом автомат выстрела проходит по **всем** привязкам сразу (залп; у `o_gun_ba_21..23`, `o_gun_ma_21/22` и у большинства лазеров), без флага стреляет одна привязка за раз по кругу (`field12_0x120` = следующая; `o_gun_fa_09`: 9 труб). Привязки с флагом `0x40` (`COPY_PREVIOUS_VALUE`) пропускаются. Weapon Viewer по умолчанию показывает залп или один ствол соответственно, выбор «Ствол» переключает. Без флага `AdvanceBindingTimeline` стреляет привязкой `current_binding_index`; когда автомат её выстрела завершает такт 0 (возвращает true), индекс переходит на `(i + 1) % число_привязок_предмета`, пропуская привязки с `COPY_PREVIOUS_VALUE` (0x40). Порядок стволов = порядок `piece_binding_refs` в записи предмета CTL (`CItemBase::ParseCtlItemRecordAndInit`), первый выстрел - привязкой 0.
 
 ### 7.4 Размещение эффектов по CPT и масштаб
 
@@ -507,14 +507,53 @@ bullet_entry_name, …)` создаёт снаряд, читает его `ILife
 База `CItemType0x16` (ctor 0x1002B470 вызывается из ctor привода) даёт `TryComputeInterceptPoint` (0x1002A470), поля цели +0x98/+0xA0/+0xAC
 и `SerializeToNetwork` (0x1002AAF0, биты `NetSynchroMode` 0x40000/0x80000/0x100000).
 
-### 7.7 Модель орудия: система координат CPT, поза, цвет клана
+### 7.7 Модель орудия: система координат CPT, поза, страницы текстур
 
 | Что | Как устроено |
 |---|---|
 | Система координат CPT | положение и направление CPT заданы в системе детали-владельца (`OwnerPieceIndex`; локальный индекс детали = индекс узла в MSH орудия). Положение дула в объекте = положение CPT × матрица этой детали в позе |
 | Поза деталей | деталь с привязкой стоит на анимации в момент `Anim2Start + default · (Anim2End − Anim2Start)` (Anim2 не задан - Anim1); остальные - на ключе по умолчанию. `o_gun_ba_23`: привязка детали 2 (подъём ствола), диапазон 1..3, значение 0.111 → время 1.222: ствол горизонтален; ключ по умолчанию (≈ 80°) смотрит вверх |
 | Страницы текстур | UV модели заданы относительно страницы стадии материала (`TextureStageIndex` → прямоугольник TEXM): итоговый UV = `page.xy + uv · page.size` в долях текстуры |
-| Цвет клана | материалы с цветом клана держат по одной стадии на цвет: `R_GB52` в `o_gun_ba_23` - 4 стадии, страницы 18..21 текстуры `NP10.0` (полосы 50×17 на `y = 239`); цвет выбирает игра, соответствие стадий клановым цветам не выяснено |
+| Кадры материала | стадии модели - кадры анимации материала, а не варианты цвета клана; подробности - §7.8 |
+
+### 7.8 Выбор стадии материала у модели
+
+Какую стадию (страницу текстуры) материала рисует деталь, решают три независимых механизма; выбирает их `CShade::SubmitMeshPieceBatches` (Terrain 0x1002A2B0):
+
+| Механизм | Условие | Как выбирается стадия |
+|---|---|---|
+| Время | у батча MSH 0x0D нет флага 0x4 | `MatManager::AnimateFrame(материал, material_animation_index)`: позиция = `(g_game_time − lastUsedTime) % длительность` по ключам анимации (loop 0 цикл, 1 ping-pong, 2 один раз, 3 случайно) |
+| Фаза детали | у батча флаг 0x4 | `GetMaterialPhase(материал, material_animation_index, phase)`, `phase` = `CAniMesh.pieces[i].material_phase_0x128` (0..1); пишется `IAnimation::SetPieceMaterialPhase` из `CItemBase::ApplyInterpolatedAnimChannelValues`, если у привязки канала флаг 0x10 |
+| Индекс анимации | всегда | `material_animation_index` = `CControlBase.material_animation_index` (+0x550, слот ILifeSystem 0x40 `SetMaterialAnimationIndex`, читает `CAniMesh::Render` через слот 0x3C); значение вне `0..animCount−1` заменяется на 0 |
+
+Клан хранится отдельно: `CControlBase.clan_index` (+0x54C), пишет `SetClanIndex` (слот ILifeSystem 0x28; `Behaviour::SetClan`, Behavior.dll 0x100094A0), 0xFFFE = без клана не перезаписывается. Оба поля реплицируются по сети парой (`IScalable_of_CControlBase::SerializeSelf` 0x1001B9B0, бит `NetSynchroMode` 0x400: `clan_index`, `material_animation_index`, затем `spawned_object_command_refs`). Что именно пишет вызов слота 0x40 и связан ли +0x550 с кланом, по коду не установлено: вызывающий не найден (`ArealMap!CreateObjectFromScheme` 0x10015780 и `Behaviour::SetProperty` 0x1000ADB0/`SetClan` слот не вызывают).
+
+Данные миссий (29 `.tma`, 796 объектов): в записи объекта нет поля, похожего на индекс анимации материала (настройки: `Invulnerability`, `Life state`, `LogicalID`, `ClanID`, `Type`, `MaxSpeedPercent`, `MaximumOre`, `CurrentOre`…; `UnknownInt4` = 0/1, `UnknownInt5/6` = -1 у 779 из 796); кланов в миссии 1..5, `OwningClanIndex` = -1..4. Это не противоречит гипотезе «индекс = клан» (вариантов у `R_LBL_01` восемь), но и не доказывает её.
+
+Известные слоты `ILifeSystem` (vtable `CControlBULL`, Control.dll 0x1003D51C):
+
+| Смещение | Метод |
+|---|---|
+| 0x0C / 0x10 | `QueryNdpLifeStateRatio` (0x100116C0) / `SetNdpLifeStateRatio` (0x10011700) |
+| 0x14 / 0x18 | `GetBaseProperty` / `SetBaseProperty` |
+| 0x1C | `Kill` |
+| 0x28 / 0x2C | `SetClanIndex` (0x10013260) / `GetClanIndex` (0x10009800) |
+| 0x3C / 0x40 | `GetMaterialAnimationIndex` (0x10009810) / `SetMaterialAnimationIndex` (0x10009820) |
+| 0x50 / 0x54 | `SerializeSelf` / `QueryBoundingSphere` |
+
+`GMSG` 0x80000023 (`CControlClassic::SendMsg` 0x10034330; приходит через `Queue::ExecuteCommand`, World3D 0x10006C40) - пакет урона из сети: маска в 1-м слове; бит 0x1 - маска секторов щита и по дельте заряда на каждый установленный бит (`AddSectorChargeDelta`, ×`ITEM_PARAM_0` щита), бит 0x10 - пары (индекс NDP, дельта жизни) до -1 (`ApplyNdpLifeDelta` + `CommitNdpDamageStateTransition`).
+
+Данные (Material.lib, 628 материалов; WEA орудий в `guns.rlb`):
+
+| Материал | Стадии / анимации | Смысл |
+|---|---|---|
+| `R_GB50`, `R_GB51`, `R_GB52` | 4 стадии (страницы 10..13, 14..17, 18..21 `NP10.0`), 1 анимация, ключи 50/100/150/200 мс, loop 0 | 4 кадра свечения ствола одного цвета (оранжевый / зелёный / синий ряд текстуры), цикл 200 мс; `R_GB52` стоит в WEA `o_gun_ba_09`, `o_gun_ba_23`, `o_gun_fa_05`, `o_gun_fa_07` |
+| `R_GB16` | то же, loop 1 (ping-pong) | то же |
+| `R_LBL_01`, `B_LBL_01` | 8 стадий (страницы `PG27.0` 0,6,5,4,3,2,1,7), 8 анимаций по одному ключу | выбор одного из 8 вариантов индексом анимации; материал у `r_l_04`, `r_m_04`, `r_b_04` (метка) |
+| 43 материала с 2 стадиями и 2 анимациями (ландшафт `L00`..`L40`) | 2 стадии, 2 анимации | вариант по индексу анимации |
+| остальные 583 материала | 1 анимация (стадий 1..29) | статические |
+
+Флаг привязки 0x10 в данных стоит только у 12 привязок в CTL `r_l_04`, `r_m_04`, `r_b_04`, то есть у моделей с `R_LBL_01`; у орудий его нет (их привязки 0x08 «прикрепить к предмету» и 0x48).
 
 ## 8. Имена в Ghidra
 
@@ -535,13 +574,15 @@ bullet_entry_name, …)` создаёт снаряд, читает его `ILife
 | 0x1002A470 / 0x1002A3F0 / 0x1002AAF0 | `CItemType0x16::` `TryComputeInterceptPoint` / `GetOwnerBoundingSphereCenter` / `SerializeToNetwork` |
 | 0x1002CB10 / 0x1002CD30 / 0x1002C610 / 0x1002C6C0 / 0x1002ABD0 / 0x1002B5A0 | `CItemType1_TurretDrive::` `ResolveAimMode` / `StepChannelTowardTarget` / `SyncTargetToAttachedWeapons` / `SolveBallisticElevation` / `IsTargetDetectedAndVisible` / `InitAfterLoad` |
 | 0x10021AC0 / 0x10021B80 / 0x10021BD0 / 0x10025CD0 | `CItemBase::` `ExtendTransitionEndTimeForBinding` / `ExecuteCommandListForItem` / `ResolveObjectPieceWorldPoint` / `GetPieceAnimChannelForBinding` |
+| 0x10013260 / 0x10009800 / 0x10009820 / 0x10009810 | `SetClanIndex` (слот ILifeSystem 0x28, поле `clan_index` +0x54C) / `GetClanIndex` / `SetMaterialAnimationIndex` / `GetMaterialAnimationIndex` (поле `material_animation_index` +0x550) |
+| 0x10021290 | `CItemBase::ApplyInterpolatedAnimChannelValues` (флаг привязки 0x10 → фаза материала детали) |
 | 0x100028A0 / 0x10015B50 / 0x10017D90 | `CControlBase::` `ExecuteControlCommandList` / `CommitNdpDamageStateTransition` / `ComputeNdpDamageEffectBoundsRadius` |
 | 0x1000DBF0 / 0x1000E3D0 | `CControlBULL::` `UpdateTick` / `frame_update` |
 | 0x100234E0 / 0x100253C0 / 0x1002D610 / 0x10025B20 | свободные: `PowIfBaseNotOne` (`base^exponent`, либо `exponent` при `base == 1.0`; затухание дрожания камеры) / `Vector3_DotProduct` / `ProjectPointOntoPlane` / `BuildPlacementFromDirection` |
 
 Связанные имена в других библиотеках (подробнее в `FxidLib/README.md`): `Effect.dll` — `FxManager::ComputeEffectStrength` (0x10005F40), `EffectType3::RenderContents`
 (0x10011380), `EffectType5::Render` (0x10002DA0), `EffectType8::EvaluateAtTime` (0x100123B0), `EffectContents::Draw` (0x10009FE0); `World3D.dll` —
-`LoadMaterialByName` (0x10004630), `MatManager::GetMaterialPhase` (0x10003930).
+`LoadMaterialByName` (0x10004630), `MatManager::GetMaterialPhase` (0x10003930), `MatManager::AnimateFrame` (0x10003490); `AniMesh.dll` — `CAniMesh::SetPieceMaterialPhase` (0x10005AE0, `IAnimation` слот 0x2C).
 
 **Структуры и поля, названные позднее (Ghidra):**
 
@@ -561,6 +602,6 @@ bullet_entry_name, …)` создаёт снаряд, читает его `ILife
 - Физический смысл трёх сигнатур юнита (0x43/0x44/0x45).
 - Потребители `CtlRawItem` +0x1C (`mobility_contribution`) и +0x24 (`param_24`: у оружия копируется в +0x9C).
 - CP1+ у Engine, остальные методы `TurretDrive` (слот 14+), остальные слоты таблицы хуков команд.
-- Назначение `arg4` команды 4 (float 1.0 / 6400 / 1e6).
 - Как именно игра переводит значение канала анимации в `GetPieceAnimTransitionProgress` для `AnimParam` (форма кривой вспышки).
+- Кто вызывает `SetMaterialAnimationIndex` (слот ILifeSystem 0x40) и какое значение пишет (связь с кланом, 8 вариантов `R_LBL_01`).
 - Размер взрыва `bm_m_04r` (масштаб 60 → до 300 ед. в поперечнике): подтверждения по игре нет.

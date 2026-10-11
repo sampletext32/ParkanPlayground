@@ -10,8 +10,8 @@ namespace NResUI.EffectPlayer;
 
 /// <summary>Кадр спрайта материала: текстура OpenGL, UV страницы атласа и цвет Ambient выбранной стадии.</summary>
 /// <param name="Additive">
-/// Материал эффектов/частиц (версия MAT0: (version >> 2) &amp; 0xF == 2, как JET*, LASER_R, GLOW_R): рисуется с аддитивным смешиванием.
-/// Выведено по wanted_device_caps в LoadMaterialByName (World3D.dll); сам режим смешивания выбирает Ngi32.dll.
+/// Материал эффектов/частиц (версия MAT0: (version >> 2) &amp; 0xF == 2, как JET*, LASER_R, GLOW_R): профиль Ngi32 SRCALPHA/ONE
+/// (src·alpha + dst, alpha-test GREATEREQUAL), см. <see cref="MaterialBlendMode"/>.
 /// </param>
 /// <param name="HasAlpha">В текстуре есть настоящий альфа-канал (не все значения 255).</param>
 public readonly record struct SpriteFrame(
@@ -363,7 +363,7 @@ public sealed class EffectAssetCache : IService
         var tint = new Vector4(stage.AmbientR, stage.AmbientG, stage.AmbientB, MathF.Min(1f, stage.AmbientA));
         frame = new SpriteFrame(
             (IntPtr)texture.Texture.GlTexture, uv0, uv1, tint, stageIndex,
-            material.MaterialRenderingType == 2, texture.HasAlpha);
+            material.BlendMode == MaterialBlendMode.Additive, texture.HasAlpha);
         return true;
     }
 }

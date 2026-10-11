@@ -63,7 +63,7 @@ public class WeaponViewerPanel : IImGuiPanel
     private WeaponInfo? _weapon;
     private int _builtSurface = -2;
     private int _barrel;
-    private int _clanStage;
+    private int _shotCounter;
     private int _builtBarrel = -2;
 
     private float _time;
@@ -163,14 +163,28 @@ public class WeaponViewerPanel : IImGuiPanel
     {
         _selected = name;
         _weapon = _catalog.GetWeapon(name);
-        _model.Load(name, _weapon?.PoseTimes, _clanStage);
+        _model.Load(name, _weapon?.PoseTimes);
         _builtSurface = -2;
-        _barrel = _weapon?.FiresAllBarrels == true ? -1 : 0;
+        _shotCounter = 0;
+        _barrel = _weapon?.FiresAllBarrels == true ? -1 : -2;
         Restart();
     }
 
-    private void Restart()
+    /// <summary>Номер ствола, который стреляет сейчас: -1 - все, иначе индекс (в режиме «по очереди» - по счётчику выстрелов).</summary>
+    private int ActiveBarrel()
     {
+        var count = _weapon?.Muzzles?.Count ?? 1;
+        if (_barrel == -2)
+            return count > 1 ? _shotCounter % count : -1;
+
+        return _barrel;
+    }
+
+    private void Restart(bool nextShot = false)
+    {
+        if (nextShot)
+            _shotCounter++;
+
         _time = 0f;
         foreach (var inst in _instances)
         {
@@ -187,14 +201,15 @@ public class WeaponViewerPanel : IImGuiPanel
         _instances.Clear();
         _loadErrors.Clear();
         _builtSurface = _surface;
-        _builtBarrel = _barrel;
+        _builtBarrel = ActiveBarrel();
         if (_weapon == null)
             return;
 
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var muzzlePoints = _weapon.Muzzles is { Count: > 0 } mz ? mz : [new MuzzlePoint(Vector3.Zero, -1)];
         var allMuzzles = muzzlePoints.Select(m => FromPiece(m.Position, m.OwnerPiece)).ToList();
-        var selected = _barrel >= 0 && _barrel < allMuzzles.Count ? _barrel : -1;
+        var active = ActiveBarrel();
+        var selected = active >= 0 && active < allMuzzles.Count ? active : -1;
         foreach (var fx in _weapon.MuzzleEffects)
         {
             // Эффект, стоящий в дуле другого ствола, при выборе одного ствола не показываем.
@@ -296,7 +311,7 @@ public class WeaponViewerPanel : IImGuiPanel
             return;
         }
 
-        if (_builtSurface != _surface || _builtBarrel != _barrel)
+        if (_builtSurface != _surface || _builtBarrel != ActiveBarrel())
             Rebuild();
 
         DrawInfo(_weapon);
@@ -317,7 +332,7 @@ public class WeaponViewerPanel : IImGuiPanel
             if (_time > end)
             {
                 if (_loop)
-                    Restart();
+                    Restart(true);
                 else
                     _playing = false;
             }
@@ -492,7 +507,7 @@ public class WeaponViewerPanel : IImGuiPanel
         ImGui.SameLine();
         if (ImGui.Button("Выстрел"))
         {
-            Restart();
+            Restart(true);
             _playing = true;
         }
 
@@ -515,13 +530,22 @@ public class WeaponViewerPanel : IImGuiPanel
 
         if (_weapon?.Muzzles is { Count: > 1 } muzzles)
         {
-            var barrels = new[] { _weapon.FiresAllBarrels ? "все (залп)" : "все сразу (в игре по очереди)" }
-                .Concat(Enumerable.Range(1, muzzles.Count).Select(i => $"ствол {i}")).ToArray();
-            var barrelIndex = _barrel + 1;
+            // Значения _barrel: -1 все сразу, -2 по очереди (как в игре у не залповых орудий), иначе номер ствола.
+            var modes = _weapon.FiresAllBarrels
+                ? new[] { "все (залп)" }
+                : new[] { "по очереди", "все сразу" };
+            var barrels = modes.Concat(Enumerable.Range(1, muzzles.Count).Select(i => $"ствол {i}")).ToArray();
+            var barrelIndex = _weapon.FiresAllBarrels
+                ? _barrel + 1
+                : _barrel == -2 ? 0 : _barrel + 2;
             ImGui.SameLine();
             ImGui.SetNextItemWidth(150);
             if (ImGui.Combo("Ствол", ref barrelIndex, barrels, barrels.Length))
-                _barrel = barrelIndex - 1;
+            {
+                _barrel = _weapon.FiresAllBarrels
+                    ? barrelIndex - 1
+                    : barrelIndex == 0 ? -2 : barrelIndex - 2;
+            }
         }
 
         // Остальное - в сворачиваемой секции, чтобы не занимать экран.
@@ -576,14 +600,6 @@ public class WeaponViewerPanel : IImGuiPanel
         }
 
         Cell(() => ImGui.Combo("Смешивание", ref _blendMode, ["По материалу", "Всегда alpha", "Всегда аддитивное"], 3), "Смешивание");
-        Cell(() =>
-        {
-            var changed = ImGui.Combo("Цвет клана", ref _clanStage, ["1", "2", "3", "4"], 4);
-            if (changed && _selected != null)
-                _model.Load(_selected, _weapon?.PoseTimes, _clanStage);
-
-            return changed;
-        }, "Цвет клана");
         ImGui.TableNextColumn();
         ImGui.Checkbox("Сетка", ref _showGrid);
         ImGui.SameLine();
@@ -815,7 +831,7 @@ public class WeaponViewerPanel : IImGuiPanel
             var target = focusWorld + viewDirs.Right * _pan.X + viewDirs.Up * _pan.Y;
             var texture = _model.Render(
                 (int)size.X, (int)size.Y, viewDirs.Right, viewDirs.Up, target, size.Y / ppu,
-                new Vector3(background.X, background.Y, background.Z));
+                new Vector3(background.X, background.Y, background.Z), _time);
             _canvas.AddTexturedQuad(
                 (IntPtr)texture,
                 Vector2.Zero, new Vector2(size.X, 0f), size, new Vector2(0f, size.Y),
