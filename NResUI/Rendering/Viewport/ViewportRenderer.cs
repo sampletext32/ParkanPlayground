@@ -14,6 +14,9 @@ public sealed class ViewportRenderer
 
     public GL Gl => _gl;
 
+    /// <summary>Цвет фона (RGB).</summary>
+    public Vector3 ClearColor { get; set; } = new(0.12f, 0.13f, 0.15f);
+
     private ShaderProgram? _meshShader;
     private ShaderProgram? _pickingShader;
 
@@ -57,7 +60,7 @@ public sealed class ViewportRenderer
         _gl.Enable(EnableCap.DepthTest);
         _gl.Disable(EnableCap.CullFace);
 
-        _gl.ClearColor(0.12f, 0.13f, 0.15f, 1.0f);
+        _gl.ClearColor(ClearColor.X, ClearColor.Y, ClearColor.Z, 1.0f);
         _gl.ClearStencil(0);
         _gl.Clear((uint)(
             ClearBufferMask.ColorBufferBit |

@@ -82,6 +82,12 @@ public sealed class PreparedComponent
     public EffectTrailData? Trail { get; init; }
     public EffectSpawnerData? Spawner { get; init; }
 
+    /// <summary>
+    /// Опорное расстояние компонента типа 4 (+0xC8): прогресс анимации умножается на расстояние до камеры / это значение
+    /// (<c>EffectType4::RenderContents</c>); 0 - обычный компонент.
+    /// </summary>
+    public float ReferenceDistance { get; init; }
+
     /// <summary>Окно активности на значении силы 0..1; HasWindow = false у пустых компонентов.</summary>
     public bool HasWindow { get; init; }
 
@@ -131,8 +137,11 @@ public sealed class PreparedEffect
                 }
                 case FxidComponentType.AnimBillboard:
                 {
-                    var d = c.AsType4().Base;
-                    list.Add(Make(c, label, res, obj: d, start: d.ActiveTimeStart, end: d.ActiveTimeEnd));
+                    var t4 = c.AsType4();
+                    var d = t4.Base;
+                    list.Add(Make(
+                        c, label, res, obj: d, start: d.ActiveTimeStart, end: d.ActiveTimeEnd,
+                        referenceDistance: t4.ReferenceDistance));
                     break;
                 }
                 case FxidComponentType.AnimModel:
@@ -188,8 +197,10 @@ public sealed class PreparedEffect
         EffectType3Data? obj = null,
         EffectParticleData? particle = null,
         EffectTrailData? trail = null,
-        EffectSpawnerData? spawner = null) => new()
+        EffectSpawnerData? spawner = null,
+        float referenceDistance = 0f) => new()
     {
+        ReferenceDistance = referenceDistance,
         Index = c.Index,
         Type = c.Type,
         Label = label,
@@ -241,11 +252,6 @@ internal static class ViewExtensions
 
 public static class EffectSimulator
 {
-    /// <summary>
-    /// Множитель длины (Scale.X) осевых билбордов (ESpace 1). Настройка предпросмотра: у <c>b_bullight_*</c> длина в данных
-    /// 1 -> 350 при ширине 2-3 (отношение 117:1 при странице текстуры 3:1), и как именно игра трактует эту величину, не выяснено.
-    /// </summary>
-    public static float AxialLengthScale = 1f;
 
     private const float ParticleGravity = 9.8f;
     private const int MaxParticlesPerComponent = 256;
@@ -327,6 +333,10 @@ public static class EffectSimulator
     /// Положение точки привязки как функция локального времени эффекта (для спавнера, тип 8: частицы остаются в мире
     /// там, где были созданы). Если не задана, точка неподвижна в <paramref name="origin"/>.
     /// </param>
+    /// <param name="cameraDistance">
+    /// Расстояние от камеры до эффекта (ед.). Компоненты типа 4 («объект+дист», вспышки <c>glow_eng</c> во взрывах) растут с
+    /// расстоянием: прогресс анимации = жизнь * расстояние / ReferenceDistance. 0 - не учитывать (полный размер).
+    /// </param>
     /// <param name="frameDt">Длительность кадра игры; нужна только при <paramref name="resetTrailEachFrame"/>.</param>
     /// <param name="resetTrailEachFrame">
     /// Эмулировать <c>NotifyAttachPointMoved</c> каждый кадр (шлейф = путь точки за один кадр: скорость * dt). Движок
@@ -347,7 +357,9 @@ public static class EffectSimulator
         float frameDt = 1f / 60f,
         EffectFrame? frame = null,
         bool resetTrailEachFrame = false,
-        Func<float, Vector3>? originAt = null)
+        Func<float, Vector3>? originAt = null,
+        float cameraDistance = 0f,
+        Vector3 trailOffset = default)
     {
         output.Clear();
         var originOffset = Project(new Vec3(origin.X, origin.Y, origin.Z), view);
@@ -401,7 +413,9 @@ public static class EffectSimulator
                 case FxidComponentType.AnimBillboard:
                 case FxidComponentType.AnimModel:
                     if (c.Object is { } obj)
-                        EvaluateObject(c, obj, strength, frameView, output);
+                        // Вектор до камеры берётся в локальной системе эффекта (TransformPointWorldToLocal по матрице с масштабом эффекта),
+                        // поэтому расстояние делится на общий масштаб (EffectType4::RenderContents, Effect.dll 0x10011750).
+                        EvaluateObject(c, obj, strength, frameView, output, cameraDistance / MathF.Max(frameScale, 1e-4f));
                     break;
                 case FxidComponentType.Plane:
                 case FxidComponentType.Cube:
@@ -411,6 +425,14 @@ public static class EffectSimulator
                 case FxidComponentType.Trail when c.Trail is { } trail:
                     var tracksAttach = resetTrailEachFrame && (effect.Header.Flags & FxidEffectFlags.TracksAttachPoint_maybe) != 0;
                     EvaluateTrail(c, trail, timeSec, attachSpeed, maxTrailLength, tracksAttach ? frameDt : -1f, view, output);
+                    if (trailOffset != Vector3.Zero)
+                    {
+                        // начало шлейфа - точка создания снаряда (дуло)
+                        var shift = Project(new Vec3(trailOffset.X, trailOffset.Y, trailOffset.Z), view);
+                        for (var i = firstItem; i < output.Count; i++)
+                            output[i] = output[i] with { Position = output[i].Position + shift };
+                    }
+
                     firstItem = output.Count;
                     break;
                 case FxidComponentType.Model when c.Spawner is { } spawner:
@@ -460,20 +482,24 @@ public static class EffectSimulator
         EffectType3Data obj,
         float strength,
         EffectView view,
-        List<DrawItem> output)
+        List<DrawItem> output,
+        float cameraDistance = 0f)
     {
         var life = c.Life;
+        if (c.ReferenceDistance > 0f && cameraDistance > 0f)
+            life = Math.Clamp(life * cameraDistance / c.ReferenceDistance, 0f, 1f);
+
         var position = LerpPow(obj.PositionStart, obj.PositionEnd, life, obj.PositionExponent);
         var scale = LerpPow(obj.ScaleStart, obj.ScaleEnd, life, obj.ScaleExponent);
         var direction = Normalize(Lerp(obj.DirectionStart, obj.DirectionEnd, life), new Vec3(1f, 0f, 0f));
-        var value = obj.LifeLerpStart_TBD +
-                    (obj.LifeLerpEnd_TBD - obj.LifeLerpStart_TBD) * MathF.Pow(life, Safe(obj.LifeLerpExponent));
+        var value = obj.IntensityStart +
+                    (obj.IntensityEnd - obj.IntensityStart) * MathF.Pow(life, Safe(obj.IntensityExponent));
 
         // Фаза выбирает кадр материала (EffectContents::Draw): v = t^e * (End - Start) + Start, где t - сила эффекта при
         // PhaseStart < 0, иначе жизнь в окне; в рендер уходит дробная часть v.
-        var phaseStart = MathF.Max(obj.PhaseStart_maybe, 0f);
+        var phaseStart = MathF.Max(obj.PhaseStart, 0f);
         var t = obj.PhaseUsesEffectStrength ? strength : life;
-        var v = MathF.Pow(Math.Clamp(t, 0f, 1f), Safe(obj.PhaseExponent_maybe)) * (obj.PhaseEnd_maybe - phaseStart) + phaseStart;
+        var v = MathF.Pow(Math.Clamp(t, 0f, 1f), Safe(obj.PhaseExponent)) * (obj.PhaseEnd - phaseStart) + phaseStart;
         var phase = v - MathF.Floor(v);
 
         // Форма спрайта по ESpace: 0 - свободный билборд к камере, 1 - осевой билборд (вытянут вдоль direction,
@@ -486,7 +512,7 @@ public static class EffectSimulator
             case 1:
             {
                 var side = Normalize(Cross(direction, cameraForward), view.Up.AsVec());
-                halfU = Scaled(direction, MathF.Abs(scale.X) * AxialLengthScale * 0.5f);
+                halfU = Scaled(direction, MathF.Abs(scale.X) * 0.5f);
                 halfV = Scaled(side, MathF.Abs(scale.Y) * 0.5f);
                 break;
             }

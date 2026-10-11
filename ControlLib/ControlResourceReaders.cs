@@ -209,8 +209,8 @@ public static class ControlResourceReader
             DefaultValue: r.ReadSingle(),
             PrimaryCptRefIndex: r.ReadInt32(),
             SecondaryCptRefIndex: r.ReadInt32(),
-            Param24: r.ReadSingle(),
-            Param28: r.ReadSingle(),
+            ChannelSpeed: r.ReadSingle(),
+            YawNormalizationAngle: r.ReadSingle(),
             Flags: r.ReadUInt32()
         );
     }
@@ -385,8 +385,8 @@ public sealed record CtlPieceBindingRecordRaw(
     float DefaultValue,
     int PrimaryCptRefIndex,
     int SecondaryCptRefIndex,
-    float Param24,
-    float Param28,
+    float ChannelSpeed, // +0x24: скорость канала анимации, ед./с (время перехода = |Δ| * 1000 / ChannelSpeed мс; CItemBase::ExtendTransitionEndTimeForBinding); у орудий 4.0
+    float YawNormalizationAngle, // +0x28: в данных 1.0 или π/2 (1.5708); применение не проверено
     uint Flags);
 
 public sealed record CtlItemRecordRaw(

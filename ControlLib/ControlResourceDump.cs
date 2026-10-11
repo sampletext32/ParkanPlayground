@@ -134,8 +134,8 @@ public static class ControlResourceDump
                 $"       anim1=({F(GetFloat(b, "Anim1Start"))}, {F(GetFloat(b, "Anim1EndOrDuration"))}) " +
                 $"anim2=({F(GetFloat(b, "Anim2Start"))}, {F(GetFloat(b, "Anim2EndOrDuration"))}) " +
                 $"weight={F(GetFloat(b, "AnimBlendWeight"))} " +
-                $"p24={F(GetFloat(b, "BindingParam24", "Unknown24"))} " +
-                $"p28={F(GetFloat(b, "BindingParam28", "Unknown28"))}");
+                $"speed={F(GetFloat(b, "ChannelSpeed"))} " +
+                $"yaw={F(GetFloat(b, "YawNormalizationAngle"))}");
         }
     }
     private static string ItemFlags(uint flags)

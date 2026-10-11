@@ -11,6 +11,9 @@ public sealed class ViewportCamera
     public float Distance { get; set; } = 4.0f;
     public Vector3 Target { get; set; } = Vector3.Zero;
 
+    /// <summary>Высота видимой области в мировых единицах; больше нуля включает ортографическую проекцию (превью орудий).</summary>
+    public float OrthographicHeight { get; set; }
+
     public Matrix4x4 GetSceneRotationMatrix()
     {
         // Kept as an explicit hook for future scene-wide transforms.
@@ -25,6 +28,9 @@ public sealed class ViewportCamera
 
     public Matrix4x4 GetProjectionMatrix(float aspectRatio)
     {
+        if (OrthographicHeight > 0f)
+            return Matrix4x4.CreateOrthographic(OrthographicHeight * aspectRatio, OrthographicHeight, 0.01f, 1000.0f);
+
         return Matrix4x4.CreatePerspectiveFieldOfView(
             ToRadians(FieldOfViewDegrees),
             aspectRatio,

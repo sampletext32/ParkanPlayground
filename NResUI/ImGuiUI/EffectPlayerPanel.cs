@@ -74,6 +74,14 @@ public class EffectPlayerPanel : IImGuiPanel
         ImGui.End();
     }
 
+    /// <summary>Элемент в ячейке таблицы на всю ширину ячейки (подпись справа учитывается).</summary>
+    private static void Cell(Action draw, string label)
+    {
+        ImGui.TableNextColumn();
+        ImGui.SetNextItemWidth(-ImGui.CalcTextSize(label).X - 12f);
+        draw();
+    }
+
     private void ReloadNames()
     {
         _vm.NamesLoaded = true;
@@ -218,51 +226,43 @@ public class EffectPlayerPanel : IImGuiPanel
             ImGui.SliderFloat("##manual", ref _vm.ManualStrength, 0f, 1f);
         }
 
-        ImGui.SameLine();
-        if (ImGui.Button("Сбоку"))
-            (_vm.YawDeg, _vm.PitchDeg) = (0f, 0f);
-        ImGui.SameLine();
-        if (ImGui.Button("Спереди"))
-            (_vm.YawDeg, _vm.PitchDeg) = (90f, 0f);
-        ImGui.SameLine();
-        if (ImGui.Button("Сверху"))
-            (_vm.YawDeg, _vm.PitchDeg) = (0f, 90f);
-        ImGui.SameLine();
-        ImGui.SetNextItemWidth(110);
-        ImGui.SliderFloat("Поворот", ref _vm.YawDeg, -180f, 180f, "%.0f°");
-        ImGui.SameLine();
-        ImGui.SetNextItemWidth(110);
-        ImGui.SliderFloat("Наклон", ref _vm.PitchDeg, -90f, 90f, "%.0f°");
-        ImGui.SetNextItemWidth(120);
-        ImGui.SliderFloat("Масштаб", ref _vm.PixelsPerUnit, 20f, 600f, "%.0f px/ед.");
-        ImGui.SameLine();
-        ImGui.SetNextItemWidth(120);
-        ImGui.SliderFloat("Размер спрайтов", ref _vm.SpriteScale, 0.1f, 4f, "%.2fx");
-        ImGui.SameLine();
-        ImGui.SetNextItemWidth(120);
-        ImGui.SliderFloat("Скорость шлейфа", ref _vm.AttachSpeed, 0f, 300f, "%.0f ед./с");
-        ImGui.SameLine();
-        ImGui.SetNextItemWidth(100);
-        var axial = EffectSimulator.AxialLengthScale;
-        if (ImGui.SliderFloat("Длина полос", ref axial, 0.01f, 1f, "%.2fx", ImGuiSliderFlags.Logarithmic))
-            EffectSimulator.AxialLengthScale = axial;
-        ImGui.SameLine();
-        ImGui.SetNextItemWidth(150);
-        ImGui.Combo("Смешивание", ref _vm.BlendModeIndex, BlendModeNames, BlendModeNames.Length);
-        ImGui.SameLine();
-        ImGui.Checkbox("Сетка", ref _vm.ShowGrid);
-        ImGui.SameLine();
-        ImGui.Checkbox("Маркеры", ref _vm.ShowMarkers);
-        ImGui.SameLine();
-        ImGui.Checkbox("Тёмный фон", ref _vm.DarkBackground);
-        ImGui.SameLine();
-        ImGui.Checkbox("Без звука", ref _vm.MuteSound);
-        ImGui.SameLine();
-        ImGui.SetNextItemWidth(100);
-        ImGui.SliderFloat("Громкость", ref _vm.Volume, 0f, 1f, "%.2f");
+        // Остальные настройки вида сворачиваются, чтобы не занимать экран.
+        if (ImGui.CollapsingHeader("Вид, камера и отладка") && ImGui.BeginTable("##fx_opts", 3, ImGuiTableFlags.SizingStretchSame))
+        {
+            Cell(() => ImGui.SliderFloat("Масштаб", ref _vm.PixelsPerUnit, 20f, 600f, "%.0f px/ед."), "Масштаб");
+            Cell(() => ImGui.SliderFloat("Размер спрайтов", ref _vm.SpriteScale, 0.1f, 4f, "%.2fx"), "Размер спрайтов");
+            Cell(() => ImGui.SliderFloat("Скорость шлейфа", ref _vm.AttachSpeed, 0f, 300f, "%.0f ед./с"), "Скорость шлейфа");
+
+            Cell(() => ImGui.SliderFloat("Поворот", ref _vm.YawDeg, -180f, 180f, "%.0f°"), "Поворот");
+            Cell(() => ImGui.SliderFloat("Наклон", ref _vm.PitchDeg, -90f, 90f, "%.0f°"), "Наклон");
+            ImGui.TableNextColumn();
+            if (ImGui.Button("Сбоку"))
+                (_vm.YawDeg, _vm.PitchDeg) = (0f, 0f);
+            ImGui.SameLine();
+            if (ImGui.Button("Спереди"))
+                (_vm.YawDeg, _vm.PitchDeg) = (90f, 0f);
+            ImGui.SameLine();
+            if (ImGui.Button("Сверху"))
+                (_vm.YawDeg, _vm.PitchDeg) = (0f, 90f);
+
+            Cell(() => ImGui.SliderFloat("Дист. камеры", ref _vm.CameraDistance, 1f, 1000f, "%.0f ед.", ImGuiSliderFlags.Logarithmic), "Дист. камеры");
+            Cell(() => ImGui.Combo("Смешивание", ref _vm.BlendModeIndex, BlendModeNames, BlendModeNames.Length), "Смешивание");
+            ImGui.TableNextColumn();
+            ImGui.Checkbox("Сетка", ref _vm.ShowGrid);
+            ImGui.SameLine();
+            ImGui.Checkbox("Маркеры", ref _vm.ShowMarkers);
+            ImGui.SameLine();
+            ImGui.Checkbox("Тёмный фон", ref _vm.DarkBackground);
+
+            ImGui.TableNextColumn();
+            ImGui.Checkbox("Без звука", ref _vm.MuteSound);
+            Cell(() => ImGui.SliderFloat("Громкость", ref _vm.Volume, 0f, 1f, "%.2f"), "Громкость");
+            ImGui.EndTable();
+        }
 
         var strength = ComputeStrength(effect, duration);
-        EffectSimulator.Evaluate(effect, strength, _vm.TimeSec, duration, _vm.View, _items, _vm.AttachSpeed);
+        EffectSimulator.Evaluate(
+            effect, strength, _vm.TimeSec, duration, _vm.View, _items, _vm.AttachSpeed, cameraDistance: _vm.CameraDistance);
 
         if (_vm.Playing && !_vm.MuteSound)
             _sound.Update(effect, _assets, _vm.PrevStrength, strength, _vm.Volume);

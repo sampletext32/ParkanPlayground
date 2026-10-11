@@ -35,6 +35,9 @@ public sealed class EffectPlayerViewModel : IService
 
     /// <summary>Скорость точки привязки вдоль +X для шлейфов, ед./с.</summary>
     public float AttachSpeed = 80f;
+
+    /// <summary>Расстояние до камеры для компонентов типа 4 (растут с расстоянием), ед.</summary>
+    public float CameraDistance = 60f;
     public float Volume = 0.8f;
 
     /// <summary>Сила на предыдущем кадре (для срабатывания одиночных звуков); отрицательная после перезапуска.</summary>

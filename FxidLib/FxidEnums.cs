@@ -90,7 +90,7 @@ public enum FxidEffectFlags : uint
     /// What the extra render pass is: TBD.
     /// </summary>
     RenderOnlyInExtraPass_maybe = 0x0800,
-    /// <summary>VERIFIED: sets environment_flags |= 0x10, which makes FRAME_UPDATE recompute the attach point and call NotifyAttachPointMoved on the effects.</summary>
+    /// <summary>VERIFIED: sets environment_flags |= 0x10, which makes FRAME_UPDATE recompute the attach point and call NotifyAttachPointMoved on the effects (a trail then starts from the attach point of the current frame). The message is sent only when the manager was attached via UpdateCachedLocalPoint; effects spawned by CTL commands (lasers) are not, so their trail starts at the spawn point.</summary>
     TracksAttachPoint_maybe = 0x1000,
     /// <summary>Only 1 file uses it. Passed (bit 13) as the last argument of the component render call. Meaning TBD.</summary>
     Unknown0x2000_TBD = 0x2000,

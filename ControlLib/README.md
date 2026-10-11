@@ -102,7 +102,7 @@ Control — слой игровой логики, который связыва�
 | 0x08 | авто-добавление/ссылка из системы предметов (цель не окончательна) |
 | 0x100 | условная ссылка, добавляется в рантайме по флагам детали MSH |
 
-Поле привязки `+0x24` (`Param24`) — скорость канала анимации, ед./с (используется в §7.1).
+Поле привязки `+0x24` (`ChannelSpeed`) — скорость канала анимации, ед./с (используется в §7.1).
 
 ### 2.6 Время и сеть
 
@@ -409,13 +409,13 @@ bullet_entry_name, …)` создаёт снаряд, читает его `ILife
 
 `SetRuntimeState(0x1000)` (0x100249C0) — команда «выстрел»: `state_transition_mode = 2`, `state_transition_time = 0`, +0x170 = CP9 (время жизни).
 `AdvanceShotStateMachine(binding_index)` (0x10024A20) вызывается по окончании перехода канала; счётчик такта по привязке (массив +0x124) идёт 4 → 0.
-Длительность перехода: `|Δ| · 1000 / (speed_scale · Param24)` мс (`ExtendTransitionEndTimeForBinding`, 0x10021AC0).
+Длительность перехода: `|Δ| · 1000 / (speed_scale · ChannelSpeed)` мс (`ExtendTransitionEndTimeForBinding`, 0x10021AC0).
 
 | Такт | Действие | Длительность, с | Значение канала (источник `AnimParam`) |
 |---|---|---|---|
-| 3 | `ExecuteCommandListForItem(+0x0C предмета)` — обычно START_EFFECT звука | 0.5 / `Param24` (0.125 при 4.0) | 0 → 0.5 |
+| 3 | `ExecuteCommandListForItem(+0x0C предмета)` — обычно START_EFFECT звука | 0.5 / `ChannelSpeed` (0.125 при 4.0) | 0 → 0.5 |
 | 2 | `SpawnProjectile` | CP2 мс (пауза) | 0.5 |
-| 1 | канал → 1.0 | 0.5 / `Param24` | 0.5 → 1.0 |
+| 1 | канал → 1.0 | 0.5 / `ChannelSpeed` | 0.5 → 1.0 |
 | 0 | сброс канала в 0, боезапас −1 (+0x98, если не −1 и не 0) | — | 0 |
 
 Эффекты вспышки, созданные у детали орудия (`gunf_*`, `gun_*_fx`: `duration = 0`, источник `AnimParam`), видны, пока значение канала в окне 0.01..1.0:
@@ -431,7 +431,7 @@ bullet_entry_name, …)` создаёт снаряд, читает его `ILife
 |---|---|
 | 0 | задержка между выстрелами, мс: `GetPrimaryFireRate = 1/(1/anim_rate + CP0·0.001)` (0x10025340, свойство 0x65) |
 | 1 | боезапас (−1 — бесконечный, свойство 0x55) |
-| 2 | пауза такта 2, мс (единицы не подтверждены) |
+| 2 | пауза такта 2, мс (`anim_channel_transition_end_time_ms = CP2 + start_time_ms`) |
 | 4 | `> 1.0` ставит флаг +0x16C (назначение не выяснено) |
 | 5 | вторая задержка, как CP0 (`GetSecondaryFireRate`, 0x10025380, свойство 0x66) |
 | 3, 6..11 | **не из CTL**: записываются в `InitAfterLoad` из снаряда-прототипа BULL (значения CTL затираются): CP3 — объём (0x68); CP6 — 1, если `movement_physics_mode != 0` (гравитация); CP7 — `max_tangential_speed.y` (скорость вылета, 0x54); CP8 — `min(BULL 0x81, field12_0x58)` (предел дальности, не проверено); CP9 — время жизни `BULL 0x80 × 0.001` с (+0x170); CP10 — `cos(BULL 0x82)` (−1 — не задано); CP11 — радиус поражения (`NDP_DAMAGE_EFFECT_BOUNDS_RADIUS_ALL`, 0x76) |
@@ -460,6 +460,8 @@ bullet_entry_name, …)` создаёт снаряд, читает его `ILife
 
 **Лазерный выстрел:** вспышка `gunf_laser_*` + звук у дула; `las_tail_*` создаётся с источником Constant = 0 (окно 0..1, значение 1 → луч виден целиком от дула
 до снаряда); при попадании START_EFFECT с Life — значение падает 1 → 0 за 0.75 с (луч затухает на месте); снаряд живёт ещё 1000 мс; в точке попадания `exp_*_las_*` по материалу.
+
+**Многоствольные орудия** (`o_gun_ba_23`: три ствола): у предмета несколько привязок (по одной на ствол), у каждой своя CPT дула (`PrimaryCptRefIndex`, иначе `SecondaryCptRefIndex`: CPT 0, 3, 6) и свой автомат выстрела (`AdvanceShotStateMachine(binding_index)`); эффект вспышки на каждый ствол создаётся отдельной командой 4 с local_id 0, 1, 2, а список команд предмета запускает их все. Снаряд рождается в положении CPT дула своей привязки, поэтому шлейф и взрыв идут от соответствующего ствола. Режим стрельбы определяет флаг предмета `0x02000000` (`CONTROL_ITEM_FLAG_RIGHT_DRIVE_GROUP`) в `CItemType2_and_0x1e_ProjectileWeapon::AdvanceBindingTimeline` (0x100244D0): с флагом автомат выстрела проходит по **всем** привязкам сразу (залп; у `o_gun_ba_21..23`, `o_gun_ma_21/22` и у большинства лазеров), без флага стреляет одна привязка за раз по кругу (`field12_0x120` = следующая; `o_gun_fa_09`: 9 труб). Привязки с флагом `0x40` (`COPY_PREVIOUS_VALUE`) пропускаются. Weapon Viewer по умолчанию показывает залп или один ствол соответственно, выбор «Ствол» переключает.
 
 ### 7.4 Размещение эффектов по CPT и масштаб
 
@@ -505,6 +507,15 @@ bullet_entry_name, …)` создаёт снаряд, читает его `ILife
 База `CItemType0x16` (ctor 0x1002B470 вызывается из ctor привода) даёт `TryComputeInterceptPoint` (0x1002A470), поля цели +0x98/+0xA0/+0xAC
 и `SerializeToNetwork` (0x1002AAF0, биты `NetSynchroMode` 0x40000/0x80000/0x100000).
 
+### 7.7 Модель орудия: система координат CPT, поза, цвет клана
+
+| Что | Как устроено |
+|---|---|
+| Система координат CPT | положение и направление CPT заданы в системе детали-владельца (`OwnerPieceIndex`; локальный индекс детали = индекс узла в MSH орудия). Положение дула в объекте = положение CPT × матрица этой детали в позе |
+| Поза деталей | деталь с привязкой стоит на анимации в момент `Anim2Start + default · (Anim2End − Anim2Start)` (Anim2 не задан - Anim1); остальные - на ключе по умолчанию. `o_gun_ba_23`: привязка детали 2 (подъём ствола), диапазон 1..3, значение 0.111 → время 1.222: ствол горизонтален; ключ по умолчанию (≈ 80°) смотрит вверх |
+| Страницы текстур | UV модели заданы относительно страницы стадии материала (`TextureStageIndex` → прямоугольник TEXM): итоговый UV = `page.xy + uv · page.size` в долях текстуры |
+| Цвет клана | материалы с цветом клана держат по одной стадии на цвет: `R_GB52` в `o_gun_ba_23` - 4 стадии, страницы 18..21 текстуры `NP10.0` (полосы 50×17 на `y = 239`); цвет выбирает игра, соответствие стадий клановым цветам не выяснено |
+
 ## 8. Имена в Ghidra
 
 Имена применены в Control.dll (`set_function_this_type` переносит функцию в класс, затем простое имя).
@@ -532,13 +543,24 @@ bullet_entry_name, …)` создаёт снаряд, читает его `ILife
 (0x10011380), `EffectType5::Render` (0x10002DA0), `EffectType8::EvaluateAtTime` (0x100123B0), `EffectContents::Draw` (0x10009FE0); `World3D.dll` —
 `LoadMaterialByName` (0x10004630), `MatManager::GetMaterialPhase` (0x10003930).
 
+**Структуры и поля, названные позднее (Ghidra):**
+
+| Библиотека | Тип | Что названо |
+|---|---|---|
+| Control.dll | `CItemType2_and_0x1e_ProjectileWeapon` | +0x98 `ammo_count`, +0x9C `charge_store`, +0x10C `target_object_handle`, +0x110 `target_piece_index`, +0x11C `ready_to_fire_maybe`, +0x120 `current_binding_index`, +0x124 `shot_tick_counters` (int[]), +0x168 `burst_remaining`, +0x16C `burst_mode_flag_maybe`, +0x170 `shot_time_remaining_sec` |
+| Control.dll | `ExplData` (792 байта) | EXPL: `damage_kind`, `life_amount_offset`, `scale_multiplier`, `direction_mode`, `slot_default`, `slot_by_surface[11]` (используется в `ActiveDamageExplosion.expl_data`) |
+| Control.dll | `RawControlPieceAnimChannelRecord` | +0x14 `anim_blend_weight`, +0x24 `channel_speed` |
+| Effect.dll | `EffectRenderContext` | контекст отрисовки: `shade`, `mat_manager`, `parent_transform`, `camera_local_position` (+0x48), `camera_world_position`, `lod_level`, `fxid_flags`, `not_occluded` - типизирует `Render`/`RenderContents` типов 3, 4, 5, 7, 8, 9 |
+| Effect.dll | `EffectType4FileData` | тип 3 + `reference_distance` (+0xC8) |
+| Effect.dll | `EFxidEffectFlags`, `EFxManagerEnvFlags` | флаги заголовка FXID и `FxManager.environment_flags` |
+
 ## 9. Не выяснено
 
-- Смысл CP0..CP2 камеры у `Targeting` (0x04) и флага +0x16C у оружия (CP4 > 1); единицы CP2 такта 2 (мс или с).
+- Смысл CP0..CP2 камеры у `Targeting` (0x04) и флага +0x16C у оружия (CP4 > 1).
 - Класс типа 0x06 (пара CP0/CP1 с отношением, свойства 0x33/0x34/0x3A).
 - Физический смысл трёх сигнатур юнита (0x43/0x44/0x45).
 - Потребители `CtlRawItem` +0x1C (`mobility_contribution`) и +0x24 (`param_24`: у оружия копируется в +0x9C).
 - CP1+ у Engine, остальные методы `TurretDrive` (слот 14+), остальные слоты таблицы хуков команд.
 - Назначение `arg4` команды 4 (float 1.0 / 6400 / 1e6).
 - Как именно игра переводит значение канала анимации в `GetPieceAnimTransitionProgress` для `AnimParam` (форма кривой вспышки).
-- Размеры взрыва `bm_m_04r` (60 → до 300 ед.): подтверждения в игре нет.
+- Размер взрыва `bm_m_04r` (масштаб 60 → до 300 ед. в поперечнике): подтверждения по игре нет.

@@ -34,6 +34,9 @@ public class WeaponViewerPanel : IImGuiPanel
         /// <summary>Эффект снаряда запускается START_EFFECT при попадании (лазерный шлейф), иначе выключается.</summary>
         public bool StartsAtEnd { get; init; }
 
+        /// <summary>Положение дула (вид: X вперёд, Y вверх, Z вправо), из которого вылетает снаряд этого экземпляра.</summary>
+        public Vector3 MuzzleOffset { get; init; }
+
         /// <summary>Дополнительный масштаб (ScaleMultiplier EXPL для взрыва).</summary>
         public float ExtraScale { get; init; } = 1f;
 
@@ -44,6 +47,7 @@ public class WeaponViewerPanel : IImGuiPanel
     private readonly WeaponCatalog _catalog;
     private readonly EffectAssetCache _assets;
     private readonly EffectCanvasRenderer _canvas;
+    private readonly GunModelPreview _model;
     private readonly IWindow _window;
 
     private readonly List<Instance> _instances = [];
@@ -58,6 +62,9 @@ public class WeaponViewerPanel : IImGuiPanel
     private string? _selected;
     private WeaponInfo? _weapon;
     private int _builtSurface = -2;
+    private int _barrel;
+    private int _clanStage;
+    private int _builtBarrel = -2;
 
     private float _time;
     private bool _playing = true;
@@ -67,7 +74,10 @@ public class WeaponViewerPanel : IImGuiPanel
     private float _speedFactor = 1f;
     private float _distance = 100f;
     private float _zoom = 1f;
+    private Vector2 _pan;
     private float _impactScale = 1f;
+    private float _cameraDistance = 60f;
+    private bool _autoCamera = true;
     private int _focus;
     private float _bulletX;
     private float _end;
@@ -77,10 +87,13 @@ public class WeaponViewerPanel : IImGuiPanel
     private float _pitch;
     private bool _showGrid = true;
     private bool _showLights = true;
+    private bool _showModel = true;
     private int _blendMode;
 
-    public WeaponViewerPanel(WeaponCatalog catalog, EffectAssetCache assets, EffectCanvasRenderer canvas, IWindow window)
+    public WeaponViewerPanel(
+        WeaponCatalog catalog, EffectAssetCache assets, EffectCanvasRenderer canvas, GunModelPreview model, IWindow window)
     {
+        _model = model;
         _catalog = catalog;
         _assets = assets;
         _canvas = canvas;
@@ -150,7 +163,9 @@ public class WeaponViewerPanel : IImGuiPanel
     {
         _selected = name;
         _weapon = _catalog.GetWeapon(name);
+        _model.Load(name, _weapon?.PoseTimes, _clanStage);
         _builtSurface = -2;
+        _barrel = _weapon?.FiresAllBarrels == true ? -1 : 0;
         Restart();
     }
 
@@ -172,35 +187,86 @@ public class WeaponViewerPanel : IImGuiPanel
         _instances.Clear();
         _loadErrors.Clear();
         _builtSurface = _surface;
+        _builtBarrel = _barrel;
         if (_weapon == null)
             return;
 
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var muzzlePoints = _weapon.Muzzles is { Count: > 0 } mz ? mz : [new MuzzlePoint(Vector3.Zero, -1)];
+        var allMuzzles = muzzlePoints.Select(m => FromPiece(m.Position, m.OwnerPiece)).ToList();
+        var selected = _barrel >= 0 && _barrel < allMuzzles.Count ? _barrel : -1;
         foreach (var fx in _weapon.MuzzleEffects)
-            Add(fx.Effect, Role.Muzzle, seen, fx.Placement);
+        {
+            // Эффект, стоящий в дуле другого ствола, при выборе одного ствола не показываем.
+            var mapped = MapPlacement(fx.Placement);
+            if (selected >= 0 && mapped is { } place)
+            {
+                var ownIndex = -1;
+                for (var i = 0; i < allMuzzles.Count; i++)
+                {
+                    if (Vector3.DistanceSquared(allMuzzles[i], place.Position) < 1e-6f)
+                    {
+                        ownIndex = i;
+                        break;
+                    }
+                }
+
+                if (ownIndex >= 0 && ownIndex != selected && Vector3.DistanceSquared(allMuzzles[selected], place.Position) >= 1e-6f)
+                    continue;
+            }
+
+            Add(fx.Effect, Role.Muzzle, seen, mapped);
+        }
 
         if (_weapon.Bullet is { } bullet)
         {
-            foreach (var fx in bullet.FlightEffects)
-                Add(fx.Effect, Role.Bullet, seen, fx.Placement, 1f, bullet.StartOnEndLocalIds.Contains(fx.LocalId));
-
-            if (bullet.Expl != null)
+            for (var k = 0; k < allMuzzles.Count; k++)
             {
-                var slot = _surface >= 0 ? bullet.Expl.GetEffectForMaterial(_surface) : bullet.Expl.Slots[0];
-                if (slot is { } s)
+                if (selected >= 0 && k != selected)
+                    continue;
+
+                var offset = ToView(allMuzzles[k]);
+                foreach (var fx in bullet.FlightEffects)
                 {
-                    var scale = bullet.Expl.ScaleMultiplier > 0.0001f ? bullet.Expl.ScaleMultiplier : 1f;
-                    Add(s.ItemName, Role.Impact, seen, null, scale);
+                    Add(fx.Effect, Role.Bullet, seen, fx.Placement, 1f, bullet.StartOnEndLocalIds.Contains(fx.LocalId),
+                        offset, k);
+                }
+
+                if (bullet.Expl != null)
+                {
+                    var slot = _surface >= 0 ? bullet.Expl.GetEffectForMaterial(_surface) : bullet.Expl.Slots[0];
+                    if (slot is { } s)
+                    {
+                        var scale = bullet.Expl.ScaleMultiplier > 0.0001f ? bullet.Expl.ScaleMultiplier : 1f;
+                        Add(s.ItemName, Role.Impact, seen, null, scale, false, offset, k);
+                    }
                 }
             }
         }
     }
 
+    private EffectPlacement? MapPlacement(EffectPlacement? placement)
+    {
+        if (placement is not { } pl || pl.OwnerPiece < 0)
+            return placement;
+
+        return pl with
+        {
+            Ex = DirFromPiece(pl.Ex, pl.OwnerPiece),
+            Ey = DirFromPiece(pl.Ey, pl.OwnerPiece),
+            Ez = DirFromPiece(pl.Ez, pl.OwnerPiece),
+            Position = FromPiece(pl.Position, pl.OwnerPiece),
+            OwnerPiece = -1,
+        };
+    }
+
     private void Add(
         string effectName, Role role, HashSet<string> seen, EffectPlacement? placement, float extraScale = 1f,
-        bool startsAtEnd = false)
+        bool startsAtEnd = false, Vector3 muzzleOffset = default, int muzzleIndex = 0)
     {
-        if (!seen.Add(role + ":" + effectName))
+        // Одноимённые эффекты в разных точках (по эффекту на ствол, gunf_laser_r в CPT 0 и 3) - разные экземпляры.
+        var where = placement is { } pl ? $"{pl.Position.X:F3},{pl.Position.Y:F3},{pl.Position.Z:F3}" : string.Empty;
+        if (!seen.Add(role + ":" + muzzleIndex + ":" + effectName + ":" + where))
             return;
 
         var file = _assets.LoadFxid(effectName, out var error);
@@ -218,6 +284,7 @@ public class WeaponViewerPanel : IImGuiPanel
             Placement = placement,
             ExtraScale = extraScale,
             StartsAtEnd = startsAtEnd,
+            MuzzleOffset = muzzleOffset,
         });
     }
 
@@ -229,7 +296,7 @@ public class WeaponViewerPanel : IImGuiPanel
             return;
         }
 
-        if (_builtSurface != _surface)
+        if (_builtSurface != _surface || _builtBarrel != _barrel)
             Rebuild();
 
         DrawInfo(_weapon);
@@ -321,8 +388,19 @@ public class WeaponViewerPanel : IImGuiPanel
             inst.Sound.StopAll();
     }
 
-    /// <summary>Система координат объекта (X вправо, Y вперёд, Z вверх) в систему вида (X вперёд, Y вверх, Z вправо).</summary>
-    private static Vector3 ToView(Vector3 v) => new(v.Y, v.Z, v.X);
+    /// <summary>Точка в системе детали-владельца CPT -> пространство объекта (по позе модели).</summary>
+    private Vector3 FromPiece(Vector3 point, int owner) =>
+        owner >= 0 && owner < _model.PieceTransforms.Count
+            ? Vector3.Transform(point, _model.PieceTransforms[owner])
+            : point;
+
+    private Vector3 DirFromPiece(Vector3 direction, int owner) =>
+        owner >= 0 && owner < _model.PieceTransforms.Count
+            ? Vector3.TransformNormal(direction, _model.PieceTransforms[owner])
+            : direction;
+
+    /// <summary>Система координат объекта (X вправо, Y вперёд, Z вверх) в систему вида эффектов (X вперёд, Y влево, Z вверх).</summary>
+    private static Vector3 ToView(Vector3 v) => new(v.Y, -v.X, v.Z);
 
     /// <summary>
     /// Значение для источника силы Constant: 0, если какое-нибудь окно активности содержит 0 (лазерный шлейф), иначе 1
@@ -402,6 +480,7 @@ public class WeaponViewerPanel : IImGuiPanel
 
     private void DrawControls()
     {
+        // Строка 1: транспорт и параметры выстрела.
         if (ImGui.Button(_playing ? "Пауза" : "Играть"))
         {
             if (!_playing && _time >= _end - 0.0001f)
@@ -420,35 +499,60 @@ public class WeaponViewerPanel : IImGuiPanel
         ImGui.SameLine();
         ImGui.Checkbox("Повтор", ref _loop);
         ImGui.SameLine();
-        ImGui.SetNextItemWidth(100);
+        ImGui.SetNextItemWidth(110);
         ImGui.SliderFloat("Скорость", ref _speedFactor, 0.05f, 2f, "%.2fx");
         ImGui.SameLine();
         ImGui.SetNextItemWidth(140);
         ImGui.SliderFloat("Дистанция", ref _distance, 5f, 400f, "%.0f ед.");
-        ImGui.SameLine();
-        ImGui.SetNextItemWidth(100);
-        ImGui.SliderFloat("Масштаб", ref _zoom, 0.25f, 40f, "%.2fx", ImGuiSliderFlags.Logarithmic);
-        ImGui.SameLine();
-        ImGui.SetNextItemWidth(100);
-        ImGui.SetNextItemWidth(100);
-        ImGui.SliderFloat("Взрыв", ref _impactScale, 0.01f, 2f, "%.2fx", ImGuiSliderFlags.Logarithmic);
-        ImGui.SameLine();
-        ImGui.SetNextItemWidth(100);
-        var axial = EffectSimulator.AxialLengthScale;
-        if (ImGui.SliderFloat("Длина полос", ref axial, 0.01f, 1f, "%.2fx", ImGuiSliderFlags.Logarithmic))
-            EffectSimulator.AxialLengthScale = axial;
-        ImGui.SameLine();
-        ImGui.SetNextItemWidth(130);
-        ImGui.Combo("Камера", ref _focus, ["Вся трасса", "Дуло", "Снаряд", "Цель"], 4);
 
         var items = new[] { "по умолчанию (слот 0)" }
             .Concat(Enumerable.Range(0, 11).Select(i => $"{i}: {SurfaceName(i)}")).ToArray();
         var index = _surface + 1;
+        ImGui.SameLine();
         ImGui.SetNextItemWidth(170);
         if (ImGui.Combo("Поверхность", ref index, items, items.Length))
             _surface = index - 1;
 
-        ImGui.SameLine();
+        if (_weapon?.Muzzles is { Count: > 1 } muzzles)
+        {
+            var barrels = new[] { _weapon.FiresAllBarrels ? "все (залп)" : "все сразу (в игре по очереди)" }
+                .Concat(Enumerable.Range(1, muzzles.Count).Select(i => $"ствол {i}")).ToArray();
+            var barrelIndex = _barrel + 1;
+            ImGui.SameLine();
+            ImGui.SetNextItemWidth(150);
+            if (ImGui.Combo("Ствол", ref barrelIndex, barrels, barrels.Length))
+                _barrel = barrelIndex - 1;
+        }
+
+        // Остальное - в сворачиваемой секции, чтобы не занимать экран.
+        if (!ImGui.CollapsingHeader("Вид, камера и отладка"))
+            return;
+
+        if (!ImGui.BeginTable("##wp_opts", 3, ImGuiTableFlags.SizingStretchSame))
+            return;
+
+        Cell(() => ImGui.Combo("Камера", ref _focus, ["Вся трасса", "Дуло", "Снаряд", "Цель"], 4), "Камера");
+        Cell(() => ImGui.SliderFloat("Масштаб", ref _zoom, 0.25f, 40f, "%.2fx", ImGuiSliderFlags.Logarithmic), "Масштаб");
+        Cell(() => ImGui.SliderFloat("Взрыв", ref _impactScale, 0.01f, 2f, "%.2fx", ImGuiSliderFlags.Logarithmic), "Взрыв");
+
+        ImGui.TableNextColumn();
+        ImGui.Checkbox("Камера = дистанция выстрела", ref _autoCamera);
+        if (ImGui.IsItemHovered())
+            ImGui.SetTooltip("Дистанция камеры влияет только на компоненты типа 4 (вспышки glow_*, например в bb_*_end). У общего взрыва ракет exp_m_mis таких компонентов нет, поэтому его размер определяет только масштаб EXPL.");
+        if (_autoCamera)
+        {
+            ImGui.TableNextColumn();
+            ImGui.TableNextColumn();
+        }
+        else
+        {
+            Cell(() => ImGui.SliderFloat("Дист. камеры", ref _cameraDistance, 1f, 1000f, "%.0f ед.", ImGuiSliderFlags.Logarithmic), "Дист. камеры");
+            ImGui.TableNextColumn();
+        }
+
+        Cell(() => ImGui.SliderFloat("Поворот", ref _yaw, -180f, 180f, "%.0f°"), "Поворот");
+        Cell(() => ImGui.SliderFloat("Наклон", ref _pitch, -90f, 90f, "%.0f°"), "Наклон");
+        ImGui.TableNextColumn();
         if (ImGui.Button("Сбоку"))
         {
             _yaw = 0f;
@@ -463,23 +567,44 @@ public class WeaponViewerPanel : IImGuiPanel
         }
 
         ImGui.SameLine();
-        ImGui.SetNextItemWidth(100);
-        ImGui.SliderFloat("Поворот", ref _yaw, -180f, 180f, "%.0f°");
-        ImGui.SameLine();
-        ImGui.SetNextItemWidth(100);
-        ImGui.SliderFloat("Наклон", ref _pitch, -90f, 90f, "%.0f°");
-        ImGui.SameLine();
-        ImGui.SetNextItemWidth(150);
-        ImGui.Combo("Смешивание", ref _blendMode, ["По материалу", "Всегда alpha", "Всегда аддитивное"], 3);
-        ImGui.SameLine();
+        if (ImGui.Button("Сброс вида"))
+        {
+            _yaw = 0f;
+            _pitch = 0f;
+            _pan = Vector2.Zero;
+            _zoom = 1f;
+        }
+
+        Cell(() => ImGui.Combo("Смешивание", ref _blendMode, ["По материалу", "Всегда alpha", "Всегда аддитивное"], 3), "Смешивание");
+        Cell(() =>
+        {
+            var changed = ImGui.Combo("Цвет клана", ref _clanStage, ["1", "2", "3", "4"], 4);
+            if (changed && _selected != null)
+                _model.Load(_selected, _weapon?.PoseTimes, _clanStage);
+
+            return changed;
+        }, "Цвет клана");
+        ImGui.TableNextColumn();
         ImGui.Checkbox("Сетка", ref _showGrid);
         ImGui.SameLine();
         ImGui.Checkbox("Свет", ref _showLights);
         ImGui.SameLine();
+        ImGui.Checkbox("Модель", ref _showModel);
+        ImGui.TableNextColumn();
         ImGui.Checkbox("Без звука", ref _mute);
         ImGui.SameLine();
-        ImGui.SetNextItemWidth(90);
+        ImGui.SetNextItemWidth(-ImGui.CalcTextSize("Громкость").X - 12f);
         ImGui.SliderFloat("Громкость", ref _volume, 0f, 1f, "%.2f");
+
+        ImGui.EndTable();
+    }
+
+    /// <summary>Элемент в ячейке таблицы на всю ширину ячейки (подпись справа учитывается).</summary>
+    private static void Cell(Func<bool> draw, string label)
+    {
+        ImGui.TableNextColumn();
+        ImGui.SetNextItemWidth(-ImGui.CalcTextSize(label).X - 12f);
+        draw();
     }
 
     /// <summary>Считает все эффекты выстрела на момент <c>_time</c> и собирает команды рисования в <c>_scene</c>.</summary>
@@ -516,7 +641,7 @@ public class WeaponViewerPanel : IImGuiPanel
                     break;
                 case Role.Bullet:
                     local = _time - _shotDelay;
-                    origin = new Vector3(bulletX, 0f, 0f);
+                    origin = new Vector3(bulletX, 0f, 0f) + inst.MuzzleOffset;
                     attachSpeed = speed;
                     maxTrail = _distance;
                     if (local < 0f)
@@ -543,7 +668,7 @@ public class WeaponViewerPanel : IImGuiPanel
                     break;
                 default:
                     local = _time - flight;
-                    origin = new Vector3(_distance, 0f, 0f);
+                    origin = new Vector3(_distance, 0f, 0f) + inst.MuzzleOffset;
                     removed = local < 0f;
                     break;
             }
@@ -571,7 +696,7 @@ public class WeaponViewerPanel : IImGuiPanel
                            ?? life;
             strength = FxidStrength.ApplyFlags(inst.Effect.Header.Flags, strength, life);
 
-            // Размещение по CPT: оси и масштаб эффекта (X вправо, Y вперёд, Z вверх -> вид: X вперёд, Y вверх, Z вправо).
+            // Размещение по CPT: оси и масштаб эффекта (объект: X вправо, Y вперёд, Z вверх -> вид эффектов: X вперёд, Y влево, Z вверх).
             EffectFrame? frame = null;
             var placementOffset = Vector3.Zero;
             if (inst.Placement is { } pl)
@@ -593,7 +718,7 @@ public class WeaponViewerPanel : IImGuiPanel
             {
                 // Взрыв ориентирован по нормали поверхности (EXPL режим 7): +X эффекта смотрит назад, к стрелку.
                 frame = new EffectFrame(
-                    new Vector3(-1f, 0f, 0f), new Vector3(0f, 0f, 1f), new Vector3(0f, 1f, 0f), inst.ExtraScale * _impactScale);
+                    new Vector3(-1f, 0f, 0f), new Vector3(0f, -1f, 0f), new Vector3(0f, 0f, 1f), inst.ExtraScale * _impactScale);
             }
 
             // DetachAfterEmit (флаг 0x4): после первого обновления эффект отцепляется от детали и остаётся там, где был создан
@@ -604,19 +729,22 @@ public class WeaponViewerPanel : IImGuiPanel
             {
                 if (detach)
                 {
-                    origin = placementOffset;
-                    originAt = _ => placementOffset;
+                    origin = placementOffset + inst.MuzzleOffset;
+                    var fixedPoint = origin;
+                    originAt = _ => fixedPoint;
                 }
                 else
                 {
                     var maxX = _distance;
                     var v = speed;
-                    originAt = t => new Vector3(MathF.Min(MathF.Max(v * t, 0f), maxX), 0f, 0f) + placementOffset;
+                    var muzzle = inst.MuzzleOffset;
+                    originAt = t => new Vector3(MathF.Min(MathF.Max(v * t, 0f), maxX), 0f, 0f) + placementOffset + muzzle;
                 }
             }
 
             EffectSimulator.Evaluate(inst.Effect, strength, local, duration, view, _temp, attachSpeed, origin, maxTrail,
-                frame: frame, originAt: originAt);
+                frame: frame, originAt: originAt, cameraDistance: _autoCamera ? _distance : _cameraDistance,
+                trailOffset: inst.Role == Role.Bullet ? inst.MuzzleOffset : default);
             _scene.AddRange(_temp);
 
             if (_playing && !_mute)
@@ -651,22 +779,68 @@ public class WeaponViewerPanel : IImGuiPanel
             shiftX = _focus == 1 ? 0f : _focus == 2 ? _bulletX : _distance;
         }
 
+        // Управление мышью, как в Viewport: левая кнопка - вращение, правая / Alt + средняя - сдвиг, колесо - масштаб.
+        var io = ImGui.GetIO();
+        if (ImGui.IsItemHovered() && MathF.Abs(io.MouseWheel) > float.Epsilon)
+            _zoom = Math.Clamp(_zoom * MathF.Pow(1.15f, io.MouseWheel), 0.25f, 40f);
+
+        if (ImGui.IsItemActive() && ImGui.IsMouseDragging(ImGuiMouseButton.Left, 0f))
+        {
+            _yaw -= io.MouseDelta.X * 0.4f;
+            _pitch = Math.Clamp(_pitch + io.MouseDelta.Y * 0.4f, -89f, 89f);
+            _yaw = (_yaw + 540f) % 360f - 180f;
+        }
+
+        var panning = ImGui.IsItemHovered() &&
+                      (ImGui.IsMouseDown(ImGuiMouseButton.Right) || (io.KeyAlt && ImGui.IsMouseDown(ImGuiMouseButton.Middle)));
+        if (panning)
+        {
+            _pan.X -= io.MouseDelta.X / ppu;
+            _pan.Y += io.MouseDelta.Y / ppu;
+        }
+
+        var viewDirs = EffectView.FromAngles(_yaw, _pitch);
+        var focusWorld = new Vector3(shiftX, 0f, 0f);
+        var centerX = Vector3.Dot(focusWorld, viewDirs.Right) + _pan.X;
+        var centerY = Vector3.Dot(focusWorld, viewDirs.Up) + _pan.Y;
         var background = new Vector4(0.094f, 0.102f, 0.141f, 1f);
 
         _canvas.Begin();
-        Vector2 ToCanvas(float x, float y) => new(local.X + (x - shiftX) * ppu, local.Y - y * ppu);
+        Vector2 ToCanvas(float x, float y) => new(local.X + (x - centerX) * ppu, local.Y - (y - centerY) * ppu);
+        Vector2 World(Vector3 w) => ToCanvas(Vector3.Dot(w, viewDirs.Right), Vector3.Dot(w, viewDirs.Up));
+
+        if (_showModel && _model.HasModel)
+        {
+            // Модель орудия рисуется ортографической камерой с теми же осями и масштабом, что и холст; начало модели - в (0, 0).
+            var target = focusWorld + viewDirs.Right * _pan.X + viewDirs.Up * _pan.Y;
+            var texture = _model.Render(
+                (int)size.X, (int)size.Y, viewDirs.Right, viewDirs.Up, target, size.Y / ppu,
+                new Vector3(background.X, background.Y, background.Z));
+            _canvas.AddTexturedQuad(
+                (IntPtr)texture,
+                Vector2.Zero, new Vector2(size.X, 0f), size, new Vector2(0f, size.Y),
+                new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(1f, 0f), new Vector2(0f, 0f),
+                Vector4.One, CanvasBlend.Alpha, alphaFromLuma: false);
+        }
 
         if (_showGrid)
         {
+            // Сетка в плоскости земли (Z = 0) вдоль трассы и оси X (вперёд), Y (влево), Z (вверх) - правильно проецируются при любом повороте.
             var grid = new Vector4(0.17f, 0.18f, 0.25f, 1f);
-            var axis = new Vector4(0.33f, 0.35f, 0.48f, 1f);
+            var axisX = new Vector4(0.75f, 0.30f, 0.30f, 1f);
+            var axisY = new Vector4(0.30f, 0.65f, 0.30f, 1f);
+            var axisZ = new Vector4(0.35f, 0.45f, 0.85f, 1f);
             var step = _distance > 150f ? 50f : _distance > 40f ? 10f : 5f;
+            var half = MathF.Max(10f, step * 2f);
             for (var x = 0f; x <= _distance + 0.01f; x += step)
-                _canvas.AddLine(ToCanvas(x, -1000f), ToCanvas(x, 1000f), grid);
+                _canvas.AddLine(World(new Vector3(x, -half, 0f)), World(new Vector3(x, half, 0f)), grid);
 
-            _canvas.AddLine(ToCanvas(-1000f, 0f), ToCanvas(1000f, 0f), axis);
-            _canvas.AddLine(ToCanvas(0f, -1000f), ToCanvas(0f, 1000f), axis);
-            _canvas.AddLine(ToCanvas(_distance, -1000f), ToCanvas(_distance, 1000f), axis);
+            for (var y = -half; y <= half + 0.01f; y += step)
+                _canvas.AddLine(World(new Vector3(0f, y, 0f)), World(new Vector3(_distance, y, 0f)), grid);
+
+            _canvas.AddLine(World(new Vector3(-5f, 0f, 0f)), World(new Vector3(_distance, 0f, 0f)), axisX);
+            _canvas.AddLine(World(new Vector3(0f, -half, 0f)), World(new Vector3(0f, half, 0f)), axisY);
+            _canvas.AddLine(World(new Vector3(0f, 0f, -half)), World(new Vector3(0f, 0f, half)), axisZ);
         }
 
         var overlay = new List<(DrawItem Item, Vector2 Pos)>();
@@ -703,8 +877,8 @@ public class WeaponViewerPanel : IImGuiPanel
         }
 
         // Подписи: дуло и цель.
-        dl.AddText(min + ToCanvas(0f, 0f) + new Vector2(4, 4), 0xFF909090u, "дуло");
-        dl.AddText(min + ToCanvas(_distance, 0f) + new Vector2(4, 4), 0xFF909090u, $"цель ({_distance:F0} ед.)");
+        dl.AddText(min + World(Vector3.Zero) + new Vector2(4, 4), 0xFF909090u, "дуло");
+        dl.AddText(min + World(new Vector3(_distance, 0f, 0f)) + new Vector2(4, 4), 0xFF909090u, $"цель ({_distance:F0} ед.)");
         dl.PopClipRect();
         dl.AddRect(min, max, 0xFF808080u);
     }

@@ -206,9 +206,9 @@ public static class MshViewportMeshFactory
 
                 var fallbackNormal = BuildFaceNormal(p0, p1, p2);
 
-                AddTriangleVertex(p0, vertexColor, GetNormal(modelGeometry.Normals, vertexIndex0, fallbackNormal, renderState.UseStoredNormals), GetUv(modelGeometry.Uvs, vertexIndex0), vertices, outIndices, ref boundsMin, ref boundsMax);
-                AddTriangleVertex(p1, vertexColor, GetNormal(modelGeometry.Normals, vertexIndex1, fallbackNormal, renderState.UseStoredNormals), GetUv(modelGeometry.Uvs, vertexIndex1), vertices, outIndices, ref boundsMin, ref boundsMax);
-                AddTriangleVertex(p2, vertexColor, GetNormal(modelGeometry.Normals, vertexIndex2, fallbackNormal, renderState.UseStoredNormals), GetUv(modelGeometry.Uvs, vertexIndex2), vertices, outIndices, ref boundsMin, ref boundsMax);
+                AddTriangleVertex(p0, vertexColor, GetNormal(modelGeometry.Normals, vertexIndex0, fallbackNormal, renderState.UseStoredNormals), material.TransformUv(GetUv(modelGeometry.Uvs, vertexIndex0)), vertices, outIndices, ref boundsMin, ref boundsMax);
+                AddTriangleVertex(p1, vertexColor, GetNormal(modelGeometry.Normals, vertexIndex1, fallbackNormal, renderState.UseStoredNormals), material.TransformUv(GetUv(modelGeometry.Uvs, vertexIndex1)), vertices, outIndices, ref boundsMin, ref boundsMax);
+                AddTriangleVertex(p2, vertexColor, GetNormal(modelGeometry.Normals, vertexIndex2, fallbackNormal, renderState.UseStoredNormals), material.TransformUv(GetUv(modelGeometry.Uvs, vertexIndex2)), vertices, outIndices, ref boundsMin, ref boundsMax);
                 batchTriangleCount++;
             }
 

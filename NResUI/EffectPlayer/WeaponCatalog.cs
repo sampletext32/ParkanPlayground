@@ -11,7 +11,10 @@ namespace NResUI.EffectPlayer;
 /// позиция - среднее позиций; если направления трёх CPT попарно различны, колонками матрицы служат сами направления
 /// (их длина - масштаб эффекта); если все равны - направление вперёд и масштаб равен длине.
 /// </summary>
-public readonly record struct EffectPlacement(Vector3 Ex, Vector3 Ey, Vector3 Ez, Vector3 Position);
+public readonly record struct EffectPlacement(Vector3 Ex, Vector3 Ey, Vector3 Ez, Vector3 Position, int OwnerPiece = -1);
+
+/// <summary>Точка дула: положение в системе детали-владельца CPT и индекс этой детали (узел модели).</summary>
+public readonly record struct MuzzlePoint(Vector3 Position, int OwnerPiece);
 
 /// <summary>Эффект, который запускает команда списка CTL (SPAWN_* с ресурсом из effects.rlb).</summary>
 /// <param name="HookList">Номер списка команд внутри CTL (0 - on_load, остальные номера см. таблицу крючков CTL).</param>
@@ -47,6 +50,18 @@ public sealed record BulletInfo(
 /// 1000 / скорость мс (<c>ExtendTransitionEndTimeForBinding</c>). Определяет длительность выстрела по автомату орудия.
 /// </param>
 /// <param name="ShotPauseMs">CP2 предмета: пауза после такта «выстрел» (SpawnProjectile) перед последним тактом анимации.</param>
+/// <param name="FiresAllBarrels">
+/// Флаг предмета 0x02000000 (`CONTROL_ITEM_FLAG_RIGHT_DRIVE_GROUP`): `AdvanceBindingTimeline` проходит автомат выстрела по
+/// всем привязкам сразу (залп); без флага стреляет одна привязка за раз, по кругу (ракетные пакеты).
+/// </param>
+/// <param name="PoseTimes">
+/// Время анимации (кадры модели) для деталей орудия по значениям привязок по умолчанию: `начало + default * (конец - начало)`
+/// диапазона Anim2 (иначе Anim1). Так движок ставит детали при загрузке (поворот ствола по высоте, ход отката).
+/// </param>
+/// <param name="Muzzles">
+/// Положения дул в системе координат объекта (CPT привязок предмета: основной, иначе вторичный). У многоствольных орудий
+/// (`o_gun_ba_23`: три ствола) каждая привязка проходит свой автомат выстрела и создаёт свой снаряд в своём дуле.
+/// </param>
 public sealed record WeaponInfo(
     string Name,
     string? BulletName,
@@ -55,7 +70,10 @@ public sealed record WeaponInfo(
     IReadOnlyList<WeaponEffectRef> MuzzleEffects,
     BulletInfo? Bullet,
     float ShotAnimSpeed = 4f,
-    float ShotPauseMs = 0f);
+    float ShotPauseMs = 0f,
+    IReadOnlyList<MuzzlePoint>? Muzzles = null,
+    IReadOnlyDictionary<int, float>? PoseTimes = null,
+    bool FiresAllBarrels = false);
 
 /// <summary>
 /// Каталог орудий первой части: guns.rlb (CTL орудий) -> objects.rlb (BULL) -> weapon.rlb (CTL снаряда, EXPL).
@@ -107,6 +125,16 @@ public sealed class WeaponCatalog : IService
 
         error = null;
         return true;
+    }
+
+    /// <summary>Байты ресурса из guns.rlb по имени записи (например, <c>o_gun_ba_23.msh</c>), либо null.</summary>
+    public byte[]? ReadGunResource(string fileName)
+    {
+        if (!EnsureStores(out _))
+            return null;
+
+        var entry = _guns!.Find(fileName);
+        return entry == null ? null : _guns.Read(entry);
     }
 
     /// <summary>Имена CTL орудий (o_gun_*) из guns.rlb.</summary>
@@ -173,7 +201,66 @@ public sealed class WeaponCatalog : IService
             CollectEffects(ctl, cpt),
             bullet,
             ShotAnimSpeed(ctl, item),
-            item?.CommonParams.Count > 2 ? item.CommonParams[2] : 0f);
+            item?.CommonParams.Count > 2 ? item.CommonParams[2] : 0f,
+            MuzzlePositions(ctl, item, cpt),
+            PoseTimes(ctl),
+            item != null && (item.Flags & 0x02000000u) != 0);
+    }
+
+    private static Dictionary<int, float> PoseTimes(CtlFile ctl)
+    {
+        var result = new Dictionary<int, float>();
+        foreach (var b in ctl.PieceBindings)
+        {
+            if (result.ContainsKey(b.LocalPieceIndex))
+                continue;
+
+            float start, end;
+            if (b.Anim2Start >= 0f && b.Anim2EndOrDuration >= b.Anim2Start)
+            {
+                start = b.Anim2Start;
+                end = b.Anim2EndOrDuration;
+            }
+            else if (b.Anim1Start >= 0f && b.Anim1EndOrDuration >= b.Anim1Start)
+            {
+                start = b.Anim1Start;
+                end = b.Anim1EndOrDuration;
+            }
+            else
+            {
+                continue;
+            }
+
+            result[b.LocalPieceIndex] = start + Math.Clamp(b.DefaultValue, 0f, 1f) * (end - start);
+        }
+
+        return result;
+    }
+
+    private static List<MuzzlePoint> MuzzlePositions(CtlFile ctl, CtlItemRecordRaw? item, CptFile? cpt)
+    {
+        var result = new List<MuzzlePoint>();
+        if (item != null && cpt != null)
+        {
+            foreach (var index in item.PieceBindingIndices)
+            {
+                if (index < 0 || index >= ctl.PieceBindings.Count)
+                    continue;
+
+                var binding = ctl.PieceBindings[index];
+                if ((binding.Flags & 0x40u) != 0)
+                    continue; // COPY_PREVIOUS_VALUE: автомат выстрела такие привязки пропускает
+
+                var cptIndex = binding.PrimaryCptRefIndex >= 0 ? binding.PrimaryCptRefIndex : binding.SecondaryCptRefIndex;
+                if (cptIndex >= 0 && cptIndex < cpt.Records.Count)
+                    result.Add(new MuzzlePoint(V(cpt.Records[cptIndex].Position), cpt.Records[cptIndex].OwnerPieceIndex));
+            }
+        }
+
+        if (result.Count == 0)
+            result.Add(new MuzzlePoint(Vector3.Zero, -1));
+
+        return result;
     }
 
     private static float ShotAnimSpeed(CtlFile ctl, CtlItemRecordRaw? item)
@@ -185,7 +272,7 @@ public sealed class WeaponCatalog : IService
         if (index < 0 || index >= ctl.PieceBindings.Count)
             return 4f;
 
-        var speed = ctl.PieceBindings[index].Param24;
+        var speed = ctl.PieceBindings[index].ChannelSpeed;
         return speed > 0.01f ? speed : 4f;
     }
 
@@ -292,11 +379,11 @@ public sealed class WeaponCatalog : IService
             var up = MathF.Abs(forward.Z) < 0.99f ? Vector3.UnitZ : Vector3.UnitX;
             var side = Vector3.Normalize(Vector3.Cross(forward, up));
             var third = Vector3.Cross(forward, side);
-            return new EffectPlacement(forward * length, side * length, third * length, position);
+            return new EffectPlacement(forward * length, side * length, third * length, position, r0.OwnerPieceIndex);
         }
 
         if (d0 != d1 && d0 != d2 && d1 != d2)
-            return new EffectPlacement(d0, d1, d2, position);
+            return new EffectPlacement(d0, d1, d2, position, r0.OwnerPieceIndex);
 
         // два равны: BuildBasisFromPrimaryAxis(повторяющийся, другой)
         Vector3 primary, secondary;
@@ -319,6 +406,6 @@ public sealed class WeaponCatalog : IService
         var x = Vector3.Normalize(primary);
         var y = secondary - x * Vector3.Dot(secondary, x);
         y = y.LengthSquared() > 1e-8f ? Vector3.Normalize(y) : Vector3.Normalize(Vector3.Cross(x, Vector3.UnitZ));
-        return new EffectPlacement(x, y, Vector3.Cross(x, y), position);
+        return new EffectPlacement(x, y, Vector3.Cross(x, y), position, r0.OwnerPieceIndex);
     }
 }

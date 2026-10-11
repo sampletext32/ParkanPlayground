@@ -55,6 +55,9 @@ public sealed record ExplFile(
     // 3 and 4 = area damage in a sphere. In the data: 2 (48 files), 3 (43), 1 (13); 4 does not occur.
     uint Field00,
     float LifeAmountOffset,
+    // Effect scale. VERIFIED (CControlBase::CommitNdpDamageStateTransition, Control.dll 0x10015B50): for a bullet (LOGIC_BULLET_AGENT_BULL)
+    // it is used as is (absolute number: 1.0, 3.0, 7.0, 60.0 ...), for other objects it is multiplied by the radius of the piece's bounding
+    // sphere. All component sizes of the FXID are multiplied by it (SetEffectScale); it is also the radius of area damage.
     float ScaleMultiplier,
     float Field0C,
     float Field10,

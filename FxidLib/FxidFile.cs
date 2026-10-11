@@ -255,13 +255,13 @@ public sealed record EffectType3Data(
     // +0x08..0x10: value v = pow(t, PhaseExponent) * (PhaseEnd - max(PhaseStart, 0)) + max(PhaseStart, 0);
     // t = effect strength when PhaseStart < 0 (in the files: -1.0 in 317 of 394), otherwise normalized life.
     // The fractional part of v is passed to the render call as a phase (animation frame?).
-    float PhaseStart_maybe,
-    float PhaseEnd_maybe,
-    float PhaseExponent_maybe,      // in the files: always 1.0
-    // +0x14..0x1C: lerp(LifeLerpStart, LifeLerpEnd, pow(life, LifeLerpExponent)) is passed to the render call (alpha/size?).
-    float LifeLerpStart_TBD,
-    float LifeLerpEnd_TBD,
-    float LifeLerpExponent,         // in the files: ~always 1.0
+    float PhaseStart,
+    float PhaseEnd,
+    float PhaseExponent,      // in the files: always 1.0
+    // +0x14..0x1C: lerp(LifeLerpStart, LifeLerpEnd, pow(life, IntensityExponent)) is passed to the render call (alpha/size?).
+    float IntensityStart,
+    float IntensityEnd,
+    float IntensityExponent,         // in the files: ~always 1.0
     // +0x20..0x24: component is active while ActiveTimeStart <= t <= ActiveTimeEnd; life = (t - start) / (end - start).
     // Units: EvaluateAtTime.param_2[1] (ctx dword1) is the effect strength value 0..1 (see FxidStrength), NOT necessarily time: types 7/10 (verified in 10001240)
     // compare it with their window and normalise (v-lo)/(hi-lo). With life-based StrengthSource it equals normalized life; type 1 uses the same convention (windows like 0.75..1.0 occur).
@@ -299,7 +299,7 @@ public sealed record EffectType3Data(
     }
 
     /// <summary>True when the phase is driven by the effect strength instead of local life (PhaseStart &lt; 0).</summary>
-    public bool PhaseUsesEffectStrength => PhaseStart_maybe < 0f;
+    public bool PhaseUsesEffectStrength => PhaseStart < 0f;
 
     /// <summary>Normalized life 0..1 at time t, or null outside the active window (the engine stores -1 there).</summary>
     public float? LifeAt(float t) =>

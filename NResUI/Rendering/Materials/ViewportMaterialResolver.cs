@@ -39,7 +39,8 @@ public static class ViewportMaterialResolver
         GL gl,
         string mshPath,
         IConfigProvider configProvider,
-        ICollection<string>? warnings = null)
+        ICollection<string>? warnings = null,
+        int stageIndex = 0)
     {
         var weaMatch = WeaResourceResolver.TryLoadMatchingWeaForMsh(mshPath, warnings);
         if (weaMatch == null || weaMatch.File.Materials.Count == 0)
@@ -70,10 +71,13 @@ public static class ViewportMaterialResolver
                 materialRef.Name,
                 configProvider,
                 warnings,
-                out var texm);
+                stageIndex,
+                out var texm,
+                out var uvScale,
+                out var uvOffset);
 
             result[materialRef.Id] = texture != null
-                ? new ViewportMaterial(materialRef.Name, texture.Value, texm)
+                ? new ViewportMaterial(materialRef.Name, texture.Value, texm, uvScale, uvOffset)
                 : new ViewportMaterial(materialRef.Name);
         }
 
@@ -87,9 +91,14 @@ public static class ViewportMaterialResolver
         string materialName,
         IConfigProvider configProvider,
         ICollection<string>? warnings,
-        out TexmFile? texm)
+        int stageIndex,
+        out TexmFile? texm,
+        out System.Numerics.Vector2 uvScale,
+        out System.Numerics.Vector2 uvOffset)
     {
         texm = null;
+        uvScale = System.Numerics.Vector2.One;
+        uvOffset = System.Numerics.Vector2.Zero;
         var materialEntry = FindEntry(materialArchive, materialName);
         if (materialEntry == null)
         {
@@ -108,7 +117,11 @@ public static class ViewportMaterialResolver
             materialEntry.ElementCount,
             materialEntry.Magic1);
 
-        var textureName = materialFile.Stages.FirstOrDefault()?.TextureName;
+        // Стадии материала - варианты (страницы атласа): у материалов с цветом клана по одной стадии на цвет.
+        var stage = materialFile.Stages.Count == 0
+            ? null
+            : materialFile.Stages[Math.Clamp(stageIndex, 0, materialFile.Stages.Count - 1)];
+        var textureName = stage?.TextureName;
         if (string.IsNullOrWhiteSpace(textureName))
             return null;
 
@@ -149,6 +162,17 @@ public static class ViewportMaterialResolver
 
         texm = texmResult.TexmFile;
         var rgba = texm.GetRgba32BytesFromMipmap(0, out var width, out var height);
+
+        // UV модели относительны страницы стадии: переводим в доли всей текстуры.
+        var pages = texm.Pages?.Items;
+        var pageIndex = stage!.TextureStageIndex;
+        if (pages != null && pageIndex >= 0 && pageIndex < pages.Count && width > 0 && height > 0)
+        {
+            var page = pages[pageIndex];
+            uvScale = new System.Numerics.Vector2(page.Width / (float)width, page.Height / (float)height);
+            uvOffset = new System.Numerics.Vector2(page.X / (float)width, page.Y / (float)height);
+        }
+
         return ViewportTextureLoader.CreateRgbaTexture(gl, rgba, width, height);
     }
 
