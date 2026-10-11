@@ -89,20 +89,20 @@ public class MaterialExplorerPanel : IImGuiPanel
                     
                     ImGui.Separator();
                     ImGui.TextDisabled("(Read if Magic1 > 2)");
-                    ImGui.Text($"Global Alpha Multiplier: {mat.GlobalAlphaMultiplier:F3}");
+                    ImGui.Text($"Surface Speed Scale: {mat.SurfaceSpeedScale:F3}");
                     if (ImGui.IsItemHovered())
                     {
-                        ImGui.SetTooltip("Always 1.0 in all 628 materials - global alpha multiplier");
+                        ImGui.SetTooltip("Unit speed multiplier on this surface (World3D surface_speed_scale); 1.0 in all 628 materials");
                     }
                     ImGui.SameLine();
                     ImGui.TextDisabled("(4 bytes, float)");
                     
                     ImGui.Separator();
                     ImGui.TextDisabled("(Read if Magic1 > 3)");
-                    ImGui.Text($"Global Emissive Intensity: {mat.GlobalEmissiveIntensity:F3}");
+                    ImGui.Text($"Surface Life Drain /s: {mat.SurfaceLifeDrainPerSec:F3}");
                     if (ImGui.IsItemHovered())
                     {
-                        ImGui.SetTooltip("0=no glow (99.4%), rare values: 1000, 10000");
+                        ImGui.SetTooltip("Life lost per second by a unit standing on this surface (surface_life_drain_per_sec): 0 in 624 materials, 1000 in B_S0_DAM / B_DD1DK_DAM, 10000 in ENV_LAVA_BOT / WATER_BOT");
                     }
                     ImGui.SameLine();
                     ImGui.TextDisabled("(4 bytes, float)");

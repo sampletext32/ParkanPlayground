@@ -11,8 +11,8 @@ namespace MaterialLib;
 /// В Ghidra World3D.dll поле названо SourceBlendMode по ошибке: значения в данных 0..10 и 255, не D3DBLEND; IMatManager::GetMaterialMetaByIndex
 /// возвращает указатель на него, и Control.dll по нему выбирает слот EXPL.</param>
 /// <param name="Reserved05">Второй байт после AnimCount; читается, если Magic1 >= 2, иначе 0xFF. Движок записывает его в DestBlendMode, но в данных всегда 255 (все 628 материалов); назначение неизвестно.</param>
-/// <param name="GlobalAlphaMultiplier">Глобальный alpha multiplier; читается, если Magic1 > 2. Значение по умолчанию: 1.0.</param>
-/// <param name="GlobalEmissiveIntensity">Глобальная emissive intensity; читается, если Magic1 > 3. Значение по умолчанию: 0.0.</param>
+/// <param name="SurfaceSpeedScale">Множитель скорости юнита на этой поверхности (World3D: <c>surface_speed_scale</c>, юнит читает в <c>runtime_tangential_speed_scale</c>); читается, если Magic1 &gt; 2, по умолчанию 1.0 (во всех 628 материалах 1.0).</param>
+/// <param name="SurfaceLifeDrainPerSec">Потеря жизни юнита в секунду, пока он стоит на этой поверхности (World3D: <c>surface_life_drain_per_sec</c>, юнит читает в <c>passive_life_drain_rate</c>); читается, если Magic1 &gt; 3, по умолчанию 0. В данных: <c>ENV_LAVA_BOT</c> и <c>WATER_BOT</c> 10000, <c>B_S0_DAM</c> и <c>B_DD1DK_DAM</c> 1000, у остальных 0.</param>
 /// <param name="Stages">Стадии материала в порядке чтения из файла.</param>
 /// <param name="Animations">Анимации материала в порядке чтения из файла.</param>
 public record MaterialFile(
@@ -23,8 +23,8 @@ public record MaterialFile(
     bool SupportsBumpMapping,
     SurfaceMaterial SurfaceMaterial,
     byte Reserved05,
-    float GlobalAlphaMultiplier,
-    float GlobalEmissiveIntensity,
+    float SurfaceSpeedScale,
+    float SurfaceLifeDrainPerSec,
     List<MaterialStage> Stages,
     List<MaterialAnimation> Animations);
 
