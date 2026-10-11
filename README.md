@@ -294,7 +294,7 @@ IComponent ** LoadSomething(undefined4, undefined4, undefined4, undefined4)
   {id} {name}
   ```
 
-Может как-то анимироваться. Как - пока не понятно.
+Номер в строке `{id}` загрузчик отбрасывает: материалы идут по порядку строк. Анимация материалов, кэши и режимы смешивания - `MaterialLib/README.md`.
 
 ## `.bas Basement` файл
 

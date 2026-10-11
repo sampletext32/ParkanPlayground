@@ -337,9 +337,10 @@ public sealed class EffectAssetCache : IService
         if (material == null)
             return false;
 
-        var stageIndex = phase >= 0f
-            ? MaterialAnimator.PickStageByPhase(material, phase)
-            : MaterialAnimator.PickStage(material, timeMs);
+        var sample = phase >= 0f
+            ? MaterialAnimator.SampleByPhase(material, phase)
+            : MaterialAnimator.Sample(material, timeMs);
+        var stageIndex = sample.StageIndex;
         if (stageIndex < 0)
             return false;
 
@@ -360,7 +361,19 @@ public sealed class EffectAssetCache : IService
             uv1 = new Vector2((page.X + page.Width) / w, (page.Y + page.Height) / h);
         }
 
-        var tint = new Vector4(stage.AmbientR, stage.AmbientG, stage.AmbientB, MathF.Min(1f, stage.AmbientA));
+        // Interpolate (World3D 0x100032D0): цвета берутся из начального ключа; поля из маски смешиваются со следующей стадией.
+        var next = material.Stages[sample.NextStageIndex];
+        var k = sample.Progress;
+        var rgb = (sample.Fields & AnimationTarget.Ambient) != 0
+            ? new Vector3(
+                stage.AmbientR + (next.AmbientR - stage.AmbientR) * k,
+                stage.AmbientG + (next.AmbientG - stage.AmbientG) * k,
+                stage.AmbientB + (next.AmbientB - stage.AmbientB) * k)
+            : new Vector3(stage.AmbientR, stage.AmbientG, stage.AmbientB);
+        var alpha = (sample.Fields & AnimationTarget.Power) != 0
+            ? stage.AmbientA + (next.AmbientA - stage.AmbientA) * k
+            : stage.AmbientA;
+        var tint = new Vector4(rgb, MathF.Min(1f, alpha));
         frame = new SpriteFrame(
             (IntPtr)texture.Texture.GlTexture, uv0, uv1, tint, stageIndex,
             material.BlendMode == MaterialBlendMode.Additive, texture.HasAlpha);
