@@ -42,7 +42,24 @@ public static class MaterialAnimator
                 break;
             }
             case AnimationLoopMode.Clamp:
-                t = MathF.Min(t, total - 0.001f);
+                if (t >= total)
+                {
+                    // AnimateFrame (loop_mode 2) после конца: начальный ключ = последний, позиция 0, следующий = ключ 0, поэтому
+                    // доля (0 - начало) / (конец - начало) отрицательна, и цвета по маске экстраполируются от последней стадии.
+                    var last = keys.Count - 1;
+                    float begin = keys[last - 1].DurationMs;
+                    var span = total - begin;
+                    return new MaterialFrame(
+                        ClampStage(keys[last].StageIndex, material),
+                        ClampStage(keys[0].StageIndex, material),
+                        span > 0f ? -begin / span : 0f,
+                        animation.Target);
+                }
+
+                break;
+            case AnimationLoopMode.Random:
+                // Каждый вызов берёт случайную позицию 0..длительность (lcg_rand); во вьюере случайность привязана к кадру времени.
+                t = (float)(Hash((uint)Math.Max(0f, MathF.Floor(timeMs))) % (uint)Math.Max(1f, total));
                 break;
             default:
                 t %= total;
@@ -108,6 +125,16 @@ public static class MaterialAnimator
 
     /// <summary>Стадия по фазе 0..1 (без интерполяции цветов).</summary>
     public static int PickStageByPhase(MaterialFile material, float phase) => SampleByPhase(material, phase).StageIndex;
+
+    private static uint Hash(uint x)
+    {
+        x ^= x >> 16;
+        x *= 0x7FEB352Du;
+        x ^= x >> 15;
+        x *= 0x846CA68Bu;
+        x ^= x >> 16;
+        return x;
+    }
 
     private static int ClampStage(int index, MaterialFile material) =>
         Math.Clamp(index, 0, material.Stages.Count - 1);

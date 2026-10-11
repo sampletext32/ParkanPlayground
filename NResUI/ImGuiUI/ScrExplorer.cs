@@ -65,7 +65,7 @@ public class ScrExplorer : IImGuiPanel
                                     var inner = entry.Inners[j];
                                     ImGui.TableNextRow();
                                     ImGui.TableNextColumn();
-                                    ImGui.Text(inner.ScriptIndex.ToString());
+                                    ImGui.Text(ScrLib.ScrActions.Describe(inner.ScriptIndex));
 
                                     if (inner.ScriptIndex == 2)
                                     {
@@ -93,19 +93,19 @@ public class ScrExplorer : IImGuiPanel
                                     ImGui.Text(inner.UnkInner3.ToString());
                                     ImGui.TableNextColumn();
                                     ImGui.Text($"{(int) inner.Type}: {inner.Type:G}");
-                                    if (inner.Type == ScrEntryInnerType._0)
+                                    if (inner.Type == ScrEntryInnerType.Compare)
                                     {
-                                        Utils.ShowHint("0 обязан иметь аргументы");
+                                        Utils.ShowHint("Сравнение двух переменных Varset (аргументы), операция в UnkInner5: 0 <, 1 ==, 2 >, 3 <=, 4 >=, 5 !=");
                                     }
 
-                                    if (inner.Type == ScrEntryInnerType.CheckInternalState)
+                                    if (inner.Type == ScrEntryInnerType.Return)
                                     {
-                                        Utils.ShowHint("Для 5 вообще не нужны данные, игра проверяет внутренний стейт");
+                                        Utils.ShowHint("Return: если условия выполнены, секция на этом тике завершается");
                                     }
 
                                     if (inner.Type == ScrEntryInnerType.SetVarsetValue)
                                     {
-                                        Utils.ShowHint("В случае 6, игра берёт UnkInner2 (индекс в Varset) и устанавливает ему значение UnkInner3");
+                                        Utils.ShowHint("Записать в переменную Varset UnkInner2 значение UnkInner3");
                                     }
 
                                     ImGui.TableNextColumn();

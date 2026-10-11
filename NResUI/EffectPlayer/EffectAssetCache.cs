@@ -373,7 +373,9 @@ public sealed class EffectAssetCache : IService
         var alpha = (sample.Fields & AnimationTarget.Power) != 0
             ? stage.AmbientA + (next.AmbientA - stage.AmbientA) * k
             : stage.AmbientA;
-        var tint = new Vector4(rgb, MathF.Min(1f, alpha));
+        // Прогресс < 0 (режим «один раз» после конца анимации) экстраполирует цвета, как в движке; результат насыщается.
+        rgb = Vector3.Clamp(rgb, Vector3.Zero, Vector3.One);
+        var tint = new Vector4(rgb, Math.Clamp(alpha, 0f, 1f));
         frame = new SpriteFrame(
             (IntPtr)texture.Texture.GlTexture, uv0, uv1, tint, stageIndex,
             material.BlendMode == MaterialBlendMode.Additive, texture.HasAlpha);
