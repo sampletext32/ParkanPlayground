@@ -399,7 +399,7 @@ public sealed record CtlItemRecordRaw(
     int Unknown10,
     int Unknown14,
     int InitialRuntimeState, // +0x18: initial runtime_state of the item, -1 = keep default (CItemBase::ParseCtlItemRecordAndInit)
-    float Param1C, // +0x1C: float, 0 or multiples of 12.5 (engines 450..1350, radars 175..1150, shields 200..290, batteries 175..700); no reader found in Control.dll
+    float Param1C, // +0x1C: float, 0 or multiples of 12.5 (engines 450..1350, radars 175..1150, shields 200..290, batteries 175..700); CtlRawItem.mobility_contribution: item's contribution to mobility mass and to signature 0x45 (CControlBase::InitializeNdpMobilityAccounting)
     float Param20, // +0x20: raw item value (selector 0x30): base power draw per second; for batteries (0x13) the max output
     float Param24,
     float SignalAWeight, // +0x28: weight of control signal A (flags bits 8..15) in CItemBase::method9
@@ -462,14 +462,20 @@ public enum EControlCommandOpcode : uint {
     CONTROL_CMD_INHERIT_CLAN_FROM_PARENT = 0x1D,
     CONTROL_CMD_EXECUTE_ITEM_ACTION_TRUE = 0x1E,
     CONTROL_CMD_SET_OBJECT_TRANSFORMATION = 0x1F,
+    CONTROL_CMD_EXECUTE_ITEM_COMMAND_MODE0 = 0x20,
+    CONTROL_CMD_EXECUTE_ITEM_COMMAND_MODE1 = 0x21,
+    CONTROL_CMD_SET_ITEM_FLAG_0x200 = 0x22,
     CONTROL_CMD_DISTRIBUTE_DAMAGE = 0x23,
+    CONTROL_CMD_SET_ITEM_TARGET_POINT = 0x25,
+    CONTROL_CMD_SET_ITEM_FLAGS = 0x26,
+    CONTROL_CMD_CYCLE_OBJECT_TRANSFORMATION = 0x27,
     CONTROL_CMD_QUEUE_PATH_TO_CONTROL_STATE = 0x28,
     CONTROL_CMD_QUEUE_PATH_TO_RANDOM_CONTROL_STATE = 0x29,
     CONTROL_CMD_SET_NET_SYNC_FLAG_0x10000000 = 0x2A,
     CONTROL_CMD_CLEAR_NET_SYNC_FLAG_0x10000000 = 0x2B,
     CONTROL_CMD_UNKNOWN_0x2c = 0x2C,
-    CONTROL_CMD_UNKNOWN_0x2d = 0x2D,
-    CONTROL_CMD_UNKNOWN_0x2e = 0x2E,
+    CONTROL_CMD_FILL_BATTERIES = 0x2D,
+    CONTROL_CMD_NOOP_0x2e = 0x2E,
     CONTROL_CMD_SET_NET_SYNCHRO_MODE = 0x2F,
 }
 

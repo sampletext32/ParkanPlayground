@@ -186,6 +186,16 @@
 | `OnEndOfRender` | сбрасывает `is_rendering_guard_maybe` у всех эффектов, снимает бит 4 в `environment_flags` |
 | `GetLatestAutoDeleteEffectEndTimeMs` | максимум `end_time_ms` среди эффектов с флагом `AutoDeleteAtFull` (0x2) |
 
+Что код умеет, но данные не используют (типы компонентов, режимы смешивания, виды урона EXPL, типы предметов и опкоды CTL), сведено в `ControlLib/README.md`, §10.
+
+**Кэши менеджера** (`FxManager`, Effect.dll):
+
+| Поле | Смещение | Что хранит |
+|---|---|---|
+| `material_handle_cache` | +0x74 | элементы по 0x44 байта: `ResourceNamedRef` (archive + item, по 0x20) и handle материала (`набор << 16`, +0x40); `GetOrLoadMaterialHandle` (0x100066E0) при промахе собирает однострочный WEA-текст и зовёт `LoadWearSetFromWeaText` |
+| `sound_slot_cache` | +0x84 | элементы по 12 байт: индекс записи глобального кэша открытых ресурсов звука, «использован» (byte), номер звука в `ISoundPool`; `GetOrCreateSoundSlot` (0x10006880): режимы звука 0/1/2/3 -> флаги пула 0x0/0x200/0x2/0x202 |
+| `cached_camera_position` | +0xAC | мировая позиция камеры, кэшируется в первом `RenderEffectHandles` кадра (бит 4 `environment_flags`) и передаётся в `RenderEffectComponents` как `camera_world_position`; бит снимает `OnEndOfRender` |
+
 ### Как считается Strength (`ComputeEffectStrength`)
 
 Life = (now − start) / (end − start). Затем:

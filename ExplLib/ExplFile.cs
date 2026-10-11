@@ -51,8 +51,8 @@ public enum ExplDirectionMode : uint
 /// The unused part of the name buffers can contain uninitialized memory (garbage after the terminating zero).
 /// </remarks>
 public sealed record ExplFile(
-    // Damage kind (inferred from the branching in CControlBase::method_173e0): 2 = damage to the hit object only,
-    // 3 and 4 = area damage in a sphere. In the data: 2 (48 files), 3 (43), 1 (13); 4 does not occur.
+    // Damage kind (CControlBase::ProcessActiveDamageExplosions, Control.dll 0x100173E0): 1 = effect only, 2 = damage to the hit object only,
+    // 3 and 4 = area damage in a sphere of radius ScaleMultiplier. In the data: 2 (48 files), 3 (43), 1 (13); 4 does not occur.
     uint Field00,
     float LifeAmountOffset,
     // Effect scale. VERIFIED (CControlBase::CommitNdpDamageStateTransition, Control.dll 0x10015B50): for a bullet (LOGIC_BULLET_AGENT_BULL)

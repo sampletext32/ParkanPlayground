@@ -17,6 +17,8 @@
 7. [Оружие и эффекты выстрела](#7-оружие-и-эффекты-выстрела)
 8. [Имена в Ghidra](#8-имена-в-ghidra)
 9. [Не выяснено](#9-не-выяснено)
+10. [Чего нет в данных](#10-чего-нет-в-данных)
+11. [Сводка находок](#11-сводка-находок)
 
 ---
 
@@ -146,7 +148,7 @@ Control — слой игровой логики, который связыва�
 
 Прочие опкоды: 0 RESET_MOTION, 1/2 MARK/UNMARK_ROOT_CENTRAL, 7 KILL_PIECE, 9 ITEM_LOAD_RESOURCE, 12/13 SET_TANG_ACCEL/NORM_SPEED, 15 SCHEDULE_DETACH_OR_KILL
 (ставит `clan_index` = 0xFFFE, затем удаление через `DetachCleanupDelayMs`), 17 FORCE_KILL, 20 PLACE_BUILDING_ON_TERRAIN, 21 DAMAGE_OBJECTS_IN_BOUNDS, 22 SPAWN_OBJECT_FROM_3_JOINTS,
-23/30 EXECUTE_ITEM_ACTION, 27 SWAP_NDP_RESOURCE (подмена EXPL и немедленный взрыв, §7.5), 29 INHERIT_CLAN_FROM_PARENT (`clan_index` = клан родителя через `ILifeSystem` слот 0x2C; в данных 4 раза: `ws_al_01`, `ws_al_02`, `ws_hm_01`, `ws_hm_02`), 40/41 QUEUE_PATH_TO_(RANDOM_)CONTROL_STATE, 42/43 NET_SYNC_FLAG.
+23/30 EXECUTE_ITEM_ACTION, 27 SWAP_NDP_RESOURCE (подмена EXPL и немедленный взрыв, §7.5), 29 INHERIT_CLAN_FROM_PARENT (`clan_index` = клан родителя через `ILifeSystem` слот 0x2C; в данных 4 раза: `ws_al_01`, `ws_al_02`, `ws_hm_01`, `ws_hm_02`), 32/33 EXECUTE_ITEM_COMMAND (mode 0/1), 34 SET_ITEM_FLAG_0x200, 35 DISTRIBUTE_DAMAGE, 37 SET_ITEM_TARGET_POINT (точка = позиция объекта + (arg1..arg3)·0.001), 38 SET_ITEM_FLAGS (arg0 = предмет, arg1 = флаги), 39 CYCLE_OBJECT_TRANSFORMATION (`(текущая + arg0) % arg1`), 40/41 QUEUE_PATH_TO_(RANDOM_)CONTROL_STATE, 42/43 NET_SYNC_FLAG, 45 FILL_BATTERIES (`ITEM_PARAM_ITEM_FACTOR` = 1.0 у всех батарей 0x13), 46 пустая команда, 47 SET_NET_SYNCHRO_MODE.
 
 ## 4. Записи агентов (objects.rlb, fortif.rlb)
 
@@ -224,7 +226,7 @@ bullet_entry_name, …)` создаёт снаряд, читает его `ILife
 | Тип | Класс | Размер | vtable |
 |---|---|---|---|
 | 0x01 | `CItemType1_TurretDrive` (наследует `CItemType0x16`, ctor 0x1002B470) | 0x104 | 0x1003EA70 |
-| 0x02, 0x1E | `CItemType2_and_0x1e_ProjectileWeapon` | 0x174 | — |
+| 0x02, 0x1E | `CItemType2_and_0x1e_ProjectileWeapon` (один класс; 0x1E - строительное орудие, §7.2) | 0x174 | — |
 | 0x04 | `CItemType4_TargetingSystem` | 0xE0 | 0x1003E2F0 |
 | 0x05 | `CItemType5_Engine` | 0xA0 | 0x1003E808 |
 | 0x08 | `CItemType8_SensorRadar` | 0xCC | 0x1003E518 |
@@ -253,7 +255,7 @@ bullet_entry_name, …)` создаёт снаряд, читает его `ILife
 | +0x08 | `flags` | режим выхода и сигналы (§5.5) |
 | +0x0C/+0x10/+0x14 | int | у 0x02/0x1E: −1 или 1/6/2, +0x0C = список команд такта 3; у 0x19: 9..13 = номера состояний (`method_21b80` с +0x10 при включении, +0x14 при выключении) |
 | +0x18 | начальный `runtime_state` | −1 = не менять; у 0x18 = 33, у 0x1D = 9, у 0x19 = 0 |
-| +0x1C | float (`Param1C`) | 0 или кратно 12.5 (двигатели 450..1350, радары 175..1150, щиты 200..290, батареи 175..700); читателя нет |
+| +0x1C | float (`Param1C`) | 0 или кратно 12.5 (двигатели 450..1350, радары 175..1150, щиты 200..290, батареи 175..700); `CtlRawItem.mobility_contribution`: вклад предмета в «массу» подвижности, читает `InitializeNdpMobilityAccounting` (§5.8): прибавляется к вкладу части, к которой предмет прикреплён, и к сигнатуре 0x45 |
 | +0x20 | `Param20` (селектор 0x30) | базовая мощность в секунду; у батареи — максимум выдачи |
 | +0x24 | `Param24` | у оружия копируется в +0x9C; назначение не выяснено |
 | +0x28 / +0x2C | `SignalAWeight` / `SignalBWeight` | веса сигналов A и B (колёса 0.5 или 1.0) |
@@ -338,9 +340,9 @@ bullet_entry_name, …)` создаёт снаряд, читает его `ILife
 | Радар 0x08 | CP0/1/2 — чувствительность каналов (биты 0x400000/0x100000/0x200000 → сигнатуры 0x45/0x43/0x44); CP3 — радиус обнаружения (свойство 0x50); CP4 — период пересканирования. Обнаружено, если `CPi·factor·жизнь·сигн·(1 − d²/R²) ≥ 1` |
 | Оружие 0x02/0x1E | см. §7.2 |
 | Привод башни 0x01 | сам читает только `LIFE_RATIO`; у присоединённых орудий берёт CP6, CP7 для баллистики |
-| Наведение 0x04 | CP0 = 0.1, CP1 = 1000, CP2 = 1.3, CP3 = 1, CP4 = 150, CP5 = 1 (одинаково у всех 50). `InitAfterLoad` создаёт `LOGIC_CAMERA`, CP0..2 → `ICamera`; смысл не выяснен |
+| Наведение 0x04 | **камера прицеливания юнита**: `InitAfterLoad` (0x10022A60) создаёт дочерний объект `LOGIC_CAMERA` и регистрирует его `IAnimation::AddControlCamera`; CP0 = 0.1, CP1 = 1000, CP2 = 1.3, CP3 = 1, CP4 = 150, CP5 = 1 (одинаково у всех 50). CP2 уходит в слот `ICamera` 0x8C (`SetViewScalar`, float +0x180 камеры); CP0/CP1 читаются, но как near/far не подтверждено; CP3..5 в разобранных методах не читаются. Положение камеры (`AdvanceBindingTimeline` 0x100225F0): основная CPT первой привязки + дрожание·0.02, направление - вторая CPT; `runtime_state` 0x100 - `PlaceObject(SPACE_MESH)`, 0x200 - ориентация по каналам (yaw/pitch). Дрожание при попадании: `v / (t+1)^p · cos(ω·t)` |
 | Guidance 0x11 | CP0 — угол; кэш `cos(CP0)` в +0x98 |
-| Тип 0x06 | CP0·жизнь и CP1·жизнь суммируются в свойствах 0x33/0x34, 0x3A = ΣCP1/ΣCP0; класс не выяснен |
+| Тип 0x06 | CP0·жизнь и CP1·жизнь суммируются в свойствах 0x33/0x34, 0x3A = ΣCP1/ΣCP0. **В данных не встречается** (ни в одном из 485 CTL; так же отсутствуют типы 0, 7, 0xB, 0xE, 0x10, 0x12, 0x17, 0x1C, 0x1F), код предмета не используется |
 | Тип 0x16 | решатель упреждения (`TryComputeInterceptPoint`), `common_params` не читает |
 | Дефлектор 0x15 | CP0..5 — коэффициенты шести секторов щита (0.36..1.0): поглощение = `заряд·CP[i]·factor·жизнь`; сектор по доминирующей локальной оси: 0 +Y, 1 −Y, 2 −X, 3 +X, 4 +Z, 5 −Z |
 | Броня 0x1B | CP0 = 0..30, CP1 = 0.22..1.0 (делитель): эффективная жизнь = жизнь / CP1 (0 → `FLT_MAX`); `ResolveItemFloatParam(0,1,2)` → `ControlItemDescriptor` (+0xC, +0x4, +0x8) |
@@ -348,13 +350,15 @@ bullet_entry_name, …)` создаёт снаряд, читает его `ILife
 
 ### 5.8 Сигнатуры юнита
 
-Три числа (свойства `GetBaseProperty`), по которым радары обнаруживают цель, а детектор-щиты их ослабляют. Физический смысл (оптика/тепло/радио) по коду не выводится.
+Три числа (свойства `GetBaseProperty`), по которым радары обнаруживают цель, а детекторы-щиты их ослабляют. Составляются из того, что юнит потребляет и из чего он состоит:
 
-| Свойство | Из чего | Канал радара | Параметр |
-|---|---|---|---|
-| 0x45 | `noncentral_mobility_contribution` | 0x400000 | CP0 |
-| 0x43 | `derived_force_or_consumption_x × noncentral_scaled_xy_area` | 0x100000 | CP1 |
-| 0x44 | `derived_force_or_consumption_y × noncentral_scaled_volume` | 0x200000 | CP2 |
+| Свойство | Формула | Канал радара | Параметр | Из чего (по коду) |
+|---|---|---|---|---|
+| 0x45 | `noncentral_mobility_contribution` | 0x400000 | CP0 | сумма вкладов в подвижность: у каждой части NDP `mobility_contribution_per_volume × объём` (+ `armour.field3 × площадь XY`, если есть броня 0x1B), плюс `mobility_contribution` каждого предмета (`InitializeNdpMobilityAccounting` 0x10014470) - масса-подобная величина |
+| 0x43 | `power_draw_rate_sensors_defense_passive × noncentral_scaled_xy_area` | 0x100000 | CP1 | потребление сенсоров, защиты и пассивных предметов в секунду × суммарная площадь XY нецентральных частей - электроника |
+| 0x44 | `power_draw_rate_drive_weapons_passive × noncentral_scaled_volume` | 0x200000 | CP2 | потребление двигателей, оружия/приводов и пассивных предметов × суммарный объём - энергетика привода и оружия |
+
+Потребления считает `CControlBase::UpdateItemRuntimeEffects` (0x10010180) каждый кадр: `-(Σ GetPowerDelta по категориям) / dt` (категории из §5.4: 0 пассив, 2 сенсоры, 3 движение, 4 оружие, 5 защита). Названия «оптика/тепло/радио» в коде и ресурсах не встречаются; соответствие физическим каналам - интерпретация по составу формул.
 
 ### 5.9 `QueryItemProperty` (`IItemManager`, 0x1000ECE0)
 
@@ -436,6 +440,22 @@ bullet_entry_name, …)` создаёт снаряд, читает его `ILife
 | 5 | вторая задержка, как CP0 (`GetSecondaryFireRate`, 0x10025380, свойство 0x66) |
 | 3, 6..11 | **не из CTL**: записываются в `InitAfterLoad` из снаряда-прототипа BULL (значения CTL затираются): CP3 — объём (0x68); CP6 — 1, если `movement_physics_mode != 0` (гравитация); CP7 — `max_tangential_speed.y` (скорость вылета, 0x54); CP8 — `min(BULL 0x81, field12_0x58)` (предел дальности, не проверено); CP9 — время жизни `BULL 0x80 × 0.001` с (+0x170); CP10 — `cos(BULL 0x82)` (−1 — не задано); CP11 — радиус поражения (`NDP_DAMAGE_EFFECT_BOUNDS_RADIUS_ALL`, 0x76) |
 
+**Тип 0x1E - строительное орудие (builder).** Класс один и тот же, различий в коде два, оба в `QueryItemProperty` (0x1000ECE0): свойства 0x68 (CP3, объём снаряда) и 0x76 (CP11, радиус поражения) отдаются только предметам типа 0x02; у 0x1E запрос возвращает «нет» - ИИ не оценивает такое орудие как боевое. Остальные свойства (боезапас 0x53/0x55, задержки 0x65/0x66, заряд 0x62/0x63, 0x64, 0x54) общие для обоих типов, конструктор, разбор записи и `InitAfterLoad` одинаковые.
+
+В данных тип 0x1E встречается только у трёх орудий (`o_gun_ba_01`, `o_gun_ma_12`, `o_gun_la_10`; агенты `e_gun_bs_01`, `e_gun_ms_12`, `e_gun_ls_10`), по два предмета на орудие (детали 2 и 4), все записи идентичны:
+
+| Поле | Значение у 0x1E | Диапазон у типа 0x02 (114 предметов) |
+|---|---|---|
+| флаги предмета | 0x02000000 (залп) | 0 (103), 0x02000000 (7), 0x04000000 (4: `ws_*`) |
+| `Param20` / `Param24` | 320 / 6400 | 0..160 / 0..100000 (у 0x1E `Param20` выше всех боевых) |
+| CP0 (задержка) | 10000 мс | 0..15000 |
+| CP1 (боезапас) | 0 | -1 (16), 0 (4), до 50000 |
+| CP2 | 250 | 0..1000 (5 значений) |
+| снаряд (`Resource`) | `bld_l_01` / `bld_m_01` (`objects.rlb`; `bld_b_01` нигде не используется) | `bb_*`, `bl_*`, `bm_*`, `br_*`, `bf_*`, `bt_*`... |
+| эффект выстрела | `gunf_builder` в двух CPT (0 и 3), без звука | `gunf_*` + звук |
+
+Снаряд `bld_*_01` (`weapon.rlb`): скорость 10000, `DetachCleanupDelayMs` 11000 мс, эффект `builder_tail`, команды списков: `START_EFFECT` и `SCHEDULE_DETACH_OR_KILL`; взрыва (`SWAP_NDP_RESOURCE`), урона и EXPL нет. Боезапас 0 (у 4 боевых тоже) останавливает обычный автомат выстрела (`AdvanceBindingTimeline` → состояние 5), а `SetItemProperty(0x53)` задаёт боезапас только при CP1 > 0, то есть орудие стрелять как боевое не может; луч строительства, по-видимому, запускается из `Behavior.dll` (`Build_BuildDistance`, `OnNewBuildingBuilt`, `OnBuilderFailedToBuild`) - этот путь не прослежен.
+
 ### 7.3 Цепочка «орудие → снаряд → эффекты»
 
 Проверено по CTL guns.rlb (`o_gun_*`, 55 орудий) и weapon.rlb.
@@ -490,7 +510,29 @@ bullet_entry_name, …)` создаёт снаряд, читает его `ILife
 
 Эффект ставится в `SPACE_WORLD` в центр сферы детали, ось по режиму `EXPL+0x14`, все размеры компонентов FXID умножаются на масштаб
 (`SetEffectScale` ещё умножает на масштаб заголовка FXID). Общий `exp_m_mis` (`expl5` 1 → 5) даёт 15 ед. у `bm_t_01r` и до 300 ед. у `bm_m_04r`
-(EXPL тип 3, урон 15000 — вероятно, стратегическая ракета). `ComputeNdpDamageEffectBoundsRadius` (0x10017D90) использует то же поле.
+(EXPL вид 3, урон 15000 — вероятно, стратегическая ракета). `ComputeNdpDamageEffectBoundsRadius` (0x10017D90) использует то же поле.
+
+**Урон по площади** (`ProcessActiveDamageExplosions`, 0x100173E0). Вид урона EXPL `+0x00` (104 файла `.exp`: вид 1 - 13, вид 2 - 48, вид 3 - 43):
+
+| Вид | Что делает | В данных |
+|---|---|---|
+| 1 | только эффект, урона нет | `explode_*`, `*_self_exp` (масштаб 2..4, урон 0) |
+| 2 | урон только объекту, в который попал снаряд | пули и лазеры (`bb_*_01`, `bl_*`, `bt_*`; масштаб 1, урон 1) |
+| 3 / 4 | урон по площади: сфера радиуса `scale` вокруг центра детали, `CollectMeshObjectsIntersectingSphere`, каждому объекту (кроме своего) вызывается слот `ILifeSystem` 0x20; свои детали получают затухающий урон, детали с флагом NDP 0x10 - импульс | ракеты `bm_*`/`br_*`, огнемёты `bf_*`, часть пушечных `bb_*_02`, `ba_a_*` (вид 4 в данных не встречается) |
+
+`scale` одновременно радиус урона (ед. мира) и масштаб визуального эффекта; у снаряда он берётся из EXPL как есть, поэтому видимый размер и радиус поражения связаны одним числом:
+
+| EXPL | Радиус / масштаб | Урон | Эффект |
+|---|---|---|---|
+| `bm_t_01`, `br_l_01` | 2 | 40, 45 | `exp_m_mis` |
+| `bm_l_01`, `bm_m_01`, `bm_t_01r` | 2.5..3 | 60 | `exp_m_mis` |
+| `bm_b_01`, `br_m_01`, `bm_l_01r` | 3.5..4.5 | 70..200 | `exp_m_mis` |
+| `br_b_01`, `bm_b_01r`, `br_b_01r` | 4..7 | 300..450 | `exp_m_mis` |
+| `bm_h_01r`, `bf_f_01_end` | 8..8.5 | 100 | `exp_m_mis`, `exp_m_flm` |
+| `bm_m_04`, `bm_m_04r` | 45, 60 | 10000, 15000 | `exp_m_mis` |
+| `bm_b_04`, `bm_b_04r` | 60, 75 | 20000, 25000 | `exp_m_mis` |
+
+Семейство `*_04` (урон 10000..25000, радиус 45..75) на порядок мощнее остальных: масштаб эффекта 300 ед. у `bm_m_04r` не выбивается из общего правила «эффект = размеры компонентов `exp_m_mis` × `scale`», а согласован с радиусом урона 60.
 
 ### 7.6 Привод башни (`CItemType1_TurretDrive`)
 
@@ -576,6 +618,13 @@ bullet_entry_name, …)` создаёт снаряд, читает его `ILife
 | 0x10021AC0 / 0x10021B80 / 0x10021BD0 / 0x10025CD0 | `CItemBase::` `ExtendTransitionEndTimeForBinding` / `ExecuteCommandListForItem` / `ResolveObjectPieceWorldPoint` / `GetPieceAnimChannelForBinding` |
 | 0x10013260 / 0x10009800 / 0x10009820 / 0x10009810 | `SetClanIndex` (слот ILifeSystem 0x28, поле `clan_index` +0x54C) / `GetClanIndex` / `SetMaterialAnimationIndex` / `GetMaterialAnimationIndex` (поле `material_animation_index` +0x550) |
 | 0x10021290 | `CItemBase::ApplyInterpolatedAnimChannelValues` (флаг привязки 0x10 → фаза материала детали) |
+| 0x10012F20 | `ReceiveExplosionDamage` (слот `ILifeSystem` 0x20: приём урона по площади / прямого попадания) |
+| 0x100173E0 | `CControlBase::ProcessActiveDamageExplosions` (радиус = `scale` EXPL, §7.5) |
+| 0x10010180 | `CControlBase::UpdateItemRuntimeEffects` (категории энергии, потребление для сигнатур 0x43/0x44) |
+| 0x10034330 | `CControlClassic::SendMsg` (`GMSG` 0x80000023 - пакет урона) |
+| enum | `EControlItemType` пересоздан: 0x16 `INTERCEPT_SOLVER`, 0x1E `BUILDER_WEAPON`, добавлены 0xD, 0x18, 0x19, 0x1D (`UNKNOWN`), 0x6 и 0xB помечены `UNUSED`; `CtlRawItem.mobility_contribution` - float |
+| 0x10050F20 / 0x100517A0 | Terrain: `CCamera::DrawSceneThroughCamera` (слот `ICamera` 0x18) / `SetViewScalar` |
+| enum | `EControlCommandOpcode` пересоздан: 0x1D `INHERIT_CLAN_FROM_PARENT`, 0x20/0x21 `EXECUTE_ITEM_COMMAND_MODE0/1`, 0x22 `SET_ITEM_FLAG_0x200`, 0x25 `SET_ITEM_TARGET_POINT`, 0x26 `SET_ITEM_FLAGS`, 0x27 `CYCLE_OBJECT_TRANSFORMATION`, 0x2D `FILL_BATTERIES` |
 | 0x100028A0 / 0x10015B50 / 0x10017D90 | `CControlBase::` `ExecuteControlCommandList` / `CommitNdpDamageStateTransition` / `ComputeNdpDamageEffectBoundsRadius` |
 | 0x1000DBF0 / 0x1000E3D0 | `CControlBULL::` `UpdateTick` / `frame_update` |
 | 0x100234E0 / 0x100253C0 / 0x1002D610 / 0x10025B20 | свободные: `PowIfBaseNotOne` (`base^exponent`, либо `exponent` при `base == 1.0`; затухание дрожания камеры) / `Vector3_DotProduct` / `ProjectPointOntoPlane` / `BuildPlacementFromDirection` |
@@ -597,11 +646,41 @@ bullet_entry_name, …)` создаёт снаряд, читает его `ILife
 
 ## 9. Не выяснено
 
-- Смысл CP0..CP2 камеры у `Targeting` (0x04) и флага +0x16C у оружия (CP4 > 1).
-- Класс типа 0x06 (пара CP0/CP1 с отношением, свойства 0x33/0x34/0x3A).
-- Физический смысл трёх сигнатур юнита (0x43/0x44/0x45).
-- Потребители `CtlRawItem` +0x1C (`mobility_contribution`) и +0x24 (`param_24`: у оружия копируется в +0x9C).
+- Смысл CP0/CP1 и CP3..CP5 камеры у `Targeting` (0x04; near/far/зум не подтверждены), флага +0x16C у оружия (CP4 > 1) и точный путь стрельбы строительного орудия 0x1E.
 - CP1+ у Engine, остальные методы `TurretDrive` (слот 14+), остальные слоты таблицы хуков команд.
 - Как именно игра переводит значение канала анимации в `GetPieceAnimTransitionProgress` для `AnimParam` (форма кривой вспышки).
 - Кто вызывает `SetMaterialAnimationIndex` (слот ILifeSystem 0x40) и какое значение пишет (связь с кланом, 8 вариантов `R_LBL_01`).
-- Размер взрыва `bm_m_04r` (масштаб 60 → до 300 ед. в поперечнике): подтверждения по игре нет.
+- Размер взрыва `bm_m_04r` (масштаб 60 → до 300 ед. в поперечнике): по данным согласован с радиусом урона и уроном (§7.5), подтверждения по игре нет.
+
+## 10. Чего нет в данных
+
+Код игры умеет больше, чем используют ресурсы. Сведено по всем разбираемым файлам `ParkanUnpacked` (479 CTL без `is2_bases`, 971 предмет, 937 записей команды 4, 104 EXPL, 628 материалов, 29 миссий `.tma`). Проверка делалась чтением данных, не кода.
+
+| Что | Не встречается | Встречается |
+|---|---|---|
+| Типы предметов CTL | 0, 6, 7, 0xB, 0xE, 0x10, 0x12, 0x17, 0x1C, 0x1F (код типа 6 есть, §5.7; типы без своего класса создаются как Engine, фабрика `LoadCtlItemRecordAndAdvance` 0x100102E0) | 1, 2, 3, 4, 5, 8, 9, 0xA, 0xC, 0xD, 0xF, 0x11, 0x13, 0x14, 0x15, 0x16 (×1), 0x18, 0x19, 0x1A, 0x1B, 0x1D, 0x1E |
+| Опкоды команд CTL | 7 KILL_PIECE, 9 ITEM_LOAD_RESOURCE, 13 SET_NORM_SPEED, 22 SPAWN_OBJECT_FROM_3_JOINTS, 23 EXECUTE_ITEM_ACTION_FALSE, 24/25 SET/CLEAR_ITEM_FLAG_0x100, 40/41 QUEUE_PATH_TO_*, 42/43 NET_SYNC_FLAG, 44 | остальные; чаще всего 4 (937), 10 START_EFFECT (448), 3 (197), 0 (152), 19 (126) |
+| Флаги привязки канала (§2.5) | 0x10 отдельно, 0x20, 0x80, **0x100** (`CONDITIONAL_LINK_TARGET` - условные батчи не используются) | 0, 1, 2, 3, 4, 8, 0xC, 0x15 (0x10 только вместе), 0x40, 0x48 |
+| Вид урона EXPL (+0x00) | 4 | 1 (13), 2 (48), 3 (43) |
+| Направление эффекта EXPL (+0x14) | 1..6 | 0 (56), 7 (48) |
+| Режим смешивания материала (§FxidLib) | 3, 4, 5 | 0 (53), 1 (184), 2 (67) |
+| Компоненты FXID | тип 6 (пустой), флаг `OnlyWhenEnvBit0On` 0x80 | типы 1..5, 7..10 |
+| Класс `0x16` | - | один предмет на всю игру (решатель упреждения) |
+
+Кроме того, `arg4` команды 4 ничего не значит (значения - мусор редактора), поле `UnknownInt4..6` объекта миссии почти всегда 0/-1, а индекса анимации материала в записи объекта миссии нет (§7.8).
+
+## 11. Сводка находок
+
+Что стало известно по ходу разбора (подробности в указанных разделах):
+
+| Тема | Суть | Где |
+|---|---|---|
+| Смешивание | биты 2..5 версии MAT0 = индекс профиля состояний Ngi32; у эффектов SRCALPHA/ONE | FxidLib, «Материалы и смешивание» |
+| Кадры материала | стадии - кадры анимации по времени (`AnimateFrame`), не варианты клана; выбор по времени / фазе детали (флаг привязки 0x10) / индексу анимации | §7.8 |
+| Клан | `clan_index` +0x54C пишет `SetClan`; опкод 29 копирует клан родителя; 0xF сбрасывает в 0xFFFE; `material_animation_index` +0x550 реплицируется вместе с кланом | §7.8, §3 |
+| Урон по площади | `scale` EXPL = радиус сферы поражения и масштаб эффекта; приём урона - слот `ILifeSystem` 0x20 | §7.5 |
+| Сигнатуры | 0x45 масса-подобная, 0x43 электроника × площадь, 0x44 привод+оружие × объём | §5.8 |
+| Подвижность | `mobility_contribution` предмета (+0x1C) и частей NDP идут в `mobility_integrity_amount` и в сигнатуру 0x45; скорость ×(доля + 1)/2, угловая ×(0.75·доля + 0.25) | §5.8 |
+| Многоствольность | без флага 0x02000000 стволы стреляют по очереди (цикл по привязкам) | §7.3 |
+| Сеть | `GMSG` 0x80000023 - пакет урона (щиты + NDP); бит `NetSynchroMode` 0x400 - клан, индекс материала, порождённые объекты | §7.8 |
+| Эффекты | кэши `FxManager` (материалы +0x74, звуки +0x84, позиция камеры +0xAC) | FxidLib |

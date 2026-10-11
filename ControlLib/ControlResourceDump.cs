@@ -383,7 +383,7 @@ public static class ControlResourceDump
             0x16 => "weapon/actuator? type16",
             0x1A => "engine alt",
             0x1B => "armour",
-            0x1E => "projectile weapon alt",
+            0x1E => "builder weapon (projectile weapon class, bld_* bullet)",
             _ => $"unknown item type 0x{type:X2}",
         };
     }

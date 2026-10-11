@@ -41,7 +41,7 @@ public sealed record BulletInfo(
     ExplFile? Expl,
     IReadOnlyList<int> StartOnEndLocalIds);
 
-/// <summary>Орудие (CTL из guns.rlb): предмет типа 0x02/0x1E, снаряд и эффекты выстрела.</summary>
+/// <summary>Орудие (CTL из guns.rlb): предмет типа 0x02 (боевое) или 0x1E (строительное, снаряд bld_*), снаряд и эффекты выстрела.</summary>
 /// <param name="FireDelayMs">CP0 предмета (пауза между выстрелами, мс).</param>
 /// <param name="Ammo">CP1 предмета (боезапас, -1 = бесконечный).</param>
 /// <param name="MuzzleEffects">Эффекты, создаваемые CTL орудия (вспышка, звук, дым).</param>
