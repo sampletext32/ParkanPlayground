@@ -253,7 +253,7 @@ public class WeaponViewerPanel : IImGuiPanel
                     if (slot is { } s)
                     {
                         var scale = bullet.Expl.ScaleMultiplier > 0.0001f ? bullet.Expl.ScaleMultiplier : 1f;
-                        Add(s.ItemName, Role.Impact, seen, null, scale, false, offset, k);
+                        Add(s.ResourceName, Role.Impact, seen, null, scale, false, offset, k);
                     }
                 }
             }
@@ -480,7 +480,7 @@ public class WeaponViewerPanel : IImGuiPanel
                     for (var i = 0; i < bullet.Expl.Slots.Count; i++)
                     {
                         if (bullet.Expl.Slots[i] is { } slot)
-                            ImGui.BulletText($"взрыв, слот {i} ({(i == 0 ? "по умолчанию" : SurfaceName(i - 1))}): {slot.ItemName}");
+                            ImGui.BulletText($"взрыв, слот {i} ({(i == 0 ? "по умолчанию" : SurfaceName(i - 1))}): {slot.ResourceName}");
                     }
                 }
             }

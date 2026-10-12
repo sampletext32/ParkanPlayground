@@ -4,32 +4,6 @@ using Common;
 
 namespace FxidLib;
 
-/// <summary>Reference to an item of an NRes archive stored in FXID components: NRes archive name (32 bytes) + item name (32 bytes).</summary>
-/// <remarks>
-/// Both strings are NUL-terminated; bytes after the terminator are uninitialised garbage in the original files
-/// (e.g. float 2.0234 inside the NRes-archive-name buffer of type 3), so only the part before the first NUL is meaningful.
-/// </remarks>
-public readonly record struct FxidResourceRef(string ArchiveName, string ResourceName)
-{
-    public const int Size = 0x40;
-
-    public bool IsEmpty => string.IsNullOrEmpty(ArchiveName) && string.IsNullOrEmpty(ResourceName);
-
-    public override string ToString() => IsEmpty ? "<empty>" : $"{ArchiveName} / {ResourceName}";
-
-    public static FxidResourceRef Read(ReadOnlySpan<byte> data)
-    {
-        return new FxidResourceRef(ReadCString(data[..32]), ReadCString(data.Slice(32, 32)));
-    }
-
-    private static string ReadCString(ReadOnlySpan<byte> bytes)
-    {
-        var end = bytes.IndexOf((byte)0);
-        if (end < 0) end = bytes.Length;
-        return Encoding.ASCII.GetString(bytes[..end]);
-    }
-}
-
 /// <summary>Thrown when an FXID payload does not conform to the layout verified on the original game files.</summary>
 public sealed class FxidFormatException(string message) : Exception(message);
 
@@ -58,7 +32,7 @@ public static class FxidComponentLayout
     };
 
     /// <summary>
-    /// Offset of the 0x40-byte <see cref="FxidResourceRef"/> inside the component, or -1 when the type has none.
+    /// Offset of the 0x40-byte <see cref="ResourceNamedRef"/> inside the component, or -1 when the type has none.
     /// Note: types 4 and 9 have extra bytes after the reference (4 and 8 respectively).
     /// </summary>
     public static int GetResourceRefOffset(FxidComponentType type) => type switch
@@ -83,7 +57,7 @@ public static class FxidComponentLayout
     public static int GetTrailingSize(FxidComponentType type)
     {
         var refOffset = GetResourceRefOffset(type);
-        return refOffset < 0 ? 0 : GetSize(type) - refOffset - FxidResourceRef.Size;
+        return refOffset < 0 ? 0 : GetSize(type) - refOffset - ResourceNamedRef.Size;
     }
 }
 
@@ -94,7 +68,7 @@ public sealed record FxidComponent(
     FxidComponentType Type,
     uint TypeAndFlags,
     byte[] Raw,
-    FxidResourceRef? Resource)
+    ResourceNamedRef? Resource)
 {
     /// <summary>
     /// Bit 8 of <c>TypeAndFlags</c>. Copied by the engine into byte +4 of the runtime effect object
@@ -219,10 +193,10 @@ public sealed record FxidFile(EffectHeader Header, IReadOnlyList<FxidComponent> 
                 throw new FxidFormatException($"Component {i} ({type}): truncated at offset 0x{offset:X}");
 
             var raw = data.Slice(offset, size).ToArray();
-            FxidResourceRef? resource = null;
+            ResourceNamedRef? resource = null;
             var refOffset = FxidComponentLayout.GetResourceRefOffset(type);
             if (refOffset >= 0)
-                resource = FxidResourceRef.Read(raw.AsSpan(refOffset, FxidResourceRef.Size));
+                resource = ResourceNamedRef.Read(raw.AsSpan(refOffset, ResourceNamedRef.Size));
 
             components.Add(new FxidComponent(i, offset, type, typeAndFlags, raw, resource));
             offset += size;
@@ -276,7 +250,7 @@ public sealed record EffectType3Data(
     Vector3 ScaleStart,             // +0x64
     Vector3 ScaleEnd,               // +0x70
     Vector3 ScaleExponent,          // +0x7C
-    FxidResourceRef Resource)       // +0x88
+    ResourceNamedRef Resource)       // +0x88
 {
     public static EffectType3Data Read(ReadOnlySpan<byte> raw)
     {
@@ -295,7 +269,7 @@ public sealed record EffectType3Data(
             V(raw, 0x28), V(raw, 0x34), V(raw, 0x40),
             V(raw, 0x4C), V(raw, 0x58),
             V(raw, 0x64), V(raw, 0x70), V(raw, 0x7C),
-            FxidResourceRef.Read(raw.Slice(0x88, FxidResourceRef.Size)));
+            ResourceNamedRef.Read(raw.Slice(0x88, ResourceNamedRef.Size)));
     }
 
     /// <summary>True when the phase is driven by the effect strength instead of local life (PhaseStart &lt; 0).</summary>
@@ -355,7 +329,7 @@ public sealed record EffectType1Data(
     float[] ColorJitter_TBD,    // +0x60: random amplitude per channel
     float RangeStart_maybe,     // +0x70
     float RangeEnd_maybe,       // +0x74
-    FxidResourceRef Resource)   // +0xA0
+    ResourceNamedRef Resource)   // +0xA0
 {
     public static EffectType1Data Read(ReadOnlySpan<byte> raw)
     {
@@ -373,7 +347,7 @@ public sealed record EffectType1Data(
             V(raw, 0x10), V(raw, 0x1C), V(raw, 0x28), V(raw, 0x34),
             Q(raw, 0x40), Q(raw, 0x50), Q(raw, 0x60),
             F(raw, 0x70), F(raw, 0x74),
-            FxidResourceRef.Read(raw.Slice(0xA0, FxidResourceRef.Size)));
+            ResourceNamedRef.Read(raw.Slice(0xA0, ResourceNamedRef.Size)));
     }
 }
 
@@ -407,7 +381,7 @@ public sealed record EffectParticleData(
     Vector3 SizeJitterBox,          // +0x74
     Vector3 SizeExponent_maybe,     // +0x80
     float GravityFactor,      // +0x8C: VERIFIED. gravity = this * IWorld::QueryGravity() * 0.5 (InitCommon); drop = gravity * t^2 on the 3rd axis (0/1/2 for type 7, 1/1.5/3 for type 10)
-    FxidResourceRef Resource)       // +0x90: material (falls back to a random material if it fails to load)
+    ResourceNamedRef Resource)       // +0x90: material (falls back to a random material if it fails to load)
 {
     public static EffectParticleData Read(ReadOnlySpan<byte> raw)
     {
@@ -421,7 +395,7 @@ public sealed record EffectParticleData(
             U(raw, 0x24), U(raw, 0x28),
             V(raw, 0x2C), V(raw, 0x38), V(raw, 0x44), V(raw, 0x50), V(raw, 0x5C), V(raw, 0x68), V(raw, 0x74), V(raw, 0x80),
             F(raw, 0x8C),
-            FxidResourceRef.Read(raw.Slice(0x90, FxidResourceRef.Size)));
+            ResourceNamedRef.Read(raw.Slice(0x90, ResourceNamedRef.Size)));
     }
 }
 
@@ -446,7 +420,7 @@ public sealed record EffectTrailData(
     float MaxPieceLength,       // +0x24: target length of one piece
     float TextureScrollStart,   // +0x28: u offset at window value 0; if negative the scroll is driven by elapsed seconds instead (and start is clamped to 0)
     float TextureScrollEnd,     // +0x2C: u offset at window value 1; if negative each piece gets a random u offset
-    FxidResourceRef Resource)   // +0x30: material
+    ResourceNamedRef Resource)   // +0x30: material
 {
     public static EffectTrailData Read(ReadOnlySpan<byte> raw)
     {
@@ -457,7 +431,7 @@ public sealed record EffectTrailData(
         return new EffectTrailData(
             U(raw, 0), F(raw, 4), F(raw, 8), F(raw, 0xC), F(raw, 0x10), U(raw, 0x14),
             F(raw, 0x18), F(raw, 0x1C), F(raw, 0x20), F(raw, 0x24), F(raw, 0x28), F(raw, 0x2C),
-            FxidResourceRef.Read(raw.Slice(0x30, FxidResourceRef.Size)));
+            ResourceNamedRef.Read(raw.Slice(0x30, ResourceNamedRef.Size)));
     }
 }
 
@@ -490,7 +464,7 @@ public sealed record EffectSpawnerData(
     Vector3 SizeEnd,            // +0x94
     Vector3 SizeJitterBox,      // +0xA0
     Vector3 SizeExponent_maybe, // +0xAC
-    FxidResourceRef Resource)   // +0xB8: material
+    ResourceNamedRef Resource)   // +0xB8: material
 {
     public static EffectSpawnerData Read(ReadOnlySpan<byte> raw)
     {
@@ -503,7 +477,7 @@ public sealed record EffectSpawnerData(
             U(raw, 0), F(raw, 4), F(raw, 8), F(raw, 0xC), F(raw, 0x10), F(raw, 0x14), F(raw, 0x18), F(raw, 0x1C), F(raw, 0x20), U(raw, 0x24),
             V(raw, 0x28), V(raw, 0x34), V(raw, 0x40), V(raw, 0x4C),
             V(raw, 0x58), V(raw, 0x64), V(raw, 0x70), V(raw, 0x7C), V(raw, 0x88), V(raw, 0x94), V(raw, 0xA0), V(raw, 0xAC),
-            FxidResourceRef.Read(raw.Slice(0xB8, FxidResourceRef.Size)));
+            ResourceNamedRef.Read(raw.Slice(0xB8, ResourceNamedRef.Size)));
     }
 }
 
@@ -530,7 +504,7 @@ public sealed record EffectSoundData(
     float VolumeStart,    // +0x48: VERIFIED: volume = start + strength * (end - start); 1.0 in 198 of 199 files
     float VolumeEnd,      // +0x4C: always 1.0
     float Unknown50_TBD,        // +0x50: passed as the last field of the sound parameter block (command 0x38E); always 0 in the files
-    FxidResourceRef Resource)   // +0x54: wave file
+    ResourceNamedRef Resource)   // +0x54: wave file
 {
     public bool IsLooped => Mode is 2 or 3;
 
@@ -545,6 +519,6 @@ public sealed record EffectSoundData(
             U(raw, 0), U(raw, 4), F(raw, 8), F(raw, 0xC),
             V(raw, 0x10), V(raw, 0x1C), V(raw, 0x28), V(raw, 0x34),
             F(raw, 0x40), F(raw, 0x44), F(raw, 0x48), F(raw, 0x4C), F(raw, 0x50),
-            FxidResourceRef.Read(raw.Slice(0x54, FxidResourceRef.Size)));
+            ResourceNamedRef.Read(raw.Slice(0x54, ResourceNamedRef.Size)));
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Buffers.Binary;
+using System.Buffers.Binary;
 using System.Text;
 
 namespace NResLib;
@@ -76,7 +76,7 @@ public static class NResParser
             var attr2 = BinaryPrimitives.ReadUInt32LittleEndian(metaDataBuffer[8..12]);
             var fileLength = BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[12..16]);
             var attr3 = BinaryPrimitives.ReadUInt32LittleEndian(metaDataBuffer[16..20]);
-            var name = ReadNResName(metaDataBuffer[20..56]);
+            var name = Common.Extensions.ReadFixedString(metaDataBuffer[20..56]);
             var offset = BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[56..60]);
             var sortIndex = BinaryPrimitives.ReadInt32LittleEndian(metaDataBuffer[60..64]);
 
@@ -127,14 +127,4 @@ public static class NResParser
         return string.Join(" ", bytes.ToArray().Select(x => x.ToString("X2")));
     }
 
-    private static string ReadNResName(ReadOnlySpan<byte> raw)
-    {
-        var nul = raw.IndexOf((byte)0);
-        if (nul < 0)
-        {
-            return Encoding.ASCII.GetString(raw);
-        }
-
-        return Encoding.ASCII.GetString(raw[..nul]);
-    }
 }

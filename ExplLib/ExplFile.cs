@@ -1,16 +1,8 @@
 using System.Text;
+using Common;
 using MaterialLib;
 
 namespace ExplLib;
-
-/// <summary>
-/// Reference to an item of an NRes archive: NRes archive name (32 bytes) + item name (32 bytes).
-/// In EXPL files the archive is always <c>effects.rlb</c> and the item is an FXID effect.
-/// </summary>
-public readonly record struct ExplResourceRef(string ArchiveName, string ItemName)
-{
-    public bool IsEmpty => string.IsNullOrEmpty(ArchiveName) && string.IsNullOrEmpty(ItemName);
-}
 
 /// <summary>
 /// How the explosion effect is oriented (EXPL +0x14). From <c>CControlBase::CommitNdpDamageStateTransition</c> (Control.dll):
@@ -62,7 +54,7 @@ public sealed record ExplFile(
     float Field0C,
     float Field10,
     ExplDirectionMode DirectionMode,
-    IReadOnlyList<ExplResourceRef?> Slots)
+    IReadOnlyList<ResourceNamedRef?> Slots)
 {
     public const int FileSize = 0x318;
     public const int HeaderSize = 0x18;
@@ -70,7 +62,7 @@ public sealed record ExplFile(
     public const int SlotCount = 12;
 
     /// <summary>Effect for a material id (0..10); falls back to slot 0 when the slot is empty.</summary>
-    public ExplResourceRef? GetEffectForMaterial(int materialId)
+    public ResourceNamedRef? GetEffectForMaterial(int materialId)
     {
         if (materialId is >= 0 and <= 10 && Slots[materialId + 1] is { } r) return r;
         return Slots[0];
@@ -81,11 +73,11 @@ public sealed record ExplFile(
         if (data.Length != FileSize)
             throw new InvalidDataException($"EXPL: expected {FileSize} bytes, got {data.Length}");
 
-        var slots = new ExplResourceRef?[SlotCount];
+        var slots = new ResourceNamedRef?[SlotCount];
         for (int i = 0; i < SlotCount; i++)
         {
             var slot = data.Slice(HeaderSize + i * SlotSize, SlotSize);
-            var r = new ExplResourceRef(ReadZString(slot[..32]), ReadZString(slot.Slice(32, 32)));
+            var r = ResourceNamedRef.Read(slot);
             slots[i] = r.IsEmpty ? null : r;
         }
 
@@ -97,12 +89,5 @@ public sealed record ExplFile(
             BitConverter.ToSingle(data[0x10..]),
             (ExplDirectionMode)BitConverter.ToUInt32(data[0x14..]),
             slots);
-    }
-
-    private static string ReadZString(ReadOnlySpan<byte> bytes)
-    {
-        int n = bytes.IndexOf((byte)0);
-        if (n < 0) n = bytes.Length;
-        return Encoding.ASCII.GetString(bytes[..n]);
     }
 }

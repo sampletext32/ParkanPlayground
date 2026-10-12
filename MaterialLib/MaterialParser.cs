@@ -1,5 +1,3 @@
-using System.Buffers.Binary;
-using System.Text;
 using Common;
 
 namespace MaterialLib;
@@ -18,8 +16,8 @@ public static class MaterialParser
         uint magic = (uint)magic1;
 
         // Значения по умолчанию из C-кода.
-        var globalAlphaMultiplier = 1.0f; // field8_0x15c
-        var globalEmissiveIntensity = 0.0f; // field9_0x160
+        var surfaceSpeedScale = 1.0f; // field8_0x15c: множитель скорости юнита на поверхности
+        var surfaceLifeDrainPerSec = 0.0f; // field9_0x160: потеря жизни в секунду
         var surfaceMaterial = SurfaceMaterial.None;   // field6_0x154 (в Ghidra SourceBlendMode)
         byte reserved05 = 0xFF;                       // field7_0x158 (в Ghidra DestBlendMode)
 
@@ -31,18 +29,17 @@ public static class MaterialParser
 
         if (magic > 2)
         {
-            globalAlphaMultiplier = fs.ReadFloatLittleEndian();
+            surfaceSpeedScale = fs.ReadFloatLittleEndian();
         }
 
         if (magic > 3)
         {
-            globalEmissiveIntensity = fs.ReadFloatLittleEndian();
+            surfaceLifeDrainPerSec = fs.ReadFloatLittleEndian();
         }
 
         // Стадии материала.
         const float Inv255 = 1.0f / 255.0f;
         const float Field7Mult = 0.01f;
-        Span<byte> textureNameBuffer = stackalloc byte[16];
         List<MaterialStage> stages = [];
 
         for (int i = 0; i < stageCount; i++)
@@ -79,15 +76,8 @@ public static class MaterialParser
             // Texture stage index: 1 байт.
             var textureStageIndex = fs.ReadByte();
 
-            // Texture name: 16 байт.
-            textureNameBuffer.Clear();
-            fs.ReadExactly(textureNameBuffer);
-            var terminator = textureNameBuffer.IndexOf((byte)0);
-            if (terminator == -1)
-            {
-                terminator = textureNameBuffer.Length - 1;
-            }
-            var textureName = Encoding.ASCII.GetString(textureNameBuffer[..terminator]);
+            // Texture name: 16 байт, ASCII до первого нуля.
+            var textureName = fs.ReadFixedString(16);
 
             stages.Add(new MaterialStage(
                 ambientR,
@@ -144,8 +134,8 @@ public static class MaterialParser
             supportsBumpMapping,
             surfaceMaterial,
             reserved05,
-            globalAlphaMultiplier,
-            globalEmissiveIntensity,
+            surfaceSpeedScale,
+            surfaceLifeDrainPerSec,
             stages,
             animations);
     }

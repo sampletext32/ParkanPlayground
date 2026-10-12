@@ -363,7 +363,7 @@ public sealed class WeaponCatalog : IService
         return result;
     }
 
-    private static Vector3 V(Vec3 v) => new(v.X, v.Y, v.Z);
+    private static Vector3 V(Common.Vector3 v) => new(v.X, v.Y, v.Z);
 
     /// <summary>Повторяет ветвление SPAWN_EFFECT_FROM_3_JOINTS (Control.dll, 0x100028A0).</summary>
     private static EffectPlacement BuildPlacement(CptRecordRaw r0, CptRecordRaw r1, CptRecordRaw r2)

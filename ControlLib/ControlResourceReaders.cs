@@ -1,4 +1,5 @@
 using System.Text;
+using Common;
 
 namespace ControlLib;
 
@@ -7,16 +8,14 @@ public sealed class ControlReadException : Exception
     public ControlReadException(string message) : base(message) { }
 }
 
-public readonly record struct Vec3(float X, float Y, float Z);
-
-public readonly record struct ResourceNamedRef(string ArchiveName, string ResourceName)
-{
-    public bool IsEmpty => string.IsNullOrEmpty(ArchiveName) || string.IsNullOrEmpty(ResourceName);
-    public override string ToString() => IsEmpty ? "<empty>" : $"{ArchiveName} / {ResourceName}";
-}
-
 public static class ControlResourceReader
 {
+    private static void ExpectEofOrThrow(Stream stream, string sourceName)
+    {
+        if (stream.CanSeek && stream.Position != stream.Length)
+            throw new ControlReadException($"{sourceName}: parser stopped at 0x{stream.Position:X}, file length is 0x{stream.Length:X}");
+    }
+
     public static CptFile ReadCptFile(string path)
     {
         using var fs = File.OpenRead(path);
@@ -25,9 +24,9 @@ public static class ControlResourceReader
 
     public static CptFile ReadCptFile(Stream stream, string? sourceName = null)
     {
-        var r = new LeReader(stream);
+        var r = stream;
         long start = stream.Position;
-        uint count = r.ReadUInt32();
+        uint count = r.ReadUInt32LittleEndian();
         var records = new List<CptRecordRaw>(checked((int)count));
 
         for (int i = 0; i < count; i++)
@@ -35,11 +34,11 @@ public static class ControlResourceReader
             long off = stream.Position - start;
             records.Add(new CptRecordRaw(
                 Offset: off,
-                Unknown0: r.ReadInt32(),
-                OwnerPieceIndex: r.ReadInt32(),
-                TargetPieceIndex: r.ReadInt32(),
-                Position: r.ReadVec3(),
-                Direction: r.ReadVec3()
+                Unknown0: r.ReadInt32LittleEndian(),
+                OwnerPieceIndex: r.ReadInt32LittleEndian(),
+                TargetPieceIndex: r.ReadInt32LittleEndian(),
+                Position: r.ReadVector3LittleEndian(),
+                Direction: r.ReadVector3LittleEndian()
             ));
         }
 
@@ -49,7 +48,7 @@ public static class ControlResourceReader
             names.Add(r.ReadFixedString(32));
         }
 
-        r.ExpectEofOrThrow(sourceName ?? "CPT");
+        ExpectEofOrThrow(stream, sourceName ?? "CPT");
         return new CptFile(sourceName, count, records, names);
     }
 
@@ -61,9 +60,9 @@ public static class ControlResourceReader
 
     public static NdpFile ReadNdpFile(Stream stream, string? sourceName = null)
     {
-        var r = new LeReader(stream);
+        var r = stream;
         long start = stream.Position;
-        uint count = r.ReadUInt32();
+        uint count = r.ReadUInt32LittleEndian();
         var records = new List<NdpRecordRaw>(checked((int)count));
 
         for (int i = 0; i < count; i++)
@@ -71,14 +70,14 @@ public static class ControlResourceReader
             long off = stream.Position - start;
             records.Add(new NdpRecordRaw(
                 Offset: off,
-                Unknown0: r.ReadUInt32(),
-                MaxVolume: r.ReadSingle(),
-                MobilityContributionPerVolume: r.ReadSingle(),
+                Unknown0: r.ReadUInt32LittleEndian(),
+                MaxVolume: r.ReadFloatLittleEndian(),
+                MobilityContributionPerVolume: r.ReadFloatLittleEndian(),
                 Resource: r.ReadResourceNamedRef()
             ));
         }
 
-        r.ExpectEofOrThrow(sourceName ?? "NDP");
+        ExpectEofOrThrow(stream, sourceName ?? "NDP");
         return new NdpFile(sourceName, count, records);
     }
 
@@ -90,15 +89,15 @@ public static class ControlResourceReader
 
     public static CtlFile ReadCtlFile(Stream stream, string? sourceName = null)
     {
-        var r = new LeReader(stream);
+        var r = stream;
         long start = stream.Position;
 
         var header = new CtlHeader(
-            ControlStateCount: r.ReadUInt32(),
-            ControlStateLinkSlotCount: r.ReadUInt32(),
-            PieceBindingCount: r.ReadUInt32(),
-            ItemRecordCount: r.ReadUInt32(),
-            CommandListCount: r.ReadUInt32()
+            ControlStateCount: r.ReadUInt32LittleEndian(),
+            ControlStateLinkSlotCount: r.ReadUInt32LittleEndian(),
+            PieceBindingCount: r.ReadUInt32LittleEndian(),
+            ItemRecordCount: r.ReadUInt32LittleEndian(),
+            CommandListCount: r.ReadUInt32LittleEndian()
         );
 
         var rootParams = ReadCtlRootControlParams(r, stream.Position - start);
@@ -112,10 +111,10 @@ public static class ControlResourceReader
             for (int j = 0; j < header.ControlStateLinkSlotCount; j++)
             {
                 links.Add(new NavNodeLinkSlotRaw(
-                    Word0: r.ReadUInt32(),
-                    Word1: r.ReadUInt32(),
-                    Word2: r.ReadUInt32(),
-                    Word3: r.ReadUInt32()
+                    Word0: r.ReadUInt32LittleEndian(),
+                    Word1: r.ReadUInt32LittleEndian(),
+                    Word2: r.ReadUInt32LittleEndian(),
+                    Word3: r.ReadUInt32LittleEndian()
                 ));
             }
             states.Add(new CtlStateRecordRaw(off, fixedBody, links));
@@ -124,7 +123,7 @@ public static class ControlResourceReader
         int edgeCount = checked((int)(header.ControlStateCount * header.ControlStateCount));
         var edgeWeightMatrix = new float[edgeCount];
         for (int i = 0; i < edgeWeightMatrix.Length; i++)
-            edgeWeightMatrix[i] = r.ReadSingle();
+            edgeWeightMatrix[i] = r.ReadFloatLittleEndian();
 
         var pieceBindings = new List<CtlPieceBindingRecordRaw>(checked((int)header.PieceBindingCount));
         for (int i = 0; i < header.PieceBindingCount; i++)
@@ -141,13 +140,13 @@ public static class ControlResourceReader
         }
 
         long commandTableOffset = stream.Position - start;
-        var commandTable = new ControlCommandListIndexTable(commandTableOffset, r.ReadInt32Array(21));
+        var commandTable = new ControlCommandListIndexTable(commandTableOffset, r.ReadInt32ArrayLittleEndian(21));
 
         var commandLists = new List<ControlCommandListRaw>(checked((int)header.CommandListCount));
         for (int i = 0; i < header.CommandListCount; i++)
         {
             long listOffset = stream.Position - start;
-            uint count = r.ReadUInt32();
+            uint count = r.ReadUInt32LittleEndian();
             var records = new List<ControlCommandRecordRaw>(checked((int)count));
             for (int j = 0; j < count; j++)
             {
@@ -157,7 +156,7 @@ public static class ControlResourceReader
             commandLists.Add(new ControlCommandListRaw(listOffset, count, records));
         }
 
-        r.ExpectEofOrThrow(sourceName ?? "CTL");
+        ExpectEofOrThrow(stream, sourceName ?? "CTL");
 
         return new CtlFile(
             SourceName: sourceName,
@@ -172,77 +171,77 @@ public static class ControlResourceReader
         );
     }
 
-    private static CtlRootControlParams ReadCtlRootControlParams(LeReader r, long offset)
+    private static CtlRootControlParams ReadCtlRootControlParams(Stream r, long offset)
     {
         return new CtlRootControlParams(
             Offset: offset,
-            MaxTangentialAccel: r.ReadVec3(),
-            Unknown0C: r.ReadUInt32(),
-            Unknown10: r.ReadUInt32(),
-            Unknown14: r.ReadUInt32(),
-            MaxTangentialSpeed: r.ReadVec3(),
-            MaxAngularSpeed: r.ReadVec3(),
-            ExternalTorqueResponseScale: r.ReadVec3(),
-            VisualEulerAngleLimit: r.ReadVec3(),
-            DetachCleanupDelayMs: r.ReadInt32(),
-            Unknown4C: r.ReadSingle(),
-            Unknown50: r.ReadSingle(),
-            MovementPhysicsMode: r.ReadInt32(),
-            Unknown58: r.ReadSingle(),
-            SlopeLimitAngle: r.ReadSingle(),
-            Unknown60: r.ReadUInt32(),
-            Unknown64: r.ReadSingle(),
-            MobilityIntegrityAmount: r.ReadSingle()
+            MaxTangentialAccel: r.ReadVector3LittleEndian(),
+            Unknown0C: r.ReadUInt32LittleEndian(),
+            Unknown10: r.ReadUInt32LittleEndian(),
+            Unknown14: r.ReadUInt32LittleEndian(),
+            MaxTangentialSpeed: r.ReadVector3LittleEndian(),
+            MaxAngularSpeed: r.ReadVector3LittleEndian(),
+            ExternalTorqueResponseScale: r.ReadVector3LittleEndian(),
+            VisualEulerAngleLimit: r.ReadVector3LittleEndian(),
+            DetachCleanupDelayMs: r.ReadInt32LittleEndian(),
+            Unknown4C: r.ReadFloatLittleEndian(),
+            Unknown50: r.ReadFloatLittleEndian(),
+            MovementPhysicsMode: r.ReadInt32LittleEndian(),
+            Unknown58: r.ReadFloatLittleEndian(),
+            SlopeLimitAngle: r.ReadFloatLittleEndian(),
+            Unknown60: r.ReadUInt32LittleEndian(),
+            Unknown64: r.ReadFloatLittleEndian(),
+            MobilityIntegrityAmount: r.ReadFloatLittleEndian()
         );
     }
 
-    private static CtlPieceBindingRecordRaw ReadPieceBinding(LeReader r, long offset)
+    private static CtlPieceBindingRecordRaw ReadPieceBinding(Stream r, long offset)
     {
         return new CtlPieceBindingRecordRaw(
             Offset: offset,
-            LocalPieceIndex: r.ReadInt32(),
-            Anim1Start: r.ReadSingle(),
-            Anim1EndOrDuration: r.ReadSingle(),
-            Anim2Start: r.ReadSingle(),
-            Anim2EndOrDuration: r.ReadSingle(),
-            AnimBlendWeight: r.ReadSingle(),
-            DefaultValue: r.ReadSingle(),
-            PrimaryCptRefIndex: r.ReadInt32(),
-            SecondaryCptRefIndex: r.ReadInt32(),
-            ChannelSpeed: r.ReadSingle(),
-            YawNormalizationAngle: r.ReadSingle(),
-            Flags: r.ReadUInt32()
+            LocalPieceIndex: r.ReadInt32LittleEndian(),
+            Anim1Start: r.ReadFloatLittleEndian(),
+            Anim1EndOrDuration: r.ReadFloatLittleEndian(),
+            Anim2Start: r.ReadFloatLittleEndian(),
+            Anim2EndOrDuration: r.ReadFloatLittleEndian(),
+            AnimBlendWeight: r.ReadFloatLittleEndian(),
+            DefaultValue: r.ReadFloatLittleEndian(),
+            PrimaryCptRefIndex: r.ReadInt32LittleEndian(),
+            SecondaryCptRefIndex: r.ReadInt32LittleEndian(),
+            ChannelSpeed: r.ReadFloatLittleEndian(),
+            YawNormalizationAngle: r.ReadFloatLittleEndian(),
+            Flags: r.ReadUInt32LittleEndian()
         );
     }
 
-    private static CtlItemRecordRaw ReadCtlItemRecord(LeReader r, long fileStart, long offset)
+    private static CtlItemRecordRaw ReadCtlItemRecord(Stream r, long fileStart, long offset)
     {
-        int itemType = r.ReadInt32();
-        int localPieceIndex = r.ReadInt32();
-        uint flags = r.ReadUInt32();
-        int unknown0C = r.ReadInt32();
-        int unknown10 = r.ReadInt32();
-        int unknown14 = r.ReadInt32();
-        int initialRuntimeState = r.ReadInt32();
-        float unknown1C = r.ReadSingle();
-        float unknown20 = r.ReadSingle();
-        float unknown24 = r.ReadSingle();
-        float signalAWeight = r.ReadSingle();
-        float signalBWeight = r.ReadSingle();
+        int itemType = r.ReadInt32LittleEndian();
+        int localPieceIndex = r.ReadInt32LittleEndian();
+        uint flags = r.ReadUInt32LittleEndian();
+        int unknown0C = r.ReadInt32LittleEndian();
+        int unknown10 = r.ReadInt32LittleEndian();
+        int unknown14 = r.ReadInt32LittleEndian();
+        int initialRuntimeState = r.ReadInt32LittleEndian();
+        float unknown1C = r.ReadFloatLittleEndian();
+        float unknown20 = r.ReadFloatLittleEndian();
+        float unknown24 = r.ReadFloatLittleEndian();
+        float signalAWeight = r.ReadFloatLittleEndian();
+        float signalBWeight = r.ReadFloatLittleEndian();
 
         var commonParams = new float[16];
         for (int i = 0; i < commonParams.Length; i++)
-            commonParams[i] = r.ReadSingle();
+            commonParams[i] = r.ReadFloatLittleEndian();
 
         string resourceArchiveName = r.ReadFixedString(32);
         string resourceResourceName = r.ReadFixedString(32);
-        uint bindingCount = r.ReadUInt32();
+        uint bindingCount = r.ReadUInt32LittleEndian();
 
         var bindingIndices = new int[checked((int)bindingCount)];
         for (int i = 0; i < bindingIndices.Length; i++)
-            bindingIndices[i] = r.ReadInt32();
+            bindingIndices[i] = r.ReadInt32LittleEndian();
 
-        int itemNameLength = r.ReadInt32();
+        int itemNameLength = r.ReadInt32LittleEndian();
         string itemName = string.Empty;
         if (itemNameLength < 0)
             throw new ControlReadException($"Negative CTL item name length {itemNameLength} at 0x{offset:X}");
@@ -256,7 +255,7 @@ public static class ControlResourceReader
             itemName = Encoding.ASCII.GetString(raw, 0, len);
         }
 
-        long endOffset = r.BaseStream.Position - fileStart;
+        long endOffset = r.Position - fileStart;
 
         return new CtlItemRecordRaw(
             Offset: offset,
@@ -281,23 +280,23 @@ public static class ControlResourceReader
         );
     }
 
-    private static ControlCommandRecordRaw ReadCommandRecord(LeReader r, long offset)
+    private static ControlCommandRecordRaw ReadCommandRecord(Stream r, long offset)
     {
         var condition = new ControlCommandConditionRaw(
-            ConditionFlags: r.ReadUInt32(),
-            ConditionMask: r.ReadUInt32(),
-            ConditionInvertMask: r.ReadUInt32()
+            ConditionFlags: r.ReadUInt32LittleEndian(),
+            ConditionMask: r.ReadUInt32LittleEndian(),
+            ConditionInvertMask: r.ReadUInt32LittleEndian()
         );
 
         return new ControlCommandRecordRaw(
             Offset: offset,
             Condition: condition,
-            Opcode: (EControlCommandOpcode)r.ReadUInt32(),
-            Arg0: r.ReadUInt32(),
-            Arg1: r.ReadUInt32(),
-            Arg2: r.ReadUInt32(),
-            Arg3: r.ReadUInt32(),
-            Arg4: r.ReadUInt32(),
+            Opcode: (EControlCommandOpcode)r.ReadUInt32LittleEndian(),
+            Arg0: r.ReadUInt32LittleEndian(),
+            Arg1: r.ReadUInt32LittleEndian(),
+            Arg2: r.ReadUInt32LittleEndian(),
+            Arg3: r.ReadUInt32LittleEndian(),
+            Arg4: r.ReadUInt32LittleEndian(),
             Resource: r.ReadResourceNamedRef()
         );
     }
@@ -314,8 +313,8 @@ public sealed record CptRecordRaw(
     int Unknown0,
     int OwnerPieceIndex,
     int TargetPieceIndex,
-    Vec3 Position,
-    Vec3 Direction);
+    Vector3 Position,
+    Vector3 Direction);
 
 public sealed record NdpFile(
     string? SourceName,
@@ -349,14 +348,14 @@ public readonly record struct CtlHeader(
 
 public sealed record CtlRootControlParams(
     long Offset,
-    Vec3 MaxTangentialAccel,
+    Vector3 MaxTangentialAccel,
     uint Unknown0C,
     uint Unknown10,
     uint Unknown14,
-    Vec3 MaxTangentialSpeed,
-    Vec3 MaxAngularSpeed,
-    Vec3 ExternalTorqueResponseScale,
-    Vec3 VisualEulerAngleLimit,
+    Vector3 MaxTangentialSpeed,
+    Vector3 MaxAngularSpeed,
+    Vector3 ExternalTorqueResponseScale,
+    Vector3 VisualEulerAngleLimit,
     int DetachCleanupDelayMs,
     float Unknown4C,
     float Unknown50,
@@ -483,68 +482,3 @@ public readonly record struct ControlCommandConditionRaw(
     uint ConditionFlags,
     uint ConditionMask,
     uint ConditionInvertMask);
-
-internal sealed class LeReader
-{
-    private readonly Stream _s;
-    private readonly byte[] _buf = new byte[8];
-
-    public LeReader(Stream stream) => _s = stream;
-    public Stream BaseStream => _s;
-
-    public byte[] ReadBytesExact(int count)
-    {
-        byte[] bytes = new byte[count];
-        _s.ReadExactly(bytes, 0, count);
-        return bytes;
-    }
-
-    public int ReadInt32()
-    {
-        _s.ReadExactly(_buf, 0, 4);
-        return BitConverter.ToInt32(_buf, 0);
-    }
-
-    public uint ReadUInt32()
-    {
-        _s.ReadExactly(_buf, 0, 4);
-        return BitConverter.ToUInt32(_buf, 0);
-    }
-
-    public float ReadSingle()
-    {
-        _s.ReadExactly(_buf, 0, 4);
-        return BitConverter.ToSingle(_buf, 0);
-    }
-
-    public Vec3 ReadVec3() => new(ReadSingle(), ReadSingle(), ReadSingle());
-
-    public string ReadFixedString(int byteCount)
-    {
-        byte[] raw = ReadBytesExact(byteCount);
-        int nul = Array.IndexOf(raw, (byte)0);
-        int len = nul >= 0 ? nul : raw.Length;
-        return Encoding.ASCII.GetString(raw, 0, len);
-    }
-
-    public ResourceNamedRef ReadResourceNamedRef()
-    {
-        return new ResourceNamedRef(
-            ArchiveName: ReadFixedString(32),
-            ResourceName: ReadFixedString(32));
-    }
-
-    public int[] ReadInt32Array(int count)
-    {
-        var arr = new int[count];
-        for (int i = 0; i < count; i++)
-            arr[i] = ReadInt32();
-        return arr;
-    }
-
-    public void ExpectEofOrThrow(string sourceName)
-    {
-        if (_s.CanSeek && _s.Position != _s.Length)
-            throw new ControlReadException($"{sourceName}: parser stopped at 0x{_s.Position:X}, file length is 0x{_s.Length:X}");
-    }
-}
