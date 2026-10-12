@@ -1,4 +1,4 @@
-using System.Text;
+using Common;
 
 namespace PalLib;
 
@@ -12,20 +12,15 @@ public class PalParser
             throw new InvalidDataException($"Invalid PAL file size. Expected 66564 bytes, got {stream.Length}.");
         }
 
-        var palette = new byte[1024];
-        stream.ReadExactly(palette, 0, 1024);
-
-        var signatureBytes = new byte[4];
-        stream.ReadExactly(signatureBytes, 0, 4);
-        var signature = Encoding.ASCII.GetString(signatureBytes);
+        var palette = stream.ReadBytesExact(1024);
+        var signature = stream.ReadFixedString(4);
 
         if (signature != "Ipol")
         {
             throw new InvalidDataException($"Invalid PAL file signature. Expected 'Ipol', got '{signature}'.");
         }
 
-        var indices = new byte[65536];
-        stream.ReadExactly(indices, 0, 65536);
+        var indices = stream.ReadBytesExact(65536);
 
         return new PalFile(filename, palette, indices);
     }

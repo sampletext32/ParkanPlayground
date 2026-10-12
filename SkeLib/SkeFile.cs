@@ -1,3 +1,4 @@
+using Common;
 using System.Text;
 
 namespace SkeLib;
@@ -82,7 +83,8 @@ public sealed record SkeFile(IReadOnlyList<SkeZone> Zones, SkeTime StartTime, in
 {
     public static SkeFile Read(ReadOnlySpan<byte> data)
     {
-        var r = new Reader(data);
+        using var stream = new MemoryStream(data.ToArray(), writable: false);
+        var r = new Reader(stream);
         if (r.Int() != -1) throw new InvalidDataException("sky.ske: expected -1 at the beginning");
         int version = r.Int();
         if (version != 5) throw new InvalidDataException($"sky.ske: version {version} is not supported");
@@ -97,7 +99,7 @@ public sealed record SkeFile(IReadOnlyList<SkeZone> Zones, SkeTime StartTime, in
             var start = r.Time();
             var end = r.Time();
             var entries = new List<SkeEntry>(entryCount);
-            for (int i = 0; i < entryCount; i++) entries.Add(ReadEntry(ref r));
+            for (int i = 0; i < entryCount; i++) entries.Add(ReadEntry(r));
             zones.Add(new SkeZone(start, end, entries));
         }
 
@@ -108,7 +110,7 @@ public sealed record SkeFile(IReadOnlyList<SkeZone> Zones, SkeTime StartTime, in
         return new SkeFile(zones, tail, i20, i24);
     }
 
-    private static SkeEntry ReadEntry(ref Reader r)
+    private static SkeEntry ReadEntry(Reader r)
     {
         int entryVersion = r.Int();
         if (entryVersion != 3) throw new InvalidDataException($"sky.ske: entry version {entryVersion} is not supported");
@@ -130,29 +132,32 @@ public sealed record SkeFile(IReadOnlyList<SkeZone> Zones, SkeTime StartTime, in
         return new SkeEntry(time, type, reserved, colors30, field40, value44, fields48, name, other, paramsCc, names);
     }
 
-    private ref struct Reader
+    /// <summary>Чтение полей sky.ske из потока через <c>Common</c>; ошибки конца файла оформляются как <see cref="InvalidDataException"/>.</summary>
+    private sealed class Reader(Stream stream)
     {
-        private readonly ReadOnlySpan<byte> _d;
-        private int _o;
-        public Reader(ReadOnlySpan<byte> d) { _d = d; _o = 0; }
-        public readonly bool AtEnd => _o == _d.Length;
-        public readonly int Remaining => _d.Length - _o;
+        public bool AtEnd => Remaining == 0;
+        public int Remaining => (int)(stream.Length - stream.Position);
 
         public int Int()
         {
             if (Remaining < 4) throw new InvalidDataException("sky.ske: unexpected end of file");
-            int v = BitConverter.ToInt32(_d[_o..]); _o += 4; return v;
+            return stream.ReadInt32LittleEndian();
         }
 
-        public float Float() => BitConverter.Int32BitsToSingle(Int());
+        public float Float()
+        {
+            if (Remaining < 4) throw new InvalidDataException("sky.ske: unexpected end of file");
+            return stream.ReadFloatLittleEndian();
+        }
 
         /// <summary>Time record: 3 zero dwords, hour, minute, zero dword, 8 bytes of leftovers.</summary>
         public SkeTime Time()
         {
             if (Remaining < SkeTime.Size) throw new InvalidDataException("sky.ske: unexpected end of file");
-            int hour = BitConverter.ToInt32(_d[(_o + 12)..]);
-            int minute = BitConverter.ToInt32(_d[(_o + 16)..]);
-            _o += SkeTime.Size;
+            stream.Seek(12, SeekOrigin.Current);
+            int hour = stream.ReadInt32LittleEndian();
+            int minute = stream.ReadInt32LittleEndian();
+            stream.Seek(SkeTime.Size - 20, SeekOrigin.Current);
             return new SkeTime(hour, minute);
         }
 
@@ -162,7 +167,7 @@ public sealed record SkeFile(IReadOnlyList<SkeZone> Zones, SkeTime StartTime, in
             int n = Int();
             if (n <= 0) return string.Empty;
             if (Remaining < n) throw new InvalidDataException("sky.ske: string exceeds file size");
-            var s = Encoding.ASCII.GetString(_d.Slice(_o, n)); _o += n; return s;
+            return Encoding.ASCII.GetString(stream.ReadBytesExact(n));
         }
     }
 }

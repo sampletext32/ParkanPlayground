@@ -1,5 +1,4 @@
-﻿using System.Buffers.Binary;
-using System.Text;
+using Common;
 
 namespace TexmLib;
 
@@ -12,27 +11,14 @@ public class TexmParser
             return new TexmParseResult(null, "Файл короче 32 байт - точно не текстура");
         }
 
-        Span<byte> headerBytes = stackalloc byte[32];
-        stream.ReadExactly(headerBytes);
-
-        var texmHeader = headerBytes[0..4];
-
-        var widthBytes = headerBytes[4..8];
-        var heightBytes = headerBytes[8..12];
-        var mipmapCountBytes = headerBytes[12..16];
-        var flags4Bytes = headerBytes[16..20];
-        var flags5Bytes = headerBytes[20..24];
-        var unk6Bytes = headerBytes[24..28];
-        var formatBytes = headerBytes[28..32];
-
-        var texmAscii = Encoding.ASCII.GetString(texmHeader).Trim('\0');
-        var width = BinaryPrimitives.ReadInt32LittleEndian(widthBytes);
-        var height = BinaryPrimitives.ReadInt32LittleEndian(heightBytes);
-        var mipmapCount = BinaryPrimitives.ReadInt32LittleEndian(mipmapCountBytes);
-        var flags4 = BinaryPrimitives.ReadInt32LittleEndian(flags4Bytes);
-        var flags5 = BinaryPrimitives.ReadInt32LittleEndian(flags5Bytes);
-        var unk6 = BinaryPrimitives.ReadInt32LittleEndian(unk6Bytes);
-        var format = BinaryPrimitives.ReadInt32LittleEndian(formatBytes);
+        var texmAscii = stream.ReadFixedString(4);
+        var width = stream.ReadInt32LittleEndian();
+        var height = stream.ReadInt32LittleEndian();
+        var mipmapCount = stream.ReadInt32LittleEndian();
+        var flags4 = stream.ReadInt32LittleEndian();
+        var flags5 = stream.ReadInt32LittleEndian();
+        var unk6 = stream.ReadInt32LittleEndian();
+        var format = stream.ReadInt32LittleEndian();
 
         if (texmAscii != "Texm")
         {
@@ -94,38 +80,19 @@ public class TexmParser
 
     private static PageHeader ReadPage(Stream stream)
     {
-        Span<byte> pageBytes = stackalloc byte[4];
-
-        stream.ReadExactly(pageBytes);
-
-        var pageHeaderAscii = Encoding.ASCII.GetString(pageBytes);
-
-        stream.ReadExactly(pageBytes);
-
-        var pageCount = BinaryPrimitives.ReadInt32LittleEndian(pageBytes);
+        var pageHeaderAscii = stream.ReadFixedString(4);
+        var pageCount = stream.ReadInt32LittleEndian();
 
         List<PageItem> pageItems = [];
 
-        Span<byte> itemBytes = stackalloc byte[2];
         for (int i = 0; i < pageCount; i++)
         {
-            stream.ReadExactly(itemBytes);
-            var x = BinaryPrimitives.ReadInt16LittleEndian(itemBytes);
-            stream.ReadExactly(itemBytes);
-            var pageWidth = BinaryPrimitives.ReadInt16LittleEndian(itemBytes);
-            stream.ReadExactly(itemBytes);
-            var y = BinaryPrimitives.ReadInt16LittleEndian(itemBytes);
-            stream.ReadExactly(itemBytes);
-            var pageHeight = BinaryPrimitives.ReadInt16LittleEndian(itemBytes);
+            var x = stream.ReadInt16LittleEndian();
+            var pageWidth = stream.ReadInt16LittleEndian();
+            var y = stream.ReadInt16LittleEndian();
+            var pageHeight = stream.ReadInt16LittleEndian();
 
-            pageItems.Add(
-                new PageItem(
-                    x,
-                    pageWidth,
-                    y,
-                    pageHeight
-                )
-            );
+            pageItems.Add(new PageItem(x, pageWidth, y, pageHeight));
         }
 
         var pageHeader = new PageHeader(pageHeaderAscii, pageCount, pageItems);
