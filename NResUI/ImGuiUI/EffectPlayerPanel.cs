@@ -436,9 +436,9 @@ public class EffectPlayerPanel : IImGuiPanel
         var rgb = type switch
         {
             FxidComponentType.Sound => 0x4FA8E0u,
-            FxidComponentType.Billboard => 0xE0C040u,
-            FxidComponentType.Plane or FxidComponentType.Cube => 0x60D070u,
-            FxidComponentType.Trail or FxidComponentType.Model => 0xD07040u,
+            FxidComponentType.Light => 0xE0C040u,
+            FxidComponentType.PlaneParticles or FxidComponentType.PolyhedronParticles => 0x60D070u,
+            FxidComponentType.Trail or FxidComponentType.ParticleSpawner => 0xD07040u,
             _ => 0xC060C0u,
         };
 

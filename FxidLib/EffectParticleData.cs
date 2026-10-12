@@ -4,7 +4,7 @@ using Common;
 namespace FxidLib;
 
 /// <summary>
-/// Эмиттеры частиц: тип 7 (<see cref="FxidComponentType.Plane"/>, частица 0xCC байт, не зацикленная) и тип 10 (<see cref="FxidComponentType.Cube"/>,
+/// Эмиттеры частиц: тип 7 (<see cref="FxidComponentType.PlaneParticles"/>, частица 0xCC байт, не зацикленная) и тип 10 (<see cref="FxidComponentType.PolyhedronParticles"/>,
 /// частица 0x1EC байт, зацикленная). Общие <c>EvaluateAtTime</c> (10001240), <c>Render</c> (10001310) и вспомогательная инициализация 10001010;
 /// <c>SetParams</c> различается (100017e0 / 10001b70). Объекты времени исполнения одинаковы (0x48 байт: EffectBase, указатель на файл, массивы);
 /// различается только класс элемента частицы, возвращаемый слотом vtable 7 (<c>GetParticle(index)</c>), и <c>SetParams</c>: тип 7 ставит признак

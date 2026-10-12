@@ -1,7 +1,7 @@
 namespace FxidLib;
 
 /// <summary>
-/// Компонент типа 4 (<see cref="FxidComponentType.AnimBillboard"/>): раскладка типа 3 плюс float по смещению +0xC8.
+/// Компонент типа 4 (<see cref="FxidComponentType.AnimatedObjectByDistance"/>): раскладка типа 3 плюс float по смещению +0xC8.
 /// Проверено (<c>SetParamsWithReferenceDistance</c> 10011650, <c>EffectType4::RenderContents</c>): движок хранит <c>1 / value</c>, при отрисовке прогресс
 /// анимации равен <c>clamp(distance_to_camera * (1 / value) * life, 0..1)</c>, где <c>distance_to_camera</c> - длина опорного вектора
 /// (позиция камеры в локальной системе эффекта). Значение - расстояние, на котором анимация завершена.

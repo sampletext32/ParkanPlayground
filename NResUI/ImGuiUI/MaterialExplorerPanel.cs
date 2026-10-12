@@ -255,7 +255,7 @@ public class MaterialExplorerPanel : IImGuiPanel
         {
             AnimationLoopMode.Loop => "Loop: Animation repeats continuously from start to end",
             AnimationLoopMode.PingPong => "PingPong: Animation plays forward then backward repeatedly",
-            AnimationLoopMode.Clamp => "Clamp: Animation plays once and holds at the final value",
+            AnimationLoopMode.Once => "Clamp: Animation plays once and holds at the final value",
             AnimationLoopMode.Random => "Random: Animation selects random keyframes",
             _ => "Unknown loop mode"
         };

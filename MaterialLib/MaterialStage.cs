@@ -8,7 +8,7 @@ namespace MaterialLib;
 /// <param name="AmbientG">Ambient G (0..1).</param>
 /// <param name="AmbientB">Ambient B (0..1).</param>
 /// <param name="AmbientA">Ambient A: байт × 0.01. У 1806 стадий из 1811 равно 1.0 (байт 100), у остальных 0, 0.6, 0.8, 0.9, 0.95.
-/// Единственная альфа, которую игра интерполирует (бит <see cref="AnimationTarget.Power"/>).</param>
+/// Единственная альфа, которую игра интерполирует (бит <see cref="AnimationTarget.AmbientAlpha"/>).</param>
 /// <param name="DiffuseR">Diffuse R (0..1).</param>
 /// <param name="DiffuseG">Diffuse G (0..1).</param>
 /// <param name="DiffuseB">Diffuse B (0..1).</param>

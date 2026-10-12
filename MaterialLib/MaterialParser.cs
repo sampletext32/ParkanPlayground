@@ -166,7 +166,7 @@ public static class MaterialParser
             parts.Add("Specular RGB");
         if ((target & AnimationTarget.Emissive) != 0)
             parts.Add("Emissive RGB");
-        if ((target & AnimationTarget.Power) != 0)
+        if ((target & AnimationTarget.AmbientAlpha) != 0)
             parts.Add("Ambient.A");
             
         return $"Интерполируется: {string.Join(", ", parts)} | Остальные компоненты копируются (Flags: 0x{(int)target:X})";

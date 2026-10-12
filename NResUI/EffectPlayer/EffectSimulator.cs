@@ -117,7 +117,7 @@ public sealed class PreparedEffect
             var label = $"{c.Index}: {TypeName(c.Type)}" + (string.IsNullOrEmpty(res) ? string.Empty : $" {res}");
             switch (c.Type)
             {
-                case FxidComponentType.Billboard:
+                case FxidComponentType.Light:
                 {
                     var d = c.AsType1();
                     list.Add(Make(c, label, res, light: d, start: d.ActiveTimeStart, end: d.ActiveTimeEnd));
@@ -129,13 +129,13 @@ public sealed class PreparedEffect
                     list.Add(Make(c, label, res, sound: d, start: d.WindowStart, end: d.WindowEnd));
                     break;
                 }
-                case FxidComponentType.AnimParticle:
+                case FxidComponentType.AnimatedObject:
                 {
                     var d = c.AsType3();
                     list.Add(Make(c, label, res, obj: d, start: d.ActiveTimeStart, end: d.ActiveTimeEnd));
                     break;
                 }
-                case FxidComponentType.AnimBillboard:
+                case FxidComponentType.AnimatedObjectByDistance:
                 {
                     var t4 = c.AsType4();
                     var d = t4.Base;
@@ -144,14 +144,14 @@ public sealed class PreparedEffect
                         referenceDistance: t4.ReferenceDistance));
                     break;
                 }
-                case FxidComponentType.AnimModel:
+                case FxidComponentType.AnimatedObjectDrawMode:
                 {
                     var d = c.AsType9().Base;
                     list.Add(Make(c, label, res, obj: d, start: d.ActiveTimeStart, end: d.ActiveTimeEnd));
                     break;
                 }
-                case FxidComponentType.Plane:
-                case FxidComponentType.Cube:
+                case FxidComponentType.PlaneParticles:
+                case FxidComponentType.PolyhedronParticles:
                 {
                     var d = c.AsParticle();
                     list.Add(Make(c, label, res, particle: d, start: d.ActiveWindowStart, end: d.ActiveWindowEnd));
@@ -163,7 +163,7 @@ public sealed class PreparedEffect
                     list.Add(Make(c, label, res, trail: d, start: d.ActiveWindowStart, end: d.ActiveWindowEnd));
                     break;
                 }
-                case FxidComponentType.Model:
+                case FxidComponentType.ParticleSpawner:
                 {
                     var d = c.AsSpawner();
                     list.Add(Make(c, label, res, spawner: d, start: d.ActiveWindowStart, end: d.ActiveWindowEnd));
@@ -218,16 +218,16 @@ public sealed class PreparedEffect
 
     public static string TypeName(FxidComponentType type) => type switch
     {
-        FxidComponentType.Billboard => "свет",
+        FxidComponentType.Light => "свет",
         FxidComponentType.Sound => "звук",
-        FxidComponentType.AnimParticle => "объект",
-        FxidComponentType.AnimBillboard => "объект+дист",
+        FxidComponentType.AnimatedObject => "объект",
+        FxidComponentType.AnimatedObjectByDistance => "объект+дист",
         FxidComponentType.Trail => "шлейф",
-        FxidComponentType.Point => "точка",
-        FxidComponentType.Plane => "частицы (плоск.)",
-        FxidComponentType.Model => "спавнер",
-        FxidComponentType.AnimModel => "объект (9)",
-        FxidComponentType.Cube => "частицы (3D)",
+        FxidComponentType.Empty => "точка",
+        FxidComponentType.PlaneParticles => "частицы (плоск.)",
+        FxidComponentType.ParticleSpawner => "спавнер",
+        FxidComponentType.AnimatedObjectDrawMode => "объект (9)",
+        FxidComponentType.PolyhedronParticles => "частицы (3D)",
         _ => type.ToString(),
     };
 }
@@ -397,7 +397,7 @@ public static class EffectSimulator
 
             switch (c.Type)
             {
-                case FxidComponentType.Billboard when c.Light is { } light:
+                case FxidComponentType.Light when c.Light is { } light:
                 {
                     var p = Lerp(light.PositionStart, light.PositionEnd, c.Life);
                     var range = light.RangeStart_maybe + (light.RangeEnd_maybe - light.RangeStart_maybe) * c.Life;
@@ -409,16 +409,16 @@ public static class EffectSimulator
                         new Vector3(r, g, b), null, c.Label));
                     break;
                 }
-                case FxidComponentType.AnimParticle:
-                case FxidComponentType.AnimBillboard:
-                case FxidComponentType.AnimModel:
+                case FxidComponentType.AnimatedObject:
+                case FxidComponentType.AnimatedObjectByDistance:
+                case FxidComponentType.AnimatedObjectDrawMode:
                     if (c.Object is { } obj)
                         // Вектор до камеры берётся в локальной системе эффекта (TransformPointWorldToLocal по матрице с масштабом эффекта),
                         // поэтому расстояние делится на общий масштаб (EffectType4::RenderContents, Effect.dll 0x10011750).
                         EvaluateObject(c, obj, strength, frameView, output, cameraDistance / MathF.Max(frameScale, 1e-4f));
                     break;
-                case FxidComponentType.Plane:
-                case FxidComponentType.Cube:
+                case FxidComponentType.PlaneParticles:
+                case FxidComponentType.PolyhedronParticles:
                     if (c.Particle is { } particle)
                         EvaluateParticles(c, particle, strength, timeSec, durationSec, frameView, output);
                     break;
@@ -435,13 +435,13 @@ public static class EffectSimulator
 
                     firstItem = output.Count;
                     break;
-                case FxidComponentType.Model when c.Spawner is { } spawner:
+                case FxidComponentType.ParticleSpawner when c.Spawner is { } spawner:
                     EvaluateSpawner(
                         c, spawner, timeSec, originAt ?? (t => origin + new Vector3(attachSpeed * t, 0f, 0f)), view, output);
                     firstItem = output.Count;
                     break;
                 case FxidComponentType.Trail:
-                case FxidComponentType.Model:
+                case FxidComponentType.ParticleSpawner:
                     output.Add(new DrawItem(
                         DrawKind.Marker, c.Index, Vector2.Zero, 0.15f, 1f, new Vector3(1f, 0.8f, 0.3f), null, c.Label));
                     break;
@@ -694,7 +694,7 @@ public static class EffectSimulator
                 var drop = p.GravityFactor * ParticleGravity * 0.5f * t * t;
                 var position = new Vec3(path.X + spawn.X, path.Y + spawn.Y, path.Z + spawn.Z - drop);
 
-                var sizeVec = c.Type == FxidComponentType.Plane ? Lerp(p.SizeStart, p.SizeEnd, u) : p.SizeStart;
+                var sizeVec = c.Type == FxidComponentType.PlaneParticles ? Lerp(p.SizeStart, p.SizeEnd, u) : p.SizeStart;
                 // Спрайт частицы - прямоугольник: X - длина (у «штрихов» splash/spark она растёт от SizeStart к SizeEnd),
                 // высота - среднее Y и Z (в файлах они равны).
                 var sx = MathF.Abs(sizeVec.X + (Hash01(c.Index, id, 4) - 0.5f) * p.SizeJitterBox.X);

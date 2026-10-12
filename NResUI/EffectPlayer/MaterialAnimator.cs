@@ -8,7 +8,7 @@ namespace NResUI.EffectPlayer;
 /// <param name="StageIndex">Стадия начального ключа: из неё берутся текстура, страница и цвета без интерполяции.</param>
 /// <param name="NextStageIndex">Стадия следующего ключа (у последнего - первого).</param>
 /// <param name="Progress">Доля времени внутри интервала ключа 0..1.</param>
-/// <param name="Fields">Поля, которые интерполируются (<see cref="AnimationTarget"/>: Ambient 1, Diffuse 2, Specular 4, Emissive 8, Power 0x10 = ambient.A).</param>
+/// <param name="Fields">Поля, которые интерполируются (<see cref="AnimationTarget"/>: Ambient 1, Diffuse 2, Specular 4, Emissive 8, AmbientAlpha 0x10 = ambient.A).</param>
 public readonly record struct MaterialFrame(int StageIndex, int NextStageIndex, float Progress, AnimationTarget Fields);
 
 /// <summary>
@@ -41,7 +41,7 @@ public static class MaterialAnimator
                 t = p > total ? 2 * total - p : p;
                 break;
             }
-            case AnimationLoopMode.Clamp:
+            case AnimationLoopMode.Once:
                 if (t >= total)
                 {
                     // AnimateFrame (loop_mode 2) после конца: начальный ключ = последний, позиция 0, следующий = ключ 0, поэтому

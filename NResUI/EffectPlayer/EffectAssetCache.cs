@@ -370,7 +370,7 @@ public sealed class EffectAssetCache : IService
                 stage.AmbientG + (next.AmbientG - stage.AmbientG) * k,
                 stage.AmbientB + (next.AmbientB - stage.AmbientB) * k)
             : new Vector3(stage.AmbientR, stage.AmbientG, stage.AmbientB);
-        var alpha = (sample.Fields & AnimationTarget.Power) != 0
+        var alpha = (sample.Fields & AnimationTarget.AmbientAlpha) != 0
             ? stage.AmbientA + (next.AmbientA - stage.AmbientA) * k
             : stage.AmbientA;
         // Прогресс < 0 (режим «один раз» после конца анимации) экстраполирует цвета, как в движке; результат насыщается.

@@ -2,7 +2,8 @@ namespace FxidLib;
 
 /// <summary>
 /// Тип компонента эффекта: младший байт <c>TypeAndFlags</c>. Определяет размер блока в файле и класс времени исполнения
-/// (<c>EffectType1..10</c> в Effect.dll). Названия сохранены из прежнего именования FxidLib, у части они не отражают роль.
+/// (<c>EffectType1..10</c> в Effect.dll). Названия членов описывают роль компонента (так же они подписаны в окне Effect Player); классы времени
+/// исполнения и типизированные представления сохраняют номера (<see cref="EffectType3Data"/> и т. д.).
 /// </summary>
 /// <remarks>
 /// Статистика по 1567 компонентам 476 файлов effects.rlb: тип 3 - 394, 1 - 262, 9 - 201, 2 - 199, 7 - 178, 4 - 177, 8 - 127, 10 - 22, 5 - 7;
@@ -11,33 +12,33 @@ namespace FxidLib;
 /// </remarks>
 public enum FxidComponentType : byte
 {
-    /// <summary>Класс <c>EffectType1</c> (0xF0 байт): динамический источник света (<c>ILightManager</c>). Блок 0xE0 байт, 262 компонента.</summary>
-    Billboard = 1,
+    /// <summary>Класс <c>EffectType1</c> (0xF0 байт): динамический источник света (<c>ILightManager</c>, раньше назывался Billboard). Блок 0xE0 байт, 262 компонента.</summary>
+    Light = 1,
 
     /// <summary>Класс <c>EffectType2</c> (0xA0 байт): трёхмерный звук. Блок 0x94 байт, 199 компонентов.</summary>
     Sound = 2,
 
-    /// <summary>Класс <c>EffectType3</c> (0xFC байт) с <c>EffectContents</c>: анимированный спрайт/модель по материалу. Блок 0xC8 байт, 394 компонента.</summary>
-    AnimParticle = 3,
+    /// <summary>Класс <c>EffectType3</c> (0xFC байт) с <c>EffectContents</c>: анимированный объект по материалу (кадры по фазе, позиция/направление/масштаб по жизни). Блок 0xC8 байт, 394 компонента.</summary>
+    AnimatedObject = 3,
 
     /// <summary>Класс <c>EffectType4</c> (0x104 байт) с <c>EffectContents</c>: как тип 3 плюс опорное расстояние до камеры. Блок 0xCC байт, 177 компонентов.</summary>
-    AnimBillboard = 4,
+    AnimatedObjectByDistance = 4,
 
     /// <summary>Класс <c>EffectType5</c> (0x54 байт): шлейф между предыдущей и текущей точкой привязки. Блок 0x70 байт, 7 компонентов.</summary>
     Trail = 5,
 
     /// <summary>Пустой компонент: 4 байта полезной нагрузки, <c>SetParams</c>/<c>EvaluateAtTime</c>/<c>Render</c> - заглушки. В данных не встречается.</summary>
-    Point = 6,
+    Empty = 6,
 
     /// <summary>Эмиттер частиц (<c>EffectType7</c>, 0x48 байт, частицы по 0xCC байт), не зацикленный. Блок 0xD0 байт, 178 компонентов.</summary>
-    Plane = 7,
+    PlaneParticles = 7,
 
-    /// <summary>Порождатель частиц вдоль пути точки привязки (<c>EffectType8</c>, 0xAC байт). Имя устарело. Блок 0xF8 байт, 127 компонентов.</summary>
-    Model = 8,
+    /// <summary>Порождатель частиц вдоль пути точки привязки (<c>EffectType8</c>, 0xAC байт). Раньше назывался Model. Блок 0xF8 байт, 127 компонентов.</summary>
+    ParticleSpawner = 8,
 
     /// <summary>Компонент с раскладкой типа 3 и собственным <c>Render</c> (флаги отрисовки EffectContents). Блок 0xD0 байт, 201 компонент.</summary>
-    AnimModel = 9,
+    AnimatedObjectDrawMode = 9,
 
     /// <summary>Эмиттер частиц (<c>EffectType10</c>, 0x48 байт, частицы по 0x1EC байт), зацикленный. Блок 0xD0 байт, 22 компонента.</summary>
-    Cube = 10,
+    PolyhedronParticles = 10,
 }

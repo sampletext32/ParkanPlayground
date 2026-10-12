@@ -4,7 +4,7 @@ using Common;
 namespace FxidLib;
 
 /// <summary>
-/// Компонент типа 1 (в FxidLib назван Billboard): <c>EffectType1::SetParams</c> работает с <c>ILightManager</c>, то есть это динамический источник света
+/// Компонент типа 1 (<see cref="FxidComponentType.Light"/>, раньше назывался Billboard): <c>EffectType1::SetParams</c> работает с <c>ILightManager</c>, то есть это динамический источник света
 /// с анимированными позицией, направлением, цветом и дальностью. Раскладка выведена из <c>SetParams</c> и файлов (например, <c>aim_light_L</c>:
 /// направление (0, −1, 0), цвет (1, 0.1, 0.1) → (2.5, 0.1, 0.1), дальность 3 → 12). Байты после +0x78 до ресурса по +0xA0 не расшифрованы.
 /// </summary>

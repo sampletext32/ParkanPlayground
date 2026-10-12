@@ -18,16 +18,16 @@ public static class FxidComponentLayout
     /// <exception cref="FxidFormatException">Неизвестный тип: движок при этом не продвигается вперёд, поэтому это ошибка формата.</exception>
     public static int GetSize(FxidComponentType type) => type switch
     {
-        FxidComponentType.Billboard => 0xE0,
+        FxidComponentType.Light => 0xE0,
         FxidComponentType.Sound => 0x94,
-        FxidComponentType.AnimParticle => 0xC8,
-        FxidComponentType.AnimBillboard => 0xCC,
+        FxidComponentType.AnimatedObject => 0xC8,
+        FxidComponentType.AnimatedObjectByDistance => 0xCC,
         FxidComponentType.Trail => 0x70,
-        FxidComponentType.Point => 0x04,
-        FxidComponentType.Plane => 0xD0,
-        FxidComponentType.Model => 0xF8,
-        FxidComponentType.AnimModel => 0xD0,
-        FxidComponentType.Cube => 0xD0,
+        FxidComponentType.Empty => 0x04,
+        FxidComponentType.PlaneParticles => 0xD0,
+        FxidComponentType.ParticleSpawner => 0xF8,
+        FxidComponentType.AnimatedObjectDrawMode => 0xD0,
+        FxidComponentType.PolyhedronParticles => 0xD0,
         _ => throw new FxidFormatException($"Unknown FXID component type {(byte)type}")
     };
 
@@ -38,16 +38,16 @@ public static class FxidComponentLayout
     /// <param name="type">Тип компонента.</param>
     public static int GetResourceRefOffset(FxidComponentType type) => type switch
     {
-        FxidComponentType.Billboard => 0xA0,
+        FxidComponentType.Light => 0xA0,
         FxidComponentType.Sound => 0x54,
-        FxidComponentType.AnimParticle => 0x88,
-        FxidComponentType.AnimBillboard => 0x88,
+        FxidComponentType.AnimatedObject => 0x88,
+        FxidComponentType.AnimatedObjectByDistance => 0x88,
         FxidComponentType.Trail => 0x30,
-        FxidComponentType.Point => -1,
-        FxidComponentType.Plane => 0x90,
-        FxidComponentType.Model => 0xB8,
-        FxidComponentType.AnimModel => 0x88,
-        FxidComponentType.Cube => 0x90,
+        FxidComponentType.Empty => -1,
+        FxidComponentType.PlaneParticles => 0x90,
+        FxidComponentType.ParticleSpawner => 0xB8,
+        FxidComponentType.AnimatedObjectDrawMode => 0x88,
+        FxidComponentType.PolyhedronParticles => 0x90,
         _ => -1
     };
 

@@ -28,12 +28,12 @@ public sealed record FxidComponent(
     /// </summary>
     public bool TypeFlagBit8_TBD => ((TypeAndFlags >> 8) & 1) != 0;
 
-    /// <summary>Типизированное представление для <see cref="FxidComponentType.AnimParticle"/>.</summary>
+    /// <summary>Типизированное представление для <see cref="FxidComponentType.AnimatedObject"/>.</summary>
     /// <exception cref="InvalidOperationException">Компонент другого типа.</exception>
     public EffectType3Data AsType3()
     {
-        if (Type != FxidComponentType.AnimParticle)
-            throw new InvalidOperationException($"Component {Index} is {Type}, not AnimParticle");
+        if (Type != FxidComponentType.AnimatedObject)
+            throw new InvalidOperationException($"Component {Index} is {Type}, not AnimatedObject");
         return EffectType3Data.Read(Raw);
     }
 
@@ -46,12 +46,12 @@ public sealed record FxidComponent(
         return EffectTrailData.Read(Raw);
     }
 
-    /// <summary>Типизированное представление для <see cref="FxidComponentType.Model"/> (тип 8): порождатель частиц-плоскостей вдоль пути точки привязки.</summary>
+    /// <summary>Типизированное представление для <see cref="FxidComponentType.ParticleSpawner"/> (тип 8): порождатель частиц-плоскостей вдоль пути точки привязки.</summary>
     /// <exception cref="InvalidOperationException">Компонент другого типа.</exception>
     public EffectSpawnerData AsSpawner()
     {
-        if (Type != FxidComponentType.Model)
-            throw new InvalidOperationException($"Component {Index} is {Type}, not Model");
+        if (Type != FxidComponentType.ParticleSpawner)
+            throw new InvalidOperationException($"Component {Index} is {Type}, not ParticleSpawner");
         return EffectSpawnerData.Read(Raw);
     }
 
@@ -64,44 +64,44 @@ public sealed record FxidComponent(
         return EffectSoundData.Read(Raw);
     }
 
-    /// <summary>Типизированное представление для <see cref="FxidComponentType.Plane"/> (тип 7) и <see cref="FxidComponentType.Cube"/> (тип 10): эмиттеры частиц.</summary>
+    /// <summary>Типизированное представление для <see cref="FxidComponentType.PlaneParticles"/> (тип 7) и <see cref="FxidComponentType.PolyhedronParticles"/> (тип 10): эмиттеры частиц.</summary>
     /// <exception cref="InvalidOperationException">Компонент другого типа.</exception>
     public EffectParticleData AsParticle()
     {
-        if (Type is not (FxidComponentType.Plane or FxidComponentType.Cube))
-            throw new InvalidOperationException($"Component {Index} is {Type}, not Plane/Cube");
+        if (Type is not (FxidComponentType.PlaneParticles or FxidComponentType.PolyhedronParticles))
+            throw new InvalidOperationException($"Component {Index} is {Type}, not PlaneParticles/PolyhedronParticles");
         return EffectParticleData.Read(Raw);
     }
 
-    /// <summary>Типизированное представление для <see cref="FxidComponentType.Billboard"/> (в движке - динамический источник света).</summary>
+    /// <summary>Типизированное представление для <see cref="FxidComponentType.Light"/> (в движке - динамический источник света).</summary>
     /// <exception cref="InvalidOperationException">Компонент другого типа.</exception>
     public EffectType1Data AsType1()
     {
-        if (Type != FxidComponentType.Billboard)
-            throw new InvalidOperationException($"Component {Index} is {Type}, not Billboard");
+        if (Type != FxidComponentType.Light)
+            throw new InvalidOperationException($"Component {Index} is {Type}, not Light");
         return EffectType1Data.Read(Raw);
     }
 
-    /// <summary>Типизированное представление для <see cref="FxidComponentType.AnimBillboard"/>: раскладка типа 3 плюс один float в конце.</summary>
+    /// <summary>Типизированное представление для <see cref="FxidComponentType.AnimatedObjectByDistance"/>: раскладка типа 3 плюс один float в конце.</summary>
     /// <exception cref="InvalidOperationException">Компонент другого типа.</exception>
     public EffectType4Data AsType4()
     {
-        if (Type != FxidComponentType.AnimBillboard)
-            throw new InvalidOperationException($"Component {Index} is {Type}, not AnimBillboard");
+        if (Type != FxidComponentType.AnimatedObjectByDistance)
+            throw new InvalidOperationException($"Component {Index} is {Type}, not AnimatedObjectByDistance");
         return new EffectType4Data(
             EffectType3Data.Read(Raw.AsSpan(0, 0xC8)),
             BinaryPrimitives.ReadSingleLittleEndian(Raw.AsSpan(0xC8)));
     }
 
     /// <summary>
-    /// Типизированное представление для <see cref="FxidComponentType.AnimModel"/>: <c>SetParams</c> и <c>EvaluateAtTime</c> общие с типом 3,
+    /// Типизированное представление для <see cref="FxidComponentType.AnimatedObjectDrawMode"/>: <c>SetParams</c> и <c>EvaluateAtTime</c> общие с типом 3,
     /// поэтому первые 0xC8 байт имеют раскладку типа 3.
     /// </summary>
     /// <exception cref="InvalidOperationException">Компонент другого типа.</exception>
     public EffectType9Data AsType9()
     {
-        if (Type != FxidComponentType.AnimModel)
-            throw new InvalidOperationException($"Component {Index} is {Type}, not AnimModel");
+        if (Type != FxidComponentType.AnimatedObjectDrawMode)
+            throw new InvalidOperationException($"Component {Index} is {Type}, not AnimatedObjectDrawMode");
         return new EffectType9Data(
             EffectType3Data.Read(Raw.AsSpan(0, 0xC8)),
             BinaryPrimitives.ReadUInt32LittleEndian(Raw.AsSpan(0xC8)),
