@@ -1,3 +1,4 @@
+using System.Numerics;
 using ImGuiNET;
 using NResUI.Abstractions;
 using NResUI.Models;
@@ -7,11 +8,22 @@ namespace NResUI.ImGuiUI;
 
 public class ScrExplorer : IImGuiPanel
 {
-    private readonly ScrViewModel _viewModel;
+    private static readonly string[] CompareOperators = ["<", "==", ">", "<=", ">=", "!="];
 
-    public ScrExplorer(ScrViewModel viewModel)
+    private static readonly Vector4 ColorLineNumber = new(0.35f, 0.35f, 0.35f, 1f);
+    private static readonly Vector4 ColorKeyword = new(0.05f, 0.2f, 0.85f, 1f);
+    private static readonly Vector4 ColorVariable = new(0.0f, 0.5f, 0.05f, 1f);
+    private static readonly Vector4 ColorFunction = new(0.75f, 0.3f, 0.0f, 1f);
+    private static readonly Vector4 ColorNumber = new(0.7f, 0.0f, 0.5f, 1f);
+    private static readonly Vector4 ColorPlain = new(0.0f, 0.0f, 0.0f, 1f);
+
+    private readonly ScrViewModel _viewModel;
+    private readonly VarsetViewModel _varsetViewModel;
+
+    public ScrExplorer(ScrViewModel viewModel, VarsetViewModel varsetViewModel)
     {
         _viewModel = viewModel;
+        _varsetViewModel = varsetViewModel;
     }
 
     public void OnImGuiRender()
@@ -20,7 +32,7 @@ public class ScrExplorer : IImGuiPanel
         {
             ImGui.Text("scr - это файл AI скриптов. Их можно найти в папке MISSIONS/SCRIPTS");
             ImGui.Separator();
-            
+
             var scr = _viewModel.Scr;
             if (_viewModel.HasFile && scr is not null)
             {
@@ -33,100 +45,33 @@ public class ScrExplorer : IImGuiPanel
                 ImGui.SameLine();
                 ImGui.Text(scr.EntryCount.ToString());
 
+                if (_varsetViewModel.Items.Count == 0)
+                {
+                    ImGui.TextDisabled("Имена переменных не показаны: откройте MISSIONS/SCRIPTS/varset.var (File -> Open Varset File)");
+                }
+
                 if (ImGui.TreeNodeEx("Секции"))
                 {
                     for (var i = 0; i < scr.Entries.Count; i++)
                     {
                         var entry = scr.Entries[i];
-                        if (ImGui.TreeNodeEx($"Секция {i} - \"{entry.Title}\""))
+                        if (ImGui.TreeNodeEx($"Секция {i} - \"{entry.Title}\" ({entry.InnerCount})###section{i}"))
                         {
-                            ImGui.Text("Индекс: ");
-                            ImGui.SameLine();
-                            ImGui.Text(entry.Index.ToString());
-
-                            ImGui.Text("Кол-во элементов: ");
-                            ImGui.SameLine();
-                            ImGui.Text(entry.InnerCount.ToString());
-
-                            if (ImGui.BeginTable($"Элементы##{i:0000}", 8, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoHostExtendX))
+                            if (ImGui.BeginTabBar($"Вид##{i:0000}"))
                             {
-                                ImGui.TableSetupColumn("Встроенная функция");
-                                ImGui.TableSetupColumn("Результат в переменную");
-                                ImGui.TableSetupColumn("Значение / источник");
-                                ImGui.TableSetupColumn("Тип действия");
-                                ImGui.TableSetupColumn("Операция сравнения");
-                                ImGui.TableSetupColumn("Кол-во аргументов");
-                                ImGui.TableSetupColumn("Аргументы");
-                                ImGui.TableSetupColumn("Формула .fml");
-                                ImGui.TableHeadersRow();
-
-                                for (int j = 0; j < entry.Inners.Count; j++)
+                                if (ImGui.BeginTabItem("Текст"))
                                 {
-                                    var inner = entry.Inners[j];
-                                    ImGui.TableNextRow();
-                                    ImGui.TableNextColumn();
-                                    ImGui.Text(ScrLib.ScrActions.Describe(inner.NativeActionIndex));
-
-                                    if (inner.NativeActionIndex == 2)
-                                    {
-                                        Utils.ShowHint("Первый аргумент - номер проблемы");
-                                    }
-
-                                    if (inner.NativeActionIndex == 4)
-                                    {
-                                        Utils.ShowHint("Первый аргумент - номер проблемы");
-                                    }
-
-                                    if (inner.NativeActionIndex == 8)
-                                    {
-                                        Utils.ShowHint("Установить dCurrentProblem стейт (VARSET:arg0)");
-                                    }
-
-                                    if (inner.NativeActionIndex == 20)
-                                    {
-                                        Utils.ShowHint("Первый аргумент - номер проблемы");
-                                    }
-
-                                    ImGui.TableNextColumn();
-                                    ImGui.Text(inner.ResultVarIndex.ToString());
-                                    ImGui.TableNextColumn();
-                                    ImGui.Text(inner.ValueOrSourceVarIndex.ToString());
-                                    ImGui.TableNextColumn();
-                                    ImGui.Text($"{(int) inner.Type}: {inner.Type:G}");
-                                    if (inner.Type == ScrEntryInnerType.Compare)
-                                    {
-                                        Utils.ShowHint("Сравнение двух переменных Varset (аргументы), операция в CompareOperator: 0 <, 1 ==, 2 >, 3 <=, 4 >=, 5 !=");
-                                    }
-
-                                    if (inner.Type == ScrEntryInnerType.Return)
-                                    {
-                                        Utils.ShowHint("Return: если условия выполнены, секция на этом тике завершается");
-                                    }
-
-                                    if (inner.Type == ScrEntryInnerType.SetVarsetValue)
-                                    {
-                                        Utils.ShowHint("Записать в переменную Varset ResultVarIndex значение ValueOrSourceVarIndex");
-                                    }
-
-                                    ImGui.TableNextColumn();
-                                    ImGui.Text(inner.CompareOperator.ToString());
-                                    ImGui.TableNextColumn();
-                                    ImGui.Text(inner.ArgumentsCount.ToString());
-                                    ImGui.TableNextColumn();
-                                    foreach (var argument in inner.Arguments)
-                                    {
-                                        if (ImGui.Button(argument.ToString()))
-                                        {
-                                        }
-
-                                        ImGui.SameLine();
-                                    }
-
-                                    ImGui.TableNextColumn();
-                                    ImGui.Text(inner.FmlFunctionIndex.ToString());
+                                    DrawListing(scr, entry, i);
+                                    ImGui.EndTabItem();
                                 }
 
-                                ImGui.EndTable();
+                                if (ImGui.BeginTabItem("Таблица"))
+                                {
+                                    DrawTable(entry, i);
+                                    ImGui.EndTabItem();
+                                }
+
+                                ImGui.EndTabBar();
                             }
 
                             ImGui.TreePop();
@@ -142,6 +87,326 @@ public class ScrExplorer : IImGuiPanel
             }
 
             ImGui.End();
+        }
+    }
+
+    /// <summary>Читаемый вид секции: по строке на инструкцию, вложенность по условиям, при наведении - подробности.</summary>
+    private void DrawListing(ScrFile scr, ScrEntry entry, int entryIndex)
+    {
+        ImGui.PushID($"listing{entryIndex}");
+        var depth = 0;
+
+        for (var j = 0; j < entry.Inners.Count; j++)
+        {
+            var inner = entry.Inners[j];
+            ImGui.PushID(j);
+
+            if (inner.Type == ScrEntryInnerType.EndIf && depth > 0)
+            {
+                depth--;
+            }
+
+            var first = true;
+            Token($"{j + 1,3}", ColorLineNumber, "Номер инструкции в секции (с 1): на него ссылаются переходы", ref first);
+            Token(new string(' ', depth * 4), ColorPlain, null, ref first, noSpace: true);
+
+            switch (inner.Type)
+            {
+                case ScrEntryInnerType.Execute:
+                    DrawExecute(inner, ref first);
+                    break;
+
+                case ScrEntryInnerType.Compare:
+                    Token("если", ColorKeyword, "Условие: следующие инструкции до «конец если» выполняются, только если оно истинно. Вложенные условия объединяются по И.", ref first);
+                    if (inner.Arguments.Count >= 2)
+                    {
+                        Variable(inner.Arguments[0], ref first);
+                        var op = inner.CompareOperator is >= 0 and < 6 ? CompareOperators[inner.CompareOperator] : $"op{inner.CompareOperator}";
+                        Token(op, ColorKeyword, $"Операция сравнения {inner.CompareOperator}: 0 <, 1 ==, 2 >, 3 <=, 4 >=, 5 !=\nDWORD сравнивается как целое, остальное - как float", ref first);
+                        Variable(inner.Arguments[1], ref first);
+                    }
+
+                    depth++;
+                    break;
+
+                case ScrEntryInnerType.EndIf:
+                    Token("конец если", ColorKeyword, "Закрывает ближайшее условие", ref first);
+                    break;
+
+                case ScrEntryInnerType.Nop:
+                    Token("пусто", ColorKeyword, "Ничего не делает (в данных игры встречается 9 раз)", ref first);
+                    break;
+
+                case ScrEntryInnerType.GotoInstruction:
+                    Token("перейти на инструкцию", ColorKeyword, "Продолжить выполнение секции с инструкции с указанным номером", ref first);
+                    var target = inner.Arguments.Count > 0 ? inner.Arguments[0] : -1;
+                    Token(target.ToString(), ColorNumber, "Номер инструкции в этой секции (с 1)", ref first);
+                    break;
+
+                case ScrEntryInnerType.GotoEntry:
+                    Token("перейти в секцию", ColorKeyword, "Начать выполнение другой секции с первой инструкции", ref first);
+                    var section = inner.Arguments.Count > 0 ? inner.Arguments[0] : -1;
+                    var sectionTitle = section >= 0 && section < scr.Entries.Count ? scr.Entries[section].Title : null;
+                    Token(
+                        sectionTitle is null ? section.ToString() : $"{section} \"{sectionTitle}\"",
+                        ColorNumber,
+                        sectionTitle is null ? "Номер секции (вне диапазона файла)" : $"Секция {section}: \"{sectionTitle}\", инструкций: {scr.Entries[section].InnerCount}",
+                        ref first);
+                    break;
+
+                case ScrEntryInnerType.Return:
+                    Token("вернуться", ColorKeyword, "Завершить секцию на этом тике. При следующем вызове она снова начнётся с первой инструкции.", ref first);
+                    break;
+
+                case ScrEntryInnerType.SetVarsetValue:
+                    Variable(inner.ResultVarIndex, ref first);
+                    Token("=", ColorPlain, null, ref first);
+                    Token(inner.ValueOrSourceVarIndex.ToString(), ColorNumber,
+                        "Записываемое значение: для переменной типа DWORD - целое число, для остальных типов - как float", ref first);
+                    break;
+
+                default:
+                    Token($"тип {(int) inner.Type}", ColorPlain, "Неизвестный тип инструкции", ref first);
+                    break;
+            }
+
+            ImGui.PopID();
+        }
+
+        ImGui.PopID();
+    }
+
+    private void DrawExecute(ScrEntryInner inner, ref bool first)
+    {
+        ScrActionSignature? signature = null;
+        if (inner.NativeActionIndex >= 0)
+        {
+            ScrActions.Signatures.TryGetValue(inner.NativeActionIndex, out signature);
+        }
+
+        if (inner.ResultVarIndex >= 0)
+        {
+            Variable(inner.ResultVarIndex, ref first);
+            Token("=", ColorPlain, "Результат записывается в эту переменную Varset", ref first);
+        }
+
+        if (inner.NativeActionIndex >= 0)
+        {
+            var known = ScrActions.Names.TryGetValue(inner.NativeActionIndex, out var n);
+            var name = known ? n! : $"action_{inner.NativeActionIndex}";
+            var hint = $"Встроенная функция ai.dll action_{inner.NativeActionIndex}" + (known ? "" : " (пока не разобрана)");
+            if (ScrActions.Signatures.TryGetValue(inner.NativeActionIndex, out var sig))
+            {
+                hint += sig.Arguments.Length == 0
+                    ? "\nАргументов нет"
+                    : "\nАргументы:" + string.Concat(sig.Arguments.Select((a, k) => $"\n  {k}: {a}"));
+                hint += "\nРезультат: " + (sig.Result ?? "нет");
+                if (sig.Arguments.Length != inner.ArgumentsCount)
+                {
+                    hint += $"\n(в этом вызове аргументов: {inner.ArgumentsCount})";
+                }
+            }
+            else
+            {
+                hint += $"\nАргументов в этом вызове: {inner.ArgumentsCount}";
+            }
+
+            Token(name, ColorFunction, hint, ref first);
+        }
+        else if (inner.ValueOrSourceVarIndex >= 0)
+        {
+            // копирование переменной
+            Variable(inner.ValueOrSourceVarIndex, ref first);
+            return;
+        }
+        else
+        {
+            DrawFormula(inner, ref first);
+            return;
+        }
+
+        Token("(", ColorPlain, null, ref first, noSpace: true);
+        for (var k = 0; k < inner.Arguments.Count; k++)
+        {
+            if (k > 0)
+            {
+                Token(",", ColorPlain, null, ref first, noSpace: true);
+            }
+
+            var role = signature is not null && k < signature.Arguments.Length ? signature.Arguments[k] : null;
+            Variable(inner.Arguments[k], ref first, argumentNumber: k, noSpace: k == 0, argumentRole: role);
+        }
+
+        Token(")", ColorPlain, null, ref first, noSpace: true);
+    }
+
+    /// <summary>Формула из .fml: выражение с подсвеченными переменными и числами; без .fml - заглушка <c>fml[N]</c>.</summary>
+    private void DrawFormula(ScrEntryInner inner, ref bool first)
+    {
+        var formulas = _viewModel.Fml?.Formulas;
+        if (formulas is null || inner.FmlFunctionIndex < 0 || inner.FmlFunctionIndex >= formulas.Count)
+        {
+            Token($"fml[{inner.FmlFunctionIndex}]", ColorFunction,
+                _viewModel.Fml is null
+                    ? $"Формула №{inner.FmlFunctionIndex} из одноимённого .fml, файл рядом с .scr не найден"
+                    : $"Формула №{inner.FmlFunctionIndex}: в .fml всего {formulas!.Count} формул", ref first);
+            return;
+        }
+
+        var expression = formulas[inner.FmlFunctionIndex].Expression;
+        var hint = $"Формула №{inner.FmlFunctionIndex} из .fml: {expression}";
+
+        var i = 0;
+        while (i < expression.Length)
+        {
+            var c = expression[i];
+            if (char.IsWhiteSpace(c))
+            {
+                i++;
+                continue;
+            }
+
+            int start = i;
+            if (char.IsLetter(c) || c == '_')
+            {
+                while (i < expression.Length && (char.IsLetterOrDigit(expression[i]) || expression[i] == '_'))
+                {
+                    i++;
+                }
+
+                var name = expression[start..i];
+                var index = _varsetViewModel.Items.FindIndex(v => v.Name == name);
+                var details = index >= 0
+                    ? $"Переменная Varset #{index}\nТип: {_varsetViewModel.Items[index].Type}\nЗначение по умолчанию: {_varsetViewModel.Items[index].Value}"
+                    : $"Переменная {name}" + (_varsetViewModel.Items.Count == 0 ? " (откройте varset.var, чтобы увидеть описание)" : " (в открытом varset.var не найдена)");
+                Token(name, ColorVariable, hint + "\n\n" + details,
+                    ref first);
+            }
+            else if (char.IsDigit(c) || c == '.')
+            {
+                while (i < expression.Length && (char.IsDigit(expression[i]) || expression[i] == '.'))
+                {
+                    i++;
+                }
+
+                Token(expression[start..i], ColorNumber, hint, ref first);
+            }
+            else
+            {
+                i++;
+                Token(c.ToString(), ColorFunction, hint, ref first);
+            }
+        }
+    }
+
+    /// <summary>Переменная Varset: имя, если varset.var открыт, иначе <c>var[N]</c>; подробности - в подсказке.</summary>
+    private void Variable(int index, ref bool first, int argumentNumber = -1, bool noSpace = false, string? argumentRole = null)
+    {
+        var items = _varsetViewModel.Items;
+        string text;
+        string hint;
+        if (index >= 0 && index < items.Count)
+        {
+            var item = items[index];
+            text = item.Name;
+            hint = $"Переменная Varset #{index}\nИмя: {item.Name}\nТип: {item.Type}\nЗначение по умолчанию: {item.Value}";
+        }
+        else if (index >= 0)
+        {
+            text = $"var[{index}]";
+            hint = items.Count == 0
+                ? $"Переменная Varset #{index}\nОткройте varset.var, чтобы увидеть имя"
+                : $"Переменная Varset #{index}: индекса нет в открытом varset.var ({items.Count} переменных)";
+        }
+        else
+        {
+            text = index.ToString();
+            hint = "Нет переменной (-1)";
+        }
+
+        if (argumentNumber >= 0)
+        {
+            hint = $"Аргумент {argumentNumber}" + (argumentRole is null ? "" : $": {argumentRole}") + "\n" + hint;
+        }
+
+        Token(text, ColorVariable, hint, ref first, noSpace);
+    }
+
+    private static void Token(string text, Vector4 color, string? hint, ref bool first, bool noSpace = false)
+    {
+        if (!first)
+        {
+            ImGui.SameLine(0, noSpace ? 0 : 6);
+        }
+
+        first = false;
+        ImGui.TextColored(color, text);
+        if (hint is not null)
+        {
+            Utils.ShowHint(hint);
+        }
+    }
+
+    private static void DrawTable(ScrEntry entry, int entryIndex)
+    {
+        ImGui.Text($"Индекс: {entry.Index}, кол-во элементов: {entry.InnerCount}");
+
+        if (ImGui.BeginTable($"Элементы##{entryIndex:0000}", 8, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoHostExtendX))
+        {
+            ImGui.TableSetupColumn("Встроенная функция");
+            ImGui.TableSetupColumn("Результат в переменную");
+            ImGui.TableSetupColumn("Значение / источник");
+            ImGui.TableSetupColumn("Тип действия");
+            ImGui.TableSetupColumn("Операция сравнения");
+            ImGui.TableSetupColumn("Кол-во аргументов");
+            ImGui.TableSetupColumn("Аргументы");
+            ImGui.TableSetupColumn("Формула .fml");
+            ImGui.TableHeadersRow();
+
+            for (var j = 0; j < entry.Inners.Count; j++)
+            {
+                var inner = entry.Inners[j];
+                ImGui.TableNextRow();
+                ImGui.TableNextColumn();
+                ImGui.Text(ScrActions.Describe(inner.NativeActionIndex));
+
+                ImGui.TableNextColumn();
+                ImGui.Text(inner.ResultVarIndex.ToString());
+                ImGui.TableNextColumn();
+                ImGui.Text(inner.ValueOrSourceVarIndex.ToString());
+                ImGui.TableNextColumn();
+                ImGui.Text($"{(int) inner.Type}: {inner.Type:G}");
+                if (inner.Type == ScrEntryInnerType.Compare)
+                {
+                    Utils.ShowHint("Сравнение двух переменных Varset (аргументы), операция в CompareOperator: 0 <, 1 ==, 2 >, 3 <=, 4 >=, 5 !=");
+                }
+
+                if (inner.Type == ScrEntryInnerType.Return)
+                {
+                    Utils.ShowHint("Return: если условия выполнены, секция на этом тике завершается");
+                }
+
+                if (inner.Type == ScrEntryInnerType.SetVarsetValue)
+                {
+                    Utils.ShowHint("Записать в переменную Varset ResultVarIndex значение ValueOrSourceVarIndex");
+                }
+
+                ImGui.TableNextColumn();
+                ImGui.Text(inner.CompareOperator.ToString());
+                ImGui.TableNextColumn();
+                ImGui.Text(inner.ArgumentsCount.ToString());
+                ImGui.TableNextColumn();
+                foreach (var argument in inner.Arguments)
+                {
+                    ImGui.Button($"{argument}##{j}_{argument}");
+                    ImGui.SameLine();
+                }
+
+                ImGui.TableNextColumn();
+                ImGui.Text(inner.FmlFunctionIndex.ToString());
+            }
+
+            ImGui.EndTable();
         }
     }
 }
