@@ -1,87 +1,64 @@
-using System.Text;
 using Common;
 
 namespace ControlLib;
 
 /// <summary>
-/// Тип записи агента (4CC типа ресурса в NRes archive objects.rlb / fortif.rlb).
-/// Значения совпадают с AgentType в CAgent::try_load (AniMesh.dll).
+/// Запись агента (<c>objects.rlb</c>, <c>fortif.rlb</c>): массив 64-байтных ссылок на ресурсы объекта (32 байта имя архива и 32 байта имя ресурса).
+/// Раскладка подтверждена по <c>CAgent::try_load</c> и по всем записям <c>objects.rlb</c>. Читает <c>LoadAgent</c> (AniMesh.dll).
 /// </summary>
-public enum AgentRecordType : uint
-{
-    /// <summary>Юнит (робот / животное / здание-ангар). 7 ссылок (448 B) либо 5 ссылок (320 B) у зданий fortif.rlb.</summary>
-    Btlu = 0x554C5442,   // "BTLU"
-    /// <summary>Снаряд. 5 ссылок (320 B).</summary>
-    Bull = 0x4C4C5542,   // "BULL"
-    /// <summary>Оружие (корневое). 5 ссылок (320 B).</summary>
-    Wpns = 0x534E5057,   // "WPNS"
-    /// <summary>Статический объект. 6 ссылок (384 B), шестая всегда пустая.</summary>
-    Stat = 0x54415453,   // "STAT"
-    /// <summary>Внутренний элемент (INTO). 5 ссылок (320 B), грузится как приставка к родителю.</summary>
-    Into = 0x4F544E49,   // "INTO"
-    /// <summary>Внешний элемент (EXTO, турель / орудие / деталь). 5 ссылок (320 B).</summary>
-    Exto = 0x4F545845,   // "EXTO"
-    /// <summary>Укрепление: ссылка на BTLU-здание и на BASE (.bas). 2 ссылки (128 B).</summary>
-    Fort = 0x54524F46,   // "FORT"
-    /// <summary>Солнце: ссылка на .sun (system.rlb) и на образ (FXID effects.rlb). 2 ссылки (128 B).</summary>
-    Suno = 0x4F4E5553,   // "SUNO"
-}
-
-/// <summary>Роль ссылки по индексу внутри записи агента (для типов BTLU/BULL/WPNS/STAT/INTO/EXTO).</summary>
-public enum AgentRefRole
-{
-    Mesh = 0,        // MSH (тип NRes MESH)
-    Wear = 1,        // WEA (WEAR, материалы)
-    ControlPoints = 2, // CPT (CTPT)
-    Damage = 3,      // NDP (NDPR)
-    Control = 4,     // CTL (CTLD)
-    Behavior = 5,    // behpsp.res / *.var  (только BTLU 448 B; не NRes-ресурс)
-    ManTable = 6,    // *.tbl в корне игры (только BTLU 448 B); имя архива испорчено (первый байт = 0)
-}
-
-/// <summary>
-/// Запись агента: массив 64-байтных ссылок (32 байта имя архива + 32 байта имя ресурса).
-/// Раскладка подтверждена по CAgent::try_load и по всем записям objects.rlb.
-/// </summary>
+/// <param name="Type">Тип записи (4CC типа NRes), определяет число ссылок и их роли.</param>
+/// <param name="Name">Имя записи в архиве (<c>r_b_02</c>, <c>bb_l_01</c>, <c>s_stone_04</c> ...).</param>
+/// <param name="Refs">Ссылки в порядке следования; роль задаёт <see cref="AgentRefRole"/> (для FORT и SUNO порядок другой).</param>
 public sealed record AgentRecord(AgentRecordType Type, string Name, IReadOnlyList<ResourceNamedRef> Refs)
 {
-    public const int RefSize = 64;
+    /// <summary>Размер одной ссылки в байтах.</summary>
+    public const int RefSize = ResourceNamedRef.Size;
 
+    /// <summary>Меш MSH (роль <see cref="AgentRefRole.Mesh"/>).</summary>
     public ResourceNamedRef Mesh => Get(AgentRefRole.Mesh);
+
+    /// <summary>Набор материалов WEA (роль <see cref="AgentRefRole.Wear"/>).</summary>
     public ResourceNamedRef Wear => Get(AgentRefRole.Wear);
+
+    /// <summary>Контрольные точки CPT (роль <see cref="AgentRefRole.ControlPoints"/>).</summary>
     public ResourceNamedRef ControlPoints => Get(AgentRefRole.ControlPoints);
+
+    /// <summary>Повреждения NDP (роль <see cref="AgentRefRole.Damage"/>).</summary>
     public ResourceNamedRef Damage => Get(AgentRefRole.Damage);
+
+    /// <summary>Управление CTL (роль <see cref="AgentRefRole.Control"/>).</summary>
     public ResourceNamedRef Control => Get(AgentRefRole.Control);
+
+    /// <summary>Поведение (роль <see cref="AgentRefRole.Behavior"/>), только у BTLU размером 448 байт.</summary>
     public ResourceNamedRef Behavior => Get(AgentRefRole.Behavior);
+
+    /// <summary>Таблица <c>*.tbl</c> (роль <see cref="AgentRefRole.ManTable"/>), только у BTLU размером 448 байт.</summary>
     public ResourceNamedRef ManTable => Get(AgentRefRole.ManTable);
 
-    /// <summary>FORT: ссылка на BTLU-здание (objects.rlb).</summary>
+    /// <summary>FORT: ссылка на BTLU-здание (<c>objects.rlb</c>).</summary>
     public ResourceNamedRef FortBuilding => Type == AgentRecordType.Fort ? Refs[0] : default;
-    /// <summary>FORT: ссылка на BASE (.bas) в fortif.rlb.</summary>
+
+    /// <summary>FORT: ссылка на BASE (<c>.bas</c>) в <c>fortif.rlb</c>.</summary>
     public ResourceNamedRef FortBase => Type == AgentRecordType.Fort ? Refs[1] : default;
 
     private ResourceNamedRef Get(AgentRefRole role) =>
         Type is AgentRecordType.Fort or AgentRecordType.Suno || (int)role >= Refs.Count ? default : Refs[(int)role];
 
-    /// <summary>Разбор данных записи (после NRes-разворота, без заголовка).</summary>
+    /// <summary>Разбирает данные записи (после разворота NRes, без заголовка).</summary>
+    /// <param name="type">Тип записи.</param>
+    /// <param name="name">Имя записи.</param>
+    /// <param name="data">Содержимое записи: целое число 64-байтных ссылок.</param>
+    /// <exception cref="ControlReadException">Размер не кратен 64 или равен нулю.</exception>
     public static AgentRecord Parse(AgentRecordType type, string name, ReadOnlySpan<byte> data)
     {
         if (data.Length == 0 || data.Length % RefSize != 0)
             throw new ControlReadException($"Agent record '{name}' has invalid size {data.Length} (must be a multiple of {RefSize}).");
 
-        int count = data.Length / RefSize;
+        var count = data.Length / RefSize;
         var refs = new List<ResourceNamedRef>(count);
-        for (int i = 0; i < count; i++)
-        {
-            var slice = data.Slice(i * RefSize, RefSize);
-            refs.Add(new ResourceNamedRef(ReadCString(slice[..32]), ReadCString(slice[32..])));
-        }
-        return new AgentRecord(type, name, refs);
-    }
+        for (var i = 0; i < count; i++)
+            refs.Add(ResourceNamedRef.Read(data.Slice(i * RefSize, RefSize)));
 
-    private static string ReadCString(ReadOnlySpan<byte> raw)
-    {
-        int nul = raw.IndexOf((byte)0);
-        return Encoding.ASCII.GetString(nul >= 0 ? raw[..nul] : raw);
+        return new AgentRecord(type, name, refs);
     }
 }

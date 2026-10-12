@@ -18,7 +18,7 @@ public static class MaterialParser
         var blendMode = (MaterialBlendMode)(elementCount >> 2 & 0xf);
         var supportsBumpMapping = (elementCount & 2) != 0;
 
-        // Reading content
+        // Чтение содержимого.
         var stageCount = fs.ReadUInt16LittleEndian();
         var animCount = fs.ReadUInt16LittleEndian();
 
@@ -152,7 +152,7 @@ public static class MaterialParser
     /// <summary>Описание маски интерполяции для интерфейса.</summary>
     private static string ComputeTargetDescription(AnimationTarget target)
     {
-        // Precompute the description once during parsing
+        // Описание вычисляется один раз при разборе.
         if ((int)target == 0)
             return "Без интерполяции - вся стадия копируется как есть (Flags: 0x0)";
         

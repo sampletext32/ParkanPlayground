@@ -4,7 +4,7 @@
 Адреса даны для `Control.dll` (image base `0x10000000`), если не указана другая библиотека. Статус утверждений:
 **проверено** (по коду и данным), **гипотеза** (данные согласуются, кода нет), **не выяснено**.
 
-Код ридеров: `ControlResourceReaders.cs` (`CtlFile`, `CptFile`, `NdpFile`), `AgentRecord.cs`, `ControlResourceDump.cs`.
+Код ридеров: `ControlResourceReader.cs` (`CtlFile`, `CptFile`, `NdpFile`), `AgentRecord.cs`; дамп ресурсов - `ParkanPlayground/ControlResourceDump.cs`.
 
 ## Содержание
 
