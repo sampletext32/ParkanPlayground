@@ -1,5 +1,9 @@
 # ResTreeLib: дерево исследований (`.trf`)
 
+![Research Tree Explorer: узлы дерева исследований, условия и что они открывают](../docs/images/research-tree.png)
+*Research Tree Explorer: узлы дерева исследований, условия и что они открывают*
+
+
 `.trf` - NRes-архив с деревом исследований клана; файлы лежат в `MISSIONS/SCRIPTS` (49 штук, имя клана миссии указывает на нужный `.trf`: `auto.trf`, `data.trf`,
 `full.trf`...; путь хранится в `ClanInfo.ResearchNResPath` файла миссии). Парсер: `ResTreeParser.Parse` → `List<ResearchNodeData>`.
 

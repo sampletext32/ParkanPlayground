@@ -1,5 +1,9 @@
 # MaterialLib: материалы, наборы (WEA), текстуры
 
+![Material Explorer: материал `B_PG3` - поля MAT0 в порядке чтения из файла](../docs/images/material-explorer.png)
+*Material Explorer: материал `B_PG3` - поля MAT0 в порядке чтения из файла*
+
+
 Что делает `MatManager` (World3D.dll) и как игра использует данные `Material.lib`, `Textures.lib`, `lightmap.lib`, `.wea`.
 Адреса относятся к World3D.dll (база 0x10000000), если не сказано иное. Имена и структуры - в проекте Ghidra.
 

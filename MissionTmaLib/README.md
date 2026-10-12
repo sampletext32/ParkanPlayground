@@ -1,5 +1,9 @@
 # MissionTmaLib: файл миссии (`.tma`)
 
+![Mission TMA Explorer: ареалы, кланы и объекты миссии `data.tma`](../docs/images/mission-tma.png)
+*Mission TMA Explorer: ареалы, кланы и объекты миссии `data.tma`*
+
+
 `.tma` (например `data.tma` каталога миссии) содержит данные миссии: ареалы, кланы и объекты. Парсер: `MissionTmaParser.ReadFile` → `MissionTmaParseResult`
 (`MissionTma` + сообщение об ошибке). Игра читает файл в `MisLoad.dll`; порядок загрузки миссии описан в корневом [README.md](../README.md) (раздел «Как работает игра»).
 

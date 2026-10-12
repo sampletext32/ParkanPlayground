@@ -1,5 +1,9 @@
 # CpDatLib: схемы объектов (`.dat`)
 
+![cp .dat Scheme Explorer: дерево частей малого бункера и таблица элементов](../docs/images/cp-scheme.png)
+*cp .dat Scheme Explorer: дерево частей малого бункера и таблица элементов*
+
+
 Схема `cp` (`.dat` в `UNITS\\...`) - дерево частей объекта: шасси, башни, орудия, броня, боеприпасы. Из неё игра узнаёт, какие ресурсы (MSH, CPT, NDP, CTL)
 загрузить и как присоединить друг к другу. Парсер: `CpDatParser` → `CpDatScheme` (`SchemeType` корня и дерево `CpDatEntry` с типом узла `DatEntryType`:
 `Chassis`, `Turret`, `Armour`, `Part`, `Cannon`, `Ammo`).

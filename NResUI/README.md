@@ -45,3 +45,39 @@ dotnet run --project NResUI -c Release
 | cp .dat Scheme Explorer | дерево частей объекта | [CpDatLib](../CpDatLib/README.md) |
 | Research Tree Explorer (trf) | узлы исследований и зависимости | [ResTreeLib](../ResTreeLib/README.md) |
 | Binary Explorer | просмотр произвольных байтов | - |
+
+## Скриншоты
+
+![Effect Player: эффект `engine_mis_b`, окна активности компонентов и параметры вида](../docs/images/effect-player.png)
+*Effect Player: эффект `engine_mis_b`, окна активности компонентов и параметры вида*
+
+![Weapon Viewer: выстрел орудия `o_gun_ba_21` - модель, вспышка, снаряд, взрыв](../docs/images/weapon-viewer.png)
+*Weapon Viewer: выстрел орудия `o_gun_ba_21` - модель, вспышка, снаряд, взрыв*
+
+![Material Explorer: материал `B_PG3` - поля MAT0 в порядке чтения из файла](../docs/images/material-explorer.png)
+*Material Explorer: материал `B_PG3` - поля MAT0 в порядке чтения из файла*
+
+![SCR Explorer: секции скрипта ИИ, инструкции и названия встроенных функций](../docs/images/scr-explorer.png)
+*SCR Explorer: секции скрипта ИИ, инструкции и названия встроенных функций*
+
+![Viewport: здание (`43_fr_l_plant.msh`) с текстурами из набора материалов](../docs/images/viewport.png)
+*Viewport: здание (`43_fr_l_plant.msh`) с текстурами из набора материалов*
+
+![Инспектор меша и Viewport: робот `6_MESH_R_L_03.msh`, дерево деталей, состояния и LOD](../docs/images/mesh-inspector.png)
+*Инспектор меша и Viewport: робот `6_MESH_R_L_03.msh`, дерево деталей, состояния и LOD*
+
+![Mission TMA Explorer: ареалы, кланы и объекты миссии `data.tma`](../docs/images/mission-tma.png)
+*Mission TMA Explorer: ареалы, кланы и объекты миссии `data.tma`*
+
+![VARSET Explorer: переменные и константы `MISSIONS/SCRIPTS/varset.var`](../docs/images/varset.png)
+*VARSET Explorer: переменные и константы `MISSIONS/SCRIPTS/varset.var`*
+
+![cp .dat Scheme Explorer: дерево частей малого бункера и таблица элементов](../docs/images/cp-scheme.png)
+*cp .dat Scheme Explorer: дерево частей малого бункера и таблица элементов*
+
+![Research Tree Explorer: узлы дерева исследований, условия и что они открывают](../docs/images/research-tree.png)
+*Research Tree Explorer: узлы дерева исследований, условия и что они открывают*
+
+![TEXM Explorer: текстура `EFFECT5.0` с раскладкой атласа страниц](../docs/images/texm-explorer.png)
+*TEXM Explorer: текстура `EFFECT5.0` с раскладкой атласа страниц*
+

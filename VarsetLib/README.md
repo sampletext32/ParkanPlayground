@@ -1,5 +1,9 @@
 # VarsetLib: наборы переменных (`.var`)
 
+![VARSET Explorer: переменные и константы `MISSIONS/SCRIPTS/varset.var`](../docs/images/varset.png)
+*VARSET Explorer: переменные и константы `MISSIONS/SCRIPTS/varset.var`*
+
+
 Игра хранит именованные переменные с типами в двух видах:
 
 | Вид | Где в игре | Парсер |

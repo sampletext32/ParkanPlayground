@@ -1,5 +1,9 @@
 # TexmLib: текстуры TEXM
 
+![TEXM Explorer: текстура `EFFECT5.0` с раскладкой атласа страниц](../docs/images/texm-explorer.png)
+*TEXM Explorer: текстура `EFFECT5.0` с раскладкой атласа страниц*
+
+
 `TEXM` - формат текстур игры (в NRes-архивах `Textures.lib`, `lightmap.lib`, `ui.lib`, `font.lib`; тип элемента `TEXM`). Парсер: `TexmParser.ReadFromStream` →
 `TexmParseResult` (`TexmFile` + сообщение об ошибке).
 

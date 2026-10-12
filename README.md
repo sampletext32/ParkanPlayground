@@ -28,6 +28,22 @@
 | разобраться в ИИ и скриптах миссий | [ScrLib/README.md](ScrLib/README.md) |
 | продолжить реверс | «Не выяснено» и «Чего нет в данных» в README [ControlLib](ControlLib/README.md) и [MaterialLib](MaterialLib/README.md); [глоссарий](docs/GLOSSARY.md) |
 
+## Как это выглядит
+
+Панели приложения [NResUI](NResUI/README.md) (все скриншоты - в его README):
+
+![Effect Player: эффект `engine_mis_b`, окна активности компонентов и параметры вида](docs/images/effect-player.png)
+*Effect Player: эффект `engine_mis_b`, окна активности компонентов и параметры вида*
+
+![Weapon Viewer: выстрел орудия `o_gun_ba_21` - модель, вспышка, снаряд, взрыв](docs/images/weapon-viewer.png)
+*Weapon Viewer: выстрел орудия `o_gun_ba_21` - модель, вспышка, снаряд, взрыв*
+
+![Инспектор меша и Viewport: робот `6_MESH_R_L_03.msh`, дерево деталей, состояния и LOD](docs/images/mesh-inspector.png)
+*Инспектор меша и Viewport: робот `6_MESH_R_L_03.msh`, дерево деталей, состояния и LOD*
+
+![SCR Explorer: секции скрипта ИИ, инструкции и названия встроенных функций](docs/images/scr-explorer.png)
+*SCR Explorer: секции скрипта ИИ, инструкции и названия встроенных функций*
+
 ## Сборка проекта
 
 Проект написан на C# под `.NET 9`. Достаточно `dotnet build ParkanPlayground.slnx` для сборки всех проектов; приложения кросс-платформенные, включая UI.
