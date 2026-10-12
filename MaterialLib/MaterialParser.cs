@@ -2,8 +2,17 @@ using Common;
 
 namespace MaterialLib;
 
+/// <summary>
+/// Разбор содержимого материала MAT0 (<c>MatManager::LoadMaterialByName</c>, World3D.dll). Метаданные NRes
+/// (версия и <c>Magic1</c>) в содержимом отсутствуют и передаются отдельно.
+/// </summary>
 public static class MaterialParser
 {
+    /// <summary>Читает материал из потока, установленного на начало содержимого элемента.</summary>
+    /// <param name="fs">Поток с содержимым материала.</param>
+    /// <param name="fileName">Имя материала из метаданных NRes.</param>
+    /// <param name="elementCount">attr1 метаданных NRes (<see cref="MaterialFile.Version"/>).</param>
+    /// <param name="magic1">attr2 метаданных NRes (<see cref="MaterialFile.Magic1"/>).</param>
     public static MaterialFile ReadFromStream(Stream fs, string fileName, uint elementCount, int magic1)
     {
         var blendMode = (MaterialBlendMode)(elementCount >> 2 & 0xf);
@@ -140,6 +149,7 @@ public static class MaterialParser
             animations);
     }
     
+    /// <summary>Описание маски интерполяции для интерфейса.</summary>
     private static string ComputeTargetDescription(AnimationTarget target)
     {
         // Precompute the description once during parsing
@@ -157,7 +167,7 @@ public static class MaterialParser
         if ((target & AnimationTarget.Emissive) != 0)
             parts.Add("Emissive RGB");
         if ((target & AnimationTarget.Power) != 0)
-            parts.Add("Ambient.A + Power");
+            parts.Add("Ambient.A");
             
         return $"Интерполируется: {string.Join(", ", parts)} | Остальные компоненты копируются (Flags: 0x{(int)target:X})";
     }
