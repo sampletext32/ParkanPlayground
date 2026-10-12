@@ -7,6 +7,13 @@ using NResLib;
 using WeaLib;
 
 System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+
+// dotnet run --project ParkanPlayground -- scr-dump <MISSIONS/SCRIPTS> <куда писать>
+if (args is ["scr-dump", var scriptsDir, var dumpDir])
+{
+    ScrDump.Run(scriptsDir, dumpDir);
+    return;
+}
 //
 // var ctl = ControlResourceReader.ReadCtlFile("E:\\ParkanUnpacked\\bases.rlb\\2_CTLD_r_l_03.ctl");
 // var cpt = ControlResourceReader.ReadCptFile("E:\\ParkanUnpacked\\bases.rlb\\18_CTPT_R_L_03.CPT");

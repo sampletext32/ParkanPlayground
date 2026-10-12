@@ -6,6 +6,7 @@
 | Файл | Назначение |
 |---|---|
 | `Program.cs` | текущий эксперимент (часть кода закомментирована) |
+| `ScrDump.cs` | дамп скриптов в `docs/scripts`: `dotnet run --project ParkanPlayground -- scr-dump <MISSIONS/SCRIPTS> docs/scripts` |
 | `ControlResourceDump.cs` | текстовый дамп CTL/CPT/NDP (раньше был в `ControlLib`) |
 | `from_ghidra/*.c` | выгрузки декомпиляции Ghidra, на которые ссылаются заметки (`CLandscape_ctor.c`, `IMesh2_of_CLandscape_Render.c`...) |
 

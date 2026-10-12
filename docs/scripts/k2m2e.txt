@@ -1,0 +1,366 @@
+// k2m2e.scr: секций 24, magic 59
+// Формат строки: <номер инструкции с 1>: <действие>   ; <исходные поля: act res val type cmp args fml>
+// act - NativeActionIndex (action_N в ai.dll), res - ResultVarIndex, val - ValueOrSourceVarIndex, type - ScrEntryInnerType, cmp - CompareOperator, fml - FmlFunctionIndex
+
+== Секция 0 "PBM_N_OPTIMAL_TRANSPORT_Start" (Index=0, инструкций 18)
+   1: dTemp = action_14 FindNearestUnitOfType(UNIT_ANY_UNIT, ROBOT_TRANSPORT)   ; act=14 res=171 val=-1 type=-1 cmp=6 args=[149,115] fml=-1
+   2: if dTemp == ERROR   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[171,156] fml=-1
+   3:     fTemp = action_12 GetCurrentProblemPriority()   ; act=12 res=158 val=-1 type=-1 cmp=6 args=[] fml=-1
+   4:     fTemp = fTemp + 0.0001   ; act=-1 res=158 val=-1 type=-1 cmp=6 args=[] fml=0
+   5:     dTemp1 = 25   ; act=-1 res=172 val=-1 type=-1 cmp=6 args=[] fml=1
+   6:     dTemp2 = 24   ; act=-1 res=173 val=-1 type=-1 cmp=6 args=[] fml=2
+   7:     action_2 RequestUnitsForProblem(PBM_ROBOT_NEEDED, fTemp, dTemp1, dTemp2, ROBOT_TRANSPORT, NONE, SELECT_SMALLEST)   ; act=2 res=-1 val=-1 type=-1 cmp=6 args=[55,158,172,173,115,153,132] fml=-1
+   8:     return   ; act=-1 res=-1 val=-1 type=5 cmp=6 args=[] fml=-1
+   9: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  10: fSuccess = 0.7   ; act=-1 res=165 val=-1 type=-1 cmp=6 args=[] fml=3
+  11: fSurvive = 0.5   ; act=-1 res=166 val=-1 type=-1 cmp=6 args=[] fml=4
+  12: fTime = 0.8   ; act=-1 res=167 val=-1 type=-1 cmp=6 args=[] fml=5
+  13: fIndependence = 0.5   ; act=-1 res=168 val=-1 type=-1 cmp=6 args=[] fml=4
+  14: dTemp1 = ERROR   ; act=-1 res=172 val=156 type=-1 cmp=6 args=[] fml=-1
+  15: action_6 SetUnitCriticalStatus(dTemp, UNIT_NORMAL)   ; act=6 res=-1 val=-1 type=-1 cmp=6 args=[171,145] fml=-1
+  16: action_15 IssueOrderToUnit(dTemp, ORDER_ROBOT_TRANSPORT, INSERT_ORDER_REPLACE, dTemp1, fSuccess, fSurvive, fTime, fIndependence, TARGET_NOT_DEFINED)   ; act=15 res=-1 val=-1 type=-1 cmp=6 args=[171,78,100,172,165,166,167,168,96] fml=-1
+  17: action_8 SetCurrentProblemStatus(ST_SOLVING)   ; act=8 res=-1 val=-1 type=-1 cmp=6 args=[134] fml=-1
+  18: action_27 AddExpression(ACTION_NOTHING_DOING, EXP_TARGET_BY_LOGIC_ID, dTemp)   ; act=27 res=-1 val=-1 type=-1 cmp=6 args=[45,42,171] fml=-1
+
+== Секция 1 "PBM_N_OPTIMAL_TRANSPORT_Continue" (Index=1, инструкций 0)
+
+== Секция 2 "PBM_BUILDING_INF_CAPTURE_Start" (Index=2, инструкций 41)
+   1: dX = action_29 GetCurrentProblemField(d0)   ; act=29 res=216 val=-1 type=-1 cmp=6 args=[10] fml=-1
+   2: dT = action_14 FindNearestUnitOfType(UNIT_ANY_CAPTURER, ROBOT_BATTLEUNIT)   ; act=14 res=177 val=-1 type=-1 cmp=6 args=[150,117] fml=-1
+   3: if dT == ERROR   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[177,156] fml=-1
+   4:     fTemp = action_12 GetCurrentProblemPriority()   ; act=12 res=158 val=-1 type=-1 cmp=6 args=[] fml=-1
+   5:     fTemp = fTemp + 0.00001   ; act=-1 res=158 val=-1 type=-1 cmp=6 args=[] fml=7
+   6:     dTemp1 = 25   ; act=-1 res=172 val=-1 type=-1 cmp=6 args=[] fml=1
+   7:     dTemp2 = 24   ; act=-1 res=173 val=-1 type=-1 cmp=6 args=[] fml=2
+   8:     action_2 RequestUnitsForProblem(PBM_ROBOT_NEEDED, fTemp, dTemp1, dTemp2, ROBOT_BATTLEUNIT, NONE, SELECT_SMALLEST)   ; act=2 res=-1 val=-1 type=-1 cmp=6 args=[55,158,172,173,117,153,132] fml=-1
+   9:     return   ; act=-1 res=-1 val=-1 type=5 cmp=6 args=[] fml=-1
+  10: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  11: fSuccess = 1.0   ; act=-1 res=165 val=-1 type=-1 cmp=6 args=[] fml=10
+  12: fSurvive = 0.5   ; act=-1 res=166 val=-1 type=-1 cmp=6 args=[] fml=4
+  13: fTime = 0.0   ; act=-1 res=167 val=-1 type=-1 cmp=6 args=[] fml=12
+  14: fIndependence = 0.5   ; act=-1 res=168 val=-1 type=-1 cmp=6 args=[] fml=4
+  15: action_15 IssueOrderToUnit(dT, ORDER_ROBOT_CAPTURE, INSERT_ORDER_REPLACE, NONE, fSuccess, fSurvive, fTime, fIndependence, TARGET_BY_LOGIC_ID, dX)   ; act=15 res=-1 val=-1 type=-1 cmp=6 args=[177,82,100,153,165,166,167,168,93,216] fml=-1
+  16: action_6 SetUnitCriticalStatus(dT, UNIT_NORMAL)   ; act=6 res=-1 val=-1 type=-1 cmp=6 args=[177,145] fml=-1
+  17: dTemp3 = action_29 GetCurrentProblemField(d2)   ; act=29 res=174 val=-1 type=-1 cmp=6 args=[12] fml=-1
+  18: dT3 = dTemp3   ; act=-1 res=181 val=174 type=-1 cmp=6 args=[] fml=-1
+  19: dAttackGroup = action_25 CreateGroup(TAKE_BY_HITS, dTemp3)   ; act=25 res=204 val=-1 type=-1 cmp=6 args=[143,174] fml=-1
+  20: if dAttackGroup == ERROR   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[204,156] fml=-1
+  21:     return   ; act=-1 res=-1 val=-1 type=5 cmp=6 args=[] fml=-1
+  22: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  23: if dTemp3 < dT3   ; act=-1 res=-1 val=-1 type=0 cmp=0 args=[174,181] fml=-1
+  24:     action_7 DeleteCurrentProblem()   ; act=7 res=-1 val=-1 type=-1 cmp=6 args=[] fml=-1
+  25:     if dFreeMindNumber > d0   ; act=-1 res=-1 val=-1 type=0 cmp=2 args=[212,10] fml=-1
+  26:         fTemp = action_12 GetCurrentProblemPriority()   ; act=12 res=158 val=-1 type=-1 cmp=6 args=[] fml=-1
+  27:         fTemp = fTemp + 0.00001   ; act=-1 res=158 val=-1 type=-1 cmp=6 args=[] fml=7
+  28:         dTemp1 = 5   ; act=-1 res=172 val=-1 type=-1 cmp=6 args=[] fml=15
+  29:         dTemp2 = 2   ; act=-1 res=173 val=-1 type=-1 cmp=6 args=[] fml=16
+  30:         action_2 RequestUnitsForProblem(PBM_ROBOT_NEEDED, fTemp, dTemp1, dTemp2, ROBOT_BATTLEUNIT, NONE, SELECT_BEST_COMBAT)   ; act=2 res=-1 val=-1 type=-1 cmp=6 args=[55,158,172,173,117,153,131] fml=-1
+  31:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  32:     return   ; act=-1 res=-1 val=-1 type=5 cmp=6 args=[] fml=-1
+  33: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  34: fSuccess = 1.0   ; act=-1 res=165 val=-1 type=-1 cmp=6 args=[] fml=10
+  35: fSurvive = 0.3   ; act=-1 res=166 val=-1 type=-1 cmp=6 args=[] fml=18
+  36: fTime = 0.0   ; act=-1 res=167 val=-1 type=-1 cmp=6 args=[] fml=12
+  37: fIndependence = 0.3   ; act=-1 res=168 val=-1 type=-1 cmp=6 args=[] fml=18
+  38: action_28 IssueOrderToGroup(dAttackGroup, ORDER_ROBOT_PATROL, INSERT_ORDER_REPLACE, NONE, fSuccess, fSurvive, fTime, fIndependence, TARGET_BY_LOGIC_ID, dT)   ; act=28 res=-1 val=-1 type=-1 cmp=6 args=[204,76,100,153,165,166,167,168,93,177] fml=-1
+  39: action_27 AddExpression(ACTION_DESTROY, EXP_TARGET_BY_LOGIC_ID, dX)   ; act=27 res=-1 val=-1 type=-1 cmp=6 args=[44,42,216] fml=-1
+  40: action_27 AddExpression(ACTION_CAPTURE_BUILDING, EXP_TARGET_BY_LOGIC_ID, dX)   ; act=27 res=-1 val=-1 type=-1 cmp=6 args=[46,42,216] fml=-1
+  41: action_8 SetCurrentProblemStatus(ST_SOLVING)   ; act=8 res=-1 val=-1 type=-1 cmp=6 args=[134] fml=-1
+
+== Секция 3 "PBM_BUILDING_INF_CAPTURE_Continue" (Index=3, инструкций 41)
+   1: dT = action_50 GetUnitFromProblem(ORDER_ROBOT_CAPTURE)   ; act=50 res=177 val=-1 type=-1 cmp=6 args=[82] fml=-1
+   2: if dT != ERROR   ; act=-1 res=-1 val=-1 type=0 cmp=5 args=[177,156] fml=-1
+   3:     return   ; act=-1 res=-1 val=-1 type=5 cmp=6 args=[] fml=-1
+   4: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+   5: action_7 DeleteCurrentProblem()   ; act=7 res=-1 val=-1 type=-1 cmp=6 args=[] fml=-1
+   6: dX = action_29 GetCurrentProblemField(d0)   ; act=29 res=216 val=-1 type=-1 cmp=6 args=[10] fml=-1
+   7: dT = action_14 FindNearestUnitOfType(UNIT_ANY_CAPTURER, ROBOT_BATTLEUNIT)   ; act=14 res=177 val=-1 type=-1 cmp=6 args=[150,117] fml=-1
+   8: if dT == ERROR   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[177,156] fml=-1
+   9:     fTemp = action_12 GetCurrentProblemPriority()   ; act=12 res=158 val=-1 type=-1 cmp=6 args=[] fml=-1
+  10:     fTemp = fTemp + 0.00001   ; act=-1 res=158 val=-1 type=-1 cmp=6 args=[] fml=7
+  11:     dTemp1 = 25   ; act=-1 res=172 val=-1 type=-1 cmp=6 args=[] fml=1
+  12:     dTemp2 = 24   ; act=-1 res=173 val=-1 type=-1 cmp=6 args=[] fml=2
+  13:     action_2 RequestUnitsForProblem(PBM_ROBOT_NEEDED, fTemp, dTemp1, dTemp2, ROBOT_BATTLEUNIT, NONE, SELECT_SMALLEST)   ; act=2 res=-1 val=-1 type=-1 cmp=6 args=[55,158,172,173,117,153,132] fml=-1
+  14:     return   ; act=-1 res=-1 val=-1 type=5 cmp=6 args=[] fml=-1
+  15: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  16: fSuccess = 1.0   ; act=-1 res=165 val=-1 type=-1 cmp=6 args=[] fml=10
+  17: fSurvive = 0.5   ; act=-1 res=166 val=-1 type=-1 cmp=6 args=[] fml=4
+  18: fTime = 0.0   ; act=-1 res=167 val=-1 type=-1 cmp=6 args=[] fml=12
+  19: fIndependence = 0.5   ; act=-1 res=168 val=-1 type=-1 cmp=6 args=[] fml=4
+  20: action_15 IssueOrderToUnit(dT, ORDER_ROBOT_CAPTURE, INSERT_ORDER_REPLACE, NONE, fSuccess, fSurvive, fTime, fIndependence, TARGET_BY_LOGIC_ID, dX)   ; act=15 res=-1 val=-1 type=-1 cmp=6 args=[177,82,100,153,165,166,167,168,93,216] fml=-1
+  21: action_6 SetUnitCriticalStatus(dT, UNIT_NORMAL)   ; act=6 res=-1 val=-1 type=-1 cmp=6 args=[177,145] fml=-1
+  22: fT = 300   ; act=-1 res=164 val=-1 type=-1 cmp=6 args=[] fml=28
+  23: dTemp3 = action_44 CalcWeightAroundPoint(fT, ERROR, TARGET_BY_LOGIC_ID, dX)   ; act=44 res=174 val=-1 type=-1 cmp=6 args=[164,156,93,216] fml=-1
+  24: dTemp3 = dTemp3 + (dTemp3*0.5)*fDifficulty   ; act=-1 res=174 val=-1 type=-1 cmp=6 args=[] fml=29
+  25: dT3 = dTemp3   ; act=-1 res=181 val=174 type=-1 cmp=6 args=[] fml=-1
+  26: dAttackGroup = action_25 CreateGroup(TAKE_BY_HITS, dTemp3)   ; act=25 res=204 val=-1 type=-1 cmp=6 args=[143,174] fml=-1
+  27: if dTemp3 < dT3   ; act=-1 res=-1 val=-1 type=0 cmp=0 args=[174,181] fml=-1
+  28:     fTemp = action_12 GetCurrentProblemPriority()   ; act=12 res=158 val=-1 type=-1 cmp=6 args=[] fml=-1
+  29:     fTemp = fTemp + 0.00001   ; act=-1 res=158 val=-1 type=-1 cmp=6 args=[] fml=7
+  30:     dTemp1 = 5   ; act=-1 res=172 val=-1 type=-1 cmp=6 args=[] fml=15
+  31:     dTemp2 = 2   ; act=-1 res=173 val=-1 type=-1 cmp=6 args=[] fml=16
+  32:     action_2 RequestUnitsForProblem(PBM_ROBOT_NEEDED, fTemp, dTemp1, dTemp2, ROBOT_BATTLEUNIT, NONE, SELECT_BEST_COMBAT)   ; act=2 res=-1 val=-1 type=-1 cmp=6 args=[55,158,172,173,117,153,131] fml=-1
+  33:     if dAttackGroup == ERROR   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[204,156] fml=-1
+  34:         return   ; act=-1 res=-1 val=-1 type=5 cmp=6 args=[] fml=-1
+  35:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  36: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  37: fSuccess = 0.8   ; act=-1 res=165 val=-1 type=-1 cmp=6 args=[] fml=5
+  38: fSurvive = 0.4   ; act=-1 res=166 val=-1 type=-1 cmp=6 args=[] fml=34
+  39: fTime = 0.5   ; act=-1 res=167 val=-1 type=-1 cmp=6 args=[] fml=4
+  40: fIndependence = 0.3   ; act=-1 res=168 val=-1 type=-1 cmp=6 args=[] fml=18
+  41: action_28 IssueOrderToGroup(dAttackGroup, ORDER_ROBOT_PATROL, INSERT_ORDER_REPLACE, NONE, fSuccess, fSurvive, fTime, fIndependence, TARGET_BY_LOGIC_ID, dT)   ; act=28 res=-1 val=-1 type=-1 cmp=6 args=[204,76,100,153,165,166,167,168,93,177] fml=-1
+
+== Секция 4 "Init" (Index=4, инструкций 4)
+   1: action_19 GetClanBasePlaceAndId(ClanBaseX, ClanBaseY, ClanID)   ; act=19 res=-1 val=-1 type=-1 cmp=6 args=[213,214,215] fml=-1
+   2: action_43 SelectCheapestScheme()   ; act=43 res=-1 val=-1 type=-1 cmp=6 args=[] fml=-1
+   3: dBuildingProtectHits = 250000   ; act=-1 res=40 val=-1 type=-1 cmp=6 args=[] fml=37
+   4: dPlaceProtectHits = 200000   ; act=-1 res=41 val=-1 type=-1 cmp=6 args=[] fml=38
+
+== Секция 5 "Problems0" (Index=5, инструкций 50)
+   1: dT = action_38 CountSummaryClanBF(ClanID, FREE_UNITS)   ; act=38 res=177 val=-1 type=-1 cmp=6 args=[215,137] fml=-1
+   2: if dT > d0   ; act=-1 res=-1 val=-1 type=0 cmp=2 args=[177,10] fml=-1
+   3:     fTemp = 300   ; act=-1 res=158 val=-1 type=-1 cmp=6 args=[] fml=28
+   4:     dTemp = action_36 FindWeakestEnemyTarget(fTemp, dTemp3)   ; act=36 res=171 val=-1 type=-1 cmp=6 args=[158,174] fml=-1
+   5:     fTemp = 0.5   ; act=-1 res=158 val=-1 type=-1 cmp=6 args=[] fml=4
+   6:     dTemp1 = 1   ; act=-1 res=172 val=-1 type=-1 cmp=6 args=[] fml=41
+   7:     dTemp2 = 0   ; act=-1 res=173 val=-1 type=-1 cmp=6 args=[] fml=42
+   8:     action_2 RequestUnitsForProblem(PBM_ATTACK_UNIT, fTemp, dTemp1, dTemp2, dTemp, NONE, dTemp3)   ; act=2 res=-1 val=-1 type=-1 cmp=6 args=[62,158,172,173,171,153,174] fml=-1
+   9: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  10: dTemp = -2147483625   ; act=-1 res=171 val=-2147483625 type=6 cmp=6 args=[] fml=-1
+  11: fTemp = 0.55   ; act=-1 res=158 val=-1 type=-1 cmp=6 args=[] fml=43
+  12: dTemp1 = 1   ; act=-1 res=172 val=-1 type=-1 cmp=6 args=[] fml=41
+  13: dTemp2 = 0   ; act=-1 res=173 val=-1 type=-1 cmp=6 args=[] fml=42
+  14: action_2 RequestUnitsForProblem(PBM_BUILDING_PROTECT, fTemp, dTemp1, dTemp2, dTemp, NONE, d0)   ; act=2 res=-1 val=-1 type=-1 cmp=6 args=[57,158,172,173,171,153,10] fml=-1
+  15: dTemp = -2147483632   ; act=-1 res=171 val=-2147483632 type=6 cmp=6 args=[] fml=-1
+  16: fTemp = 0.55   ; act=-1 res=158 val=-1 type=-1 cmp=6 args=[] fml=43
+  17: dTemp1 = 1   ; act=-1 res=172 val=-1 type=-1 cmp=6 args=[] fml=41
+  18: dTemp2 = 0   ; act=-1 res=173 val=-1 type=-1 cmp=6 args=[] fml=42
+  19: action_2 RequestUnitsForProblem(PBM_BUILDING_PROTECT, fTemp, dTemp1, dTemp2, dTemp, NONE, d0)   ; act=2 res=-1 val=-1 type=-1 cmp=6 args=[57,158,172,173,171,153,10] fml=-1
+  20: dX = 1255   ; act=-1 res=216 val=-1 type=-1 cmp=6 args=[] fml=49
+  21: dY = 1438   ; act=-1 res=217 val=-1 type=-1 cmp=6 args=[] fml=50
+  22: fT = 400   ; act=-1 res=164 val=-1 type=-1 cmp=6 args=[] fml=51
+  23: dTemp3 = action_44 CalcWeightAroundPoint(fT, ClanID, TARGET_BY_PLACE, dX, dY)   ; act=44 res=174 val=-1 type=-1 cmp=6 args=[164,215,94,216,217] fml=-1
+  24: if dTemp3 < dPlaceProtectHits   ; act=-1 res=-1 val=-1 type=0 cmp=0 args=[174,41] fml=-1
+  25:     fTemp = 0.45   ; act=-1 res=158 val=-1 type=-1 cmp=6 args=[] fml=52
+  26:     dTemp1 = 1   ; act=-1 res=172 val=-1 type=-1 cmp=6 args=[] fml=41
+  27:     dTemp2 = 0   ; act=-1 res=173 val=-1 type=-1 cmp=6 args=[] fml=42
+  28:     action_2 RequestUnitsForProblem(PBM_PLACE_PROTECT, fTemp, dTemp1, dTemp2, dX, dY, dTemp3)   ; act=2 res=-1 val=-1 type=-1 cmp=6 args=[60,158,172,173,216,217,174] fml=-1
+  29: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  30: dX = 381   ; act=-1 res=216 val=-1 type=-1 cmp=6 args=[] fml=55
+  31: dY = 1454   ; act=-1 res=217 val=-1 type=-1 cmp=6 args=[] fml=56
+  32: fT = 450   ; act=-1 res=164 val=-1 type=-1 cmp=6 args=[] fml=57
+  33: dTemp3 = action_44 CalcWeightAroundPoint(fT, ClanID, TARGET_BY_PLACE, dX, dY)   ; act=44 res=174 val=-1 type=-1 cmp=6 args=[164,215,94,216,217] fml=-1
+  34: if dTemp3 < dPlaceProtectHits   ; act=-1 res=-1 val=-1 type=0 cmp=0 args=[174,41] fml=-1
+  35:     fTemp = 0.45   ; act=-1 res=158 val=-1 type=-1 cmp=6 args=[] fml=52
+  36:     dTemp1 = 1   ; act=-1 res=172 val=-1 type=-1 cmp=6 args=[] fml=41
+  37:     dTemp2 = 0   ; act=-1 res=173 val=-1 type=-1 cmp=6 args=[] fml=42
+  38:     action_2 RequestUnitsForProblem(PBM_PLACE_PROTECT, fTemp, dTemp1, dTemp2, dX, dY, dTemp3)   ; act=2 res=-1 val=-1 type=-1 cmp=6 args=[60,158,172,173,216,217,174] fml=-1
+  39: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  40: fTemp = 0.5   ; act=-1 res=158 val=-1 type=-1 cmp=6 args=[] fml=4
+  41: dTemp1 = 14   ; act=-1 res=172 val=-1 type=-1 cmp=6 args=[] fml=62
+  42: dTemp2 = 13   ; act=-1 res=173 val=-1 type=-1 cmp=6 args=[] fml=63
+  43: action_2 RequestUnitsForProblem(PBM_N_OPTIMAL_TRANSPORT, fTemp, dTemp1, dTemp2, NONE, NONE, NONE)   ; act=2 res=-1 val=-1 type=-1 cmp=6 args=[53,158,172,173,153,153,153] fml=-1
+  44: dFreeMindNumber = action_49 CountFreeMinds()   ; act=49 res=212 val=-1 type=-1 cmp=6 args=[] fml=-1
+  45: if dFreeMindNumber > d0   ; act=-1 res=-1 val=-1 type=0 cmp=2 args=[212,10] fml=-1
+  46:     fTemp = 0.54   ; act=-1 res=158 val=-1 type=-1 cmp=6 args=[] fml=64
+  47:     dTemp1 = 25   ; act=-1 res=172 val=-1 type=-1 cmp=6 args=[] fml=1
+  48:     dTemp2 = 24   ; act=-1 res=173 val=-1 type=-1 cmp=6 args=[] fml=2
+  49:     action_2 RequestUnitsForProblem(PBM_ROBOT_NEEDED, fTemp, dTemp1, dTemp2, ROBOT_BATTLEUNIT, NONE, SELECT_BEST_COMBAT)   ; act=2 res=-1 val=-1 type=-1 cmp=6 args=[55,158,172,173,117,153,131] fml=-1
+  50: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+
+== Секция 6 "Mission" (Index=6, инструкций 0)
+
+== Секция 7 "Fort_Task_Complete" (Index=7, инструкций 0)
+
+== Секция 8 "Fort_Captured" (Index=8, инструкций 4)
+   1: fTemp = 0.8   ; act=-1 res=158 val=-1 type=-1 cmp=6 args=[] fml=5
+   2: dTemp1 = 1   ; act=-1 res=172 val=-1 type=-1 cmp=6 args=[] fml=41
+   3: dTemp2 = 0   ; act=-1 res=173 val=-1 type=-1 cmp=6 args=[] fml=42
+   4: action_2 RequestUnitsForProblem(PBM_BUILDING_INF_CAPTURE, fTemp, dTemp1, dTemp2, dCurrentSender, NONE, d0)   ; act=2 res=-1 val=-1 type=-1 cmp=6 args=[63,158,172,173,21,153,10] fml=-1
+
+== Секция 9 "Mech_GeneratorFound" (Index=9, инструкций 0)
+
+== Секция 10 "Mech_Mineral_Found" (Index=10, инструкций 0)
+
+== Секция 11 "Mech_Task_Complete" (Index=11, инструкций 0)
+
+== Секция 12 "Hero_Teleported" (Index=12, инструкций 0)
+
+== Секция 13 "PBM_BUILDING_PROTECT_Start" (Index=13, инструкций 21)
+   1: fSuccess = 0.3   ; act=-1 res=165 val=-1 type=-1 cmp=6 args=[] fml=18
+   2: fSurvive = 0.5   ; act=-1 res=166 val=-1 type=-1 cmp=6 args=[] fml=4
+   3: fTime = 0.0   ; act=-1 res=167 val=-1 type=-1 cmp=6 args=[] fml=12
+   4: fIndependence = 0.6   ; act=-1 res=168 val=-1 type=-1 cmp=6 args=[] fml=73
+   5: dT0 = action_29 GetCurrentProblemField(d0)   ; act=29 res=178 val=-1 type=-1 cmp=6 args=[10] fml=-1
+   6: dT2 = action_29 GetCurrentProblemField(d2)   ; act=29 res=180 val=-1 type=-1 cmp=6 args=[12] fml=-1
+   7: if dT2 >= dBuildingProtectHits   ; act=-1 res=-1 val=-1 type=0 cmp=4 args=[180,40] fml=-1
+   8:     return   ; act=-1 res=-1 val=-1 type=5 cmp=6 args=[] fml=-1
+   9: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  10: dTemp3 = dBuildingProtectHits - dT2   ; act=-1 res=174 val=-1 type=-1 cmp=6 args=[] fml=74
+  11: dTemp4 = dTemp3   ; act=-1 res=175 val=174 type=-1 cmp=6 args=[] fml=-1
+  12: dAttackGroup = action_25 CreateGroup(TAKE_BY_HITS, dTemp3)   ; act=25 res=204 val=-1 type=-1 cmp=6 args=[143,174] fml=-1
+  13: if dTemp3 == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[174,10] fml=-1
+  14:     action_7 DeleteCurrentProblem()   ; act=7 res=-1 val=-1 type=-1 cmp=6 args=[] fml=-1
+  15:     action_8 SetCurrentProblemStatus(ST_SOLVING)   ; act=8 res=-1 val=-1 type=-1 cmp=6 args=[134] fml=-1
+  16:     return   ; act=-1 res=-1 val=-1 type=5 cmp=6 args=[] fml=-1
+  17: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  18: dT1 = 150   ; act=-1 res=179 val=-1 type=-1 cmp=6 args=[] fml=75
+  19: action_28 IssueOrderToGroup(dAttackGroup, ORDER_ROBOT_PATROL, INSERT_ORDER_REPLACE, dT1, fSuccess, fSurvive, fTime, fIndependence, TARGET_BY_LOGIC_ID, dT0)   ; act=28 res=-1 val=-1 type=-1 cmp=6 args=[204,76,100,179,165,166,167,168,93,178] fml=-1
+  20: action_8 SetCurrentProblemStatus(ST_SOLVING)   ; act=8 res=-1 val=-1 type=-1 cmp=6 args=[134] fml=-1
+  21: action_27 AddExpression(ACTION_DESTROY, EXP_TARGET_BY_LOGIC_ID, dT0)   ; act=27 res=-1 val=-1 type=-1 cmp=6 args=[44,42,178] fml=-1
+
+== Секция 14 "PBM_BUILDING_PROTECT_Continue" (Index=14, инструкций 23)
+   1: dT0 = action_29 GetCurrentProblemField(d0)   ; act=29 res=178 val=-1 type=-1 cmp=6 args=[10] fml=-1
+   2: dTemp = action_45 GetProblemAssignedWeight()   ; act=45 res=171 val=-1 type=-1 cmp=6 args=[] fml=-1
+   3: if dTemp >= dBuildingProtectHits   ; act=-1 res=-1 val=-1 type=0 cmp=4 args=[171,40] fml=-1
+   4:     return   ; act=-1 res=-1 val=-1 type=5 cmp=6 args=[] fml=-1
+   5: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+   6: dTemp3 = dBuildingProtectHits - dTemp   ; act=-1 res=174 val=-1 type=-1 cmp=6 args=[] fml=76
+   7: dTemp4 = dTemp3   ; act=-1 res=175 val=174 type=-1 cmp=6 args=[] fml=-1
+   8: dAttackGroup = action_25 CreateGroup(TAKE_BY_HITS, dTemp3)   ; act=25 res=204 val=-1 type=-1 cmp=6 args=[143,174] fml=-1
+   9: if dTemp3 < dTemp4   ; act=-1 res=-1 val=-1 type=0 cmp=0 args=[174,175] fml=-1
+  10:     fTemp = 0.5   ; act=-1 res=158 val=-1 type=-1 cmp=6 args=[] fml=4
+  11:     dTemp1 = 25   ; act=-1 res=172 val=-1 type=-1 cmp=6 args=[] fml=1
+  12:     dTemp2 = 24   ; act=-1 res=173 val=-1 type=-1 cmp=6 args=[] fml=2
+  13:     action_2 RequestUnitsForProblem(PBM_ROBOT_NEEDED, fTemp, dTemp1, dTemp2, ROBOT_BATTLEUNIT, NONE, SELECT_BEST_COMBAT)   ; act=2 res=-1 val=-1 type=-1 cmp=6 args=[55,158,172,173,117,153,131] fml=-1
+  14:     if dTemp3 == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[174,10] fml=-1
+  15:         return   ; act=-1 res=-1 val=-1 type=5 cmp=6 args=[] fml=-1
+  16:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  17: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  18: fSuccess = 0.5   ; act=-1 res=165 val=-1 type=-1 cmp=6 args=[] fml=4
+  19: fSurvive = 0.5   ; act=-1 res=166 val=-1 type=-1 cmp=6 args=[] fml=4
+  20: fTime = 0.0   ; act=-1 res=167 val=-1 type=-1 cmp=6 args=[] fml=12
+  21: fIndependence = 0.5   ; act=-1 res=168 val=-1 type=-1 cmp=6 args=[] fml=4
+  22: dT1 = 150   ; act=-1 res=179 val=-1 type=-1 cmp=6 args=[] fml=75
+  23: action_28 IssueOrderToGroup(dAttackGroup, ORDER_ROBOT_PATROL, INSERT_ORDER_REPLACE, dT1, fSuccess, fSurvive, fTime, fIndependence, TARGET_BY_LOGIC_ID, dT0)   ; act=28 res=-1 val=-1 type=-1 cmp=6 args=[204,76,100,179,165,166,167,168,93,178] fml=-1
+
+== Секция 15 "PBM_PLACE_PROTECT_Start" (Index=15, инструкций 22)
+   1: fSuccess = 0.3   ; act=-1 res=165 val=-1 type=-1 cmp=6 args=[] fml=18
+   2: fSurvive = 0.5   ; act=-1 res=166 val=-1 type=-1 cmp=6 args=[] fml=4
+   3: fTime = 0.0   ; act=-1 res=167 val=-1 type=-1 cmp=6 args=[] fml=12
+   4: fIndependence = 0.6   ; act=-1 res=168 val=-1 type=-1 cmp=6 args=[] fml=73
+   5: dX = action_29 GetCurrentProblemField(d0)   ; act=29 res=216 val=-1 type=-1 cmp=6 args=[10] fml=-1
+   6: dY = action_29 GetCurrentProblemField(d1)   ; act=29 res=217 val=-1 type=-1 cmp=6 args=[11] fml=-1
+   7: dT2 = action_29 GetCurrentProblemField(d2)   ; act=29 res=180 val=-1 type=-1 cmp=6 args=[12] fml=-1
+   8: if dT2 >= dPlaceProtectHits   ; act=-1 res=-1 val=-1 type=0 cmp=4 args=[180,41] fml=-1
+   9:     action_8 SetCurrentProblemStatus(ST_SOLVING)   ; act=8 res=-1 val=-1 type=-1 cmp=6 args=[134] fml=-1
+  10:     return   ; act=-1 res=-1 val=-1 type=5 cmp=6 args=[] fml=-1
+  11: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  12: dTemp3 = dPlaceProtectHits - dT2   ; act=-1 res=174 val=-1 type=-1 cmp=6 args=[] fml=89
+  13: dTemp4 = dTemp3   ; act=-1 res=175 val=174 type=-1 cmp=6 args=[] fml=-1
+  14: dAttackGroup = action_25 CreateGroup(TAKE_BY_HITS, dTemp3)   ; act=25 res=204 val=-1 type=-1 cmp=6 args=[143,174] fml=-1
+  15: if dTemp3 == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[174,10] fml=-1
+  16:     action_7 DeleteCurrentProblem()   ; act=7 res=-1 val=-1 type=-1 cmp=6 args=[] fml=-1
+  17:     action_8 SetCurrentProblemStatus(ST_SOLVING)   ; act=8 res=-1 val=-1 type=-1 cmp=6 args=[134] fml=-1
+  18:     return   ; act=-1 res=-1 val=-1 type=5 cmp=6 args=[] fml=-1
+  19: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  20: dT1 = 150   ; act=-1 res=179 val=-1 type=-1 cmp=6 args=[] fml=75
+  21: action_28 IssueOrderToGroup(dAttackGroup, ORDER_ROBOT_PATROL, INSERT_ORDER_REPLACE, dT1, fSuccess, fSurvive, fTime, fIndependence, TARGET_BY_PLACE, dX, dY)   ; act=28 res=-1 val=-1 type=-1 cmp=6 args=[204,76,100,179,165,166,167,168,94,216,217] fml=-1
+  22: action_8 SetCurrentProblemStatus(ST_SOLVING)   ; act=8 res=-1 val=-1 type=-1 cmp=6 args=[134] fml=-1
+
+== Секция 16 "PBM_PLACE_PROTECT_Continue" (Index=16, инструкций 24)
+   1: dX = action_29 GetCurrentProblemField(d0)   ; act=29 res=216 val=-1 type=-1 cmp=6 args=[10] fml=-1
+   2: dY = action_29 GetCurrentProblemField(d1)   ; act=29 res=217 val=-1 type=-1 cmp=6 args=[11] fml=-1
+   3: dTemp = action_45 GetProblemAssignedWeight()   ; act=45 res=171 val=-1 type=-1 cmp=6 args=[] fml=-1
+   4: if dTemp >= dPlaceProtectHits   ; act=-1 res=-1 val=-1 type=0 cmp=4 args=[171,41] fml=-1
+   5:     return   ; act=-1 res=-1 val=-1 type=5 cmp=6 args=[] fml=-1
+   6: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+   7: dTemp3 = dPlaceProtectHits - dTemp   ; act=-1 res=174 val=-1 type=-1 cmp=6 args=[] fml=91
+   8: dTemp4 = dTemp3   ; act=-1 res=175 val=174 type=-1 cmp=6 args=[] fml=-1
+   9: dAttackGroup = action_25 CreateGroup(TAKE_BY_HITS, dTemp3)   ; act=25 res=204 val=-1 type=-1 cmp=6 args=[143,174] fml=-1
+  10: if dTemp3 < dTemp4   ; act=-1 res=-1 val=-1 type=0 cmp=0 args=[174,175] fml=-1
+  11:     fTemp = 0.5   ; act=-1 res=158 val=-1 type=-1 cmp=6 args=[] fml=4
+  12:     dTemp1 = 25   ; act=-1 res=172 val=-1 type=-1 cmp=6 args=[] fml=1
+  13:     dTemp2 = 24   ; act=-1 res=173 val=-1 type=-1 cmp=6 args=[] fml=2
+  14:     action_2 RequestUnitsForProblem(PBM_ROBOT_NEEDED, fTemp, dTemp1, dTemp2, ROBOT_BATTLEUNIT, NONE, SELECT_BEST_COMBAT)   ; act=2 res=-1 val=-1 type=-1 cmp=6 args=[55,158,172,173,117,153,131] fml=-1
+  15:     if dTemp3 == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[174,10] fml=-1
+  16:         return   ; act=-1 res=-1 val=-1 type=5 cmp=6 args=[] fml=-1
+  17:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  18: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  19: fSuccess = 0.5   ; act=-1 res=165 val=-1 type=-1 cmp=6 args=[] fml=4
+  20: fSurvive = 0.5   ; act=-1 res=166 val=-1 type=-1 cmp=6 args=[] fml=4
+  21: fTime = 0.0   ; act=-1 res=167 val=-1 type=-1 cmp=6 args=[] fml=12
+  22: fIndependence = 0.5   ; act=-1 res=168 val=-1 type=-1 cmp=6 args=[] fml=4
+  23: dT1 = 150   ; act=-1 res=179 val=-1 type=-1 cmp=6 args=[] fml=75
+  24: action_28 IssueOrderToGroup(dAttackGroup, ORDER_ROBOT_PATROL, INSERT_ORDER_REPLACE, dT1, fSuccess, fSurvive, fTime, fIndependence, TARGET_BY_PLACE, dX, dY)   ; act=28 res=-1 val=-1 type=-1 cmp=6 args=[204,76,100,179,165,166,167,168,94,216,217] fml=-1
+
+== Секция 17 "PBM_ROBOT_NEEDED_Start" (Index=17, инструкций 18)
+   1: dT2 = action_13 FindFreeUnitOfType(UNIT_FREE_UNIT, BUILDING_PLANT)   ; act=13 res=180 val=-1 type=-1 cmp=6 args=[147,107] fml=-1
+   2: if dT2 == ERROR   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[180,156] fml=-1
+   3:     return   ; act=-1 res=-1 val=-1 type=5 cmp=6 args=[] fml=-1
+   4: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+   5: dT = action_29 GetCurrentProblemField(d0)   ; act=29 res=177 val=-1 type=-1 cmp=6 args=[10] fml=-1
+   6: dT1 = action_29 GetCurrentProblemField(d2)   ; act=29 res=179 val=-1 type=-1 cmp=6 args=[12] fml=-1
+   7: fSuccess = 1.0   ; act=-1 res=165 val=-1 type=-1 cmp=6 args=[] fml=10
+   8: fSurvive = 0.5   ; act=-1 res=166 val=-1 type=-1 cmp=6 args=[] fml=4
+   9: fTime = 1.0   ; act=-1 res=167 val=-1 type=-1 cmp=6 args=[] fml=10
+  10: fIndependence = 0.0   ; act=-1 res=168 val=-1 type=-1 cmp=6 args=[] fml=12
+  11: dT3 = action_15 IssueOrderToUnit(dT2, ORDER_BUILDING_CONSTRUCT, INSERT_ORDER_TO_END, dT, fSuccess, fSurvive, fTime, fIndependence, TARGET_BY_NAME, dT1)   ; act=15 res=181 val=-1 type=-1 cmp=6 args=[180,92,98,177,165,166,167,168,97,179] fml=-1
+  12: if dT3 == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[181,10] fml=-1
+  13:     action_8 SetCurrentProblemStatus(ST_SOLVED)   ; act=8 res=-1 val=-1 type=-1 cmp=6 args=[135] fml=-1
+  14:     return   ; act=-1 res=-1 val=-1 type=5 cmp=6 args=[] fml=-1
+  15: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  16: action_6 SetUnitCriticalStatus(dT2, UNIT_CRITICAL)   ; act=6 res=-1 val=-1 type=-1 cmp=6 args=[180,146] fml=-1
+  17: action_8 SetCurrentProblemStatus(ST_SOLVING)   ; act=8 res=-1 val=-1 type=-1 cmp=6 args=[134] fml=-1
+  18: action_27 AddExpression(ACTION_NOTHING_DOING, EXP_TARGET_BY_LOGIC_ID, dT2)   ; act=27 res=-1 val=-1 type=-1 cmp=6 args=[45,42,180] fml=-1
+
+== Секция 18 "PBM_ROBOT_NEEDED_Continue" (Index=18, инструкций 0)
+
+== Секция 19 "PBM_BASE_DEFENCE_Start" (Index=19, инструкций 15)
+   1: dTemp = action_29 GetCurrentProblemField(d0)   ; act=29 res=171 val=-1 type=-1 cmp=6 args=[10] fml=-1
+   2: dTemp3 = action_29 GetCurrentProblemField(d2)   ; act=29 res=174 val=-1 type=-1 cmp=6 args=[12] fml=-1
+   3: dTemp1 = dTemp3   ; act=-1 res=172 val=174 type=-1 cmp=6 args=[] fml=-1
+   4: dAttackGroup = action_25 CreateGroup(TAKE_BY_HITS, dTemp3)   ; act=25 res=204 val=-1 type=-1 cmp=6 args=[143,174] fml=-1
+   5: if dAttackGroup == ERROR   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[204,156] fml=-1
+   6:     goto секция 21 "All_Defence"   ; act=-1 res=-1 val=-1 type=4 cmp=6 args=[21] fml=-1
+   7: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+   8: if dTemp3 < dTemp1   ; act=-1 res=-1 val=-1 type=0 cmp=0 args=[174,172] fml=-1
+   9:     action_24 DisbandGroup(dAttackGroup)   ; act=24 res=-1 val=-1 type=-1 cmp=6 args=[204] fml=-1
+  10:     goto секция 21 "All_Defence"   ; act=-1 res=-1 val=-1 type=4 cmp=6 args=[21] fml=-1
+  11: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  12: action_28 IssueOrderToGroup(dAttackGroup, ORDER_ROBOT_ATTACK, INSERT_ORDER_REPLACE, BUILDING_PLANT, fSuccess, fSurvive, fTime, fIndependence, TARGET_BY_LOGIC_ID, dTemp)   ; act=28 res=-1 val=-1 type=-1 cmp=6 args=[204,75,100,107,165,166,167,168,93,171] fml=-1
+  13: action_8 SetCurrentProblemStatus(ST_SOLVING)   ; act=8 res=-1 val=-1 type=-1 cmp=6 args=[134] fml=-1
+  14: action_27 AddExpression(ACTION_DESTROY, EXP_TARGET_BY_LOGIC_ID, dTemp)   ; act=27 res=-1 val=-1 type=-1 cmp=6 args=[44,42,171] fml=-1
+  15: action_27 AddExpression(ACTION_GROUP_DESTROY, EXP_TARGET_BY_GROUP_ID, dAttackGroup)   ; act=27 res=-1 val=-1 type=-1 cmp=6 args=[47,43,204] fml=-1
+
+== Секция 20 "PBM_BASE_DEFENCE_Continue" (Index=20, инструкций 0)
+
+== Секция 21 "All_Defence" (Index=21, инструкций 14)
+   1: dTemp3 = dTemp1   ; act=-1 res=174 val=172 type=-1 cmp=6 args=[] fml=-1
+   2: dAttackGroup = action_25 CreateGroup(TAKE_ALL_BATTLE_UNITS, dTemp3)   ; act=25 res=204 val=-1 type=-1 cmp=6 args=[144,174] fml=-1
+   3: if dAttackGroup == ERROR   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[204,156] fml=-1
+   4:     fTemp = action_12 GetCurrentProblemPriority()   ; act=12 res=158 val=-1 type=-1 cmp=6 args=[] fml=-1
+   5:     fTemp = fTemp + 0.00001   ; act=-1 res=158 val=-1 type=-1 cmp=6 args=[] fml=7
+   6:     dTemp1 = 25   ; act=-1 res=172 val=-1 type=-1 cmp=6 args=[] fml=1
+   7:     dTemp2 = 24   ; act=-1 res=173 val=-1 type=-1 cmp=6 args=[] fml=2
+   8:     action_2 RequestUnitsForProblem(PBM_ROBOT_NEEDED, fTemp, dTemp1, dTemp2, ROBOT_BATTLEUNIT, NONE, SELECT_BEST_COMBAT)   ; act=2 res=-1 val=-1 type=-1 cmp=6 args=[55,158,172,173,117,153,131] fml=-1
+   9:     return   ; act=-1 res=-1 val=-1 type=5 cmp=6 args=[] fml=-1
+  10: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  11: action_28 IssueOrderToGroup(dAttackGroup, ORDER_ROBOT_ATTACK, INSERT_ORDER_TO_START, BUILDING_PLANT, fSuccess, fSurvive, fTime, fIndependence, TARGET_BY_LOGIC_ID, dTemp)   ; act=28 res=-1 val=-1 type=-1 cmp=6 args=[204,75,99,107,165,166,167,168,93,171] fml=-1
+  12: action_8 SetCurrentProblemStatus(ST_SOLVING)   ; act=8 res=-1 val=-1 type=-1 cmp=6 args=[134] fml=-1
+  13: action_27 AddExpression(ACTION_DESTROY, EXP_TARGET_BY_LOGIC_ID, dTemp)   ; act=27 res=-1 val=-1 type=-1 cmp=6 args=[44,42,171] fml=-1
+  14: action_27 AddExpression(ACTION_GROUP_DESTROY, EXP_TARGET_BY_GROUP_ID, dAttackGroup)   ; act=27 res=-1 val=-1 type=-1 cmp=6 args=[47,43,204] fml=-1
+
+== Секция 22 "PBM_ATTACK_UNIT_Start" (Index=22, инструкций 19)
+   1: fSuccess = 1.0   ; act=-1 res=165 val=-1 type=-1 cmp=6 args=[] fml=10
+   2: fSurvive = 0.5   ; act=-1 res=166 val=-1 type=-1 cmp=6 args=[] fml=4
+   3: fTime = 0.0   ; act=-1 res=167 val=-1 type=-1 cmp=6 args=[] fml=12
+   4: fIndependence = 0.5   ; act=-1 res=168 val=-1 type=-1 cmp=6 args=[] fml=4
+   5: dTemp3 = action_29 GetCurrentProblemField(d2)   ; act=29 res=174 val=-1 type=-1 cmp=6 args=[12] fml=-1
+   6: dX = action_29 GetCurrentProblemField(d0)   ; act=29 res=216 val=-1 type=-1 cmp=6 args=[10] fml=-1
+   7: dAttackGroup = action_25 CreateGroup(TAKE_BY_HITS, dTemp3)   ; act=25 res=204 val=-1 type=-1 cmp=6 args=[143,174] fml=-1
+   8: if dAttackGroup == ERROR   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[204,156] fml=-1
+   9:     fTemp = action_12 GetCurrentProblemPriority()   ; act=12 res=158 val=-1 type=-1 cmp=6 args=[] fml=-1
+  10:     fTemp = fTemp + 0.00001   ; act=-1 res=158 val=-1 type=-1 cmp=6 args=[] fml=7
+  11:     dTemp1 = 5   ; act=-1 res=172 val=-1 type=-1 cmp=6 args=[] fml=15
+  12:     dTemp2 = 2   ; act=-1 res=173 val=-1 type=-1 cmp=6 args=[] fml=16
+  13:     action_2 RequestUnitsForProblem(PBM_ROBOT_NEEDED, fTemp, dTemp1, dTemp2, ROBOT_BATTLEUNIT, NONE, SELECT_BEST_COMBAT)   ; act=2 res=-1 val=-1 type=-1 cmp=6 args=[55,158,172,173,117,153,131] fml=-1
+  14:     return   ; act=-1 res=-1 val=-1 type=5 cmp=6 args=[] fml=-1
+  15: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  16: action_28 IssueOrderToGroup(dAttackGroup, ORDER_ROBOT_ATTACK, INSERT_ORDER_REPLACE, NONE, fSuccess, fSurvive, fTime, fIndependence, TARGET_BY_LOGIC_ID, dX)   ; act=28 res=-1 val=-1 type=-1 cmp=6 args=[204,75,100,153,165,166,167,168,93,216] fml=-1
+  17: action_8 SetCurrentProblemStatus(ST_SOLVING)   ; act=8 res=-1 val=-1 type=-1 cmp=6 args=[134] fml=-1
+  18: action_27 AddExpression(ACTION_DESTROY, EXP_TARGET_BY_LOGIC_ID, dX)   ; act=27 res=-1 val=-1 type=-1 cmp=6 args=[44,42,216] fml=-1
+  19: action_27 AddExpression(ACTION_GROUP_DESTROY, EXP_TARGET_BY_GROUP_ID, dAttackGroup)   ; act=27 res=-1 val=-1 type=-1 cmp=6 args=[47,43,204] fml=-1
+
+== Секция 23 "PBM_ATTACK_UNIT_Continue" (Index=23, инструкций 0)
+

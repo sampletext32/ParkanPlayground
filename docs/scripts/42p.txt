@@ -1,0 +1,80 @@
+// 42p.scr: секций 9, magic 59
+// Формат строки: <номер инструкции с 1>: <действие>   ; <исходные поля: act res val type cmp args fml>
+// act - NativeActionIndex (action_N в ai.dll), res - ResultVarIndex, val - ValueOrSourceVarIndex, type - ScrEntryInnerType, cmp - CompareOperator, fml - FmlFunctionIndex
+
+== Секция 0 "Init" (Index=0, инструкций 5)
+   1: action_19 GetClanBasePlaceAndId(ClanBaseX, ClanBaseY, ClanID)   ; act=19 res=-1 val=-1 type=-1 cmp=6 args=[213,214,215] fml=-1
+   2: df0 = 0   ; act=-1 res=188 val=-1 type=-1 cmp=6 args=[] fml=0
+   3: df1 = 0   ; act=-1 res=189 val=-1 type=-1 cmp=6 args=[] fml=0
+   4: df2 = 0   ; act=-1 res=190 val=-1 type=-1 cmp=6 args=[] fml=0
+   5: df3 = 0   ; act=-1 res=191 val=-1 type=-1 cmp=6 args=[] fml=0
+
+== Секция 1 "Problems0" (Index=1, инструкций 0)
+
+== Секция 2 "Mission" (Index=2, инструкций 52)
+   1: dTemp = action_32 ArealContainsLogicId(d0, d1)   ; act=32 res=171 val=-1 type=-1 cmp=6 args=[10,11] fml=-1
+   2: if dTemp == d1   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[171,11] fml=-1
+   3:     if df0 == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[188,10] fml=-1
+   4:         df0 = 1   ; act=-1 res=188 val=-1 type=-1 cmp=6 args=[] fml=4
+   5:         action_30 SendGameMessage(OBJECTIVE_COMPLETE, d2)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[68,12] fml=-1
+   6:         action_57 HostCallKind2(d1, d1)   ; act=57 res=-1 val=-1 type=-1 cmp=6 args=[11,11] fml=-1
+   7:         action_57 HostCallKind2(d2, d2)   ; act=57 res=-1 val=-1 type=-1 cmp=6 args=[12,12] fml=-1
+   8:         action_57 HostCallKind2(d3, d3)   ; act=57 res=-1 val=-1 type=-1 cmp=6 args=[13,13] fml=-1
+   9:         action_57 HostCallKind2(d4, d4)   ; act=57 res=-1 val=-1 type=-1 cmp=6 args=[14,14] fml=-1
+  10:         action_57 HostCallKind2(d5, d5)   ; act=57 res=-1 val=-1 type=-1 cmp=6 args=[15,15] fml=-1
+  11:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  12: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  13: dT1 = -2147483642   ; act=-1 res=179 val=-2147483642 type=6 cmp=6 args=[] fml=-1
+  14: dTemp = action_52 QueryBehaviourByLogicId(dT1)   ; act=52 res=171 val=-1 type=-1 cmp=6 args=[179] fml=-1
+  15: if dTemp == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[171,10] fml=-1
+  16:     if df1 == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[189,10] fml=-1
+  17:         df1 = 1   ; act=-1 res=189 val=-1 type=-1 cmp=6 args=[] fml=4
+  18:         action_30 SendGameMessage(OBJECTIVE_COMPLETE, d0)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[68,10] fml=-1
+  19:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  20: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  21: if dTemp != d0   ; act=-1 res=-1 val=-1 type=0 cmp=5 args=[171,10] fml=-1
+  22:     if df1 == d1   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[189,11] fml=-1
+  23:         df1 = 0   ; act=-1 res=189 val=-1 type=-1 cmp=6 args=[] fml=0
+  24:         action_30 SendGameMessage(OBJECTIVE_PROGRESS, d0)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[70,10] fml=-1
+  25:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  26: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  27: dTemp = action_34 CountOwnUnitsByType(BUILDING_GENERATOR)   ; act=34 res=171 val=-1 type=-1 cmp=6 args=[104] fml=-1
+  28: if dTemp == d2   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[171,12] fml=-1
+  29:     if df2 == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[190,10] fml=-1
+  30:         df2 = 1   ; act=-1 res=190 val=-1 type=-1 cmp=6 args=[] fml=4
+  31:         action_30 SendGameMessage(OBJECTIVE_COMPLETE, d1)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[68,11] fml=-1
+  32:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  33: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  34: if dTemp != d2   ; act=-1 res=-1 val=-1 type=0 cmp=5 args=[171,12] fml=-1
+  35:     if df2 == d1   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[190,11] fml=-1
+  36:         df2 = 0   ; act=-1 res=190 val=-1 type=-1 cmp=6 args=[] fml=0
+  37:         action_30 SendGameMessage(OBJECTIVE_PROGRESS, d1)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[70,11] fml=-1
+  38:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  39: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  40: dTemp = action_31 CountClanUnitsByClass(d2, CLASS_BUILDING)   ; act=31 res=171 val=-1 type=-1 cmp=6 args=[12,120] fml=-1
+  41: if dTemp == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[171,10] fml=-1
+  42:     if df3 == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[191,10] fml=-1
+  43:         df3 = 1   ; act=-1 res=191 val=-1 type=-1 cmp=6 args=[] fml=4
+  44:         action_30 SendGameMessage(OBJECTIVE_COMPLETE, d4)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[68,14] fml=-1
+  45:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  46: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  47: if dTemp != d0   ; act=-1 res=-1 val=-1 type=0 cmp=5 args=[171,10] fml=-1
+  48:     if df3 == d1   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[191,11] fml=-1
+  49:         df3 = 0   ; act=-1 res=191 val=-1 type=-1 cmp=6 args=[] fml=0
+  50:         action_30 SendGameMessage(OBJECTIVE_PROGRESS, d4)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[70,14] fml=-1
+  51:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  52: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+
+== Секция 3 "Fort_Task_Complete" (Index=3, инструкций 0)
+
+== Секция 4 "Fort_Captured" (Index=4, инструкций 0)
+
+== Секция 5 "Mech_GeneratorFound" (Index=5, инструкций 0)
+
+== Секция 6 "Mech_Mineral_Found" (Index=6, инструкций 0)
+
+== Секция 7 "Mech_Task_Complete" (Index=7, инструкций 0)
+
+== Секция 8 "Hero_Teleported" (Index=8, инструкций 1)
+   1: action_30 SendGameMessage(SYSTEM_MESSAGE, MISSION_COMPLETE)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[65,72] fml=-1
+
