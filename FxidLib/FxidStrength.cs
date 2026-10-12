@@ -1,16 +1,23 @@
 namespace FxidLib;
 
 /// <summary>
-/// Post-processing of the effect strength exactly as <c>FxManager::ComputeEffectStrength</c> does it
-/// (flags 0x200 and 0x20), plus the environment gate (flags 0x80 / 0x100).
-/// Only the time-based sources are modelled here; other sources need live game state.
+/// Постобработка силы эффекта в точности как в <c>FxManager::ComputeEffectStrength</c> (флаги 0x200 и 0x20)
+/// плюс «ворота» окружения (флаги 0x80 и 0x100). Здесь смоделированы только источники по времени;
+/// остальным источникам нужно живое состояние игры.
 /// </summary>
 public static class FxidStrength
 {
-    /// <summary>Life = (now - start) / (end - start). With end == start this is NaN/Infinity, like in the engine.</summary>
+    /// <summary>Жизнь = (сейчас − начало) / (конец − начало). При конец == начало даёт NaN/бесконечность, как в движке.</summary>
+    /// <param name="nowMs">Текущее время, мс.</param>
+    /// <param name="startMs">Время старта эффекта, мс.</param>
+    /// <param name="endMs">Время окончания эффекта, мс (<c>Duration * 1000 + start</c>).</param>
     public static float Life(float nowMs, float startMs, float endMs) => (nowMs - startMs) / (endMs - startMs);
 
-    /// <summary>Value for time-based sources (Life_0to1, Life_Fract, Life_1minus); null for sources that need game state.</summary>
+    /// <summary>Значение для источников по времени (<c>Life_0to1</c>, <c>Life_Fract</c>, <c>Life_1minus</c>); <c>null</c> для источников, зависящих от состояния игры.</summary>
+    /// <param name="source">Источник силы.</param>
+    /// <param name="nowMs">Текущее время, мс.</param>
+    /// <param name="startMs">Время старта эффекта, мс.</param>
+    /// <param name="endMs">Время окончания эффекта, мс.</param>
     public static float? FromTimeSource(EffectStrengthSource source, float nowMs, float startMs, float endMs)
     {
         var life = Life(nowMs, startMs, endMs);
@@ -23,12 +30,17 @@ public static class FxidStrength
         };
     }
 
-    /// <summary>True when flags 0x80/0x100 force the strength to 0 for the given environment bit 0.</summary>
+    /// <summary>Истина, если флаги 0x80/0x100 обнуляют силу при данном бите 0 окружения.</summary>
+    /// <param name="flags">Флаги заголовка.</param>
+    /// <param name="environmentBit0">Бит 0 <c>FxManager.environment_flags</c>.</param>
     public static bool IsGatedOff(FxidEffectFlags flags, bool environmentBit0) =>
         (flags.HasFlag(FxidEffectFlags.OnlyWhenEnvBit0On) && !environmentBit0) ||
         (flags.HasFlag(FxidEffectFlags.OnlyWhenEnvBit0Off) && environmentBit0);
 
-    /// <summary>Applies MultiplyByLife (0x200) and TriangularShape (0x20), in the engine's order.</summary>
+    /// <summary>Применяет <c>MultiplyByLife</c> (0x200) и <c>TriangularShape</c> (0x20) в порядке движка.</summary>
+    /// <param name="flags">Флаги заголовка.</param>
+    /// <param name="strength">Сила до постобработки.</param>
+    /// <param name="life">Прогресс жизни 0..1.</param>
     public static float ApplyFlags(FxidEffectFlags flags, float strength, float life)
     {
         if (flags.HasFlag(FxidEffectFlags.MultiplyByLife)) strength *= life;
