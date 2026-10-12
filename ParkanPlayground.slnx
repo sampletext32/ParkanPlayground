@@ -8,10 +8,8 @@
   <Project Path="Common\Common.csproj" />
   <Project Path="ControlLib/ControlLib.csproj" />
   <Project Path="CpDatLib\CpDatLib.csproj" />
-  <Project Path="EffectUsage/EffectUsage.csproj" />
   <Project Path="ExplLib/ExplLib.csproj" />
   <Project Path="SkeLib/SkeLib.csproj" />
-  <Project Path="FxidCheck/FxidCheck.csproj" />
   <Project Path="FxidLib/FxidLib.csproj" />
   <Project Path="MaterialLib\MaterialLib.csproj" />
   <Project Path="MissionTmaLib/MissionTmaLib.csproj" />

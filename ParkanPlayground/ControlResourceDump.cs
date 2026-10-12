@@ -1,6 +1,7 @@
-﻿using System.Globalization;
+using System.Globalization;
+using ControlLib;
 
-namespace ControlLib;
+namespace ParkanPlayground;
 
 public static class ControlResourceDump
 {
