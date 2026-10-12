@@ -7,35 +7,69 @@
 </div>
 
 
+## О проекте
+
+Исследование формата данных и логики игры **Parkan: Iron Strategy** (1998) и набор C#-инструментов для её файлов. Результаты хранятся в трёх местах:
+
+- **XML-комментарии библиотек** - описание полей и значений со статистикой по файлам игры (где значение встречается и сколько раз);
+- **README библиотек** - как игра использует формат, цепочки вызовов, что проверено и что нет;
+- **проект Ghidra** - имена и типы в `Control.dll`, `World3D.dll`, `Effect.dll`, `AniMesh.dll`, `Terrain.dll`, `Behavior.dll`, `ai.dll` и других.
+
+Статус утверждений в документах: **проверено** (по коду и данным), **гипотеза** (данные согласуются, кода нет), **не выяснено**.
+
+## С чего начать
+
+| Хочу ... | Смотрю |
+|---|---|
+| понять, как игра устроена в целом | разделы «Как работает игра» и «Внутренняя система ID» ниже |
+| разобрать формат файла | таблица библиотек ниже: у каждой есть README и XML-комментарии |
+| увидеть данные игры глазами | [NResUI](NResUI/README.md): панели просмотра NRes, материалов, эффектов, оружия, скриптов |
+| разобраться в оружии и эффектах выстрела | [ControlLib/README.md](ControlLib/README.md), §7; [FxidLib/README.md](FxidLib/README.md) |
+| разобраться в ИИ и скриптах миссий | [ScrLib/README.md](ScrLib/README.md) |
+| продолжить реверс | «Не выяснено» и «Чего нет в данных» в README [ControlLib](ControlLib/README.md) и [MaterialLib](MaterialLib/README.md); [глоссарий](docs/GLOSSARY.md) |
+
 ## Сборка проекта
 
-Проект написан на C# под `.NET 9`
+Проект написан на C# под `.NET 9`. Достаточно `dotnet build ParkanPlayground.slnx` для сборки всех проектов; приложения кросс-платформенные, включая UI.
 
-Вам должно хватить `dotnet build` для сборки всех проектов отдельно.
+Графическое приложение: `dotnet run --project NResUI -c Release` (нужен `config.json` с путём к игре - см. [NResUI/README.md](NResUI/README.md)).
 
-Все приложения кросс-платформенные, в том числе UI.
+## Карта библиотек
 
-### Состояние проекта
+| Проект | Что разбирает | Документация |
+|---|---|---|
+| [`NResLib`](NResLib/README.md) | NRes-архивы (`.lib`, `.rlb`, карты): элементы, метаданные | README |
+| [`Common`](Common/README.md) | чтение бинарных данных, `Vector3`, `ResourceNamedRef` | README |
+| [`MshLib`](MshLib/README.md) | меши MSH: узлы, вершины, треугольники, батчи, анимация | README, `docs/` |
+| [`TexmLib`](TexmLib/README.md) | текстуры TEXM и страницы атласа | README |
+| [`PalLib`](PalLib/README.md) | палитры PAL | README |
+| [`MaterialLib`](MaterialLib/README.md) | материалы MAT0, менеджер материалов | README |
+| [`WeaLib`](WeaLib/README.md) | наборы материалов `.wea` | README |
+| [`FxidLib`](FxidLib/README.md) | эффекты FXID | README |
+| [`ExplLib`](ExplLib/README.md) | описание взрыва EXPL | README |
+| [`ControlLib`](ControlLib/README.md) | управление объектом: CTL, CPT, NDP, записи агентов, предметы, оружие | README |
+| [`CpDatLib`](CpDatLib/README.md) | схемы объектов `.dat` | README |
+| [`BasLib`](BasLib/README.md) | контуры оснований зданий `.bas` | README |
+| [`SkeLib`](SkeLib/README.md) | расписание атмосферы `sky.ske` | README |
+| [`MissionTmaLib`](MissionTmaLib/README.md) | файл миссии `.tma` | README |
+| [`ResTreeLib`](ResTreeLib/README.md) | дерево исследований `.trf` | README |
+| [`ScrLib`](ScrLib/README.md) | скрипты ИИ `.scr` | README |
+| [`VarsetLib`](VarsetLib/README.md) | переменные `.var` | README |
+| [`NResUI`](NResUI/README.md) | приложение для просмотра и проверки гипотез | README |
+| [`ParkanPlayground`](ParkanPlayground/README.md) | песочница для проверок и дампов | README |
+| [`NLUnpacker`](NLUnpacker/README.md) | заготовка распаковки NL-архива | README |
 
-- Поддержка всех `NRes` файлов - звуки, музыка, текстуры, карты и другие файлы. Есть документация.
-- Поддержка всех `TEXM` текстур. Есть документация.
-- Поддержка файлов миссий `.tma`.
-- Поддержка шрифтов TFNT.
-- Поддержка файлов скриптов `.scr`.
-- Поддержка файлов параметров `.var`.
-- Поддержка файлов схем объектов `.dat`.
+### Что поддерживается
 
+- Все `NRes` файлы: звуки, музыка, текстуры, карты и другие.
+- Текстуры `TEXM`, шрифты `TFNT`.
+- Файлы миссий `.tma`, скрипты `.scr`/`.fml`, файлы параметров `.var`, схемы объектов `.dat`, деревья исследований `.trf`.
+- Материалы, эффекты FXID, управление объектами (CTL/CPT/NDP), меши MSH, атмосфера `sky.ske`.
 
-### Структура проекта
+### Примечание об устройстве проекта
 
-Внимание! 
-
-Проект делается как небольшой PET, поэтому тут может не быть 
-- чёткой структуры
-- адекватных названий
-- комментариев 
-
-Я конечно стараюсь, но ничего не обещаю.
+Проект делается как небольшой PET-проект, поэтому часть названий и структуры может быть непоследовательной; чем старее код, тем вероятнее расхождения.
+Актуальное описание форматов - в XML-комментариях и README библиотек, глоссарий - [docs/GLOSSARY.md](docs/GLOSSARY.md).
 
 ## Для Reverse Engineering-а использую Ghidra
 
@@ -176,41 +210,7 @@ IComponent ** LoadSomething(undefined4, undefined4, undefined4, undefined4)
 
 ## Загрузка `cp` файлов
 
-`cp` файл - схема. Он содержит дерево частей объекта.
-
-`cp` файл читается в `ArealMap.dll/CreateObjectFromScheme`
-
-В зависимости от типа объекта внутри схемы (байты 4..8) выбирается функция, с помощью которой загружается схема.
-
-Функция выбирается на основе файла `Comp.ini`.
-- Для ClassBuilding (0x80000000) - вызывается функция c классом 3 (по таблице ниже Building).
-- Для всех остальных - функция с классом 4 (по таблице ниже Agent).
-
-На основе файла `Comp.ini` и первом вызове внутри функции `World3D.dll/CreateObject` ремаппинг id:
-
-
-
-| Logic ID |  ClassName   | Function                       | Description                  |
-|:--------:|:------------:|--------------------------------|------------------------------|
-|    1     |  Landscape   | `terrain.dll LoadLandscape`    | LOGIC_LANDSCAPE              |
-|    2     |    Agent     | `animesh.dll LoadAgent`        | LOGIC_WEAPON_AGENT_WPNS      |
-|    3     |   Building   | `terrain.dll LoadBuilding`     | LOGIC_BUILDING_HALLWAY       |
-|    4     |    Agent     | `animesh.dll LoadAgent`        | LOGIC_BATTLE_UNIT_AGENT_BTLU |
-|    5     |    Camera    | `terrain.dll LoadCamera`       | LOGIC_CAMERA                 |
-|    7     |  Atmosphere  | `terrain.dll CreateAtmosphere` | LOGIC_ATMOSPHERE             |
-|    9     |    Agent     | `animesh.dll LoadAgent`        | LOGIC_BULLET_AGENT_BULL      |
-|   0xa    |    Agent     | `animesh.dll LoadAgent`        | LOGIC_STATIC_AGENT_STAT      |
-|   0xb    |   Research   | `misload.dll LoadResearch`     | LOGIC_RESEARCH               |
-|   0xc    |    Agent     | `animesh.dll LoadAgent`        | LOGIC_AGENT_0xC              |
-
-Всем этим функциям передаётся `nres_file_name, nres_entry_name, 0, player_index`
-
-## `fr FORT` файл
-
-Всегда 0x80 байт
-Содержит 2 ссылки на файлы:
-- `.bas`
-- `.ctl` - вызывается `LoadAgent`
+Схема объекта (`.dat`), таблица загрузчиков по Logic ID и запись `fr FORT`: [CpDatLib/README.md](CpDatLib/README.md).
 
 ## `.msh`
 
@@ -279,58 +279,15 @@ IComponent ** LoadSomething(undefined4, undefined4, undefined4, undefined4)
 
 ## `.wea`
 
-Загружается в `World3D.dll/LoadMatManager`
-
-По сути это текстовый файл состоящий из 2 частей:
-- Материалы
-  ```
-  {count}
-  {id} {name}
-  ```
-- Карты освещения
-  ```
-  LIGHTMAPS
-  {count}
-  {id} {name}
-  ```
-
-Номер в строке `{id}` загрузчик отбрасывает: материалы идут по порядку строк. Анимация материалов, кэши и режимы смешивания - `MaterialLib/README.md`.
+Таблица материалов и карт освещения: [WeaLib/README.md](WeaLib/README.md), поведение менеджера материалов - [MaterialLib/README.md](MaterialLib/README.md).
 
 ## `.bas Basement` файл
 
-Читается в `Terrain.dll/LoadBuilding/CBuilding::ctor`
-
-Описывает контуры объекта
-
-Формат
-```
-Длина динамическая
-
-(4 байта) Кол-во внутренних контуров -> IC
-{
-  (4 байта) Кол-во сегментов контура -> N
-    Vector3[N+1] Точки контура
-    int[N] - непонятно
-    int[N] - тоже непонятно, но выглядит как порядок вершин (e.g. [0 2 1])
-}[IC]
-(4 байта) Кол-во внешних контуров -> OC
-{
-  (4 байта) Кол-во сегментов контура -> N
-    Vector3[N+1] Точки контура
-}[OC]
-```
+Контуры основания здания: формат и использование - [BasLib/README.md](BasLib/README.md).
 
 ## Lightmap (TEXM)
 
-У текстур использующихся как карты освещения специальные имена.
-
-`some_name.00` или `some_name.0`
-
-Первая цифра после `.` это группа палет (всего 0x11), вторая цифра индекс в этой группе.
-
-```
-All lightmaps named whatever.0 → they all end up with no DirectDraw palette attached.
-```
+Карты освещения - те же TEXM-текстуры со специальными именами: [TexmLib/README.md](TexmLib/README.md).
 
 ## `FXID` - файл эффектов
 
