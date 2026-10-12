@@ -1,4 +1,4 @@
-﻿namespace ScrLib;
+namespace ScrLib;
 
 /// <summary>SCR файл.</summary>
 /// <param name="Magic">Число известных игре скриптов; обычно 59 (0x3B).</param>
@@ -17,26 +17,26 @@ public record ScrEntry(string Title, int Index, int InnerCount, List<ScrEntryInn
 /// Вложенная запись SCR: одна инструкция секции. Исполняется в <c>AIActions::execute_scr_ai_script</c> (ai.dll 0x024705b0);
 /// секция выполняется заново сверху при каждом вызове до конца, до инструкции «Return» или до перехода.
 /// </summary>
-/// <param name="ScriptIndex">Для <see cref="ScrEntryInnerType.Execute"/>: номер встроенной функции (0..58, <c>action_N</c> в ai.dll), -1 - не встроенная
+/// <param name="NativeActionIndex">Для <see cref="ScrEntryInnerType.Execute"/>: номер встроенной функции (0..58, <c>action_N</c> в ai.dll), -1 - не встроенная
 /// (копирование переменной или функция из .fml). В остальных типах не используется.</param>
-/// <param name="UnkInner2">Индекс переменной Varset: для Execute и SetVarsetValue - в неё пишется результат / значение. Для Compare не используется (-1).</param>
-/// <param name="UnkInner3">SetVarsetValue: записываемое значение (для переменной типа DWORD - число, иначе как float). Execute при ScriptIndex = -1:
+/// <param name="ResultVarIndex">Индекс переменной Varset: для Execute и SetVarsetValue - в неё пишется результат / значение. Для Compare не используется (-1).</param>
+/// <param name="ValueOrSourceVarIndex">SetVarsetValue: записываемое значение (для переменной типа DWORD - число, иначе как float). Execute при NativeActionIndex = -1:
 /// индекс переменной-источника копирования, -1 - вызвать функцию .fml.</param>
 /// <param name="Type">Тип инструкции.</param>
-/// <param name="UnkInner5">Compare: операция сравнения первой переменной аргументов со второй: 0 <c>&lt;</c>, 1 <c>==</c>, 2 <c>&gt;</c>, 3 <c>&lt;=</c>, 4 <c>&gt;=</c>, 5 <c>!=</c>.
+/// <param name="CompareOperator">Compare: операция сравнения первой переменной аргументов со второй: 0 <c>&lt;</c>, 1 <c>==</c>, 2 <c>&gt;</c>, 3 <c>&lt;=</c>, 4 <c>&gt;=</c>, 5 <c>!=</c>.
 /// Остальные типы: не используется.</param>
 /// <param name="ArgumentsCount">Количество аргументов.</param>
 /// <param name="Arguments">Аргументы: Compare - индексы двух переменных Varset; GotoInstruction - номер инструкции (с 1); GotoEntry - номер секции.</param>
-/// <param name="UnkInner7">Execute при ScriptIndex = -1 и UnkInner3 = -1: номер функции в .fml (<c>FunctionEntry::execute_fml_function</c>).</param>
+/// <param name="FmlFunctionIndex">Execute при NativeActionIndex = -1 и ValueOrSourceVarIndex = -1: номер функции в .fml (<c>FunctionEntry::execute_fml_function</c>).</param>
 public record ScrEntryInner(
-    int ScriptIndex,
-    int UnkInner2,
-    int UnkInner3,
+    int NativeActionIndex,
+    int ResultVarIndex,
+    int ValueOrSourceVarIndex,
     ScrEntryInnerType Type,
-    int UnkInner5,
+    int CompareOperator,
     int ArgumentsCount,
     List<int> Arguments,
-    int UnkInner7);
+    int FmlFunctionIndex);
 
 /// <summary>
 /// Тип инструкции SCR (<c>AIScript.type</c> в ai.dll). Условия образуют стек: каждое Compare увеличивает глубину,
@@ -47,10 +47,10 @@ public record ScrEntryInner(
 /// </summary>
 public enum ScrEntryInnerType
 {
-    /// <summary>Выполнить действие: встроенная функция <c>action_{ScriptIndex}</c>, копирование переменной или функция .fml; результат - в переменную UnkInner2.</summary>
+    /// <summary>Выполнить действие: встроенная функция <c>action_{NativeActionIndex}</c>, копирование переменной или функция .fml; результат - в переменную ResultVarIndex.</summary>
     Execute = -1,
 
-    /// <summary>Сравнить две переменные Varset (аргументы), операция - UnkInner5; DWORD сравнивается как целое, остальное как float.</summary>
+    /// <summary>Сравнить две переменные Varset (аргументы), операция - CompareOperator; DWORD сравнивается как целое, остальное как float.</summary>
     Compare = 0,
 
     /// <summary>Закрыть условие (уменьшить глубину стека условий).</summary>
@@ -68,6 +68,6 @@ public enum ScrEntryInnerType
     /// <summary>Завершить выполнение секции на этом тике (возвращает false). Выполнение при следующем вызове снова начинается с первой инструкции.</summary>
     Return = 5,
 
-    /// <summary>Записать в переменную Varset UnkInner2 значение UnkInner3.</summary>
+    /// <summary>Записать в переменную Varset ResultVarIndex значение ValueOrSourceVarIndex.</summary>
     SetVarsetValue = 6,
 }

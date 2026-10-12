@@ -1,7 +1,7 @@
 namespace ScrLib;
 
 /// <summary>
-/// Встроенные функции скриптов (<c>ScrEntryInner.ScriptIndex</c> у инструкций типа Execute): таблица <c>action_0..action_58</c> в ai.dll
+/// Встроенные функции скриптов (<c>ScrEntryInner.NativeActionIndex</c> у инструкций типа Execute): таблица <c>action_0..action_58</c> в ai.dll
 /// (<c>SuperAI::ctor</c>, 0x02461000). Названы по декомпилированному коду и по использованию в 75 .scr
 /// (аргументы - переменные Varset, имена и константы в <c>MISSIONS/SCRIPTS/varset.var</c>). Поведение в игре не наблюдалось.
 /// Функции без записи в таблице не разобраны.

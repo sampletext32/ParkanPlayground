@@ -1,4 +1,4 @@
-﻿using ImGuiNET;
+using ImGuiNET;
 using NResUI.Abstractions;
 using NResUI.Models;
 using ScrLib;
@@ -50,14 +50,14 @@ public class ScrExplorer : IImGuiPanel
 
                             if (ImGui.BeginTable($"Элементы##{i:0000}", 8, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoHostExtendX))
                             {
-                                ImGui.TableSetupColumn("Индекс встроенного скрипта");
-                                ImGui.TableSetupColumn("UnkInner2");
-                                ImGui.TableSetupColumn("UnkInner3");
+                                ImGui.TableSetupColumn("Встроенная функция");
+                                ImGui.TableSetupColumn("Результат в переменную");
+                                ImGui.TableSetupColumn("Значение / источник");
                                 ImGui.TableSetupColumn("Тип действия");
-                                ImGui.TableSetupColumn("UnkInner5");
+                                ImGui.TableSetupColumn("Операция сравнения");
                                 ImGui.TableSetupColumn("Кол-во аргументов");
                                 ImGui.TableSetupColumn("Аргументы");
-                                ImGui.TableSetupColumn("UnkInner7");
+                                ImGui.TableSetupColumn("Формула .fml");
                                 ImGui.TableHeadersRow();
 
                                 for (int j = 0; j < entry.Inners.Count; j++)
@@ -65,37 +65,37 @@ public class ScrExplorer : IImGuiPanel
                                     var inner = entry.Inners[j];
                                     ImGui.TableNextRow();
                                     ImGui.TableNextColumn();
-                                    ImGui.Text(ScrLib.ScrActions.Describe(inner.ScriptIndex));
+                                    ImGui.Text(ScrLib.ScrActions.Describe(inner.NativeActionIndex));
 
-                                    if (inner.ScriptIndex == 2)
+                                    if (inner.NativeActionIndex == 2)
                                     {
                                         Utils.ShowHint("Первый аргумент - номер проблемы");
                                     }
 
-                                    if (inner.ScriptIndex == 4)
+                                    if (inner.NativeActionIndex == 4)
                                     {
                                         Utils.ShowHint("Первый аргумент - номер проблемы");
                                     }
 
-                                    if (inner.ScriptIndex == 8)
+                                    if (inner.NativeActionIndex == 8)
                                     {
                                         Utils.ShowHint("Установить dCurrentProblem стейт (VARSET:arg0)");
                                     }
 
-                                    if (inner.ScriptIndex == 20)
+                                    if (inner.NativeActionIndex == 20)
                                     {
                                         Utils.ShowHint("Первый аргумент - номер проблемы");
                                     }
 
                                     ImGui.TableNextColumn();
-                                    ImGui.Text(inner.UnkInner2.ToString());
+                                    ImGui.Text(inner.ResultVarIndex.ToString());
                                     ImGui.TableNextColumn();
-                                    ImGui.Text(inner.UnkInner3.ToString());
+                                    ImGui.Text(inner.ValueOrSourceVarIndex.ToString());
                                     ImGui.TableNextColumn();
                                     ImGui.Text($"{(int) inner.Type}: {inner.Type:G}");
                                     if (inner.Type == ScrEntryInnerType.Compare)
                                     {
-                                        Utils.ShowHint("Сравнение двух переменных Varset (аргументы), операция в UnkInner5: 0 <, 1 ==, 2 >, 3 <=, 4 >=, 5 !=");
+                                        Utils.ShowHint("Сравнение двух переменных Varset (аргументы), операция в CompareOperator: 0 <, 1 ==, 2 >, 3 <=, 4 >=, 5 !=");
                                     }
 
                                     if (inner.Type == ScrEntryInnerType.Return)
@@ -105,11 +105,11 @@ public class ScrExplorer : IImGuiPanel
 
                                     if (inner.Type == ScrEntryInnerType.SetVarsetValue)
                                     {
-                                        Utils.ShowHint("Записать в переменную Varset UnkInner2 значение UnkInner3");
+                                        Utils.ShowHint("Записать в переменную Varset ResultVarIndex значение ValueOrSourceVarIndex");
                                     }
 
                                     ImGui.TableNextColumn();
-                                    ImGui.Text(inner.UnkInner5.ToString());
+                                    ImGui.Text(inner.CompareOperator.ToString());
                                     ImGui.TableNextColumn();
                                     ImGui.Text(inner.ArgumentsCount.ToString());
                                     ImGui.TableNextColumn();
@@ -123,7 +123,7 @@ public class ScrExplorer : IImGuiPanel
                                     }
 
                                     ImGui.TableNextColumn();
-                                    ImGui.Text(inner.UnkInner7.ToString());
+                                    ImGui.Text(inner.FmlFunctionIndex.ToString());
                                 }
 
                                 ImGui.EndTable();
