@@ -32,7 +32,7 @@ public class ArealMapViewModel
     /// <summary>Масштаб: пикселей на единицу карты.</summary>
     public float Zoom { get; set; } = 0.2f;
 
-    /// <summary>Раскраска: 0 - по Mask0x28, 1 - по Flag0x20, 2 - по наклону (nz), 3 - одним цветом.</summary>
+    /// <summary>Раскраска: 0 - по Mask0x28, 1 - по проходимости (Flag0x20), 2 - по наклону (nz), 3 - одним цветом.</summary>
     public int ColorMode { get; set; }
 
     public bool ShowBorders { get; set; } = true;

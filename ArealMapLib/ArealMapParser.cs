@@ -75,7 +75,7 @@ public static class ArealMapParser
                 edges[v] = new ArealEdge(neighbour, neighbourEdge);
             }
 
-            areals[i] = new ArealRecord(center, area, normal, flag, mask, vertices, edges);
+            areals[i] = new ArealRecord(center, area, normal, flag != 0, mask, vertices, edges);
         }
 
         var width = stream.ReadInt32LittleEndian();

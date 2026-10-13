@@ -12,7 +12,7 @@ namespace NResUI.ImGuiUI;
 /// </summary>
 public class ArealMapExplorer : IImGuiPanel
 {
-    private static readonly string[] ColorModes = ["По Mask0x28", "По Flag0x20", "По наклону (nz)", "Один цвет"];
+    private static readonly string[] ColorModes = ["По Mask0x28", "По проходимости", "По наклону (nz)", "Один цвет"];
 
     private readonly ArealMapViewModel _vm;
 
@@ -91,9 +91,9 @@ public class ArealMapExplorer : IImGuiPanel
         }
         else if (_vm.ColorMode == 1)
         {
-            LegendItem(new Vector4(0.35f, 0.55f, 0.75f, 0.8f), "Flag0x20 = 0");
+            LegendItem(new Vector4(0.35f, 0.55f, 0.75f, 0.8f), "Непроходимый (Flag0x20 = 0)");
             ImGui.SameLine();
-            LegendItem(new Vector4(0.9f, 0.5f, 0.2f, 0.8f), "Flag0x20 = 1");
+            LegendItem(new Vector4(0.9f, 0.5f, 0.2f, 0.8f), "Проходимый (Flag0x20 = 1)");
         }
 
         var avail = ImGui.GetContentRegionAvail();
@@ -332,7 +332,7 @@ public class ArealMapExplorer : IImGuiPanel
             case 0:
                 return Hue(areal.Mask0x28 * 0.61803f, 0.55f, 0.75f);
             case 1:
-                return areal.Flag0x20 != 0 ? new Vector4(0.9f, 0.5f, 0.2f, 0.8f) : new Vector4(0.35f, 0.55f, 0.75f, 0.8f);
+                return areal.IsWalkable ? new Vector4(0.9f, 0.5f, 0.2f, 0.8f) : new Vector4(0.35f, 0.55f, 0.75f, 0.8f);
             case 2:
                 // чем больше наклон, тем краснее: nz 1.0 - зелёный, 0.3 - красный
                 var t = Math.Clamp((areal.Normal.Z - 0.3f) / 0.7f, 0f, 1f);
@@ -371,7 +371,7 @@ public class ArealMapExplorer : IImGuiPanel
         ImGui.BeginTooltip();
         ImGui.Text($"Ареал {index}");
         ImGui.Text($"Вершин: {a.Vertices.Length}, площадь {a.Area:0.#}");
-        ImGui.Text($"Mask0x28 = {a.Mask0x28}, Flag0x20 = {a.Flag0x20}");
+        ImGui.Text($"Mask0x28 = {a.Mask0x28}, Flag0x20 = {(a.IsWalkable ? 1 : 0)}");
         ImGui.Text($"Центр ({a.Center.X:0.#}, {a.Center.Y:0.#}, {a.Center.Z:0.#}), nz {a.Normal.Z:0.00}");
         var neighbours = a.Edges.Count(e => e.HasNeighbour);
         ImGui.Text($"Соседей: {neighbours}, рёбер границы: {a.Edges.Length - neighbours}");
@@ -389,7 +389,7 @@ public class ArealMapExplorer : IImGuiPanel
 
         var a = map.Areals[selected];
         ImGui.Text($"Выбран ареал {selected}: вершин {a.Vertices.Length}, площадь {a.Area:0.##}, " +
-                   $"Mask0x28 = {a.Mask0x28}, Flag0x20 = {a.Flag0x20}");
+                   $"Mask0x28 = {a.Mask0x28}, Flag0x20 = {(a.IsWalkable ? 1 : 0)}");
         ImGui.Text($"Центр ({a.Center.X:0.##}, {a.Center.Y:0.##}, {a.Center.Z:0.##}), нормаль ({a.Normal.X:0.00}, {a.Normal.Y:0.00}, {a.Normal.Z:0.00})");
         ImGui.Text("Соседи по рёбрам (ребро i - от вершины i к i+1):");
         for (var e = 0; e < a.Edges.Length; e++)
