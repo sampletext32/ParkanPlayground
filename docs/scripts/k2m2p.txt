@@ -1,6 +1,6 @@
 // k2m2p.scr: секций 9, magic 59
 // Формат строки: <номер инструкции с 1>: <действие>   ; <исходные поля: act res val type cmp args fml>
-// act - NativeActionIndex (action_N в ai.dll), res - ResultVarIndex, val - ValueOrSourceVarIndex, type - ScrEntryInnerType, cmp - CompareOperator, fml - FmlFunctionIndex
+// act - NativeActionIndex (action_N в ai.dll), res - ResultVarIndex, val - ValueOrSourceVarIndex, type - ScrInstructionType, cmp - CompareOperator, fml - FmlFunctionIndex
 
 == Секция 0 "Init" (Index=0, инструкций 10)
    1: action_19 GetClanBasePlaceAndId(ClanBaseX, ClanBaseY, ClanID)   ; act=19 res=-1 val=-1 type=-1 cmp=6 args=[213,214,215] fml=-1

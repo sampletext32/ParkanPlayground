@@ -1,0 +1,138 @@
+// tut4_pl.scr: секций 9, magic 73
+// Формат строки: <номер инструкции с 1>: <действие>   ; <исходные поля: act res val type cmp args fml>
+// act - NativeActionIndex (action_N в ai.dll), res - ResultVarIndex, val - ValueOrSourceVarIndex, type - ScrEntryInnerType, cmp - CompareOperator, fml - FmlFunctionIndex
+
+== Секция 0 "Init" (Index=0, инструкций 9)
+   1: action_19(ClanBaseX, ClanBaseY, ClanID)   ; act=19 res=-1 val=-1 type=-1 cmp=6 args=[224,225,226] fml=-1
+   2: df0 = 0   ; act=-1 res=188 val=-1 type=-1 cmp=6 args=[] fml=0
+   3: df1 = 0   ; act=-1 res=189 val=-1 type=-1 cmp=6 args=[] fml=0
+   4: df2 = 0   ; act=-1 res=190 val=-1 type=-1 cmp=6 args=[] fml=0
+   5: df3 = 0   ; act=-1 res=191 val=-1 type=-1 cmp=6 args=[] fml=0
+   6: df4 = 0   ; act=-1 res=192 val=-1 type=-1 cmp=6 args=[] fml=0
+   7: df5 = action_31(d0, CLASS_ROBOT)   ; act=31 res=193 val=-1 type=-1 cmp=6 args=[10,121] fml=-1
+   8: df5 = ( df5 + 2 )   ; act=-1 res=193 val=-1 type=-1 cmp=6 args=[] fml=5
+   9: action_0(df5)   ; act=0 res=-1 val=-1 type=-1 cmp=6 args=[193] fml=-1
+
+== Секция 1 "Problems0" (Index=1, инструкций 0)
+
+== Секция 2 "Mission" (Index=2, инструкций 106)
+   1: dTemp = action_32(d0, d2)   ; act=32 res=171 val=-1 type=-1 cmp=6 args=[10,12] fml=-1
+   2: if dTemp == d1   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[171,11] fml=-1
+   3:     dcl0 = 1   ; act=-1 res=198 val=-1 type=-1 cmp=6 args=[] fml=6
+   4:     if dcl1 == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[199,10] fml=-1
+   5:         dMCount = 15   ; act=-1 res=170 val=-1 type=-1 cmp=6 args=[] fml=7
+   6:         action_30(MESSAGE_INFO, dMCount)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[66,170] fml=-1
+   7:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+   8: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+   9: dTemp = action_32(d1, d2)   ; act=32 res=171 val=-1 type=-1 cmp=6 args=[11,12] fml=-1
+  10: if dTemp == d1   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[171,11] fml=-1
+  11:     dcl0 = 1   ; act=-1 res=198 val=-1 type=-1 cmp=6 args=[] fml=6
+  12:     if dcl1 == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[199,10] fml=-1
+  13:         dMCount = 16   ; act=-1 res=170 val=-1 type=-1 cmp=6 args=[] fml=9
+  14:         action_30(MESSAGE_INFO, dMCount)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[66,170] fml=-1
+  15:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  16: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  17: dTemp = action_32(d2, d2)   ; act=32 res=171 val=-1 type=-1 cmp=6 args=[12,12] fml=-1
+  18: if dTemp == d1   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[171,11] fml=-1
+  19:     dcl0 = 1   ; act=-1 res=198 val=-1 type=-1 cmp=6 args=[] fml=6
+  20:     if dcl1 == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[199,10] fml=-1
+  21:         dMCount = 17   ; act=-1 res=170 val=-1 type=-1 cmp=6 args=[] fml=11
+  22:         action_30(MESSAGE_INFO, dMCount)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[66,170] fml=-1
+  23:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  24: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  25: if dcl0 == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[198,10] fml=-1
+  26:     dcl1 = 0   ; act=-1 res=199 val=-1 type=-1 cmp=6 args=[] fml=0
+  27: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  28: if dcl0 == d1   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[198,11] fml=-1
+  29:     dcl1 = 1   ; act=-1 res=199 val=-1 type=-1 cmp=6 args=[] fml=6
+  30:     dcl0 = 0   ; act=-1 res=198 val=-1 type=-1 cmp=6 args=[] fml=0
+  31: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  32: dT1 = 1   ; act=-1 res=179 val=1 type=6 cmp=6 args=[] fml=-1
+  33: dTemp = action_52(dT1)   ; act=52 res=171 val=-1 type=-1 cmp=6 args=[179] fml=-1
+  34: if dTemp == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[171,10] fml=-1
+  35:     if df0 == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[188,10] fml=-1
+  36:         df0 = 1   ; act=-1 res=188 val=-1 type=-1 cmp=6 args=[] fml=6
+  37:         action_30(OBJECTIVE_COMPLETE, d0)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[68,10] fml=-1
+  38:         dT2 = 10   ; act=-1 res=180 val=-1 type=-1 cmp=6 args=[] fml=16
+  39:         action_30(MESSAGE_INFO, dT2)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[66,180] fml=-1
+  40:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  41: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  42: if dTemp == ERROR   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[171,156] fml=-1
+  43:     action_30(SYSTEM_MESSAGE, MISSION_FAILED)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[65,71] fml=-1
+  44: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  45: dT1 = -2147483646   ; act=-1 res=179 val=-2147483646 type=6 cmp=6 args=[] fml=-1
+  46: dTemp = action_52(dT1)   ; act=52 res=171 val=-1 type=-1 cmp=6 args=[179] fml=-1
+  47: if dTemp == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[171,10] fml=-1
+  48:     if df1 == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[189,10] fml=-1
+  49:         df1 = 1   ; act=-1 res=189 val=-1 type=-1 cmp=6 args=[] fml=6
+  50:         action_30(OBJECTIVE_COMPLETE, d1)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[68,11] fml=-1
+  51:         dT2 = 11   ; act=-1 res=180 val=-1 type=-1 cmp=6 args=[] fml=18
+  52:         action_30(MESSAGE_INFO, dT2)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[66,180] fml=-1
+  53:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  54: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  55: if dTemp == ERROR   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[171,156] fml=-1
+  56:     action_30(SYSTEM_MESSAGE, MISSION_FAILED)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[65,71] fml=-1
+  57: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  58: dT1 = -2147483645   ; act=-1 res=179 val=-2147483645 type=6 cmp=6 args=[] fml=-1
+  59: dTemp = action_52(dT1)   ; act=52 res=171 val=-1 type=-1 cmp=6 args=[179] fml=-1
+  60: if dTemp == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[171,10] fml=-1
+  61:     if df2 == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[190,10] fml=-1
+  62:         df2 = 1   ; act=-1 res=190 val=-1 type=-1 cmp=6 args=[] fml=6
+  63:         action_30(OBJECTIVE_COMPLETE, d2)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[68,12] fml=-1
+  64:         dT2 = 12   ; act=-1 res=180 val=-1 type=-1 cmp=6 args=[] fml=20
+  65:         action_30(MESSAGE_INFO, dT2)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[66,180] fml=-1
+  66:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  67: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  68: if dTemp == ERROR   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[171,156] fml=-1
+  69:     action_30(SYSTEM_MESSAGE, MISSION_FAILED)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[65,71] fml=-1
+  70: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  71: dT1 = -2147483647   ; act=-1 res=179 val=-2147483647 type=6 cmp=6 args=[] fml=-1
+  72: dTemp = action_52(dT1)   ; act=52 res=171 val=-1 type=-1 cmp=6 args=[179] fml=-1
+  73: if dTemp == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[171,10] fml=-1
+  74:     if df3 == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[191,10] fml=-1
+  75:         df3 = 1   ; act=-1 res=191 val=-1 type=-1 cmp=6 args=[] fml=6
+  76:         action_30(OBJECTIVE_COMPLETE, d4)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[68,14] fml=-1
+  77:         dT2 = 14   ; act=-1 res=180 val=-1 type=-1 cmp=6 args=[] fml=22
+  78:         action_30(MESSAGE_INFO, dT2)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[66,180] fml=-1
+  79:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  80: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  81: if dTemp == ERROR   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[171,156] fml=-1
+  82:     action_30(SYSTEM_MESSAGE, MISSION_FAILED)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[65,71] fml=-1
+  83: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  84: dTemp = action_31(d0, CLASS_ROBOT)   ; act=31 res=171 val=-1 type=-1 cmp=6 args=[10,121] fml=-1
+  85: if dTemp >= df5   ; act=-1 res=-1 val=-1 type=0 cmp=4 args=[171,193] fml=-1
+  86:     if df4 == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[192,10] fml=-1
+  87:         df4 = 1   ; act=-1 res=192 val=-1 type=-1 cmp=6 args=[] fml=6
+  88:         action_30(OBJECTIVE_COMPLETE, d3)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[68,13] fml=-1
+  89:         dT2 = 13   ; act=-1 res=180 val=-1 type=-1 cmp=6 args=[] fml=24
+  90:         action_30(MESSAGE_INFO, dT2)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[66,180] fml=-1
+  91:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  92: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  93: dT = 3   ; act=-1 res=177 val=3 type=6 cmp=6 args=[] fml=-1
+  94: dT = action_52(dT)   ; act=52 res=177 val=-1 type=-1 cmp=6 args=[177] fml=-1
+  95: if dT > d5   ; act=-1 res=-1 val=-1 type=0 cmp=2 args=[177,15] fml=-1
+  96:     dTemp = action_31(d0, CLASS_ROBOT)   ; act=31 res=171 val=-1 type=-1 cmp=6 args=[10,121] fml=-1
+  97:     dT = df5 -1   ; act=-1 res=177 val=-1 type=-1 cmp=6 args=[] fml=25
+  98:     if dTemp >= dT   ; act=-1 res=-1 val=-1 type=0 cmp=4 args=[171,177] fml=-1
+  99:         if df4 == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[192,10] fml=-1
+ 100:             df4 = 1   ; act=-1 res=192 val=-1 type=-1 cmp=6 args=[] fml=6
+ 101:             action_30(OBJECTIVE_COMPLETE, d3)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[68,13] fml=-1
+ 102:             dT2 = 13   ; act=-1 res=180 val=-1 type=-1 cmp=6 args=[] fml=24
+ 103:             action_30(MESSAGE_INFO, dT2)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[66,180] fml=-1
+ 104:         endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+ 105:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+ 106: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+
+== Секция 3 "Fort_Task_Complete" (Index=3, инструкций 0)
+
+== Секция 4 "Fort_Captured" (Index=4, инструкций 0)
+
+== Секция 5 "Mech_GeneratorFound" (Index=5, инструкций 0)
+
+== Секция 6 "Mech_Mineral_Found" (Index=6, инструкций 0)
+
+== Секция 7 "Mech_Task_Complete" (Index=7, инструкций 0)
+
+== Секция 8 "Hero_Teleported" (Index=8, инструкций 1)
+   1: action_30(SYSTEM_MESSAGE, MISSION_COMPLETE)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[65,72] fml=-1
+

@@ -8,7 +8,8 @@ public static class ScrDump
     /// <summary>Пишет по <c>.txt</c> на каждый <c>.scr</c> и список переменных <c>varset.txt</c>.</summary>
     /// <param name="scriptsDir">Каталог <c>MISSIONS/SCRIPTS</c> игры.</param>
     /// <param name="outDir">Куда писать дампы.</param>
-    public static void Run(string scriptsDir, string outDir)
+    /// <param name="useActionNames">false - выводить <c>action_N</c> без имён первой части игры (для скриптов второй части).</param>
+    public static void Run(string scriptsDir, string outDir, bool useActionNames = true)
     {
         Directory.CreateDirectory(outDir);
 
@@ -31,7 +32,7 @@ public static class ScrDump
             var fmlPath = Path.ChangeExtension(scrPath, ".fml");
             var scr = ScrParser.ReadFile(scrPath);
             var fml = File.Exists(fmlPath) ? FmlParser.ReadFile(fmlPath) : null;
-            var text = ScrTextDumper.Dump(Path.GetFileName(scrPath), scr, fml, names);
+            var text = ScrTextDumper.Dump(Path.GetFileName(scrPath), scr, fml, names, useActionNames);
             File.WriteAllText(Path.Combine(outDir, Path.GetFileNameWithoutExtension(scrPath) + ".txt"), text, new UTF8Encoding(false));
             count++;
         }

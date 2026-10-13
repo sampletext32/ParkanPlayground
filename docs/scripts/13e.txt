@@ -1,6 +1,6 @@
 // 13e.scr: секций 24, magic 59
 // Формат строки: <номер инструкции с 1>: <действие>   ; <исходные поля: act res val type cmp args fml>
-// act - NativeActionIndex (action_N в ai.dll), res - ResultVarIndex, val - ValueOrSourceVarIndex, type - ScrEntryInnerType, cmp - CompareOperator, fml - FmlFunctionIndex
+// act - NativeActionIndex (action_N в ai.dll), res - ResultVarIndex, val - ValueOrSourceVarIndex, type - ScrInstructionType, cmp - CompareOperator, fml - FmlFunctionIndex
 
 == Секция 0 "PBM_N_OPTIMAL_TRANSPORT_Start" (Index=0, инструкций 18)
    1: dTemp = action_14 FindNearestUnitOfType(UNIT_ANY_UNIT, ROBOT_TRANSPORT)   ; act=14 res=171 val=-1 type=-1 cmp=6 args=[149,115] fml=-1
@@ -17,7 +17,7 @@
   12: fTime = 0.8   ; act=-1 res=167 val=-1 type=-1 cmp=6 args=[] fml=5
   13: fIndependence = 0.5   ; act=-1 res=168 val=-1 type=-1 cmp=6 args=[] fml=4
   14: dTemp1 = ERROR   ; act=-1 res=172 val=156 type=-1 cmp=6 args=[] fml=-1
-  15: action_6 SetUnitCriticalStatus(dTemp, UNIT_NORMAL)   ; act=6 res=-1 val=-1 type=-1 cmp=6 args=[171,145] fml=-1
+  15: action_6 AssignUnitToCurrentProblem(dTemp, UNIT_NORMAL)   ; act=6 res=-1 val=-1 type=-1 cmp=6 args=[171,145] fml=-1
   16: action_15 IssueOrderToUnit(dTemp, ORDER_ROBOT_TRANSPORT, INSERT_ORDER_REPLACE, dTemp1, fSuccess, fSurvive, fTime, fIndependence, TARGET_NOT_DEFINED)   ; act=15 res=-1 val=-1 type=-1 cmp=6 args=[171,78,100,172,165,166,167,168,96] fml=-1
   17: action_8 SetCurrentProblemStatus(ST_SOLVING)   ; act=8 res=-1 val=-1 type=-1 cmp=6 args=[134] fml=-1
   18: action_27 AddExpression(ACTION_NOTHING_DOING, EXP_TARGET_BY_LOGIC_ID, dTemp)   ; act=27 res=-1 val=-1 type=-1 cmp=6 args=[45,42,171] fml=-1
@@ -40,7 +40,7 @@
   13: fTime = 0.0   ; act=-1 res=167 val=-1 type=-1 cmp=6 args=[] fml=12
   14: fIndependence = 0.5   ; act=-1 res=168 val=-1 type=-1 cmp=6 args=[] fml=4
   15: action_15 IssueOrderToUnit(dT, ORDER_ROBOT_CAPTURE, INSERT_ORDER_REPLACE, NONE, fSuccess, fSurvive, fTime, fIndependence, TARGET_BY_LOGIC_ID, dX)   ; act=15 res=-1 val=-1 type=-1 cmp=6 args=[177,82,100,153,165,166,167,168,93,216] fml=-1
-  16: action_6 SetUnitCriticalStatus(dT, UNIT_NORMAL)   ; act=6 res=-1 val=-1 type=-1 cmp=6 args=[177,145] fml=-1
+  16: action_6 AssignUnitToCurrentProblem(dT, UNIT_NORMAL)   ; act=6 res=-1 val=-1 type=-1 cmp=6 args=[177,145] fml=-1
   17: dTemp3 = action_29 GetCurrentProblemField(d2)   ; act=29 res=174 val=-1 type=-1 cmp=6 args=[12] fml=-1
   18: dT3 = dTemp3   ; act=-1 res=181 val=174 type=-1 cmp=6 args=[] fml=-1
   19: dAttackGroup = action_25 CreateGroup(TAKE_BY_HITS, dTemp3)   ; act=25 res=204 val=-1 type=-1 cmp=6 args=[143,174] fml=-1
@@ -88,7 +88,7 @@
   18: fTime = 0.0   ; act=-1 res=167 val=-1 type=-1 cmp=6 args=[] fml=12
   19: fIndependence = 0.5   ; act=-1 res=168 val=-1 type=-1 cmp=6 args=[] fml=4
   20: action_15 IssueOrderToUnit(dT, ORDER_ROBOT_CAPTURE, INSERT_ORDER_REPLACE, NONE, fSuccess, fSurvive, fTime, fIndependence, TARGET_BY_LOGIC_ID, dX)   ; act=15 res=-1 val=-1 type=-1 cmp=6 args=[177,82,100,153,165,166,167,168,93,216] fml=-1
-  21: action_6 SetUnitCriticalStatus(dT, UNIT_NORMAL)   ; act=6 res=-1 val=-1 type=-1 cmp=6 args=[177,145] fml=-1
+  21: action_6 AssignUnitToCurrentProblem(dT, UNIT_NORMAL)   ; act=6 res=-1 val=-1 type=-1 cmp=6 args=[177,145] fml=-1
   22: fT = 300   ; act=-1 res=164 val=-1 type=-1 cmp=6 args=[] fml=28
   23: dTemp3 = action_44 CalcWeightAroundPoint(fT, ERROR, TARGET_BY_LOGIC_ID, dX)   ; act=44 res=174 val=-1 type=-1 cmp=6 args=[164,156,93,216] fml=-1
   24: dTemp3 = dTemp3 + (dTemp3*0.5)*fDifficulty   ; act=-1 res=174 val=-1 type=-1 cmp=6 args=[] fml=29
@@ -308,7 +308,7 @@
   23:     action_8 SetCurrentProblemStatus(ST_SOLVED)   ; act=8 res=-1 val=-1 type=-1 cmp=6 args=[135] fml=-1
   24:     return   ; act=-1 res=-1 val=-1 type=5 cmp=6 args=[] fml=-1
   25: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
-  26: action_6 SetUnitCriticalStatus(dT2, UNIT_CRITICAL)   ; act=6 res=-1 val=-1 type=-1 cmp=6 args=[180,146] fml=-1
+  26: action_6 AssignUnitToCurrentProblem(dT2, UNIT_CRITICAL)   ; act=6 res=-1 val=-1 type=-1 cmp=6 args=[180,146] fml=-1
   27: action_8 SetCurrentProblemStatus(ST_SOLVING)   ; act=8 res=-1 val=-1 type=-1 cmp=6 args=[134] fml=-1
   28: action_27 AddExpression(ACTION_NOTHING_DOING, EXP_TARGET_BY_LOGIC_ID, dT2)   ; act=27 res=-1 val=-1 type=-1 cmp=6 args=[45,42,180] fml=-1
 

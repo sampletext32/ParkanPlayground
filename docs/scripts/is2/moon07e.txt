@@ -1,0 +1,268 @@
+// moon07e.scr: секций 13, magic 73
+// Формат строки: <номер инструкции с 1>: <действие>   ; <исходные поля: act res val type cmp args fml>
+// act - NativeActionIndex (action_N в ai.dll), res - ResultVarIndex, val - ValueOrSourceVarIndex, type - ScrEntryInnerType, cmp - CompareOperator, fml - FmlFunctionIndex
+
+== Секция 0 "Init" (Index=0, инструкций 41)
+   1: df0 = 0   ; act=-1 res=188 val=-1 type=-1 cmp=6 args=[] fml=0
+   2: df1 = 0   ; act=-1 res=189 val=-1 type=-1 cmp=6 args=[] fml=0
+   3: df2 = 0   ; act=-1 res=190 val=-1 type=-1 cmp=6 args=[] fml=0
+   4: df3 = 0   ; act=-1 res=191 val=-1 type=-1 cmp=6 args=[] fml=0
+   5: df4 = 0   ; act=-1 res=192 val=-1 type=-1 cmp=6 args=[] fml=0
+   6: df5 = 0   ; act=-1 res=193 val=-1 type=-1 cmp=6 args=[] fml=0
+   7: df6 = 0   ; act=-1 res=194 val=-1 type=-1 cmp=6 args=[] fml=0
+   8: df7 = 0   ; act=-1 res=195 val=-1 type=-1 cmp=6 args=[] fml=0
+   9: df8 = 0   ; act=-1 res=196 val=-1 type=-1 cmp=6 args=[] fml=0
+  10: df9 = 0   ; act=-1 res=197 val=-1 type=-1 cmp=6 args=[] fml=0
+  11: action_19(ClanBaseX, ClanBaseY, ClanID)   ; act=19 res=-1 val=-1 type=-1 cmp=6 args=[224,225,226] fml=-1
+  12: dBuildingProtectHits = 300   ; act=-1 res=40 val=-1 type=-1 cmp=6 args=[] fml=10
+  13: action_43()   ; act=43 res=-1 val=-1 type=-1 cmp=6 args=[] fml=-1
+  14: dTemp = 11   ; act=-1 res=171 val=11 type=6 cmp=6 args=[] fml=-1
+  15: action_51(dTemp, TRUE)   ; act=51 res=-1 val=-1 type=-1 cmp=6 args=[171,155] fml=-1
+  16: action_15(dTemp, ORDER_ROBOT_SHUTDOWN, INSERT_ORDER_REPLACE, d1, fSuccess, fSurvive, fTime, fIndependence, TARGET_BY_LOGIC_ID, d1, d0)   ; act=15 res=-1 val=-1 type=-1 cmp=6 args=[171,84,100,11,165,166,167,168,93,11,10] fml=-1
+  17: dTemp = 12   ; act=-1 res=171 val=12 type=6 cmp=6 args=[] fml=-1
+  18: action_51(dTemp, TRUE)   ; act=51 res=-1 val=-1 type=-1 cmp=6 args=[171,155] fml=-1
+  19: action_15(dTemp, ORDER_ROBOT_SHUTDOWN, INSERT_ORDER_REPLACE, d1, fSuccess, fSurvive, fTime, fIndependence, TARGET_BY_LOGIC_ID, d1, d0)   ; act=15 res=-1 val=-1 type=-1 cmp=6 args=[171,84,100,11,165,166,167,168,93,11,10] fml=-1
+  20: dTemp = 3   ; act=-1 res=171 val=3 type=6 cmp=6 args=[] fml=-1
+  21: action_51(dTemp, TRUE)   ; act=51 res=-1 val=-1 type=-1 cmp=6 args=[171,155] fml=-1
+  22: dTemp = 4   ; act=-1 res=171 val=4 type=6 cmp=6 args=[] fml=-1
+  23: action_51(dTemp, TRUE)   ; act=51 res=-1 val=-1 type=-1 cmp=6 args=[171,155] fml=-1
+  24: dTemp = 8   ; act=-1 res=171 val=8 type=6 cmp=6 args=[] fml=-1
+  25: action_51(dTemp, TRUE)   ; act=51 res=-1 val=-1 type=-1 cmp=6 args=[171,155] fml=-1
+  26: dTemp = 9   ; act=-1 res=171 val=9 type=6 cmp=6 args=[] fml=-1
+  27: action_51(dTemp, TRUE)   ; act=51 res=-1 val=-1 type=-1 cmp=6 args=[171,155] fml=-1
+  28: dTemp = 15   ; act=-1 res=171 val=15 type=6 cmp=6 args=[] fml=-1
+  29: action_51(dTemp, TRUE)   ; act=51 res=-1 val=-1 type=-1 cmp=6 args=[171,155] fml=-1
+  30: dTemp = 16   ; act=-1 res=171 val=16 type=6 cmp=6 args=[] fml=-1
+  31: action_51(dTemp, TRUE)   ; act=51 res=-1 val=-1 type=-1 cmp=6 args=[171,155] fml=-1
+  32: dTemp = 17   ; act=-1 res=171 val=17 type=6 cmp=6 args=[] fml=-1
+  33: action_51(dTemp, TRUE)   ; act=51 res=-1 val=-1 type=-1 cmp=6 args=[171,155] fml=-1
+  34: dTemp = 18   ; act=-1 res=171 val=18 type=6 cmp=6 args=[] fml=-1
+  35: action_51(dTemp, TRUE)   ; act=51 res=-1 val=-1 type=-1 cmp=6 args=[171,155] fml=-1
+  36: dTemp = 13   ; act=-1 res=171 val=13 type=6 cmp=6 args=[] fml=-1
+  37: action_51(dTemp, TRUE)   ; act=51 res=-1 val=-1 type=-1 cmp=6 args=[171,155] fml=-1
+  38: action_15(dTemp, ORDER_ROBOT_SHUTDOWN, INSERT_ORDER_REPLACE, d1, fSuccess, fSurvive, fTime, fIndependence, TARGET_BY_LOGIC_ID, d1, d0)   ; act=15 res=-1 val=-1 type=-1 cmp=6 args=[171,84,100,11,165,166,167,168,93,11,10] fml=-1
+  39: dTemp = 14   ; act=-1 res=171 val=14 type=6 cmp=6 args=[] fml=-1
+  40: action_51(dTemp, TRUE)   ; act=51 res=-1 val=-1 type=-1 cmp=6 args=[171,155] fml=-1
+  41: action_15(dTemp, ORDER_ROBOT_SHUTDOWN, INSERT_ORDER_REPLACE, d1, fSuccess, fSurvive, fTime, fIndependence, TARGET_BY_LOGIC_ID, d1, d0)   ; act=15 res=-1 val=-1 type=-1 cmp=6 args=[171,84,100,11,165,166,167,168,93,11,10] fml=-1
+
+== Секция 1 "Problems0" (Index=1, инструкций 155)
+   1: if df0 == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[188,10] fml=-1
+   2:     dT = -2147483645   ; act=-1 res=177 val=-2147483645 type=6 cmp=6 args=[] fml=-1
+   3:     dT = action_52(dT)   ; act=52 res=177 val=-1 type=-1 cmp=6 args=[177] fml=-1
+   4:     if dT == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[177,10] fml=-1
+   5:         df0 = 1   ; act=-1 res=188 val=-1 type=-1 cmp=6 args=[] fml=11
+   6:         dTime0 = 20   ; act=-1 res=203 val=-1 type=-1 cmp=6 args=[] fml=12
+   7:         dTime0 = action_59(dTime0)   ; act=59 res=203 val=-1 type=-1 cmp=6 args=[203] fml=-1
+   8:         action_57(d3, d3)   ; act=57 res=-1 val=-1 type=-1 cmp=6 args=[13,13] fml=-1
+   9:         action_57(d4, d4)   ; act=57 res=-1 val=-1 type=-1 cmp=6 args=[14,14] fml=-1
+  10:         dTemp = 13   ; act=-1 res=171 val=13 type=6 cmp=6 args=[] fml=-1
+  11:         action_51(dTemp, FALSE)   ; act=51 res=-1 val=-1 type=-1 cmp=6 args=[171,154] fml=-1
+  12:         dTemp = 14   ; act=-1 res=171 val=14 type=6 cmp=6 args=[] fml=-1
+  13:         action_51(dTemp, FALSE)   ; act=51 res=-1 val=-1 type=-1 cmp=6 args=[171,154] fml=-1
+  14:         dTemp = 11   ; act=-1 res=171 val=11 type=6 cmp=6 args=[] fml=-1
+  15:         action_51(dTemp, FALSE)   ; act=51 res=-1 val=-1 type=-1 cmp=6 args=[171,154] fml=-1
+  16:         dTemp = 12   ; act=-1 res=171 val=12 type=6 cmp=6 args=[] fml=-1
+  17:         action_51(dTemp, FALSE)   ; act=51 res=-1 val=-1 type=-1 cmp=6 args=[171,154] fml=-1
+  18:         dT = -2147483643   ; act=-1 res=177 val=-2147483643 type=6 cmp=6 args=[] fml=-1
+  19:         fTemp = 0.8   ; act=-1 res=158 val=-1 type=-1 cmp=6 args=[] fml=13
+  20:         dTemp1 = 30   ; act=-1 res=172 val=-1 type=-1 cmp=6 args=[] fml=14
+  21:         dTemp2 = 0   ; act=-1 res=173 val=-1 type=-1 cmp=6 args=[] fml=0
+  22:         action_2(PBM_BUILDING_INF_CAPTURE, fTemp, dTemp1, dTemp2, dT, NONE, d0)   ; act=2 res=-1 val=-1 type=-1 cmp=6 args=[63,158,172,173,177,153,10] fml=-1
+  23:         dTemp = 11   ; act=-1 res=171 val=11 type=6 cmp=6 args=[] fml=-1
+  24:         action_15(dTemp, ORDER_ROBOT_ATTACK, INSERT_ORDER_REPLACE, NONE, f0, f0, f0, f0, TARGET_BY_LOGIC_ID, d1, d0)   ; act=15 res=-1 val=-1 type=-1 cmp=6 args=[171,75,100,153,0,0,0,0,93,11,10] fml=-1
+  25:         dTemp = 12   ; act=-1 res=171 val=12 type=6 cmp=6 args=[] fml=-1
+  26:         action_15(dTemp, ORDER_ROBOT_ATTACK, INSERT_ORDER_REPLACE, NONE, f0, f0, f0, f0, TARGET_BY_LOGIC_ID, d1, d0)   ; act=15 res=-1 val=-1 type=-1 cmp=6 args=[171,75,100,153,0,0,0,0,93,11,10] fml=-1
+  27:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  28: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  29: if df0 > d0   ; act=-1 res=-1 val=-1 type=0 cmp=2 args=[188,10] fml=-1
+  30:     dTemp = action_60(dTime0)   ; act=60 res=171 val=-1 type=-1 cmp=6 args=[203] fml=-1
+  31:     if dTemp == d1   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[171,11] fml=-1
+  32:         dTime0 = 120 - fDifficulty*20   ; act=-1 res=203 val=-1 type=-1 cmp=6 args=[] fml=16
+  33:         dTime0 = action_59(dTime0)   ; act=59 res=203 val=-1 type=-1 cmp=6 args=[203] fml=-1
+  34:         if df1 == d1   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[189,11] fml=-1
+  35:             dTemp = -2147483645   ; act=-1 res=171 val=-2147483645 type=6 cmp=6 args=[] fml=-1
+  36:             fTemp = 0.73   ; act=-1 res=158 val=-1 type=-1 cmp=6 args=[] fml=17
+  37:             dTemp1 = 30   ; act=-1 res=172 val=-1 type=-1 cmp=6 args=[] fml=14
+  38:             dTemp2 = 1   ; act=-1 res=173 val=-1 type=-1 cmp=6 args=[] fml=11
+  39:             action_2(PBM_ATTACK_UNIT, fTemp, dTemp1, dTemp2, dTemp, NONE, NONE)   ; act=2 res=-1 val=-1 type=-1 cmp=6 args=[62,158,172,173,171,153,153] fml=-1
+  40:         endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  41:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  42: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  43: dT = -2147483639   ; act=-1 res=177 val=-2147483639 type=6 cmp=6 args=[] fml=-1
+  44: dT1 = action_52(dT)   ; act=52 res=179 val=-1 type=-1 cmp=6 args=[177] fml=-1
+  45: if dT1 == d1   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[179,11] fml=-1
+  46:     dFreeMindNumber = action_49()   ; act=49 res=222 val=-1 type=-1 cmp=6 args=[] fml=-1
+  47:     if dFreeMindNumber > d0   ; act=-1 res=-1 val=-1 type=0 cmp=2 args=[222,10] fml=-1
+  48:         if df1 == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[189,10] fml=-1
+  49:             dTime1 = 160 - fDifficulty*40   ; act=-1 res=204 val=-1 type=-1 cmp=6 args=[] fml=20
+  50:             dTime1 = action_59(dTime1)   ; act=59 res=204 val=-1 type=-1 cmp=6 args=[204] fml=-1
+  51:             df1 = 1   ; act=-1 res=189 val=-1 type=-1 cmp=6 args=[] fml=11
+  52:         endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  53:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  54:     if df1 == d1   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[189,11] fml=-1
+  55:         dT = action_60(dTime1)   ; act=60 res=177 val=-1 type=-1 cmp=6 args=[204] fml=-1
+  56:         if dT == d1   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[177,11] fml=-1
+  57:             dFreeMindNumber = action_49()   ; act=49 res=222 val=-1 type=-1 cmp=6 args=[] fml=-1
+  58:             if dFreeMindNumber > d0   ; act=-1 res=-1 val=-1 type=0 cmp=2 args=[222,10] fml=-1
+  59:                 action_57(d7, d7)   ; act=57 res=-1 val=-1 type=-1 cmp=6 args=[17,17] fml=-1
+  60:                 df1 = 0   ; act=-1 res=189 val=-1 type=-1 cmp=6 args=[] fml=0
+  61:             endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  62:         endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  63:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  64: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  65: dT = -2147483638   ; act=-1 res=177 val=-2147483638 type=6 cmp=6 args=[] fml=-1
+  66: dT2 = action_52(dT)   ; act=52 res=180 val=-1 type=-1 cmp=6 args=[177] fml=-1
+  67: if dT2 == d1   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[180,11] fml=-1
+  68:     dFreeMindNumber = action_49()   ; act=49 res=222 val=-1 type=-1 cmp=6 args=[] fml=-1
+  69:     if dFreeMindNumber > d0   ; act=-1 res=-1 val=-1 type=0 cmp=2 args=[222,10] fml=-1
+  70:         if df2 == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[190,10] fml=-1
+  71:             dTime2 = 160 - fDifficulty*40   ; act=-1 res=205 val=-1 type=-1 cmp=6 args=[] fml=20
+  72:             dTime2 = action_59(dTime2)   ; act=59 res=205 val=-1 type=-1 cmp=6 args=[205] fml=-1
+  73:             df2 = 1   ; act=-1 res=190 val=-1 type=-1 cmp=6 args=[] fml=11
+  74:         endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  75:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  76:     if df2 == d1   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[190,11] fml=-1
+  77:         dT = action_60(dTime2)   ; act=60 res=177 val=-1 type=-1 cmp=6 args=[205] fml=-1
+  78:         if dT == d1   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[177,11] fml=-1
+  79:             dFreeMindNumber = action_49()   ; act=49 res=222 val=-1 type=-1 cmp=6 args=[] fml=-1
+  80:             if dFreeMindNumber > d0   ; act=-1 res=-1 val=-1 type=0 cmp=2 args=[222,10] fml=-1
+  81:                 action_57(d8, d8)   ; act=57 res=-1 val=-1 type=-1 cmp=6 args=[18,18] fml=-1
+  82:                 df2 = 0   ; act=-1 res=190 val=-1 type=-1 cmp=6 args=[] fml=0
+  83:             endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  84:         endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  85:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  86: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  87: dT = -2147483633   ; act=-1 res=177 val=-2147483633 type=6 cmp=6 args=[] fml=-1
+  88: dT3 = action_52(dT)   ; act=52 res=181 val=-1 type=-1 cmp=6 args=[177] fml=-1
+  89: if dT3 == d1   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[181,11] fml=-1
+  90:     dFreeMindNumber = action_49()   ; act=49 res=222 val=-1 type=-1 cmp=6 args=[] fml=-1
+  91:     if dFreeMindNumber > d0   ; act=-1 res=-1 val=-1 type=0 cmp=2 args=[222,10] fml=-1
+  92:         if df3 == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[191,10] fml=-1
+  93:             dTime3 = 160 - fDifficulty*40   ; act=-1 res=206 val=-1 type=-1 cmp=6 args=[] fml=20
+  94:             dTime3 = action_59(dTime3)   ; act=59 res=206 val=-1 type=-1 cmp=6 args=[206] fml=-1
+  95:             df3 = 1   ; act=-1 res=191 val=-1 type=-1 cmp=6 args=[] fml=11
+  96:         endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  97:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  98:     if df3 == d1   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[191,11] fml=-1
+  99:         dT = action_60(dTime3)   ; act=60 res=177 val=-1 type=-1 cmp=6 args=[206] fml=-1
+ 100:         if dT == d1   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[177,11] fml=-1
+ 101:             dFreeMindNumber = action_49()   ; act=49 res=222 val=-1 type=-1 cmp=6 args=[] fml=-1
+ 102:             if dFreeMindNumber > d0   ; act=-1 res=-1 val=-1 type=0 cmp=2 args=[222,10] fml=-1
+ 103:                 action_57(d9, d9)   ; act=57 res=-1 val=-1 type=-1 cmp=6 args=[19,19] fml=-1
+ 104:                 df3 = 0   ; act=-1 res=191 val=-1 type=-1 cmp=6 args=[] fml=0
+ 105:             endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+ 106:         endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+ 107:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+ 108: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+ 109: dT = -2147483631   ; act=-1 res=177 val=-2147483631 type=6 cmp=6 args=[] fml=-1
+ 110: dT4 = action_52(dT)   ; act=52 res=182 val=-1 type=-1 cmp=6 args=[177] fml=-1
+ 111: if dT4 == d1   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[182,11] fml=-1
+ 112:     dFreeMindNumber = action_49()   ; act=49 res=222 val=-1 type=-1 cmp=6 args=[] fml=-1
+ 113:     if dFreeMindNumber > d0   ; act=-1 res=-1 val=-1 type=0 cmp=2 args=[222,10] fml=-1
+ 114:         if df4 == d0   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[192,10] fml=-1
+ 115:             dTime4 = 160 - fDifficulty*40   ; act=-1 res=207 val=-1 type=-1 cmp=6 args=[] fml=20
+ 116:             dTime4 = action_59(dTime4)   ; act=59 res=207 val=-1 type=-1 cmp=6 args=[207] fml=-1
+ 117:             df4 = 1   ; act=-1 res=192 val=-1 type=-1 cmp=6 args=[] fml=11
+ 118:         endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+ 119:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+ 120:     if df4 == d1   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[192,11] fml=-1
+ 121:         dT = action_60(dTime4)   ; act=60 res=177 val=-1 type=-1 cmp=6 args=[207] fml=-1
+ 122:         if dT == d1   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[177,11] fml=-1
+ 123:             dFreeMindNumber = action_49()   ; act=49 res=222 val=-1 type=-1 cmp=6 args=[] fml=-1
+ 124:             if dFreeMindNumber > d0   ; act=-1 res=-1 val=-1 type=0 cmp=2 args=[222,10] fml=-1
+ 125:                 dT = 10   ; act=-1 res=177 val=-1 type=-1 cmp=6 args=[] fml=31
+ 126:                 action_57(dT, dT)   ; act=57 res=-1 val=-1 type=-1 cmp=6 args=[177,177] fml=-1
+ 127:                 df4 = 0   ; act=-1 res=192 val=-1 type=-1 cmp=6 args=[] fml=0
+ 128:             endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+ 129:         endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+ 130:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+ 131: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+ 132: if df0 == d1   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[188,11] fml=-1
+ 133:     if dT3 != d1   ; act=-1 res=-1 val=-1 type=0 cmp=5 args=[181,11] fml=-1
+ 134:         if dT4 != d1   ; act=-1 res=-1 val=-1 type=0 cmp=5 args=[182,11] fml=-1
+ 135:             df0 = 2   ; act=-1 res=188 val=-1 type=-1 cmp=6 args=[] fml=33
+ 136:             action_57(d1, d1)   ; act=57 res=-1 val=-1 type=-1 cmp=6 args=[11,11] fml=-1
+ 137:             action_57(d2, d2)   ; act=57 res=-1 val=-1 type=-1 cmp=6 args=[12,12] fml=-1
+ 138:             dTemp = 13   ; act=-1 res=171 val=13 type=6 cmp=6 args=[] fml=-1
+ 139:             action_15(dTemp, ORDER_ROBOT_ATTACK, INSERT_ORDER_REPLACE, NONE, f0, f0, f0, f0, TARGET_BY_LOGIC_ID, d1, d0)   ; act=15 res=-1 val=-1 type=-1 cmp=6 args=[171,75,100,153,0,0,0,0,93,11,10] fml=-1
+ 140:             dTemp = 14   ; act=-1 res=171 val=14 type=6 cmp=6 args=[] fml=-1
+ 141:             action_15(dTemp, ORDER_ROBOT_ATTACK, INSERT_ORDER_REPLACE, NONE, f0, f0, f0, f0, TARGET_BY_LOGIC_ID, d1, d0)   ; act=15 res=-1 val=-1 type=-1 cmp=6 args=[171,75,100,153,0,0,0,0,93,11,10] fml=-1
+ 142:             action_30(MESSAGE_INFO, d4)   ; act=30 res=-1 val=-1 type=-1 cmp=6 args=[66,14] fml=-1
+ 143:         endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+ 144:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+ 145: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+ 146: if df0 == d2   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[188,12] fml=-1
+ 147:     if dT1 != d1   ; act=-1 res=-1 val=-1 type=0 cmp=5 args=[179,11] fml=-1
+ 148:         if dT2 != d1   ; act=-1 res=-1 val=-1 type=0 cmp=5 args=[180,11] fml=-1
+ 149:             df0 = 3   ; act=-1 res=188 val=-1 type=-1 cmp=6 args=[] fml=34
+ 150:             action_57(d5, d5)   ; act=57 res=-1 val=-1 type=-1 cmp=6 args=[15,15] fml=-1
+ 151:             action_57(d6, d6)   ; act=57 res=-1 val=-1 type=-1 cmp=6 args=[16,16] fml=-1
+ 152:         endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+ 153:     endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+ 154: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+ 155: action_9()   ; act=9 res=-1 val=-1 type=-1 cmp=6 args=[] fml=-1
+
+== Секция 2 "Mission" (Index=2, инструкций 0)
+
+== Секция 3 "Fort_Task_Complete" (Index=3, инструкций 0)
+
+== Секция 4 "Fort_Captured" (Index=4, инструкций 4)
+   1: fTemp = 0.8   ; act=-1 res=158 val=-1 type=-1 cmp=6 args=[] fml=13
+   2: dTemp1 = 30   ; act=-1 res=172 val=-1 type=-1 cmp=6 args=[] fml=14
+   3: dTemp2 = 0   ; act=-1 res=173 val=-1 type=-1 cmp=6 args=[] fml=0
+   4: action_2(PBM_BUILDING_INF_CAPTURE, fTemp, dTemp1, dTemp2, dCurrentSender, NONE, d0)   ; act=2 res=-1 val=-1 type=-1 cmp=6 args=[63,158,172,173,21,153,10] fml=-1
+
+== Секция 5 "Mech_GeneratorFound" (Index=5, инструкций 0)
+
+== Секция 6 "Mech_Mineral_Found" (Index=6, инструкций 0)
+
+== Секция 7 "Mech_Task_Complete" (Index=7, инструкций 0)
+
+== Секция 8 "Hero_Teleported" (Index=8, инструкций 0)
+
+== Секция 9 "PBM_ATTACK_UNIT_Start" (Index=9, инструкций 15)
+   1: dX = action_29(d0)   ; act=29 res=227 val=-1 type=-1 cmp=6 args=[10] fml=-1
+   2: if dX == ERROR   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[227,156] fml=-1
+   3:     action_8(ST_SOLVED)   ; act=8 res=-1 val=-1 type=-1 cmp=6 args=[135] fml=-1
+   4:     return   ; act=-1 res=-1 val=-1 type=5 cmp=6 args=[] fml=-1
+   5: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+   6: dAttackGroup = action_25(TAKE_ALL_FREE)   ; act=25 res=214 val=-1 type=-1 cmp=6 args=[142] fml=-1
+   7: if dAttackGroup == ERROR   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[214,156] fml=-1
+   8:     action_8(ST_SOLVED)   ; act=8 res=-1 val=-1 type=-1 cmp=6 args=[135] fml=-1
+   9:     return   ; act=-1 res=-1 val=-1 type=5 cmp=6 args=[] fml=-1
+  10: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  11: action_28(dAttackGroup, ORDER_ROBOT_ATTACK, INSERT_ORDER_REPLACE, NONE, fSuccess, fSurvive, fTime, fIndependence, TARGET_BY_LOGIC_ID, dX)   ; act=28 res=-1 val=-1 type=-1 cmp=6 args=[214,75,100,153,165,166,167,168,93,227] fml=-1
+  12: action_27(ACTION_GROUP_DESTROY, EXP_TARGET_BY_GROUP_ID, dAttackGroup)   ; act=27 res=-1 val=-1 type=-1 cmp=6 args=[47,43,214] fml=-1
+  13: action_27(ACTION_GROUP_NOTHING_DOING, EXP_TARGET_BY_GROUP_ID, dAttackGroup)   ; act=27 res=-1 val=-1 type=-1 cmp=6 args=[48,43,214] fml=-1
+  14: action_8(ST_SOLVING)   ; act=8 res=-1 val=-1 type=-1 cmp=6 args=[134] fml=-1
+  15: action_27(ACTION_DESTROY, EXP_TARGET_BY_LOGIC_ID, dX)   ; act=27 res=-1 val=-1 type=-1 cmp=6 args=[44,42,227] fml=-1
+
+== Секция 10 "PBM_ATTACK_UNIT_Continue" (Index=10, инструкций 0)
+
+== Секция 11 "PBM_BUILDING_INF_CAPTURE_Start" (Index=11, инструкций 10)
+   1: dX = action_29(d0)   ; act=29 res=227 val=-1 type=-1 cmp=6 args=[10] fml=-1
+   2: dT = action_14(UNIT_ANY_NEAREST_CAPTURER, TARGET_BY_LOGIC_ID, dX)   ; act=14 res=177 val=-1 type=-1 cmp=6 args=[151,93,227] fml=-1
+   3: if dT == ERROR   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[177,156] fml=-1
+   4:     return   ; act=-1 res=-1 val=-1 type=5 cmp=6 args=[] fml=-1
+   5: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+   6: action_15(dT, ORDER_ROBOT_CAPTURE, INSERT_ORDER_REPLACE, NONE, f0, f0, f0, f0, TARGET_BY_LOGIC_ID, dX)   ; act=15 res=-1 val=-1 type=-1 cmp=6 args=[177,82,100,153,0,0,0,0,93,227] fml=-1
+   7: action_6(dT, UNIT_NORMAL)   ; act=6 res=-1 val=-1 type=-1 cmp=6 args=[177,145] fml=-1
+   8: action_27(ACTION_DESTROY, EXP_TARGET_BY_LOGIC_ID, dX)   ; act=27 res=-1 val=-1 type=-1 cmp=6 args=[44,42,227] fml=-1
+   9: action_27(ACTION_CAPTURE_BUILDING, EXP_TARGET_BY_LOGIC_ID, dX)   ; act=27 res=-1 val=-1 type=-1 cmp=6 args=[46,42,227] fml=-1
+  10: action_8(ST_SOLVING)   ; act=8 res=-1 val=-1 type=-1 cmp=6 args=[134] fml=-1
+
+== Секция 12 "PBM_BUILDING_INF_CAPTURE_Continue" (Index=12, инструкций 13)
+   1: dT = action_50(ORDER_ROBOT_CAPTURE)   ; act=50 res=177 val=-1 type=-1 cmp=6 args=[82] fml=-1
+   2: if dT != ERROR   ; act=-1 res=-1 val=-1 type=0 cmp=5 args=[177,156] fml=-1
+   3:     return   ; act=-1 res=-1 val=-1 type=5 cmp=6 args=[] fml=-1
+   4: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+   5: action_7()   ; act=7 res=-1 val=-1 type=-1 cmp=6 args=[] fml=-1
+   6: dX = action_29(d0)   ; act=29 res=227 val=-1 type=-1 cmp=6 args=[10] fml=-1
+   7: dT = action_14(UNIT_ANY_NEAREST_CAPTURER, TARGET_BY_LOGIC_ID, dX)   ; act=14 res=177 val=-1 type=-1 cmp=6 args=[151,93,227] fml=-1
+   8: if dT == ERROR   ; act=-1 res=-1 val=-1 type=0 cmp=1 args=[177,156] fml=-1
+   9:     return   ; act=-1 res=-1 val=-1 type=5 cmp=6 args=[] fml=-1
+  10: endif   ; act=-1 res=-1 val=-1 type=1 cmp=6 args=[] fml=-1
+  11: action_15(dT, ORDER_ROBOT_CAPTURE, INSERT_ORDER_REPLACE, NONE, f0, f0, f0, f0, TARGET_BY_LOGIC_ID, dX)   ; act=15 res=-1 val=-1 type=-1 cmp=6 args=[177,82,100,153,0,0,0,0,93,227] fml=-1
+  12: action_6(dT, UNIT_NORMAL)   ; act=6 res=-1 val=-1 type=-1 cmp=6 args=[177,145] fml=-1
+  13: nop   ; act=-1 res=-1 val=-1 type=2 cmp=6 args=[] fml=-1
+

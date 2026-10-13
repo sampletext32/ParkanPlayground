@@ -9,9 +9,10 @@ using WeaLib;
 System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 
 // dotnet run --project ParkanPlayground -- scr-dump <MISSIONS/SCRIPTS> <куда писать>
-if (args is ["scr-dump", var scriptsDir, var dumpDir])
+if (args is ["scr-dump", var scriptsDir, var dumpDir, ..var dumpOptions])
 {
-    ScrDump.Run(scriptsDir, dumpDir);
+    // необязательный четвёртый аргумент "raw" - не подставлять имена встроенных функций первой части
+    ScrDump.Run(scriptsDir, dumpDir, !dumpOptions.Contains("raw"));
     return;
 }
 //

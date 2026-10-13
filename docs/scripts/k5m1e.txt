@@ -1,6 +1,6 @@
 // k5m1e.scr: секций 11, magic 59
 // Формат строки: <номер инструкции с 1>: <действие>   ; <исходные поля: act res val type cmp args fml>
-// act - NativeActionIndex (action_N в ai.dll), res - ResultVarIndex, val - ValueOrSourceVarIndex, type - ScrEntryInnerType, cmp - CompareOperator, fml - FmlFunctionIndex
+// act - NativeActionIndex (action_N в ai.dll), res - ResultVarIndex, val - ValueOrSourceVarIndex, type - ScrInstructionType, cmp - CompareOperator, fml - FmlFunctionIndex
 
 == Секция 0 "Init" (Index=0, инструкций 46)
    1: action_19 GetClanBasePlaceAndId(ClanBaseX, ClanBaseY, ClanID)   ; act=19 res=-1 val=-1 type=-1 cmp=6 args=[213,214,215] fml=-1
@@ -86,7 +86,7 @@
   13: fTime = 0.0   ; act=-1 res=167 val=-1 type=-1 cmp=6 args=[] fml=2
   14: fIndependence = 0.5   ; act=-1 res=168 val=-1 type=-1 cmp=6 args=[] fml=37
   15: action_15 IssueOrderToUnit(dT, ORDER_ROBOT_CAPTURE, INSERT_ORDER_REPLACE, NONE, fSuccess, fSurvive, fTime, fIndependence, TARGET_BY_LOGIC_ID, dX)   ; act=15 res=-1 val=-1 type=-1 cmp=6 args=[177,82,100,153,165,166,167,168,93,216] fml=-1
-  16: action_6 SetUnitCriticalStatus(dT, UNIT_NORMAL)   ; act=6 res=-1 val=-1 type=-1 cmp=6 args=[177,145] fml=-1
+  16: action_6 AssignUnitToCurrentProblem(dT, UNIT_NORMAL)   ; act=6 res=-1 val=-1 type=-1 cmp=6 args=[177,145] fml=-1
   17: dTemp3 = action_29 GetCurrentProblemField(d2)   ; act=29 res=174 val=-1 type=-1 cmp=6 args=[12] fml=-1
   18: dT3 = dTemp3   ; act=-1 res=181 val=174 type=-1 cmp=6 args=[] fml=-1
   19: dAttackGroup = action_25 CreateGroup(TAKE_BY_HITS, dTemp3)   ; act=25 res=204 val=-1 type=-1 cmp=6 args=[143,174] fml=-1
@@ -134,7 +134,7 @@
   18: fTime = 0.0   ; act=-1 res=167 val=-1 type=-1 cmp=6 args=[] fml=2
   19: fIndependence = 0.5   ; act=-1 res=168 val=-1 type=-1 cmp=6 args=[] fml=37
   20: action_15 IssueOrderToUnit(dT, ORDER_ROBOT_CAPTURE, INSERT_ORDER_REPLACE, NONE, fSuccess, fSurvive, fTime, fIndependence, TARGET_BY_LOGIC_ID, dX)   ; act=15 res=-1 val=-1 type=-1 cmp=6 args=[177,82,100,153,165,166,167,168,93,216] fml=-1
-  21: action_6 SetUnitCriticalStatus(dT, UNIT_NORMAL)   ; act=6 res=-1 val=-1 type=-1 cmp=6 args=[177,145] fml=-1
+  21: action_6 AssignUnitToCurrentProblem(dT, UNIT_NORMAL)   ; act=6 res=-1 val=-1 type=-1 cmp=6 args=[177,145] fml=-1
   22: fT = 300   ; act=-1 res=164 val=-1 type=-1 cmp=6 args=[] fml=54
   23: dTemp3 = action_44 CalcWeightAroundPoint(fT, ERROR, TARGET_BY_LOGIC_ID, dX)   ; act=44 res=174 val=-1 type=-1 cmp=6 args=[164,156,93,216] fml=-1
   24: dTemp3 = dTemp3 + (dTemp3*0.5)*fDifficulty   ; act=-1 res=174 val=-1 type=-1 cmp=6 args=[] fml=55
