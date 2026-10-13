@@ -4,6 +4,7 @@
     <File Path="Directory.Packages.props" />
     <File Path="README.md" />
   </Folder>
+  <Project Path="ArealMapLib/ArealMapLib.csproj" />
   <Project Path="BasLib/BasLib.csproj" />
   <Project Path="Common\Common.csproj" />
   <Project Path="ControlLib/ControlLib.csproj" />

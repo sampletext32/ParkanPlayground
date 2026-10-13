@@ -65,6 +65,7 @@
 | [`ExplLib`](ExplLib/README.md) | описание взрыва EXPL | README |
 | [`ControlLib`](ControlLib/README.md) | управление объектом: CTL, CPT, NDP, записи агентов, предметы, оружие | README |
 | [`CpDatLib`](CpDatLib/README.md) | схемы объектов `.dat` | README |
+| [`ArealMapLib`](ArealMapLib/README.md) | карта ареалов `Land.map`: многоугольники проходимости, соседи, сетка ячеек | README |
 | [`BasLib`](BasLib/README.md) | контуры оснований зданий `.bas` | README |
 | [`SkeLib`](SkeLib/README.md) | расписание атмосферы `sky.ske` | README |
 | [`MissionTmaLib`](MissionTmaLib/README.md) | файл миссии `.tma` | README |

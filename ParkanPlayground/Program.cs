@@ -15,6 +15,13 @@ if (args is ["scr-dump", var scriptsDir, var dumpDir, ..var dumpOptions])
     ScrDump.Run(scriptsDir, dumpDir, !dumpOptions.Contains("raw"));
     return;
 }
+
+// dotnet run --project ParkanPlayground -- areal-map-check <DATA/MAPS>
+if (args is ["areal-map-check", var mapsDir])
+{
+    ArealMapCheck.Run(mapsDir);
+    return;
+}
 //
 // var ctl = ControlResourceReader.ReadCtlFile("E:\\ParkanUnpacked\\bases.rlb\\2_CTLD_r_l_03.ctl");
 // var cpt = ControlResourceReader.ReadCptFile("E:\\ParkanUnpacked\\bases.rlb\\18_CTPT_R_L_03.CPT");
