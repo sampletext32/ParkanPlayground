@@ -55,6 +55,7 @@
 | Проект | Что разбирает | Документация |
 |---|---|---|
 | [`NResLib`](NResLib/README.md) | NRes-архивы (`.lib`, `.rlb`, карты): элементы, метаданные | README |
+| [`RsLiLib`](RsLiLib/README.md) | NL-архивы (`gamefont.rlb`, `sprites.lib`): шифр таблицы, LZSS, deflate | README |
 | [`Common`](Common/README.md) | чтение бинарных данных, `Vector3`, `ResourceNamedRef` | README |
 | [`MshLib`](MshLib/README.md) | меши MSH: узлы, вершины, треугольники, батчи, анимация | README, `docs/` |
 | [`TexmLib`](TexmLib/README.md) | текстуры TEXM и страницы атласа | README |

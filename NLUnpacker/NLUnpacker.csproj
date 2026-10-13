@@ -5,7 +5,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="System.Text.Encoding.CodePages" />
+        <ProjectReference Include="..\RsLiLib\RsLiLib.csproj" />
     </ItemGroup>
 
 </Project>

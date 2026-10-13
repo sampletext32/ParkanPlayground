@@ -21,6 +21,7 @@
   <Project Path="PalLib\PalLib.csproj" />
   <Project Path="ParkanPlayground/ParkanPlayground.csproj" />
   <Project Path="ResTreeLib\ResTreeLib.csproj" />
+  <Project Path="RsLiLib/RsLiLib.csproj" />
   <Project Path="ScrLib/ScrLib.csproj" />
   <Project Path="TexmLib/TexmLib.csproj" />
   <Project Path="VarsetLib/VarsetLib.csproj" />
