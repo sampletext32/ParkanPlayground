@@ -38,7 +38,7 @@ dotnet run --project NResUI -c Release
 | Effect Player | воспроизведение одного эффекта FXID: таймлайн компонентов, режимы силы, камера, звук | [FxidLib](../FxidLib/README.md) |
 | Weapon Viewer | выстрел целиком: орудие → снаряд → эффекты → взрыв; модель орудия, выбор стволов и поверхности | [ControlLib](../ControlLib/README.md), §7 |
 | Инспектор меша / Viewport | меш MSH, поза и анимация | [MshLib](../MshLib/README.md) |
-| SCR Explorer | секции и инструкции скриптов ИИ с названиями встроенных функций | [ScrLib](../ScrLib/README.md) |
+| SCR Explorer | скрипты ИИ: читаемый текст (формулы, имена переменных и функций, подсказки при наведении) и таблица инструкций | [ScrLib](../ScrLib/README.md) |
 | VARSET Explorer | переменные и константы скриптов | [VarsetLib](../VarsetLib/README.md) |
 | TEXM Explorer | текстуры и страницы атласа | [TexmLib](../TexmLib/README.md) |
 | Mission TMA Explorer | ареалы, кланы, объекты миссии | [MissionTmaLib](../MissionTmaLib/README.md) |

@@ -13,7 +13,7 @@
 | `NAME.fml` | текстовые формулы: по одной на вызов «формулы» из `.scr` | `FmlParser.ReadFile` → `FmlFile` (список `FmlFormula`) |
 | `varset.var` | текстовый набор переменных и констант, общий для всех скриптов | `VarsetLib.VarsetParser` |
 
-В игре 50 пар `.scr` + `.fml`, один `varset.var`; кроме них там же лежат 49 файлов `.trf` (дерево исследований, см. `ResTreeLib`).
+В первой части игры 50 пар `.scr` + `.fml`, один `varset.var` (у второй части `magic` скриптов 73, формат шире и здесь не разбирается); кроме них там же лежат 49 файлов `.trf` (дерево исследований, см. `ResTreeLib`).
 Скрипт назначается клану в файле миссии `.tma`: строка `ScriptsString` записи клана (`MissionTmaLib.ClanInfo`, читается при версии клана больше 1)
 хранит путь без расширения, например `MISSIONS\SCRIPTS\default`, `tut1_pl`, `tut1_en`; если имя не задано, `SuperAI::ctor` берёт `default`.
 Дерево исследований клана задаёт соседняя строка `ResearchNResPath` (`auto.trf`, `data.trf`).
@@ -28,13 +28,39 @@
 
 | Секция | Файлов | Когда выполняется |
 |---|---|---|
-| `Init` | 50 | при создании клана (`is_Init_executed`) |
-| `Mission` | 50 | главный обработчик миссии; `SuperAI::ctor` запоминает его индекс как `Mission_index` |
-| `Problems0` | 50 | выбор проблем клана (`Problems0_index`) |
-| `Fort_Task_Complete`, `Fort_Captured` | 50 | завершение задания / захват укрепления (`Fort_Task_Complete` обязательна: без неё игра завершает работу с ошибкой скрипта) |
-| `Mech_GeneratorFound`, `Mech_Mineral_Found`, `Mech_Task_Complete` | 50 | события юнитов: найден генератор, найдена руда, задание выполнено (`Mech_GeneratorFound` обязательна) |
-| `Hero_Teleported` | 50 | герой телепортирован |
-| `PBM_*_Start`, `PBM_*_Continue` | 11-16 | начало и продолжение решения проблемы (например `PBM_BUILDING_INF_CAPTURE`, `PBM_BUILDING_PROTECT`, `PBM_ROBOT_NEEDED`) |
+| `Init` | 50 | один раз при старте (`ISuperAI::ExecuteInitEntryOnce`, флаг `is_Init_executed`) |
+| `Mission` | 50 | обработчик миссии, не чаще раза в 2 секунды (`TryExecuteMissionEntry`); индекс - `Mission_index` |
+| `Problems0` | 50 | на каждом шаге ИИ: создаёт и продлевает проблемы (`Problems0_index`) |
+| `Fort_Task_Complete`, `Fort_Captured` | 50 | события зданий: код 3 - задание выполнено, код 7 - здание захвачено (`Fort_Task_Complete` обязательна: без неё игра завершает работу с ошибкой скрипта) |
+| `Mech_GeneratorFound`, `Mech_Mineral_Found`, `Mech_Task_Complete` | 50 | события юнитов: коды 1 - найден генератор, 2 - найдена руда, 3 - задание выполнено (`Mech_GeneratorFound` обязательна) |
+| `Hero_Teleported` | 50 | событие юнита с кодом 8 - герой телепортирован |
+| `PBM_*_Start` | 11-16 | запуск решения проблемы: выполняется для проблем в состоянии NONE/UNSOLVED, самых приоритетных первыми |
+| `PBM_*_Continue` | 11-16 | продолжение: выполняется на каждом шаге ИИ для проблем в состоянии SOLVING |
+
+### Шаг ИИ (когда что выполняется)
+
+Источник - `ISuperAI::AI_step` (`ai.dll` 0x02461730), вызывается каждый кадр, но работает по таймеру `next_step_time`: следующий шаг назначается
+на `timeGetTime() + 8000 + rand() % 1000` мс, то есть примерно раз в 8-9 секунд реального времени. Каждое появление объекта клана
+(`OnEntityRegistered`) сдвигает следующий шаг на 1,6 секунды раньше. «Шаг» в `RequestUnitsForProblem` (число шагов и убывание) - это шаг ИИ, а не кадр.
+Шаг выполняется только при `ai_mode != 0` (по умолчанию 2).
+
+Порядок внутри шага:
+
+1. **Обновление** (`SuperAI_State::UpdateEntitiesAndProblems`): у каждой управляемой сущности проверяется, что она жива и принадлежит клану
+   (иначе `AIManagedEntity::ReleaseEntity`: открепление от проблемы); у каждой проблемы вызывается `Problem::ProcessProblemTick` (уменьшение шагов, проверка целей); пересчитываются
+   переменные `dTechnologyFactor`, `dBaseFactor`, `dUnitBattleFactor`; обновляются отношения к другим кланам.
+2. **`PBM_*_Continue`** для всех проблем в состоянии SOLVING (`dCurrentProblem` = индекс проблемы).
+3. **`Problems0`**: скрипт оценивает ситуацию и вызывает `RequestUnitsForProblem` - создаёт новые проблемы или продлевает существующие.
+4. **`PBM_*_Start`**: из проблем в состоянии NONE/UNSOLVED выбираются самые приоритетные, для каждой выполняется её `_Start`. Если после скрипта
+   проблема не стала SOLVING/SOLVED (скрипт не нашёл юнитов и вышел по `Return`), цикл останавливается: менее приоритетные проблемы не запускаются,
+   пока не обеспечена более приоритетная. Иначе берётся следующий уровень приоритета.
+
+События не привязаны к шагу: `NotifyEntityEvent` вызывается из `Behavior.dll` сразу и запускает секцию события (`dCurrentSender` = LogicID отправителя),
+если в этот момент не выполняется другой скрипт. Скрипты не вкладываются: пока идёт один (`is_executing_entry`), остальные пропускаются.
+
+Состояния проблемы (`Problem.state`): 0 NONE, 1 SOLVING, 2 SOLVED, 3 UNSOLVED. Решённая (`on_problem_solved`) и нерешённая (`on_problem_unsolved`) проблема
+сразу очищается (`type = 0` - слот свободен), её юниты освобождаются, а при `ai_mode == 2` меху посылается приказ 9 (`ORDER_ROBOT_REPARE`).
+В сохранение игры попадают только проблемы `PBM_BUILDING_INF_CAPTURE` (тип 14), остальные скрипт `Problems0` создаёт заново.
 
 Всего в 50 файлах 637 секций и 5767 инструкций, от 9 до 39 секций в файле. Если версия скриптов не совпадает с таблицей игры
 (число встроенных функций не 59), игра сообщает `Scripts are not up to date`.
@@ -45,7 +71,7 @@
 `Compare` увеличивает глубину, её результат равен «сравнение И результат на предыдущей глубине»; `EndIf` уменьшает глубину. Инструкции
 `Execute`, `GotoInstruction`, `GotoEntry` и `Return` выполняются только на нулевой глубине или при истинном верхнем условии.
 
-| Тип | Имя (`ScrEntryInnerType`) | Смысл |
+| Тип | Имя (`ScrInstructionType`) | Смысл |
 |---|---|---|
 | −1 | `Execute` | вызвать встроенную функцию `action_N` (номер `NativeActionIndex`), либо скопировать переменную (`ValueOrSourceVarIndex`), либо вычислить формулу из `.fml` (`FmlFunctionIndex`); результат - в переменную `ResultVarIndex` |
 | 0 | `Compare` | сравнить две переменные (аргументы); операция в `CompareOperator`: 0 `<`, 1 `==`, 2 `>`, 3 `<=`, 4 `>=`, 5 `!=`; `DWORD` сравнивается как целое, остальное как float |
@@ -102,7 +128,7 @@ FUNCTION( , dBuildingProtectHits - dT2,  )
 | 0 | `BindGlobalSuperAI` | одна переменная, игнорируется | `true` |
 | 2 | `RequestUnitsForProblem` | `PBM_*`, приоритет, число шагов, убывание за тик, `target_x`, `target_y`, `target_extra` (подробно - в разделе «Функция №2» ниже) | - |
 | 3 | `GetDistributorSurplus` | - | float: остаток распределителя ресурсов |
-| 6 | `SetUnitCriticalStatus` | LogicID юнита, `UNIT_NORMAL`/`UNIT_CRITICAL` | - |
+| 6 | `AssignUnitToCurrentProblem` | LogicID юнита, `UNIT_NORMAL`/`UNIT_CRITICAL` | - (привязывает юнит к текущей проблеме `dCurrentProblem` и ставит ему критичность; без критичных юнитов проблема в состоянии SOLVING становится UNSOLVED) |
 | 7 | `DeleteCurrentProblem` | - | - |
 | 8 | `SetCurrentProblemStatus` | `ST_SOLVING`/`ST_SOLVED` | - |
 | 9 | `Nop` | - | - |
@@ -110,16 +136,16 @@ FUNCTION( , dBuildingProtectHits - dT2,  )
 | 12 | `GetCurrentProblemPriority` | - | float |
 | 13 | `FindFreeUnitOfType` | `UNIT_FREE_UNIT`/`UNIT_ANY_UNIT`, тип | LogicID юнита |
 | 14 | `FindNearestUnitOfType` | `UNIT_ANY_UNIT`/`UNIT_ANY_CAPTURER`/..., тип | LogicID юнита |
-| 15 | `IssueOrderToUnit` | юнит, `ORDER_*`, `INSERT_ORDER_*`, проблема, fSuccess, fSurvive, fTime, fIndependence, `TARGET_BY_*`, цель | - |
+| 15 | `IssueOrderToUnit` | LogicID юнита, `ORDER_*`, `INSERT_ORDER_*`, параметр приказа, `fSuccess`, `fSurvive`, `fTime`, `fIndependence`, `TARGET_BY_*`, цель (подробно - «Приказы» ниже) | 1 принят, 0 отклонён, 5 юнит не найден |
 | 16 | `GetStorageResourceAmount` | `BUILDING_STORAGE`, `RESOURCE_ORE` | float |
 | 17 | `GetMineResourceAmount` | `BUILDING_MINE`, `RESOURCE_LEFT_ORE` | float |
-| 18 | `FindBuildPlaceNearBase` | X, Y (оба - выходные) | - (место пишется в аргументы; `0, 0` - свободного места нет). Спираль вокруг базы до радиуса 1500: проходимость, покрытие ареалом, ровность, дальше 250 от других объектов |
+| 18 | `FindBuildPlaceNearBase` | X, Y (оба - выходные) | - (место пишется в аргументы; `0, 0` - свободного места нет). Спираль вокруг базы до радиуса 1500: проходимость, покрытие ареалом, ровность (`GetTerrainHeightAt`), дальше 250 от других объектов, месторождений и недавно занятых точек; найденная точка запоминается на 60 секунд (`RegisterRecentSite`) |
 | 19 | `GetClanBasePlaceAndId` | три переменные для X, Y базы и индекса клана | - |
 | 20 | `RegisterProblemTargetPoint` | проблема, X, режим, значение | - |
 | 24 | `DisbandGroup` | номер группы | - |
 | 25 | `CreateGroup` | `TAKE_*`/`CREATE_EMPTY`, число | номер группы |
 | 27 | `AddExpression` | `ACTION_*`, `EXP_TARGET_BY_*`, цель | - |
-| 28 | `IssueOrderToGroup` | группа, `ORDER_*`, ... как у №15 | - |
+| 28 | `IssueOrderToGroup` | номер группы текущей проблемы, далее как у №15 (цель `TARGET_BY_NAME` не поддерживается) | 1 все приняли, 0 отклонён, 5 юнит не найден |
 | 29 | `GetCurrentProblemField` | 0, 1 или 2 | float/int: поле проблемы |
 | 30 | `SendGameMessage` | вид сообщения, значение | - |
 | 31 | `CountClanUnitsByClass` | клан, маска `CLASS_*` | число |
@@ -142,7 +168,7 @@ FUNCTION( , dBuildingProtectHits - dT2,  )
 | 54 | `GetUnitOrderState` | LogicID | - |
 | 56 | `IsDistributorFlagSet` | - | bool |
 | 57 | `HostCallKind2` | два значения | - |
-| 58 | `GetOwnBuildingByIndex` | порядковый номер | LogicID |
+| 58 | `GetUpgradableBuildingByIndex` | порядковый номер | LogicID n-го собственного здания, которое можно улучшить, или `ERROR` |
 
 **Что такое «вес».** Функции 36, 40, 44, 45, 47 (и 35, 37) считают силу как сумму весов; вес объекта - `(f24 + 0.8) * f20`, где `f20`, `f24` - два float записи
 об объекте в списке ареала (`IArealMap`, запись 0x28 байт: LogicID, клан, x, y, ...). По смыслу (`dBuildingProtectHits`, `TAKE_BY_HITS`) это оценка по hits юнита;
@@ -178,8 +204,8 @@ FUNCTION( , dBuildingProtectHits - dT2,  )
 ### Что делает
 
 1. Из **имени** переменной аргумента 0 строятся имена секций `<имя>_Start` и `<имя>_Continue` (для `PBM_ROBOT_NEEDED` это `PBM_ROBOT_NEEDED_Start`
-   и `PBM_ROBOT_NEEDED_Continue`) и ищутся в скрипте. Найденные индексы запоминаются в `start_problem_ai_script_indices[тип]` и
-   `continue_problem_ai_script_indices[тип]`. **Если в скрипте нет любой из двух секций, запрос молча отбрасывается.** Поэтому в каждом `.scr`
+   и `PBM_ROBOT_NEEDED_Continue`) и ищутся в скрипте. Найденные индексы запоминаются в `start_problem_entry_indices[тип]` и
+   `continue_problem_entry_indices[тип]`. **Если в скрипте нет любой из двух секций, запрос молча отбрасывается.** Поэтому в каждом `.scr`
    есть пары секций (пусть и пустые, например `PBM_BASE_DEFENCE_Continue` с 0 инструкций).
 2. Строится `Problem` с полями из таблицы выше.
 3. Тождество проблемы - тройка (`nProblem_type`, `target_x`, `target_y`). Если проблема с такой тройкой уже есть в `ProblemsArray`:
@@ -208,7 +234,51 @@ action_2 RequestUnitsForProblem(PBM_ROBOT_NEEDED, fTemp, dTemp1, dTemp2, ROBOT_B
 В `SuperAI_State.clan_relations[клан]` (в Ghidra так названо поле `array_of_64_1`) для каждого другого клана хранится запись из четырёх значений:
 «настроение» 0..1 (float), накопленные уменьшение и увеличение, и **отношение** (`[3]`): 0 - враждебный, 1 - нейтральный, 2 - дружественный.
 Функции №35, №36, №40, №44 (с `ERROR`) и №47 считают противниками только кланы с отношением 0. Отношение выводится из настроения порогами
-0.3333 и 0.6666 (`SuperAI_State_UpdateClanRelations`), начальное настроение - 0.1667, то есть по умолчанию клан враждебен.
+0.3333 и 0.6666 (`SuperAI_State::UpdateClanRelations`), начальное настроение - 0.1667, то есть по умолчанию клан враждебен.
+
+## Приказы (`IssueOrderToUnit` №15 и `IssueOrderToGroup` №28)
+
+Обе функции собирают команду `BehaviourCommand` (0x7C байта) и отправляют её поведению юнита (`IBehaviour`, слот 0xC); №28 отправляет её каждому живому юниту
+группы текущей проблемы (`dCurrentProblem`). Приказ выполняется только при `ai_mode == 2` или `global_index == 0`, иначе результат 0.
+
+| Аргумент | Что это | Поле команды |
+|---|---|---|
+| 0 | LogicID юнита (№15) или номер группы (№28) | - |
+| 1 | `ORDER_ROBOT_*` / `ORDER_BUILDING_*` | `order_type` |
+| 2 | режим вставки: `INSERT_ORDER_TO_END` 1, `TO_START` 2, `REPLACE` 3 | второй аргумент отправки |
+| 3 | параметр приказа: радиус патруля (150, 200...), класс здания для строительства по имени, часто `NONE` | `order_param` |
+| 4-7 | `fSuccess`, `fSurvive`, `fTime`, `fIndependence` | `success`, `survive`, `time`, `independence` |
+| 8 | вид цели: `TARGET_BY_LOGIC_ID` 0x201, `TARGET_BY_PLACE` 0x202, `TARGET_BY_TYPE` 0x203, `TARGET_NOT_DEFINED` 0x204, `TARGET_BY_NAME` 0x205 | `target_kind` |
+| 9, 10 | цель: LogicID, либо X и Y (для 0x202), либо тип/класс (0x203), либо критерий `SELECT_*` (0x205) | `target` |
+
+`TARGET_BY_NAME` (только в №15; в данных используется с `ORDER_BUILDING_CONSTRUCT`): аргумент 3 - класс здания (`BUILDING_*`), аргумент 9 - критерий `SELECT_*`;
+игра берёт из каталога схем лучшую схему этого класса (`SchemeDepositManager::FindBestScheme`) и подставляет имя её файла как цель. Если подходящей схемы нет, результат 0.
+Приказ `ORDER_ROBOT_BUILD` (7) с целью-местом расширяет `furthest_building_distance` (максимальное расстояние построек от базы).
+
+## Каталог схем и месторождения (`SchemeDepositManager`)
+
+Объект `SuperAI_State.scheme_deposit_manager` (36 байт) хранит два списка:
+
+- **Схемы** - файлы `.dat` каталога юнитов и зданий; `SchemeRecord` по 0x124 байта: путь, признак «можно построить» (`is_buildable`), `class_code`, `level`, `hits`, `factor`.
+  Каталог строится один раз (`LoadSchemeCatalog`, из `ActionSelectCheapestScheme`): перебираются `*.dat`, для каждого создаётся объект, снимаются `class_code`, `level`, `hits`, `factor`,
+  результат кешируется в файле `preload.lda` рядом со схемами.
+- **Месторождения** - записи `DepositRecord` по 0x18 байт (`RefreshDeposits`): занято ли, клан-владелец, положение, LogicID здания на месторождении.
+
+Выбор лучшей схемы (`FindBestSchemeIndex`) по критерию `SELECT_*`: `BEST_WEAPON` 1, `BEST_ARMOR` 2, `BEST_RANGE` 3, `BEST_SPEED` 4, `BEST_COMBAT` 5, `SMALLEST` 6 (подробности критериев -
+в комментарии к функции в Ghidra). Допускаются схемы, чей уровень не выше максимального уровня института клана (`FindMaxInstituteLevel`).
+
+## Прочие механизмы `ai.dll`
+
+- **Ум (`Mind`).** У ИИ клана есть фиксированное число «умов» - слотов управляемых мехов (`CountFreeMinds` считает свободные: `logic_id == -1`). Поведение меха
+  при привязке к ИИ (`Behaviour::ReloadSuperAI` в `Behavior.dll`) занимает свободный ум и записывает в него свой LogicID; если свободных нет, игра завершает работу
+  с ошибкой (сообщение «Behaviour panic: SuperAI have no ...» из `Behavior.dll`). Освобождается ум, когда мех пропал (`AIManagedEntity::ReleaseEntity` -> `ReleaseMindByLogicId`).
+- **Недавно занятые точки** (`g_recent_sites`, 20 слотов): `FindBuildPlaceNearBase` и `FindFreeDepositOrEnemyMine` резервируют найденную точку на 60 секунд,
+  чтобы несколько юнитов не выбрали одно место. Раньше эти данные были названы «таймерами» (`g_timers`).
+- **Границы карты** для ИИ (`ComputeMapBounds`, `g_flMap_limit_x/y`) берутся из границы мира при создании ИИ; точки вне карты `FindBuildPlaceNearBase` отвергает.
+- **Экспорты.** `CreateSuperAI` (ordinal 1) создаёт ИИ клана и запоминает последний аргумент - обратный вызов хоста, который сообщает о потере героя;
+  `GetSuperAI(clan_index)` (ordinal 2) возвращает ИИ клана 0..63. Хранилище - `g_super_ais[64]`.
+- **Клан-данные исследований.** Указатель на данные исследований клана (`SetClanResearchData` / `GetClanResearchData`) передаётся в менеджер схем
+  и в поведения зданий (`Behaviour.field_0x50`).
 
 ## 6. Проблемы (`Problem`)
 
@@ -224,9 +294,13 @@ action_2 RequestUnitsForProblem(PBM_ROBOT_NEEDED, fTemp, dTemp1, dTemp2, ROBOT_B
 
 ## 7. Как посмотреть
 
-- Панель `ScrExplorer` в NResUI показывает секции и инструкции с названиями встроенных функций.
-- `VarsetExplorerPanel` - переменные и константы.
-- Код разбора: `ScrParser.ReadFile`, `ScrFile`, `ScrEntry`, `ScrEntryInner`, `ScrActions`; XML-комментарии к типам содержат ту же информацию.
+- Панель `SCR Explorer` в NResUI: у каждой секции две вкладки - «Текст» (читаемый вид с отступами по условиям, формулами из `.fml`, именами переменных из
+  `varset.var`; при наведении - подробности: роль аргумента, значение по умолчанию, расшифровка операции) и «Таблица» (сырые поля инструкции).
+  Рядом с `.scr` автоматически загружается одноимённый `.fml`; имена переменных появляются, если открыт `varset.var` (`File` -> `Open Varset File`).
+- `VARSET Explorer` - переменные и константы.
+- Код разбора: `ScrParser.ReadFile`, `FmlParser.ReadFile`, `ScrFile`, `ScrEntry` (секция), `ScrInstruction` (инструкция), `ScrActions` (имена и аргументы
+  встроенных функций), `ScrTextDumper` (текстовый вид); XML-комментарии к типам содержат ту же информацию.
+- Готовые дампы всех скриптов - в [docs/scripts](../docs/scripts/README.md).
 
 ## Текстовые дампы
 

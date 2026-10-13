@@ -69,7 +69,7 @@
 | [`SkeLib`](SkeLib/README.md) | расписание атмосферы `sky.ske` | README |
 | [`MissionTmaLib`](MissionTmaLib/README.md) | файл миссии `.tma` | README |
 | [`ResTreeLib`](ResTreeLib/README.md) | дерево исследований `.trf` | README |
-| [`ScrLib`](ScrLib/README.md) | скрипты ИИ `.scr` | README |
+| [`ScrLib`](ScrLib/README.md) | скрипты ИИ `.scr`, формулы `.fml`, текстовые дампы | README, [`docs/scripts`](docs/scripts/README.md) |
 | [`VarsetLib`](VarsetLib/README.md) | переменные `.var` | README |
 | [`NResUI`](NResUI/README.md) | приложение для просмотра и проверки гипотез | README |
 | [`ParkanPlayground`](ParkanPlayground/README.md) | песочница для проверок и дампов | README |
