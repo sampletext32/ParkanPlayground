@@ -82,4 +82,5 @@ dotnet run --project NResUI -c Release
 
 ![TEXM Explorer: текстура `EFFECT5.0` с раскладкой атласа страниц](../docs/images/texm-explorer.png)
 *TEXM Explorer: текстура `EFFECT5.0` с раскладкой атласа страниц*
-
+![Areal Map Explorer: карта ареалов `SC_1`, раскраска по `Mask0x28`](../docs/images/areal-map-explorer.png)
+*Areal Map Explorer: карта ареалов `SC_1`, раскраска по `Mask0x28`*

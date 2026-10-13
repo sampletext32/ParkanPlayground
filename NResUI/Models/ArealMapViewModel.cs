@@ -20,6 +20,9 @@ public class ArealMapViewModel
     /// <summary>Границы всей карты: (minX, minY, maxX, maxY).</summary>
     public Vector4 MapBounds { get; private set; }
 
+    /// <summary>Сколько ареалов с каждым значением Mask0x28 (по возрастанию значения).</summary>
+    public SortedDictionary<int, int> MaskCounts { get; private set; } = new();
+
     /// <summary>Выбранный ареал, -1 - нет.</summary>
     public int Selected { get; set; } = -1;
 
@@ -49,6 +52,12 @@ public class ArealMapViewModel
         HasFile = true;
         Selected = -1;
         FitRequested = true;
+
+        MaskCounts = new SortedDictionary<int, int>();
+        foreach (var areal in map.Areals)
+        {
+            MaskCounts[areal.Mask0x28] = MaskCounts.GetValueOrDefault(areal.Mask0x28) + 1;
+        }
 
         Triangles = new int[map.Areals.Count][];
         Bounds = new Vector4[map.Areals.Count];

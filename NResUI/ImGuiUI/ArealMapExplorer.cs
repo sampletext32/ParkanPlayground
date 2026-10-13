@@ -78,6 +78,17 @@ public class ArealMapExplorer : IImGuiPanel
             _vm.FitRequested = true;
         }
 
+        if (_vm.ColorMode == 0)
+        {
+            DrawMaskLegend();
+        }
+        else if (_vm.ColorMode == 1)
+        {
+            LegendItem(new Vector4(0.35f, 0.55f, 0.75f, 0.8f), "Flag0x20 = 0");
+            ImGui.SameLine();
+            LegendItem(new Vector4(0.9f, 0.5f, 0.2f, 0.8f), "Flag0x20 = 1");
+        }
+
         var avail = ImGui.GetContentRegionAvail();
         var canvasSize = new Vector2(Math.Max(100, avail.X), Math.Max(100, avail.Y - 150));
         DrawCanvas(map, canvasSize);
@@ -250,6 +261,23 @@ public class ArealMapExplorer : IImGuiPanel
             DrawTooltip(map, hoveredIndex);
         }
 
+    }
+
+    private void DrawMaskLegend()
+    {
+        ImGui.Text("Mask0x28:");
+        foreach (var (mask, count) in _vm.MaskCounts)
+        {
+            ImGui.SameLine();
+            LegendItem(Hue(mask * 0.61803f, 0.55f, 0.75f), $"{mask} ({count})");
+        }
+    }
+
+    private static void LegendItem(Vector4 color, string text)
+    {
+        ImGui.ColorButton($"##legend_{text}", color, ImGuiColorEditFlags.NoTooltip | ImGuiColorEditFlags.NoPicker, new Vector2(14, 14));
+        ImGui.SameLine();
+        ImGui.Text(text);
     }
 
     private Vector4 FillColor(ArealRecord areal)
