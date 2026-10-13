@@ -55,7 +55,7 @@ public class ScrExplorer : IImGuiPanel
                     for (var i = 0; i < scr.Entries.Count; i++)
                     {
                         var entry = scr.Entries[i];
-                        if (ImGui.TreeNodeEx($"Секция {i} - \"{entry.Title}\" ({entry.InnerCount})###section{i}"))
+                        if (ImGui.TreeNodeEx($"Секция {i} - \"{entry.Title}\" ({entry.InstructionCount})###section{i}"))
                         {
                             if (ImGui.BeginTabBar($"Вид##{i:0000}"))
                             {
@@ -96,12 +96,12 @@ public class ScrExplorer : IImGuiPanel
         ImGui.PushID($"listing{entryIndex}");
         var depth = 0;
 
-        for (var j = 0; j < entry.Inners.Count; j++)
+        for (var j = 0; j < entry.Instructions.Count; j++)
         {
-            var inner = entry.Inners[j];
+            var instruction = entry.Instructions[j];
             ImGui.PushID(j);
 
-            if (inner.Type == ScrEntryInnerType.EndIf && depth > 0)
+            if (instruction.Type == ScrInstructionType.EndIf && depth > 0)
             {
                 depth--;
             }
@@ -110,63 +110,63 @@ public class ScrExplorer : IImGuiPanel
             Token($"{j + 1,3}", ColorLineNumber, "Номер инструкции в секции (с 1): на него ссылаются переходы", ref first);
             Token(new string(' ', depth * 4), ColorPlain, null, ref first, noSpace: true);
 
-            switch (inner.Type)
+            switch (instruction.Type)
             {
-                case ScrEntryInnerType.Execute:
-                    DrawExecute(inner, ref first);
+                case ScrInstructionType.Execute:
+                    DrawExecute(instruction, ref first);
                     break;
 
-                case ScrEntryInnerType.Compare:
+                case ScrInstructionType.Compare:
                     Token("если", ColorKeyword, "Условие: следующие инструкции до «конец если» выполняются, только если оно истинно. Вложенные условия объединяются по И.", ref first);
-                    if (inner.Arguments.Count >= 2)
+                    if (instruction.Arguments.Count >= 2)
                     {
-                        Variable(inner.Arguments[0], ref first);
-                        var op = inner.CompareOperator is >= 0 and < 6 ? CompareOperators[inner.CompareOperator] : $"op{inner.CompareOperator}";
-                        Token(op, ColorKeyword, $"Операция сравнения {inner.CompareOperator}: 0 <, 1 ==, 2 >, 3 <=, 4 >=, 5 !=\nDWORD сравнивается как целое, остальное - как float", ref first);
-                        Variable(inner.Arguments[1], ref first);
+                        Variable(instruction.Arguments[0], ref first);
+                        var op = instruction.CompareOperator is >= 0 and < 6 ? CompareOperators[instruction.CompareOperator] : $"op{instruction.CompareOperator}";
+                        Token(op, ColorKeyword, $"Операция сравнения {instruction.CompareOperator}: 0 <, 1 ==, 2 >, 3 <=, 4 >=, 5 !=\nDWORD сравнивается как целое, остальное - как float", ref first);
+                        Variable(instruction.Arguments[1], ref first);
                     }
 
                     depth++;
                     break;
 
-                case ScrEntryInnerType.EndIf:
+                case ScrInstructionType.EndIf:
                     Token("конец если", ColorKeyword, "Закрывает ближайшее условие", ref first);
                     break;
 
-                case ScrEntryInnerType.Nop:
+                case ScrInstructionType.Nop:
                     Token("пусто", ColorKeyword, "Ничего не делает (в данных игры встречается 9 раз)", ref first);
                     break;
 
-                case ScrEntryInnerType.GotoInstruction:
+                case ScrInstructionType.GotoInstruction:
                     Token("перейти на инструкцию", ColorKeyword, "Продолжить выполнение секции с инструкции с указанным номером", ref first);
-                    var target = inner.Arguments.Count > 0 ? inner.Arguments[0] : -1;
+                    var target = instruction.Arguments.Count > 0 ? instruction.Arguments[0] : -1;
                     Token(target.ToString(), ColorNumber, "Номер инструкции в этой секции (с 1)", ref first);
                     break;
 
-                case ScrEntryInnerType.GotoEntry:
+                case ScrInstructionType.GotoEntry:
                     Token("перейти в секцию", ColorKeyword, "Начать выполнение другой секции с первой инструкции", ref first);
-                    var section = inner.Arguments.Count > 0 ? inner.Arguments[0] : -1;
+                    var section = instruction.Arguments.Count > 0 ? instruction.Arguments[0] : -1;
                     var sectionTitle = section >= 0 && section < scr.Entries.Count ? scr.Entries[section].Title : null;
                     Token(
                         sectionTitle is null ? section.ToString() : $"{section} \"{sectionTitle}\"",
                         ColorNumber,
-                        sectionTitle is null ? "Номер секции (вне диапазона файла)" : $"Секция {section}: \"{sectionTitle}\", инструкций: {scr.Entries[section].InnerCount}",
+                        sectionTitle is null ? "Номер секции (вне диапазона файла)" : $"Секция {section}: \"{sectionTitle}\", инструкций: {scr.Entries[section].InstructionCount}",
                         ref first);
                     break;
 
-                case ScrEntryInnerType.Return:
+                case ScrInstructionType.Return:
                     Token("вернуться", ColorKeyword, "Завершить секцию на этом тике. При следующем вызове она снова начнётся с первой инструкции.", ref first);
                     break;
 
-                case ScrEntryInnerType.SetVarsetValue:
-                    Variable(inner.ResultVarIndex, ref first);
+                case ScrInstructionType.SetVarsetValue:
+                    Variable(instruction.ResultVarIndex, ref first);
                     Token("=", ColorPlain, null, ref first);
-                    Token(inner.ValueOrSourceVarIndex.ToString(), ColorNumber,
+                    Token(instruction.ValueOrSourceVarIndex.ToString(), ColorNumber,
                         "Записываемое значение: для переменной типа DWORD - целое число, для остальных типов - как float", ref first);
                     break;
 
                 default:
-                    Token($"тип {(int) inner.Type}", ColorPlain, "Неизвестный тип инструкции", ref first);
+                    Token($"тип {(int) instruction.Type}", ColorPlain, "Неизвестный тип инструкции", ref first);
                     break;
             }
 
@@ -176,57 +176,57 @@ public class ScrExplorer : IImGuiPanel
         ImGui.PopID();
     }
 
-    private void DrawExecute(ScrEntryInner inner, ref bool first)
+    private void DrawExecute(ScrInstruction instruction, ref bool first)
     {
         ScrActionSignature? signature = null;
-        if (inner.NativeActionIndex >= 0)
+        if (instruction.NativeActionIndex >= 0)
         {
-            ScrActions.Signatures.TryGetValue(inner.NativeActionIndex, out signature);
+            ScrActions.Signatures.TryGetValue(instruction.NativeActionIndex, out signature);
         }
 
-        if (inner.ResultVarIndex >= 0)
+        if (instruction.ResultVarIndex >= 0)
         {
-            Variable(inner.ResultVarIndex, ref first);
+            Variable(instruction.ResultVarIndex, ref first);
             Token("=", ColorPlain, "Результат записывается в эту переменную Varset", ref first);
         }
 
-        if (inner.NativeActionIndex >= 0)
+        if (instruction.NativeActionIndex >= 0)
         {
-            var known = ScrActions.Names.TryGetValue(inner.NativeActionIndex, out var n);
-            var name = known ? n! : $"action_{inner.NativeActionIndex}";
-            var hint = $"Встроенная функция ai.dll action_{inner.NativeActionIndex}" + (known ? "" : " (пока не разобрана)");
-            if (ScrActions.Signatures.TryGetValue(inner.NativeActionIndex, out var sig))
+            var known = ScrActions.Names.TryGetValue(instruction.NativeActionIndex, out var n);
+            var name = known ? n! : $"action_{instruction.NativeActionIndex}";
+            var hint = $"Встроенная функция ai.dll action_{instruction.NativeActionIndex}" + (known ? "" : " (пока не разобрана)");
+            if (ScrActions.Signatures.TryGetValue(instruction.NativeActionIndex, out var sig))
             {
                 hint += sig.Arguments.Length == 0
                     ? "\nАргументов нет"
                     : "\nАргументы:" + string.Concat(sig.Arguments.Select((a, k) => $"\n  {k}: {a}"));
                 hint += "\nРезультат: " + (sig.Result ?? "нет");
-                if (sig.Arguments.Length != inner.ArgumentsCount)
+                if (sig.Arguments.Length != instruction.ArgumentsCount)
                 {
-                    hint += $"\n(в этом вызове аргументов: {inner.ArgumentsCount})";
+                    hint += $"\n(в этом вызове аргументов: {instruction.ArgumentsCount})";
                 }
             }
             else
             {
-                hint += $"\nАргументов в этом вызове: {inner.ArgumentsCount}";
+                hint += $"\nАргументов в этом вызове: {instruction.ArgumentsCount}";
             }
 
             Token(name, ColorFunction, hint, ref first);
         }
-        else if (inner.ValueOrSourceVarIndex >= 0)
+        else if (instruction.ValueOrSourceVarIndex >= 0)
         {
             // копирование переменной
-            Variable(inner.ValueOrSourceVarIndex, ref first);
+            Variable(instruction.ValueOrSourceVarIndex, ref first);
             return;
         }
         else
         {
-            DrawFormula(inner, ref first);
+            DrawFormula(instruction, ref first);
             return;
         }
 
         Token("(", ColorPlain, null, ref first, noSpace: true);
-        for (var k = 0; k < inner.Arguments.Count; k++)
+        for (var k = 0; k < instruction.Arguments.Count; k++)
         {
             if (k > 0)
             {
@@ -234,27 +234,27 @@ public class ScrExplorer : IImGuiPanel
             }
 
             var role = signature is not null && k < signature.Arguments.Length ? signature.Arguments[k] : null;
-            Variable(inner.Arguments[k], ref first, argumentNumber: k, noSpace: k == 0, argumentRole: role);
+            Variable(instruction.Arguments[k], ref first, argumentNumber: k, noSpace: k == 0, argumentRole: role);
         }
 
         Token(")", ColorPlain, null, ref first, noSpace: true);
     }
 
     /// <summary>Формула из .fml: выражение с подсвеченными переменными и числами; без .fml - заглушка <c>fml[N]</c>.</summary>
-    private void DrawFormula(ScrEntryInner inner, ref bool first)
+    private void DrawFormula(ScrInstruction instruction, ref bool first)
     {
         var formulas = _viewModel.Fml?.Formulas;
-        if (formulas is null || inner.FmlFunctionIndex < 0 || inner.FmlFunctionIndex >= formulas.Count)
+        if (formulas is null || instruction.FmlFunctionIndex < 0 || instruction.FmlFunctionIndex >= formulas.Count)
         {
-            Token($"fml[{inner.FmlFunctionIndex}]", ColorFunction,
+            Token($"fml[{instruction.FmlFunctionIndex}]", ColorFunction,
                 _viewModel.Fml is null
-                    ? $"Формула №{inner.FmlFunctionIndex} из одноимённого .fml, файл рядом с .scr не найден"
-                    : $"Формула №{inner.FmlFunctionIndex}: в .fml всего {formulas!.Count} формул", ref first);
+                    ? $"Формула №{instruction.FmlFunctionIndex} из одноимённого .fml, файл рядом с .scr не найден"
+                    : $"Формула №{instruction.FmlFunctionIndex}: в .fml всего {formulas!.Count} формул", ref first);
             return;
         }
 
-        var expression = formulas[inner.FmlFunctionIndex].Expression;
-        var hint = $"Формула №{inner.FmlFunctionIndex} из .fml: {expression}";
+        var expression = formulas[instruction.FmlFunctionIndex].Expression;
+        var hint = $"Формула №{instruction.FmlFunctionIndex} из .fml: {expression}";
 
         var i = 0;
         while (i < expression.Length)
@@ -349,7 +349,7 @@ public class ScrExplorer : IImGuiPanel
 
     private static void DrawTable(ScrEntry entry, int entryIndex)
     {
-        ImGui.Text($"Индекс: {entry.Index}, кол-во элементов: {entry.InnerCount}");
+        ImGui.Text($"Индекс: {entry.Index}, кол-во элементов: {entry.InstructionCount}");
 
         if (ImGui.BeginTable($"Элементы##{entryIndex:0000}", 8, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoHostExtendX))
         {
@@ -363,47 +363,47 @@ public class ScrExplorer : IImGuiPanel
             ImGui.TableSetupColumn("Формула .fml");
             ImGui.TableHeadersRow();
 
-            for (var j = 0; j < entry.Inners.Count; j++)
+            for (var j = 0; j < entry.Instructions.Count; j++)
             {
-                var inner = entry.Inners[j];
+                var instruction = entry.Instructions[j];
                 ImGui.TableNextRow();
                 ImGui.TableNextColumn();
-                ImGui.Text(ScrActions.Describe(inner.NativeActionIndex));
+                ImGui.Text(ScrActions.Describe(instruction.NativeActionIndex));
 
                 ImGui.TableNextColumn();
-                ImGui.Text(inner.ResultVarIndex.ToString());
+                ImGui.Text(instruction.ResultVarIndex.ToString());
                 ImGui.TableNextColumn();
-                ImGui.Text(inner.ValueOrSourceVarIndex.ToString());
+                ImGui.Text(instruction.ValueOrSourceVarIndex.ToString());
                 ImGui.TableNextColumn();
-                ImGui.Text($"{(int) inner.Type}: {inner.Type:G}");
-                if (inner.Type == ScrEntryInnerType.Compare)
+                ImGui.Text($"{(int) instruction.Type}: {instruction.Type:G}");
+                if (instruction.Type == ScrInstructionType.Compare)
                 {
                     Utils.ShowHint("Сравнение двух переменных Varset (аргументы), операция в CompareOperator: 0 <, 1 ==, 2 >, 3 <=, 4 >=, 5 !=");
                 }
 
-                if (inner.Type == ScrEntryInnerType.Return)
+                if (instruction.Type == ScrInstructionType.Return)
                 {
                     Utils.ShowHint("Return: если условия выполнены, секция на этом тике завершается");
                 }
 
-                if (inner.Type == ScrEntryInnerType.SetVarsetValue)
+                if (instruction.Type == ScrInstructionType.SetVarsetValue)
                 {
                     Utils.ShowHint("Записать в переменную Varset ResultVarIndex значение ValueOrSourceVarIndex");
                 }
 
                 ImGui.TableNextColumn();
-                ImGui.Text(inner.CompareOperator.ToString());
+                ImGui.Text(instruction.CompareOperator.ToString());
                 ImGui.TableNextColumn();
-                ImGui.Text(inner.ArgumentsCount.ToString());
+                ImGui.Text(instruction.ArgumentsCount.ToString());
                 ImGui.TableNextColumn();
-                foreach (var argument in inner.Arguments)
+                foreach (var argument in instruction.Arguments)
                 {
                     ImGui.Button($"{argument}##{j}_{argument}");
                     ImGui.SameLine();
                 }
 
                 ImGui.TableNextColumn();
-                ImGui.Text(inner.FmlFunctionIndex.ToString());
+                ImGui.Text(instruction.FmlFunctionIndex.ToString());
             }
 
             ImGui.EndTable();

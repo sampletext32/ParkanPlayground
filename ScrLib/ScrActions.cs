@@ -1,7 +1,7 @@
 namespace ScrLib;
 
 /// <summary>
-/// Встроенные функции скриптов (<c>ScrEntryInner.NativeActionIndex</c> у инструкций типа Execute): таблица <c>action_0..action_58</c> в ai.dll
+/// Встроенные функции скриптов (<c>ScrInstruction.NativeActionIndex</c> у инструкций типа Execute): таблица <c>action_0..action_58</c> в ai.dll
 /// (<c>SuperAI::ctor</c>, 0x02461000). Названы по декомпилированному коду и по использованию в 75 .scr
 /// (аргументы - переменные Varset, имена и константы в <c>MISSIONS/SCRIPTS/varset.var</c>). Поведение в игре не наблюдалось.
 /// Функции без записи в таблице (1, 4, 5, 10, 21, 22, 23, 26, 33, 39, 42, 46, 48, 53, 55) не встречаются ни в одном .scr игры, реверс по ним остановлен.
@@ -13,7 +13,7 @@ public static class ScrActions
         [0] = "BindGlobalSuperAI",
         [2] = "RequestUnitsForProblem",
         [3] = "GetDistributorSurplus",
-        [6] = "SetUnitCriticalStatus",
+        [6] = "AssignUnitToCurrentProblem",
         [7] = "DeleteCurrentProblem",
         [8] = "SetCurrentProblemStatus",
         [9] = "Nop",
@@ -53,7 +53,7 @@ public static class ScrActions
         [54] = "GetUnitOrderState",
         [56] = "IsDistributorFlagSet",
         [57] = "HostCallKind2",
-        [58] = "GetOwnBuildingByIndex",
+        [58] = "GetUpgradableBuildingByIndex",
     };
 
     /// <summary>
@@ -65,7 +65,7 @@ public static class ScrActions
         [0] = new(["игнорируется"], "true"),
         [2] = new(["тип проблемы PBM_* (по имени переменной ищутся секции <имя>_Start/_Continue)", "приоритет (float)", "число шагов", "убывание шага за тик", "target_x (у ROBOT_NEEDED - класс юнита, у ATTACK_UNIT - LogicID цели)", "target_y (обычно NONE)", "target_extra (критерий SELECT_* или требуемая сила)"], null),
         [3] = new([], "float: остаток распределителя ресурсов"),
-        [6] = new(["LogicID юнита", "UNIT_NORMAL / UNIT_CRITICAL"], null),
+        [6] = new(["LogicID юнита (привязывается к текущей проблеме)", "UNIT_NORMAL / UNIT_CRITICAL"], null),
         [7] = new([], null),
         [8] = new(["ST_SOLVING / ST_SOLVED"], null),
         [9] = new([], null),
@@ -73,7 +73,7 @@ public static class ScrActions
         [12] = new([], "float: приоритет"),
         [13] = new(["UNIT_FREE_UNIT / UNIT_ANY_UNIT", "тип"], "LogicID юнита"),
         [14] = new(["UNIT_ANY_UNIT / UNIT_ANY_CAPTURER / ...", "тип"], "LogicID юнита"),
-        [15] = new(["юнит", "приказ ORDER_*", "режим вставки INSERT_ORDER_*", "проблема", "fSuccess", "fSurvive", "fTime", "fIndependence", "способ цели TARGET_BY_*", "цель"], null),
+        [15] = new(["LogicID юнита", "приказ ORDER_ROBOT_* / ORDER_BUILDING_*", "режим вставки INSERT_ORDER_* (1 в конец, 2 в начало, 3 заменить)", "параметр приказа (радиус патруля; для TARGET_BY_NAME - класс здания)", "fSuccess", "fSurvive", "fTime", "fIndependence", "вид цели TARGET_BY_*", "цель: LogicID / X / тип / критерий SELECT_* (для TARGET_BY_NAME)", "Y (только для TARGET_BY_PLACE)"], "1 принят, 0 отклонён, 5 юнит не найден"),
         [16] = new(["BUILDING_STORAGE", "RESOURCE_ORE"], "float: количество ресурса"),
         [17] = new(["BUILDING_MINE", "RESOURCE_LEFT_ORE"], "float: количество ресурса"),
         [18] = new(["X (выход)", "Y (выход; 0, 0 - места нет)"], null),
@@ -82,7 +82,7 @@ public static class ScrActions
         [24] = new(["номер группы"], null),
         [25] = new(["TAKE_* / CREATE_EMPTY", "число"], "номер группы"),
         [27] = new(["действие ACTION_*", "способ цели EXP_TARGET_BY_*", "цель"], null),
-        [28] = new(["группа", "приказ ORDER_*", "... как у IssueOrderToUnit (№15)"], null),
+        [28] = new(["номер группы текущей проблемы", "приказ ORDER_*", "режим вставки INSERT_ORDER_*", "параметр приказа", "fSuccess", "fSurvive", "fTime", "fIndependence", "вид цели TARGET_BY_LOGIC_ID / BY_PLACE / BY_TYPE", "цель", "Y (для TARGET_BY_PLACE)"], "1 все приняли, 0 отклонён, 5 юнит не найден"),
         [29] = new(["номер поля: 0, 1 или 2"], "float / int: поле проблемы"),
         [30] = new(["вид сообщения", "значение"], null),
         [31] = new(["клан", "маска CLASS_*"], "число юнитов"),
@@ -105,7 +105,7 @@ public static class ScrActions
         [54] = new(["LogicID"], null),
         [56] = new([], "bool"),
         [57] = new(["значение 1", "значение 2"], null),
-        [58] = new(["порядковый номер"], "LogicID"),
+        [58] = new(["порядковый номер среди зданий, которые можно улучшить"], "LogicID или ERROR"),
     };
 
     public static string Describe(int scriptIndex) =>

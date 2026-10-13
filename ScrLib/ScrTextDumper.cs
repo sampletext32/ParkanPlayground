@@ -15,33 +15,34 @@ public static class ScrTextDumper
     /// <param name="scr">Разобранный скрипт.</param>
     /// <param name="fml">Формулы одноимённого <c>.fml</c>; null - формулы выводятся как <c>fml[N]</c>.</param>
     /// <param name="variableNames">Имена переменных Varset по индексу (порядок объявления в <c>varset.var</c>); null - выводятся <c>var[N]</c>.</param>
-    public static string Dump(string fileName, ScrFile scr, FmlFile? fml, IReadOnlyList<string>? variableNames)
+    /// <param name="useActionNames">false - не подставлять имена встроенных функций (<see cref="ScrActions"/> описывает только первую часть игры), выводить <c>action_N</c>.</param>
+    public static string Dump(string fileName, ScrFile scr, FmlFile? fml, IReadOnlyList<string>? variableNames, bool useActionNames = true)
     {
         var sb = new StringBuilder();
         sb.AppendLine($"// {fileName}: секций {scr.EntryCount}, magic {scr.Magic}");
         sb.AppendLine("// Формат строки: <номер инструкции с 1>: <действие>   ; <исходные поля: act res val type cmp args fml>");
-        sb.AppendLine("// act - NativeActionIndex (action_N в ai.dll), res - ResultVarIndex, val - ValueOrSourceVarIndex, type - ScrEntryInnerType, cmp - CompareOperator, fml - FmlFunctionIndex");
+        sb.AppendLine("// act - NativeActionIndex (action_N в ai.dll), res - ResultVarIndex, val - ValueOrSourceVarIndex, type - ScrInstructionType, cmp - CompareOperator, fml - FmlFunctionIndex");
         sb.AppendLine();
 
         for (var i = 0; i < scr.Entries.Count; i++)
         {
             var entry = scr.Entries[i];
-            sb.AppendLine($"== Секция {i} \"{entry.Title}\" (Index={entry.Index}, инструкций {entry.InnerCount})");
+            sb.AppendLine($"== Секция {i} \"{entry.Title}\" (Index={entry.Index}, инструкций {entry.InstructionCount})");
 
             var depth = 0;
-            for (var j = 0; j < entry.Inners.Count; j++)
+            for (var j = 0; j < entry.Instructions.Count; j++)
             {
-                var inner = entry.Inners[j];
-                if (inner.Type == ScrEntryInnerType.EndIf && depth > 0)
+                var instruction = entry.Instructions[j];
+                if (instruction.Type == ScrInstructionType.EndIf && depth > 0)
                 {
                     depth--;
                 }
 
-                var text = Describe(scr, inner, fml, variableNames);
-                var raw = $"act={inner.NativeActionIndex} res={inner.ResultVarIndex} val={inner.ValueOrSourceVarIndex} type={(int) inner.Type} cmp={inner.CompareOperator} args=[{string.Join(",", inner.Arguments)}] fml={inner.FmlFunctionIndex}";
+                var text = Describe(scr, instruction, fml, variableNames, useActionNames);
+                var raw = $"act={instruction.NativeActionIndex} res={instruction.ResultVarIndex} val={instruction.ValueOrSourceVarIndex} type={(int) instruction.Type} cmp={instruction.CompareOperator} args=[{string.Join(",", instruction.Arguments)}] fml={instruction.FmlFunctionIndex}";
                 sb.AppendLine($"{j + 1,4}: {new string(' ', depth * 4)}{text}   ; {raw}");
 
-                if (inner.Type == ScrEntryInnerType.Compare)
+                if (instruction.Type == ScrInstructionType.Compare)
                 {
                     depth++;
                 }
@@ -53,60 +54,60 @@ public static class ScrTextDumper
         return sb.ToString();
     }
 
-    private static string Describe(ScrFile scr, ScrEntryInner inner, FmlFile? fml, IReadOnlyList<string>? names)
+    private static string Describe(ScrFile scr, ScrInstruction instruction, FmlFile? fml, IReadOnlyList<string>? names, bool useActionNames)
     {
         string Var(int index) =>
             index >= 0 && names is not null && index < names.Count ? names[index] : index >= 0 ? $"var[{index}]" : index.ToString();
 
-        switch (inner.Type)
+        switch (instruction.Type)
         {
-            case ScrEntryInnerType.Compare:
-                var op = inner.CompareOperator is >= 0 and < 6 ? CompareOperators[inner.CompareOperator] : $"op{inner.CompareOperator}";
-                return inner.Arguments.Count >= 2
-                    ? $"if {Var(inner.Arguments[0])} {op} {Var(inner.Arguments[1])}"
-                    : $"if <некорректное условие: аргументов {inner.Arguments.Count}>";
+            case ScrInstructionType.Compare:
+                var op = instruction.CompareOperator is >= 0 and < 6 ? CompareOperators[instruction.CompareOperator] : $"op{instruction.CompareOperator}";
+                return instruction.Arguments.Count >= 2
+                    ? $"if {Var(instruction.Arguments[0])} {op} {Var(instruction.Arguments[1])}"
+                    : $"if <некорректное условие: аргументов {instruction.Arguments.Count}>";
 
-            case ScrEntryInnerType.EndIf:
+            case ScrInstructionType.EndIf:
                 return "endif";
 
-            case ScrEntryInnerType.Nop:
+            case ScrInstructionType.Nop:
                 return "nop";
 
-            case ScrEntryInnerType.GotoInstruction:
-                return $"goto инструкция {(inner.Arguments.Count > 0 ? inner.Arguments[0] : -1)}";
+            case ScrInstructionType.GotoInstruction:
+                return $"goto инструкция {(instruction.Arguments.Count > 0 ? instruction.Arguments[0] : -1)}";
 
-            case ScrEntryInnerType.GotoEntry:
-                var target = inner.Arguments.Count > 0 ? inner.Arguments[0] : -1;
+            case ScrInstructionType.GotoEntry:
+                var target = instruction.Arguments.Count > 0 ? instruction.Arguments[0] : -1;
                 var title = target >= 0 && target < scr.Entries.Count ? $" \"{scr.Entries[target].Title}\"" : "";
                 return $"goto секция {target}{title}";
 
-            case ScrEntryInnerType.Return:
+            case ScrInstructionType.Return:
                 return "return";
 
-            case ScrEntryInnerType.SetVarsetValue:
-                return $"{Var(inner.ResultVarIndex)} = {inner.ValueOrSourceVarIndex}";
+            case ScrInstructionType.SetVarsetValue:
+                return $"{Var(instruction.ResultVarIndex)} = {instruction.ValueOrSourceVarIndex}";
 
-            case ScrEntryInnerType.Execute:
-                var left = inner.ResultVarIndex >= 0 ? $"{Var(inner.ResultVarIndex)} = " : "";
-                if (inner.NativeActionIndex >= 0)
+            case ScrInstructionType.Execute:
+                var left = instruction.ResultVarIndex >= 0 ? $"{Var(instruction.ResultVarIndex)} = " : "";
+                if (instruction.NativeActionIndex >= 0)
                 {
-                    var name = ScrActions.Names.TryGetValue(inner.NativeActionIndex, out var n) ? $"action_{inner.NativeActionIndex} {n}" : $"action_{inner.NativeActionIndex}";
-                    return $"{left}{name}({string.Join(", ", inner.Arguments.Select(Var))})";
+                    var name = useActionNames && ScrActions.Names.TryGetValue(instruction.NativeActionIndex, out var n) ? $"action_{instruction.NativeActionIndex} {n}" : $"action_{instruction.NativeActionIndex}";
+                    return $"{left}{name}({string.Join(", ", instruction.Arguments.Select(Var))})";
                 }
 
-                if (inner.ValueOrSourceVarIndex >= 0)
+                if (instruction.ValueOrSourceVarIndex >= 0)
                 {
-                    return $"{left}{Var(inner.ValueOrSourceVarIndex)}";
+                    return $"{left}{Var(instruction.ValueOrSourceVarIndex)}";
                 }
 
                 var formulas = fml?.Formulas;
-                var expression = formulas is not null && inner.FmlFunctionIndex >= 0 && inner.FmlFunctionIndex < formulas.Count
-                    ? formulas[inner.FmlFunctionIndex].Expression
-                    : $"fml[{inner.FmlFunctionIndex}]";
+                var expression = formulas is not null && instruction.FmlFunctionIndex >= 0 && instruction.FmlFunctionIndex < formulas.Count
+                    ? formulas[instruction.FmlFunctionIndex].Expression
+                    : $"fml[{instruction.FmlFunctionIndex}]";
                 return $"{left}{expression}";
 
             default:
-                return $"тип {(int) inner.Type}";
+                return $"тип {(int) instruction.Type}";
         }
     }
 }

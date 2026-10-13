@@ -25,15 +25,15 @@ public class ScrParser
             fs.ReadByte();
 
             var index = fs.ReadInt32LittleEndian();
-            var innerCount = fs.ReadInt32LittleEndian();
-            List<ScrEntryInner> inners = [];
-            for (var i1 = 0; i1 < innerCount; i1++)
+            var instructionCount = fs.ReadInt32LittleEndian();
+            List<ScrInstruction> instructions = [];
+            for (var i1 = 0; i1 < instructionCount; i1++)
             {
-                var scriptIndex = fs.ReadInt32LittleEndian();
-                var unkInner2 = fs.ReadInt32LittleEndian();
-                var unkInner3 = fs.ReadInt32LittleEndian();
-                var type = (ScrEntryInnerType)fs.ReadInt32LittleEndian();
-                var unkInner5 = fs.ReadInt32LittleEndian();
+                var nativeActionIndex = fs.ReadInt32LittleEndian();
+                var resultVarIndex = fs.ReadInt32LittleEndian();
+                var valueOrSourceVarIndex = fs.ReadInt32LittleEndian();
+                var type = (ScrInstructionType)fs.ReadInt32LittleEndian();
+                var compareOperator = fs.ReadInt32LittleEndian();
                 var argumentsCount = fs.ReadInt32LittleEndian();
                 List<int> arguments = [];
 
@@ -42,19 +42,19 @@ public class ScrParser
                     arguments.Add(fs.ReadInt32LittleEndian());
                 }
 
-                var unkInner7 = fs.ReadInt32LittleEndian();
-                inners.Add(new ScrEntryInner(
-                    scriptIndex,
-                    unkInner2,
-                    unkInner3,
+                var fmlFunctionIndex = fs.ReadInt32LittleEndian();
+                instructions.Add(new ScrInstruction(
+                    nativeActionIndex,
+                    resultVarIndex,
+                    valueOrSourceVarIndex,
                     type,
-                    unkInner5,
+                    compareOperator,
                     argumentsCount,
                     arguments,
-                    unkInner7));
+                    fmlFunctionIndex));
             }
 
-            entries.Add(new ScrEntry(title, index, innerCount, inners));
+            entries.Add(new ScrEntry(title, index, instructionCount, instructions));
         }
 
         return new ScrFile(magic, entryCount, entries);
