@@ -28,7 +28,31 @@ public static class MshRestPoseBuilder
         IReadOnlyList<MshTransformKeyframe> animationDescriptors,
         IReadOnlyList<MshAnimationMapEntry> animationMap,
         MshAnimationPoseMode poseMode,
-        float sampleTime)
+        float sampleTime,
+        int frameCount = 0)
+    {
+        return BuildPose(
+            nodesComponent,
+            animationDescriptors,
+            animationMap,
+            poseMode,
+            new MshAnimationBlend(sampleTime, -1.0f, 0.0f),
+            frameCount: frameCount);
+    }
+
+    /// <summary>
+    /// Поза по двум временам шкалы: диапазон 1, диапазон 2 и вес диапазона 2 (как у состояния CTL).
+    /// <paramref name="perNodeBlend"/> задаёт свои времена для отдельных деталей (каналы привязок CTL), остальные идут по <paramref name="blend"/>.
+    /// <paramref name="frameCount"/> - длина блока карты кадров на деталь (<c>Magic1</c> компонента 0x13).
+    /// </summary>
+    public static IReadOnlyList<MshPieceRestPose> BuildPose(
+        Msh0x01.Msh0x01Component nodesComponent,
+        IReadOnlyList<MshTransformKeyframe> animationDescriptors,
+        IReadOnlyList<MshAnimationMapEntry> animationMap,
+        MshAnimationPoseMode poseMode,
+        MshAnimationBlend blend,
+        IReadOnlyDictionary<int, MshAnimationBlend>? perNodeBlend = null,
+        int frameCount = 0)
     {
         var nodeList = nodesComponent.Nodes;
         var animationList = animationDescriptors;
@@ -37,7 +61,7 @@ public static class MshRestPoseBuilder
         var state = new byte[nodeList.Count];
 
         for (var nodeIndex = 0; nodeIndex < nodeList.Count; nodeIndex++)
-            BuildNodePose(nodeIndex, nodeList, animationList, animationMap, poses, state, poseMode, sampleTime);
+            BuildNodePose(nodeIndex, nodeList, animationList, animationMap, poses, state, poseMode, blend, perNodeBlend, frameCount);
 
         return poses;
     }
@@ -50,7 +74,9 @@ public static class MshRestPoseBuilder
         MshPieceRestPose[] poses,
         byte[] state,
         MshAnimationPoseMode poseMode,
-        float sampleTime)
+        MshAnimationBlend blend,
+        IReadOnlyDictionary<int, MshAnimationBlend>? perNodeBlend,
+        int frameCount)
     {
         if (state[nodeIndex] == 2)
             return poses[nodeIndex].MeshSpaceTransform;
@@ -70,7 +96,13 @@ public static class MshRestPoseBuilder
         Matrix4x4 localTransform;
         if (hasFallbackPose)
         {
-            localTransform = BuildLocalTransform(node, animationDescriptors, animationMap, poseMode, sampleTime);
+            localTransform = BuildLocalTransform(
+                node,
+                animationDescriptors,
+                animationMap,
+                poseMode,
+                perNodeBlend != null && perNodeBlend.TryGetValue(nodeIndex, out var nodeBlend) ? nodeBlend : blend,
+                frameCount);
         }
         else
         {
@@ -86,7 +118,7 @@ public static class MshRestPoseBuilder
         var meshSpaceTransform = localTransform;
         if (parentIndex >= 0 && parentIndex < nodes.Count && parentIndex != nodeIndex)
         {
-            var parentTransform = BuildNodePose(parentIndex, nodes, animationDescriptors, animationMap, poses, state, poseMode, sampleTime);
+            var parentTransform = BuildNodePose(parentIndex, nodes, animationDescriptors, animationMap, poses, state, poseMode, blend, perNodeBlend, frameCount);
             meshSpaceTransform = localTransform * parentTransform;
         }
 
@@ -107,15 +139,19 @@ public static class MshRestPoseBuilder
         IReadOnlyList<MshTransformKeyframe> animationDescriptors,
         IReadOnlyList<MshAnimationMapEntry> animationMap,
         MshAnimationPoseMode poseMode,
-        float sampleTime)
+        MshAnimationBlend blend,
+        int frameCount)
     {
         if (poseMode == MshAnimationPoseMode.AnimationSample)
         {
-            return MshAnimationSampler.ToMatrix(MshAnimationSampler.SamplePieceAnimationAtTime(
+            return MshAnimationSampler.ToMatrix(MshAnimationSampler.SamplePieceBlendedAtTime(
                 node,
                 animationDescriptors,
                 animationMap,
-                sampleTime));
+                blend.Time1,
+                blend.Time2,
+                blend.Weight2,
+                frameCount));
         }
 
         return BuildTransformFromAnimationDescriptor(animationDescriptors[node.DefaultKeyframeIndex0x08]);
@@ -191,6 +227,9 @@ public static class MshRestPoseBuilder
         return Quaternion.Conjugate(q);
     }
 }
+
+/// <summary>Времена семпла двух диапазонов шкалы анимации и вес второго (отрицательное время - диапазон не используется).</summary>
+public readonly record struct MshAnimationBlend(float Time1, float Time2, float Weight2);
 
 public enum MshAnimationPoseMode
 {

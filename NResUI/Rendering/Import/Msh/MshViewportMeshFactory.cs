@@ -32,7 +32,8 @@ public static class MshViewportMeshFactory
             modelGeometry.TransformKeyframes,
             modelGeometry.AnimationMap,
             renderState.AnimationPoseMode,
-            renderState.AnimationSampleTime);
+            renderState.AnimationSampleTime,
+            modelGeometry.MaxAnimationTime);
 
         foreach (var pieceInfo in document.Pieces)
         {

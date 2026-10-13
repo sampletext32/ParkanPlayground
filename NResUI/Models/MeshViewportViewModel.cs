@@ -19,6 +19,7 @@ public sealed class MeshViewportViewModel
     public void SetDocument(MeshDocument document)
     {
         Document = document;
+        RenderState.ResetClips();
         LoadError = null;
         RenderState.HiddenPieceIds.Clear();
         RenderState.ClearAllPieceOverrides();

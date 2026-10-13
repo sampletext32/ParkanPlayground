@@ -127,7 +127,7 @@ public sealed class GunModelPreview : IService
             if (poseTimes != null && poseTimes.TryGetValue(i, out var time))
             {
                 sampled = MshAnimationSampler.SamplePieceAnimationAtTime(
-                    node, geometry.TransformKeyframes, geometry.AnimationMap, time);
+                    node, geometry.TransformKeyframes, geometry.AnimationMap, time, geometry.MaxAnimationTime);
             }
             else if (key != ushort.MaxValue && key < geometry.TransformKeyframes.Count)
             {

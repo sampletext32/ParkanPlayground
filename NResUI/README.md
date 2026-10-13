@@ -38,7 +38,7 @@ dotnet run --project NResUI -c Release
 | Material Explorer | MAT0: стадии, анимации, режим смешивания, свойства поверхности | [MaterialLib](../MaterialLib/README.md) |
 | Effect Player | воспроизведение одного эффекта FXID: таймлайн компонентов, режимы силы, камера, звук | [FxidLib](../FxidLib/README.md) |
 | Weapon Viewer | выстрел целиком: орудие → снаряд → эффекты → взрыв; модель орудия, выбор стволов и поверхности | [ControlLib](../ControlLib/README.md), §7 |
-| Инспектор меша / Viewport | меш MSH, поза и анимация | [MshLib](../MshLib/README.md) |
+| Инспектор меша / Viewport | меш MSH, поза и анимация; панель Animation сворачивается; источник Timeline / Clips / Chains (клипы и цепочки состояний CTL, ищется рядом с MSH или «Load CTL...»), режимы Once / Loop / Ping-pong | [MshLib](../MshLib/README.md), [ControlLib](../ControlLib/README.md) |
 | SCR Explorer | скрипты ИИ: читаемый текст (формулы, имена переменных и функций, подсказки при наведении) и таблица инструкций | [ScrLib](../ScrLib/README.md) |
 | Areal Map Explorer | карта ареалов: многоугольники, соседи, раскраска по маске/признаку/наклону, масштаб колесом, перетаскивание, выбор щелчком | [ArealMapLib](../ArealMapLib/README.md) |
 | VARSET Explorer | переменные и константы скриптов | [VarsetLib](../VarsetLib/README.md) |
