@@ -39,6 +39,9 @@ public class ArealMapViewModel
     public bool ShowNeighbourEdges { get; set; }
     public bool ShowSelectedNeighbours { get; set; } = true;
 
+    /// <summary>Рисовать сетку ячеек (приближённо: размер ячейки - протяжённость карты / ширина сетки).</summary>
+    public bool ShowGrid { get; set; }
+
     /// <summary>Нужно вписать карту в окно при следующей отрисовке.</summary>
     public bool FitRequested { get; set; } = true;
 

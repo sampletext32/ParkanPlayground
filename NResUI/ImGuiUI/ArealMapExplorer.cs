@@ -73,6 +73,13 @@ public class ArealMapExplorer : IImGuiPanel
         }
 
         ImGui.SameLine();
+        var showGrid = _vm.ShowGrid;
+        if (ImGui.Checkbox("Сетка ячеек", ref showGrid))
+        {
+            _vm.ShowGrid = showGrid;
+        }
+
+        ImGui.SameLine();
         if (ImGui.Button("Вписать"))
         {
             _vm.FitRequested = true;
@@ -249,6 +256,44 @@ public class ArealMapExplorer : IImGuiPanel
             }
         }
 
+        // сетка ячеек: размер ячейки = протяжённость карты / размер сетки (совпадает с данными с точностью до 1/8 ячейки)
+        if (_vm.ShowGrid && map.GridWidth > 0 && map.GridHeight > 0)
+        {
+            var bounds = _vm.MapBounds;
+            var cellW = bounds.Z / map.GridWidth;
+            var cellH = bounds.W / map.GridHeight;
+            var gridColor = ImGui.GetColorU32(new Vector4(1f, 1f, 1f, 0.12f));
+            if (cellW * zoom >= 4f && cellH * zoom >= 4f)
+            {
+                for (var gx = 0; gx <= map.GridWidth; gx++)
+                {
+                    dl.AddLine(ToScreen(gx * cellW, 0), ToScreen(gx * cellW, bounds.W), gridColor);
+                }
+
+                for (var gy = 0; gy <= map.GridHeight; gy++)
+                {
+                    dl.AddLine(ToScreen(0, gy * cellH), ToScreen(bounds.Z, gy * cellH), gridColor);
+                }
+            }
+
+            if (hovered)
+            {
+                var world = ToWorld(io.MousePos);
+                var cx = (int) MathF.Floor(world.X / cellW);
+                var cy = (int) MathF.Floor(world.Y / cellH);
+                if (cx >= 0 && cy >= 0 && cx < map.GridWidth && cy < map.GridHeight)
+                {
+                    dl.AddRect(ToScreen(cx * cellW, (cy + 1) * cellH), ToScreen((cx + 1) * cellW, cy * cellH),
+                        ImGui.GetColorU32(new Vector4(1f, 0.9f, 0.2f, 1f)), 0f, ImDrawFlags.None, 2f);
+                    ImGui.BeginTooltip();
+                    var list = map.GetCell(cx, cy);
+                    ImGui.Text($"Ячейка ({cx}, {cy}): ареалов {list.Length}");
+                    ImGui.Text(string.Join(", ", list.Take(12)) + (list.Length > 12 ? ", ..." : ""));
+                    ImGui.EndTooltip();
+                }
+            }
+        }
+
         dl.PopClipRect();
 
         if (hovered && ImGui.IsMouseReleased(ImGuiMouseButton.Left) && !ImGui.IsMouseDragging(ImGuiMouseButton.Left, 4f))
@@ -256,7 +301,7 @@ public class ArealMapExplorer : IImGuiPanel
             _vm.Selected = hoveredIndex;
         }
 
-        if (hovered && hoveredIndex >= 0)
+        if (hovered && hoveredIndex >= 0 && !_vm.ShowGrid)
         {
             DrawTooltip(map, hoveredIndex);
         }
