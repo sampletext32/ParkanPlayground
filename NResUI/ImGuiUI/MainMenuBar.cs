@@ -1,5 +1,6 @@
-using System.Numerics;
+﻿using System.Numerics;
 using System.Text.Json;
+using ArealMapLib;
 using CpDatLib;
 using ImGuiNET;
 using MissionTmaLib;
@@ -23,6 +24,7 @@ namespace NResUI.ImGuiUI
         VarsetViewModel varsetViewModel,
         CpDatSchemeViewModel cpDatSchemeViewModel,
         ResearchTreeViewModel researchTreeViewModel,
+        ArealMapViewModel arealMapViewModel,
         MessageBoxModalPanel messageBox)
         : IImGuiPanel
     {
@@ -95,6 +97,26 @@ namespace NResUI.ImGuiUI
 
                             missionTmaViewModel.SetParseResult(parseResult, path);
                             Console.WriteLine("Read TMA");
+                        }
+                    }
+
+                    if (ImGui.MenuItem("Open Areal Map (Land.map)"))
+                    {
+                        var result = Dialog.FileOpen("map");
+
+                        if (result.IsOk)
+                        {
+                            var path = result.Path;
+
+                            try
+                            {
+                                arealMapViewModel.SetParseResult(ArealMapParser.ReadFile(path), path);
+                                Console.WriteLine("Read ArealMap");
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine($"Не удалось прочитать карту ареалов: {e.Message}");
+                            }
                         }
                     }
 

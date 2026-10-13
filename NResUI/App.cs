@@ -78,6 +78,7 @@ public class App
             serviceCollection.AddSingleton(new MaterialViewModel());
             serviceCollection.AddSingleton(new ResearchTreeViewModel());
             serviceCollection.AddSingleton(new MeshViewportViewModel());
+            serviceCollection.AddSingleton(new ArealMapViewModel());
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
 

@@ -19,9 +19,11 @@ public class NResExplorerPanel : IImGuiPanel
     private readonly MissionTmaViewModel _missionTmaViewModel;
     private readonly ScrViewModel _scrViewModel;
     private readonly MaterialViewModel _materialViewModel;
+    private readonly ArealMapViewModel _arealMapViewModel;
 
     public NResExplorerPanel(NResExplorerViewModel viewModel, TexmExplorerViewModel texmExplorerViewModel,
-        VarsetViewModel varsetViewModel, CpDatSchemeViewModel cpDatSchemeViewModel, MissionTmaViewModel missionTmaViewModel, ScrViewModel scrViewModel, MaterialViewModel materialViewModel)
+        VarsetViewModel varsetViewModel, CpDatSchemeViewModel cpDatSchemeViewModel, MissionTmaViewModel missionTmaViewModel, ScrViewModel scrViewModel, MaterialViewModel materialViewModel,
+        ArealMapViewModel arealMapViewModel)
     {
         _viewModel = viewModel;
         _texmExplorerViewModel = texmExplorerViewModel;
@@ -30,6 +32,7 @@ public class NResExplorerPanel : IImGuiPanel
         _missionTmaViewModel = missionTmaViewModel;
         _scrViewModel = scrViewModel;
         _materialViewModel = materialViewModel;
+        _arealMapViewModel = arealMapViewModel;
     }
 
     int contextMenuRow = -1;
@@ -255,6 +258,30 @@ public class NResExplorerPanel : IImGuiPanel
 
                                     _scrViewModel.SetParseResult(parseResult, Path.Combine(_viewModel.Path!, file.FileName));
                                     Console.WriteLine("Read .scr from context menu");
+                                }
+
+                                if (ImGui.MenuItem("Open as ArealMap (type 0x0C)"))
+                                {
+                                    using var fs = new FileStream(_viewModel.Path!, FileMode.Open, FileAccess.Read,
+                                        FileShare.Read);
+                                    fs.Seek(file.OffsetInFile, SeekOrigin.Begin);
+
+                                    var buffer = new byte[file.FileLength];
+
+                                    fs.ReadExactly(buffer, 0, file.FileLength);
+
+                                    using var ms = new MemoryStream(buffer);
+
+                                    try
+                                    {
+                                        var map = ArealMapLib.ArealMapParser.Parse(ms, (int) file.ElementCount, file.FileLength);
+                                        _arealMapViewModel.SetParseResult(map, Path.Combine(_viewModel.Path!, file.FileName));
+                                        Console.WriteLine("Read ArealMap from context menu");
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Console.WriteLine($"Не удалось прочитать ArealMap: {e.Message}");
+                                    }
                                 }
 
                                 if (ImGui.MenuItem("Open as Material"))

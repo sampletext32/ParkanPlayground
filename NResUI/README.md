@@ -25,6 +25,7 @@ dotnet run --project NResUI -c Release
 | Open TEXM / Open TFNT TEXM | текстура / шрифтовая текстура |
 | Open Mission TMA | файл миссии (`MissionTmaLib`) |
 | Open SCR Scripts File | скрипты ИИ (`ScrLib`) |
+| Open Areal Map (Land.map) | карта ареалов (`ArealMapLib`) |
 | Open Varset File | переменные `.var` (`VarsetLib`) |
 | Open cp .dat Scheme File | схема объекта (`CpDatLib`) |
 | Open research .trf File | дерево исследований (`ResTreeLib`) |
@@ -39,6 +40,7 @@ dotnet run --project NResUI -c Release
 | Weapon Viewer | выстрел целиком: орудие → снаряд → эффекты → взрыв; модель орудия, выбор стволов и поверхности | [ControlLib](../ControlLib/README.md), §7 |
 | Инспектор меша / Viewport | меш MSH, поза и анимация | [MshLib](../MshLib/README.md) |
 | SCR Explorer | скрипты ИИ: читаемый текст (формулы, имена переменных и функций, подсказки при наведении) и таблица инструкций | [ScrLib](../ScrLib/README.md) |
+| Areal Map Explorer | карта ареалов: многоугольники, соседи, раскраска по маске/признаку/наклону, масштаб колесом, перетаскивание, выбор щелчком | [ArealMapLib](../ArealMapLib/README.md) |
 | VARSET Explorer | переменные и константы скриптов | [VarsetLib](../VarsetLib/README.md) |
 | TEXM Explorer | текстуры и страницы атласа | [TexmLib](../TexmLib/README.md) |
 | Mission TMA Explorer | ареалы, кланы, объекты миссии | [MissionTmaLib](../MissionTmaLib/README.md) |
