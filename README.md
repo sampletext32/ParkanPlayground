@@ -129,7 +129,7 @@ grep -rlU $'\x73\x5f\x74\x72\x65\x65\x5f\x30\x35' .
 
 Загрузка миссии:
 
-Читается файл `ui/game_resources.cfg`
+Читается файл `ui/game_resources.cfg` (формат и виды ресурсов - [docs/SERVICES.md](docs/SERVICES.md))
 Из этого файла загружаются ресурсы
 - `library = "ui\\ui.lib"` - загружается файл `ui.lib`
 - `library = "ui\\font.lib"` - загружается файл `font.lib`

@@ -11,6 +11,7 @@
 - AniMesh.dll/Control.dll: анимация MSH - общая шкала времени, клипы = состояния CTL (диапазоны, вес по скорости); плеер NResUI.
 - Ngi32.dll (частично): NL-архивы и способы упаковки (`RsLiLib`), классы `NResFile`/`3DRender`/`CSoundPool`/`CListenerTransform`; из 144 безымянных функций осталось 98
   (в основном CRT 0x1002C000+ и растровые функции).
+- services.dll (частично): менеджер ресурсов и формат `.cfg`, сеть (по именам), конфигурация - `docs/SERVICES.md`.
 - MisLoad.dll: передача тактических ареалов и мест миграции в `SystemArealMap`.
 
 ## В работе
@@ -22,7 +23,8 @@
 
 2. **Ngi32.dll** - ядро движка: рендер, звук, сеть, NRes/RsLi, файлы, логгер. Назвать функции, описать структуры (`NResFile`, `Queue`, `Logger`...), свести с
    `NResLib`/`RsLiLib` и документацией формата.
-3. **services.dll** (~800 неименованных функций): ресурсы, строки, контейнеры.
+3. **services.dll** (806 неименованных функций, в основном STL): остались дисплей, формат `.ini`, `CGUIServer`.
+   **Net.dll / Effect.dll / Joystick.dll** в проекте Ghidra открываются только после обновления языка (`tools/upgrade_project_language.py`, нужен пароль сервера).
 4. **Terrain.dll**: грани ландшафта (`GetWalkFace`, `FindNearestIntersectedFaceInLandscape`), `PlaceBuilding`, `CheckMaxBasementAngle`.
 5. **World3D.dll**, **iron3d.dll**: мир, материалы, рендер.
 6. Нерешённое: читатели `Mask0x28`; откуда берутся опции `min_cell_class` и кто вызывает `MRoutingGraph::FindPath`; смысл значений `target_place`.
