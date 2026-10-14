@@ -23,6 +23,7 @@
   <Project Path="ResTreeLib\ResTreeLib.csproj" />
   <Project Path="RsLiLib/RsLiLib.csproj" />
   <Project Path="ScrLib/ScrLib.csproj" />
+  <Project Path="TblLib/TblLib.csproj" />
   <Project Path="TexmLib/TexmLib.csproj" />
   <Project Path="VarsetLib/VarsetLib.csproj" />
   <Project Path="WeaLib/WeaLib.csproj" />
