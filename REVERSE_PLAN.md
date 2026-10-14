@@ -25,7 +25,8 @@
    `NResLib`/`RsLiLib` и документацией формата.
 3. **services.dll** (806 неименованных функций, в основном STL): остались дисплей, формат `.ini`, `CGUIServer`.
    **Net.dll / Effect.dll / Joystick.dll** в проекте Ghidra открываются только после обновления языка (`tools/upgrade_project_language.py`, нужен пароль сервера).
-4. **Terrain.dll**: грани ландшафта (`GetWalkFace`, `FindNearestIntersectedFaceInLandscape`), `PlaceBuilding`, `CheckMaxBasementAngle`.
+4. **Terrain.dll** (частично, `docs/TERRAIN.md`): `PlaceBuilding` и двери зданий разобраны; остались грани ландшафта (`GetWalkFace`,
+   `FindNearestIntersectedFaceInLandscape`), `CheckMaxBasementAngle`, рендеринг.
 5. **World3D.dll**, **iron3d.dll**: мир, материалы, рендер.
 6. Нерешённое: читатели `Mask0x28`; откуда берутся опции `min_cell_class` и кто вызывает `MRoutingGraph::FindPath`; смысл значений `target_place`.
 
