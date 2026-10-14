@@ -11,7 +11,7 @@
 - AniMesh.dll/Control.dll: анимация MSH - общая шкала времени, клипы = состояния CTL (диапазоны, вес по скорости); плеер NResUI.
 - Ngi32.dll (частично): NL-архивы и способы упаковки (`RsLiLib`), классы `NResFile`/`3DRender`/`CSoundPool`/`CListenerTransform`; из 144 безымянных функций осталось 98
   (в основном CRT 0x1002C000+ и растровые функции).
-- services.dll (частично): менеджер ресурсов и формат `.cfg`, сеть (по именам), конфигурация - `docs/SERVICES.md`.
+- services.dll (частично): менеджер ресурсов и формат `.cfg`, сеть (по именам), конфигурация - `docs/SERVICES.md`; форматы `.ini` - `docs/INI_FILES.md`.
 - World3D.dll (частично): очередь объектов и сеть, ввод и таблицы `.tbl` (`docs/WORLD3D.md`).
 - Wizard.dll: арбитр управления объектом и ведение по очереди точек (`docs/WIZARD.md`); Distributor в Behavior.dll: энергия и руда клана (`docs/DISTRIBUTOR.md`).
 - MisLoad.dll: формат `.tma` (`MissionTmaLib`: места миграции, привязка к зданию, настройки, залежи), передача ареалов и мест миграции в `SystemArealMap`.

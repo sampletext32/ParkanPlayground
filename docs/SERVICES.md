@@ -62,7 +62,7 @@
 
 ## Не выяснено
 
-- устройство `CDisplay` и источник его настроек (формат `Iron_3D.ini`);
-- формат `.ini` (`LoadIniFile`) - файлы `ArealMap.ini`, `Behavior.ini`, `Iron_3D.ini`;
+- устройство `CDisplay` (список драйверов и режимов); настройки из `Iron_3D.ini` - [INI_FILES.md](INI_FILES.md);
+- остальные ключи `Iron_3D.ini` (форматы `.ini` описаны в [INI_FILES.md](INI_FILES.md));
 - протокол сети: пакеты и сообщения (в `Net.dll`), порядок рукопожатия;
 - методы `CGUIServer` и `CSoundServer`.
