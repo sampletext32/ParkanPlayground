@@ -12,7 +12,7 @@
 - Ngi32.dll (частично): NL-архивы и способы упаковки (`RsLiLib`), классы `NResFile`/`3DRender`/`CSoundPool`/`CListenerTransform`; из 144 безымянных функций осталось 98
   (в основном CRT 0x1002C000+ и растровые функции).
 - services.dll (частично): менеджер ресурсов и формат `.cfg`, сеть (по именам), конфигурация - `docs/SERVICES.md`.
-- MisLoad.dll: передача тактических ареалов и мест миграции в `SystemArealMap`.
+- MisLoad.dll: формат `.tma` (`MissionTmaLib`: места миграции, привязка к зданию, настройки, залежи), передача ареалов и мест миграции в `SystemArealMap`.
 
 ## В работе
 
@@ -25,8 +25,8 @@
    `NResLib`/`RsLiLib` и документацией формата.
 3. **services.dll** (806 неименованных функций, в основном STL): остались дисплей, формат `.ini`, `CGUIServer`.
    **Net.dll / Effect.dll / Joystick.dll** в проекте Ghidra открываются только после обновления языка (`tools/upgrade_project_language.py`, нужен пароль сервера).
-4. **Terrain.dll** (частично, `docs/TERRAIN.md`): `PlaceBuilding` и двери зданий разобраны; остались грани ландшафта (`GetWalkFace`,
-   `FindNearestIntersectedFaceInLandscape`), `CheckMaxBasementAngle`, рендеринг.
+4. **Terrain.dll** (частично, `docs/TERRAIN.md`): `PlaceBuilding` и двери зданий разобраны; `CheckMaxBasementAngle` разобран; остались грани ландшафта (`GetWalkFace`,
+   `FindNearestIntersectedFaceInLandscape`), вызывающий и порог проверки уклона, рендеринг.
 5. **World3D.dll**, **iron3d.dll**: мир, материалы, рендер.
 6. Нерешённое: читатели `Mask0x28`; откуда берутся опции `min_cell_class` и кто вызывает `MRoutingGraph::FindPath`; смысл значений `target_place`.
 
