@@ -73,13 +73,13 @@ public class MissionTmaParser
         for (var i = 0; i < clanCount; i++)
         {
             var clanName = fileStream.ReadLengthPrefixedString();
-            var unkInt1 = fileStream.ReadInt32LittleEndian();
+            var reserved = fileStream.ReadInt32LittleEndian();
             var x = fileStream.ReadFloatLittleEndian();
             var y = fileStream.ReadFloatLittleEndian();
             var clanType = (ClanType) fileStream.ReadInt32LittleEndian();
             var scriptsString = string.Empty;
-            var unknownClanPartCount = 0;
-            List<UnknownClanTreeInfoPart> unknownParts = [];
+            var migrationPlaceCount = 0;
+            List<MigrationPlace> migrationPlaces = [];
             var researchNResPath = string.Empty;
             var brains = 0;
             var alliesMapCount = 0;
@@ -95,14 +95,14 @@ public class MissionTmaParser
 
             if (2 < clanFeatureSet)
             {
-                unknownClanPartCount = fileStream.ReadInt32LittleEndian();
+                migrationPlaceCount = fileStream.ReadInt32LittleEndian();
 
-                // тут игра читает число, затем 12 байт и ещё 2 числа
+                // место миграции: число (не используется), позиция, радиус, базовый радиус подхода
 
-                for (var i1 = 0; i1 < unknownClanPartCount; i1++)
+                for (var i1 = 0; i1 < migrationPlaceCount; i1++)
                 {
-                    unknownParts.Add(
-                        new UnknownClanTreeInfoPart(
+                    migrationPlaces.Add(
+                        new MigrationPlace(
                             fileStream.ReadInt32LittleEndian(),
                             new Vector3(
                                 fileStream.ReadFloatLittleEndian(),
@@ -147,7 +147,7 @@ public class MissionTmaParser
                 for (var i1 = 0; i1 < alliesMapCount; i1++)
                 {
                     var keyIdString = fileStream.ReadLengthPrefixedString();
-                    // это число всегда либо 0 либо 1
+                    // 0 - враг, 1 - союзник
                     var unkNumber = fileStream.ReadInt32LittleEndian();
 
                     alliesMap[keyIdString] = unkNumber;
@@ -156,13 +156,13 @@ public class MissionTmaParser
 
             infos.Add(new ClanInfo(
                 clanName,
-                unkInt1,
+                reserved,
                 x,
                 y,
                 clanType,
                 scriptsString,
-                unknownClanPartCount,
-                unknownParts,
+                migrationPlaceCount,
+                migrationPlaces,
                 researchNResPath,
                 brains,
                 alliesMapCount,
@@ -190,16 +190,16 @@ public class MissionTmaParser
         {
             // ReadGameObjectData
             var type = (GameObjectType) fileStream.ReadInt32LittleEndian();
-            var unknownFlags = fileStream.ReadInt32LittleEndian();
+            var flags = fileStream.ReadInt32LittleEndian();
 
             // UNITS\UNITS\HERO\hero_t.dat
             var datString = fileStream.ReadLengthPrefixedString();
             var owningClanIndex = 0;
             var order = 0;
-            var unknownString2 = string.Empty;
+            var shortName = string.Empty;
             var unknownInt4 = 0;
-            var unknownInt5 = 0;
-            var unknownInt6 = 0;
+            var hostBuildingLogicId = 0;
+            var hostSlotIndex = 0;
             var settingsData = new GameObjectSettings(0, 0, []);
 
             if (2 < gameObjectsFeatureSet)
@@ -249,7 +249,7 @@ public class MissionTmaParser
             if (6 < gameObjectsFeatureSet)
             {
                 // у HERO пустая строка
-                unknownString2 = fileStream.ReadLengthPrefixedString();
+                shortName = fileStream.ReadLengthPrefixedString();
             }
 
             if (7 < gameObjectsFeatureSet)
@@ -259,8 +259,8 @@ public class MissionTmaParser
 
             if (8 < gameObjectsFeatureSet)
             {
-                unknownInt5 = fileStream.ReadInt32LittleEndian();
-                unknownInt6 = fileStream.ReadInt32LittleEndian();
+                hostBuildingLogicId = fileStream.ReadInt32LittleEndian();
+                hostSlotIndex = fileStream.ReadInt32LittleEndian();
             }
 
             if (5 < gameObjectsFeatureSet)
@@ -274,8 +274,8 @@ public class MissionTmaParser
                 List<GameObjectSetting> settings = [];
                 for (var i1 = 0; i1 < innerCount; i1++)
                 {
-                    // судя по всему это тип настройки
-                    // 0 - float, 1 - int, 2?
+                    // тип настройки: 0 - float, 1 - int, 2 - bool
+                    // значения: текущее, минимум, максимум
                     var settingType = fileStream.ReadInt32LittleEndian();
 
                     settingVal1.Clear();
@@ -300,8 +300,9 @@ public class MissionTmaParser
                         // судя по всему это значение настройки
                         // var innerFloat3 = fileStream.ReadFloatLittleEndian();
                     }
-                    else if (settingType == 1)
+                    else if (settingType is 1 or 2)
                     {
+                        // 1 - int, 2 - bool (в файле тоже int)
                         val1 = new IntFloatValue(settingVal1);
                         val2 = new IntFloatValue(settingVal2);
                         val3 = new IntFloatValue(settingVal3);
@@ -312,7 +313,7 @@ public class MissionTmaParser
                     }
                     else
                     {
-                        throw new InvalidOperationException("Settings value type is not float or int");
+                        throw new InvalidOperationException("Тип настройки не float/int/bool");
                     }
 
                     // Invulnerability
@@ -341,17 +342,17 @@ public class MissionTmaParser
 
             gameObjectInfos.Add(new GameObjectInfo(
                 type,
-                unknownFlags,
+                flags,
                 datString,
                 owningClanIndex,
                 order,
                 position,
                 rotation,
                 scale,
-                unknownString2,
+                shortName,
                 unknownInt4,
-                unknownInt5,
-                unknownInt6,
+                hostBuildingLogicId,
+                hostSlotIndex,
                 settingsData));
 
             // end ReadGameObjectData
@@ -385,22 +386,22 @@ public class MissionTmaParser
             List<LodeInfo> lodeInfos = [];
             for (var i1 = 0; i1 < lodeCount; i1++)
             {
-                var unkLodeVector = new Vector3(
+                var lodePosition = new Vector3(
                     fileStream.ReadFloatLittleEndian(),
                     fileStream.ReadFloatLittleEndian(),
                     fileStream.ReadFloatLittleEndian()
                 );
 
-                var unkLodeInt1 = fileStream.ReadInt32LittleEndian();
-                var unkLodeFlags2 = fileStream.ReadInt32LittleEndian();
+                var lodeFlag = fileStream.ReadInt32LittleEndian();
+                var lodeUninitialized = fileStream.ReadInt32LittleEndian();
                 var unkLodeFloat3 = fileStream.ReadFloatLittleEndian();
                 var unkLodeInt4 = fileStream.ReadInt32LittleEndian();
 
                 lodeInfos.Add(
                     new LodeInfo(
-                        unkLodeVector,
-                        unkLodeInt1,
-                        unkLodeFlags2,
+                        lodePosition,
+                        lodeFlag,
+                        lodeUninitialized,
                         unkLodeFloat3,
                         unkLodeInt4
                     )

@@ -119,9 +119,9 @@ public class MissionTmaExplorer : IImGuiPanel
                             var clanInfo = clanInfos[i];
                             if (ImGui.TreeNodeEx($"Клан {i} - \"{clanInfo.ClanName}\""))
                             {
-                                ImGui.Text("Неизвестное число 1: ");
+                                ImGui.Text("Резерв: ");
                                 ImGui.SameLine();
-                                ImGui.Text(clanInfo.UnkInt1.ToString());
+                                ImGui.Text(clanInfo.Reserved.ToString());
 
                                 ImGui.Text("X: ");
                                 ImGui.SameLine();
@@ -140,35 +140,35 @@ public class MissionTmaExplorer : IImGuiPanel
                                 ImGui.SameLine();
                                 ImGui.Text(clanInfo.ScriptsString);
 
-                                if (clanInfo.UnknownParts.Count > 0)
+                                if (clanInfo.MigrationPlaces.Count > 0)
                                 {
-                                    ImGui.Text("Неизвестная часть");
-                                    if (ImGui.BeginTable("Неизвестная часть##unk1", 6, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoHostExtendX))
+                                    ImGui.Text("Места миграции");
+                                    if (ImGui.BeginTable("Места миграции##migr", 6, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoHostExtendX))
                                     {
-                                        ImGui.TableSetupColumn("Число 1");
+                                        ImGui.TableSetupColumn("Резерв");
                                         ImGui.TableSetupColumn("X");
                                         ImGui.TableSetupColumn("Y");
                                         ImGui.TableSetupColumn("Z");
-                                        ImGui.TableSetupColumn("Число 2");
-                                        ImGui.TableSetupColumn("Число 3");
+                                        ImGui.TableSetupColumn("Радиус");
+                                        ImGui.TableSetupColumn("Радиус подхода");
                                         ImGui.TableHeadersRow();
 
-                                        for (var i1 = 0; i1 < clanInfo.UnknownParts.Count; i1++)
+                                        for (var i1 = 0; i1 < clanInfo.MigrationPlaces.Count; i1++)
                                         {
-                                            var unkPart = clanInfo.UnknownParts[i1];
+                                            var unkPart = clanInfo.MigrationPlaces[i1];
                                             ImGui.TableNextRow();
                                             ImGui.TableNextColumn();
-                                            ImGui.Text(unkPart.UnkInt1.ToString());
+                                            ImGui.Text(unkPart.Reserved.ToString());
                                             ImGui.TableNextColumn();
-                                            ImGui.Text(unkPart.UnkVector.X.ToString());
+                                            ImGui.Text(unkPart.Position.X.ToString());
                                             ImGui.TableNextColumn();
-                                            ImGui.Text(unkPart.UnkVector.Y.ToString());
+                                            ImGui.Text(unkPart.Position.Y.ToString());
                                             ImGui.TableNextColumn();
-                                            ImGui.Text(unkPart.UnkVector.Z.ToString());
+                                            ImGui.Text(unkPart.Position.Z.ToString());
                                             ImGui.TableNextColumn();
-                                            ImGui.Text(unkPart.UnkInt2.ToString());
+                                            ImGui.Text(unkPart.Radius.ToString());
                                             ImGui.TableNextColumn();
-                                            ImGui.Text(unkPart.UnkInt3.ToString());
+                                            ImGui.Text(unkPart.ApproachRadiusBase.ToString());
                                         }
 
                                         ImGui.EndTable();
@@ -244,9 +244,9 @@ public class MissionTmaExplorer : IImGuiPanel
                             ImGui.SameLine();
                             ImGui.Text(gameObjectInfo.Type.ToReadableString());
 
-                            ImGui.Text("Неизвестные флаги: ");
+                            ImGui.Text("Флаги: ");
                             ImGui.SameLine();
-                            ImGui.Text(gameObjectInfo.UnknownFlags.ToString("X8"));
+                            ImGui.Text(gameObjectInfo.Flags.ToString("X8"));
 
                             ImGui.Text("Путь к файлу .dat: ");
                             ImGui.SameLine();
@@ -273,21 +273,21 @@ public class MissionTmaExplorer : IImGuiPanel
                             ImGui.SameLine();
                             ImGui.Text($"{gameObjectInfo.Scale.X} : {gameObjectInfo.Scale.Y} : {gameObjectInfo.Scale.Z}");
 
-                            ImGui.Text("Неизвестная строка 2: ");
+                            ImGui.Text("Короткое имя (схема): ");
                             ImGui.SameLine();
-                            ImGui.Text(gameObjectInfo.UnknownString2);
+                            ImGui.Text(gameObjectInfo.ShortName);
 
-                            ImGui.Text("Неизвестное число 4: ");
+                            ImGui.Text("Неизвестное число (0/1): ");
                             ImGui.SameLine();
                             ImGui.Text(gameObjectInfo.UnknownInt4.ToString());
 
-                            ImGui.Text("Неизвестное число 5: ");
+                            ImGui.Text("LogicalID здания-хозяина: ");
                             ImGui.SameLine();
-                            ImGui.Text(gameObjectInfo.UnknownInt5.ToString());
+                            ImGui.Text(gameObjectInfo.HostBuildingLogicId.ToString());
 
-                            ImGui.Text("Неизвестное число 6: ");
+                            ImGui.Text("Слот в здании-хозяине: ");
                             ImGui.SameLine();
-                            ImGui.Text(gameObjectInfo.UnknownInt6.ToString());
+                            ImGui.Text(gameObjectInfo.HostSlotIndex.ToString());
 
                             if (ImGui.TreeNodeEx("Настройки"))
                             {
@@ -297,13 +297,13 @@ public class MissionTmaExplorer : IImGuiPanel
                                 ImGui.Text("Кол-во настроек: ");
                                 ImGui.SameLine();
                                 ImGui.Text(gameObjectInfo.Settings.SettingsCount.ToString());
-                                ImGui.Text("0 - дробное число, 1 - целое число");
+                                ImGui.Text("0 - дробное число, 1 - целое число, 2 - логическое");
                                 if (ImGui.BeginTable("Настройки", 5, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoHostExtendX))
                                 {
                                     ImGui.TableSetupColumn("Тип");
-                                    ImGui.TableSetupColumn("Число 1");
-                                    ImGui.TableSetupColumn("Число 2");
-                                    ImGui.TableSetupColumn("Число 3");
+                                    ImGui.TableSetupColumn("Значение");
+                                    ImGui.TableSetupColumn("Минимум");
+                                    ImGui.TableSetupColumn("Максимум");
                                     ImGui.TableSetupColumn("Название");
                                     ImGui.TableHeadersRow();
 
@@ -315,11 +315,11 @@ public class MissionTmaExplorer : IImGuiPanel
                                         ImGui.TableNextColumn();
                                         ImGui.Text(setting.SettingType.ToString());
                                         ImGui.TableNextColumn();
-                                        ImGui.Text(setting.SettingType == 0 ? setting.Unk1.AsFloat.ToString() : setting.Unk1.AsInt.ToString());
+                                        ImGui.Text(setting.SettingType == 0 ? setting.Value.AsFloat.ToString() : setting.Value.AsInt.ToString());
                                         ImGui.TableNextColumn();
-                                        ImGui.Text(setting.SettingType == 0 ? setting.Unk1.AsFloat.ToString() : setting.Unk1.AsInt.ToString());
+                                        ImGui.Text(setting.SettingType == 0 ? setting.Min.AsFloat.ToString() : setting.Min.AsInt.ToString());
                                         ImGui.TableNextColumn();
-                                        ImGui.Text(setting.SettingType == 0 ? setting.Unk1.AsFloat.ToString() : setting.Unk1.AsInt.ToString());
+                                        ImGui.Text(setting.SettingType == 0 ? setting.Max.AsFloat.ToString() : setting.Max.AsInt.ToString());
                                         ImGui.TableNextColumn();
                                         ImGui.Text(setting.Name);
                                     }
@@ -365,9 +365,9 @@ public class MissionTmaExplorer : IImGuiPanel
                             ImGui.TableSetupColumn("X");
                             ImGui.TableSetupColumn("Y");
                             ImGui.TableSetupColumn("Z");
-                            ImGui.TableSetupColumn("Число 1");
+                            ImGui.TableSetupColumn("Резерв");
                             ImGui.TableSetupColumn("Флаги 2");
-                            ImGui.TableSetupColumn("Число 3");
+                            ImGui.TableSetupColumn("Радиус подхода");
                             ImGui.TableSetupColumn("Число 4");
                             ImGui.TableHeadersRow();
 
@@ -377,15 +377,15 @@ public class MissionTmaExplorer : IImGuiPanel
                                         
                                 ImGui.TableNextRow();
                                 ImGui.TableNextColumn();
-                                ImGui.Text(lode.UnknownVector.X.ToString());
+                                ImGui.Text(lode.Position.X.ToString());
                                 ImGui.TableNextColumn();
-                                ImGui.Text(lode.UnknownVector.Y.ToString());
+                                ImGui.Text(lode.Position.Y.ToString());
                                 ImGui.TableNextColumn();
-                                ImGui.Text(lode.UnknownVector.Z.ToString());
+                                ImGui.Text(lode.Position.Z.ToString());
                                 ImGui.TableNextColumn();
-                                ImGui.Text(lode.UnknownInt1.ToString());
+                                ImGui.Text(lode.Flag.ToString());
                                 ImGui.TableNextColumn();
-                                ImGui.Text(lode.UnknownFlags2.ToString());
+                                ImGui.Text(lode.Uninitialized.ToString());
                                 ImGui.TableNextColumn();
                                 ImGui.Text(lode.UnknownFloat.ToString());
                                 ImGui.TableNextColumn();
