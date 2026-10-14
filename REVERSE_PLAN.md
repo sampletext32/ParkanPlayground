@@ -12,6 +12,7 @@
 - Ngi32.dll (частично): NL-архивы и способы упаковки (`RsLiLib`), классы `NResFile`/`3DRender`/`CSoundPool`/`CListenerTransform`; из 144 безымянных функций осталось 98
   (в основном CRT 0x1002C000+ и растровые функции).
 - services.dll (частично): менеджер ресурсов и формат `.cfg`, сеть (по именам), конфигурация - `docs/SERVICES.md`.
+- World3D.dll (частично): очередь объектов и сеть, ввод и таблицы `.tbl` (`docs/WORLD3D.md`).
 - Wizard.dll: арбитр управления объектом и ведение по очереди точек (`docs/WIZARD.md`); Distributor в Behavior.dll: энергия и руда клана (`docs/DISTRIBUTOR.md`).
 - MisLoad.dll: формат `.tma` (`MissionTmaLib`: места миграции, привязка к зданию, настройки, залежи), передача ареалов и мест миграции в `SystemArealMap`.
 
@@ -28,7 +29,7 @@
    **Net.dll / Effect.dll / Joystick.dll** в проекте Ghidra открываются только после обновления языка (`tools/upgrade_project_language.py`, нужен пароль сервера).
 4. **Terrain.dll** (частично, `docs/TERRAIN.md`): `PlaceBuilding` и двери зданий разобраны; `CheckMaxBasementAngle` разобран; остались грани ландшафта (`GetWalkFace`,
    `FindNearestIntersectedFaceInLandscape`), вызывающий и порог проверки уклона (искали в ai/Behavior/World3D/Wizard - там нет; вероятно exe), рендеринг.
-5. **World3D.dll**, **iron3d.dll**: мир, материалы, рендер.
+5. **World3D.dll** (остаток: материалы, рендер, `ManEntry`), **iron3d.dll**.
 6. Нерешённое: читатели `Mask0x28`; откуда берутся опции `min_cell_class` и кто вызывает `MRoutingGraph::FindPath`; смысл значений `target_place`.
 
 ## Не делаем
