@@ -11,6 +11,7 @@ using NResUI.Abstractions;
 using NResUI.Models;
 using ResTreeLib;
 using ScrLib;
+using TblLib;
 using TexmLib;
 using VarsetLib;
 
@@ -25,6 +26,7 @@ namespace NResUI.ImGuiUI
         CpDatSchemeViewModel cpDatSchemeViewModel,
         ResearchTreeViewModel researchTreeViewModel,
         ArealMapViewModel arealMapViewModel,
+        TblViewModel tblViewModel,
         MessageBoxModalPanel messageBox)
         : IImGuiPanel
     {
@@ -97,6 +99,27 @@ namespace NResUI.ImGuiUI
 
                             missionTmaViewModel.SetParseResult(parseResult, path);
                             Console.WriteLine("Read TMA");
+                        }
+                    }
+
+                    if (ImGui.MenuItem("Open Input Table (.tbl)"))
+                    {
+                        var result = Dialog.FileOpen("tbl");
+
+                        if (result.IsOk)
+                        {
+                            var path = result.Path;
+
+                            try
+                            {
+                                tblViewModel.SetParseResult(TblParser.ReadFile(path), path);
+                                Console.WriteLine("Read TBL");
+                            }
+                            catch (Exception e)
+                            {
+                                tblViewModel.Error = e.Message;
+                                Console.WriteLine($"Не удалось прочитать таблицу привязок: {e.Message}");
+                            }
                         }
                     }
 
