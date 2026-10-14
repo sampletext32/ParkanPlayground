@@ -55,9 +55,8 @@
 
 ## Ввод: ManManager и таблицы `.tbl`
 
-`CreateManManager` создаёт `IManManager` (0x19) - обработчик ручного управления объектом игроком. Он читает таблицу привязок из NRes `.res` (в
-`behpsp.res` ссылки `m1.tbl`, `m2.tbl`, `hero.tbl`; см. [ControlLib](../ControlLib/README.md)) - это обычный текст, формат проверен на трёх файлах игры
-(88 строк `KEY`, 24 строки `MOUSE`):
+`CreateManManager` создаёт `IManManager` (0x19) - обработчик ручного управления объектом игроком. Он читает таблицу привязок - обычный текстовый файл в папке игры (`m1.tbl`, `m2.tbl`, `hero.tbl`; их имена указаны в данных управления,
+см. [ControlLib](../ControlLib/README.md)). Формат проверен на трёх файлах игры (88 строк `KEY`, 24 строки `MOUSE`):
 
 ```
 KEY   SCAN_NULL SCAN_W 1 CICLS_UNKNOWN MCMD_WALK_F  1.0 0 0 0.0 0 // комментарий
@@ -65,7 +64,7 @@ KEY   SCAN_NULL SCAN_W 1 CICLS_UNKNOWN MCMD_WALK_F  1.0 0 0 0.0 0 // комме�
 
 | № | Поле | Значения |
 |:--:|---|---|
-| 1 | устройство | `KEY`, `MOUSE` (в коде есть ещё `JOY`, в данных нет) |
+| 1 | устройство | `KEY`, `MOUSE` (в данных других нет; в экспортах есть `ConvertJoyScanCode`, формат строки для джойстика не проверен) |
 | 2 | клавиша-модификатор | `SCAN_NULL` или `SCAN_LSHIFT` и т.д. |
 | 3 | клавиша или ось | `SCAN_*`, `SCAN_MOUSE_X`, `SCAN_MOUSE_Y`, `SCAN_LMOUSE`, `SCAN_RMOUSE`, `SCAN_MMOUSE` |
 | 4 | нажатие | 1 - нажата, 0 - отпущена |
