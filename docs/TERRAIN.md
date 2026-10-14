@@ -85,6 +85,6 @@
 ## Не выяснено
 
 - формат граней и сетки ландшафта в памяти (поля `LandscapeFaceQueryResult`), `FindNearestIntersectedFaceInLandscape`; смысл бит батчей `0x200`/`0x400`;
-- кто вызывает `CheckMaxBasementAngle` и с каким порогом;
+- кто вызывает `CheckMaxBasementAngle` и с каким порогом: в `ai.dll`, `Behavior.dll`, `World3D.dll` и `Wizard.dll` вызова нет (поиск строк и имён); остаются `iron_3d.exe` и `MisEditor.exe`, которые в Ghidra открываются только после обновления языка проекта;
 - устройство `CShade`/`CShader` и слоёв примитивов `PrimLayer*`;
 - остальные безымянные функции (в основном вспомогательные контейнеры и растеризация).
