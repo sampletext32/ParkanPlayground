@@ -47,7 +47,7 @@ public class TblExplorer : IImGuiPanel
                     ImGui.TableSetupColumn("Значение");
                     ImGui.TableSetupColumn("Предмет");
                     ImGui.TableSetupColumn("Режим");
-                    ImGui.TableSetupColumn("Комментарий");
+                    ImGui.TableSetupColumn("Комментарий", ImGuiTableColumnFlags.WidthStretch);
                     ImGui.TableHeadersRow();
 
                     foreach (var b in _viewModel.Bindings)
