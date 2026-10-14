@@ -84,10 +84,13 @@ KEY   SCAN_NULL SCAN_W 1 CICLS_UNKNOWN MCMD_WALK_F  1.0 0 0 0.0 0 // комме�
 Разбор имён: `ParseItemClassName` (0x1000D700), `ParseItemStateName` (0x1000EC40), `ParseManualCommandName` (0x1000EDF0). Применение команды -
 `CManManager::ApplyManualCommand` (0x100111A0): по команде пишет в `IControl` (`SetNormSpeed`, `SetTangAccel`, `SetNormAngle`, `SetStrafeAngle`) или
 в предметы (`IItemManager`); `ComputeBindingAxisValue` (0x10012050) считает значение оси с учётом чувствительности мыши и джойстика.
+Привязка в памяти - `ManBinding` (0x88 байт; создана в Ghidra).
 Команда `TABLE` переключает таблицу `m1.tbl` на `m2.tbl` и обратно.
 
 ## Не выяснено
 
-- формат записи привязки в памяти (структура `ManEntry`, шаг 0x88 байт) и дальнейшее использование полей `field_0x*`;
+- структура `ManEntry` (таблица привязок на объект) целиком; привязка в памяти (`ManBinding`, 0x88 байт) - поля `+0x5C..+0x84` соответствуют полям
+  `.tbl` (код клавиши, нажатие, класс, команда, значение, номер предмета, режим, нарастание, состояние и время активации), назначение `+0x00..+0x5B`
+  (вероятно имена из строки) не выяснено;
 - часть сообщений `GMSG_*` (`SYSMSG` разбор в `ReceiveTimeSyncMessage`);
 - остальные безымянные функции до адреса 0x10017D83.
