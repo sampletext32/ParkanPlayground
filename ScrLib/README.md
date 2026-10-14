@@ -127,7 +127,7 @@ FUNCTION( , dBuildingProtectHits - dT2,  )
 |---|---|---|---|
 | 0 | `BindGlobalSuperAI` | одна переменная, игнорируется | `true` |
 | 2 | `RequestUnitsForProblem` | `PBM_*`, приоритет, число шагов, убывание за тик, `target_x`, `target_y`, `target_extra` (подробно - в разделе «Функция №2» ниже) | - |
-| 3 | `GetDistributorSurplus` | - | float: остаток распределителя ресурсов |
+| 3 | `GetDistributorSurplus` | - | float: избыток энергии клана = `power_available - power_usage` из итогов `Distributor` ([docs/DISTRIBUTOR.md](../docs/DISTRIBUTOR.md)) |
 | 6 | `AssignUnitToCurrentProblem` | LogicID юнита, `UNIT_NORMAL`/`UNIT_CRITICAL` | - (привязывает юнит к текущей проблеме `dCurrentProblem` и ставит ему критичность; без критичных юнитов проблема в состоянии SOLVING становится UNSOLVED) |
 | 7 | `DeleteCurrentProblem` | - | - |
 | 8 | `SetCurrentProblemStatus` | `ST_SOLVING`/`ST_SOLVED` | - |
@@ -166,7 +166,7 @@ FUNCTION( , dBuildingProtectHits - dT2,  )
 | 51 | `SetEntityFreeOrReserved` | LogicID, `TRUE`/`FALSE` | - |
 | 52 | `QueryBehaviourByLogicId` | LogicID | значение или ошибка |
 | 54 | `GetUnitOrderState` | LogicID | - |
-| 56 | `IsDistributorFlagSet` | - | bool |
+| 56 | `IsDistributorFlagSet` | - | bool: название историческое - реализация возвращает `scheme_deposit_manager.fAll_schemes_checked` (проверены ли все схемы), с распределителем не связана |
 | 57 | `HostCallKind2` | два значения | - |
 | 58 | `GetUpgradableBuildingByIndex` | порядковый номер | LogicID n-го собственного здания, которое можно улучшить, или `ERROR` |
 
